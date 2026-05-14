@@ -273,7 +273,29 @@ simulate_relational_events <- function(
     half_life = NULL,
     risk = c("standard", "remove")) {
   risk <- match.arg(risk)
-  stopifnot(length(n_events) == 1, n_events > 0)
+  stopifnot(length(n_events) == 1, n_events >= 0)
+  n_events <- as.integer(n_events)
+  if (n_events == 0L) {
+    # Degenerate request: nothing to simulate. Return an empty event
+    # log so downstream pipelines that conditionally generate data
+    # don't have to guard with `if (n > 0)` before the call.
+    out <- data.frame(sender = character(0),
+                      receiver = character(0),
+                      time = numeric(0),
+                      stringsAsFactors = FALSE)
+    if (n_controls > 0) {
+      out$stratum <- integer(0)
+      out$event   <- integer(0)
+    }
+    if (!is.null(endogenous_stats) && length(endogenous_stats)) {
+      for (st in endogenous_stats) out[[st]] <- numeric(0)
+    }
+    if (!is.null(global_covariates)) {
+      gc_names <- setdiff(names(global_covariates), "time_start")
+      for (cn in gc_names) out[[cn]] <- numeric(0)
+    }
+    return(out)
+  }
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
   stopifnot(length(horizon) == 1)
