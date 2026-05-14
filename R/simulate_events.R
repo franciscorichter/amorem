@@ -43,6 +43,10 @@
 #'     \item \code{"recency"} — elapsed time on the same ordered dyad
 #'       \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 #'       \eqn{t - \text{start\_time}} for dyads that have never fired.
+#'     \item \code{"sender_outdegree"} — total number of events previously sent
+#'       by \eqn{s} (constant across receivers).
+#'     \item \code{"receiver_indegree"} — total number of events previously
+#'       received by \eqn{r} (constant across senders).
 #'     \item \code{"transitivity_count"} / \code{"transitivity_binary"} —
 #'       number of intermediaries \eqn{k} (or indicator that at least one
 #'       exists) for which both \eqn{(s,k)} and \eqn{(k,r)} have fired.
@@ -263,10 +267,13 @@ simulate_relational_events <- function(
                      "cyclic_count", "cyclic_binary",
                      "sending_balance_count", "sending_balance_binary",
                      "receiving_balance_count", "receiving_balance_binary")
-  supported_endogenous <- c(reciprocity_stats, "recency", network_stats)
-  # `recency` is a per-dyad stat with no actor-graph semantics, so it works
-  # for bipartite settings too. The reciprocity_* and network_* families
-  # require a one-mode setting (square actor universe) enforced below.
+  degree_stats <- c("sender_outdegree", "receiver_indegree")
+  supported_endogenous <- c(reciprocity_stats, "recency",
+                            degree_stats, network_stats)
+  # `recency` and the degree_* stats are per-dyad / per-actor with no
+  # actor-graph semantics, so they work for bipartite settings too. The
+  # reciprocity_* and network_* families require a one-mode setting
+  # (square actor universe) enforced below.
   endogenous_active <- !is.null(endogenous_stats) && length(endogenous_stats) > 0
   if (endogenous_active) {
     endogenous_stats <- as.character(endogenous_stats)
@@ -416,6 +423,13 @@ simulate_relational_events <- function(
     matrix(0, nrow = S, ncol = S)
   } else NULL
 
+  # Per-actor accumulators for the degree_* stats. Length-S sender count
+  # vector and length-R receiver count vector, both starting at zero.
+  has_outdeg <- endogenous_active && "sender_outdegree" %in% endogenous_stats
+  has_indeg  <- endogenous_active && "receiver_indegree" %in% endogenous_stats
+  sender_out_count <- if (has_outdeg) numeric(S) else NULL
+  receiver_in_count <- if (has_indeg) numeric(R) else NULL
+
   has_exp_decay <- endogenous_active &&
     "reciprocity_exp_decay" %in% endogenous_stats
   last_state_time <- start_time
@@ -456,10 +470,18 @@ simulate_relational_events <- function(
     AA  <- if (needs_AA)  adj_state %*% adj_state         else NULL
     AAt <- if (needs_AAt) adj_state %*% t(adj_state)       else NULL
     AtA <- if (needs_AtA) t(adj_state) %*% adj_state       else NULL
+    # The degree_* stats are constant across one axis of the dyad matrix:
+    # outdegree depends only on the sender, indegree only on the receiver.
+    # Broadcasting via matrix(v, S, R) (column-fill) replicates the
+    # length-S sender vector across columns; matrix(v, S, R, byrow = TRUE)
+    # replicates the length-R receiver vector across rows.
     vals <- list()
     for (st in endogenous_stats) {
       vals[[st]] <- switch(st,
         "recency"                   = current_time - endo_state[[st]],
+        "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
+        "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
+                                              byrow = TRUE),
         "transitivity_count"        = AA,
         "transitivity_binary"       = (AA > 0) * 1.0,
         "cyclic_count"              = t(AA),
@@ -684,6 +706,8 @@ simulate_relational_events <- function(
               if (has_network_stats) {
                 adj_state[s_k, r_k] <- 1
               }
+              if (has_outdeg) sender_out_count[s_k]  <- sender_out_count[s_k]  + 1
+              if (has_indeg)  receiver_in_count[r_k] <- receiver_in_count[r_k] + 1
             }
             if (risk == "remove") {
               static_log_weights[s_k, r_k] <- -Inf
@@ -835,6 +859,7 @@ simulate_relational_events <- function(
       # reciprocity_* stats update the *reverse* dyad (r_idx, s_idx).
       # recency updates the *same* dyad (s_idx, r_idx) with the event time.
       # network_* stats share the binary adjacency adj_state, updated below.
+      # degree_* stats accumulate into per-actor vectors.
       for (st in endogenous_stats) {
         if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
           endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
@@ -847,6 +872,8 @@ simulate_relational_events <- function(
       if (has_network_stats) {
         adj_state[s_idx, r_idx] <- 1
       }
+      if (has_outdeg) sender_out_count[s_idx]  <- sender_out_count[s_idx]  + 1
+      if (has_indeg)  receiver_in_count[r_idx] <- receiver_in_count[r_idx] + 1
     }
 
     if (risk == "remove") {
