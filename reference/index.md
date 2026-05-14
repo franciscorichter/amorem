@@ -18,6 +18,11 @@
 - [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   : Sample non-events for inference
 
+## Model comparison
+
+- [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+  : Compare candidate endogenous specifications by AIC
+
 ## Data
 
 - [`dist_matrix`](https://franciscorichter.github.io/amore/reference/dist_matrix.md)
