@@ -222,6 +222,20 @@ simulate_relational_events <- function(
     stop("Both sender and receiver sets must be non-empty.")
   }
 
+  if (endogenous_active) {
+    # The current endogenous state machinery maintains a single state matrix
+    # indexed by (sender, receiver) and updates the *reverse* dyad after each
+    # event. That update assumes a shared actor universe: senders and
+    # receivers must be the same set in the same order. Without this
+    # restriction the post-event update writes to the wrong cell on
+    # rectangular (bipartite / two-mode) cases.
+    if (S != R || !identical(senders, receivers)) {
+      stop("endogenous_stats currently requires senders and receivers to be ",
+           "the same character vector in the same order (one-mode networks). ",
+           "Bipartite / two-mode support is on the roadmap.")
+    }
+  }
+
   if (is.null(contribution_logits)) {
     contribution_logits <- matrix(0, nrow = S, ncol = R)
   }

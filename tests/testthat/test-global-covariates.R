@@ -146,6 +146,58 @@ test_that("validation errors fire for malformed global inputs", {
   )
 })
 
+test_that("simulation honours start_time != 0 with matching global intervals", {
+  # start_time = 3, first interval boundary at 3 -> simulation starts on the
+  # 'weekday=1' regime. Events must all sit at time >= 3 and the recorded
+  # weekday column must match the interval each event falls in.
+  set.seed(202)
+  gc <- data.frame(
+    time_start = c(3, 5, 7),
+    weekday    = c(1, 0, 1)
+  )
+  ev <- simulate_relational_events(
+    n_events = 25,
+    senders = letters[1:4],
+    receivers = letters[1:4],
+    baseline_rate = 1.5,
+    start_time = 3,
+    horizon = 9,
+    global_covariates = gc,
+    global_effects = c(weekday = 0)
+  )
+
+  expect_gt(nrow(ev), 0L)
+  expect_true(all(ev$time >= 3))
+  expect_true(all(ev$time <= 9))
+  expected <- gc$weekday[findInterval(ev$time, gc$time_start,
+                                      rightmost.closed = FALSE)]
+  expect_equal(ev$weekday, expected)
+})
+
+test_that("start_time != 0 with first time_start strictly before start_time still works", {
+  set.seed(303)
+  gc <- data.frame(
+    time_start = c(0, 4, 8),
+    weekday    = c(1, 0, 1)
+  )
+  ev <- simulate_relational_events(
+    n_events = 15,
+    senders = letters[1:3],
+    receivers = letters[1:3],
+    baseline_rate = 2,
+    start_time = 5,           # starts mid second interval (weekday = 0)
+    horizon = 10,
+    global_covariates = gc,
+    global_effects = c(weekday = 0)
+  )
+
+  expect_gt(nrow(ev), 0L)
+  expect_true(all(ev$time >= 5))
+  expected <- gc$weekday[findInterval(ev$time, gc$time_start,
+                                      rightmost.closed = FALSE)]
+  expect_equal(ev$weekday, expected)
+})
+
 test_that("non-event horizon stop still respects boundaries", {
   # In a single-interval setup the boundary-aware path must behave identically
   # to the simple path: if horizon < first interval boundary, no events fire.
