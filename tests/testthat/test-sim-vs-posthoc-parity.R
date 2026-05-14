@@ -104,6 +104,19 @@ test_that("simulator and post-hoc agree on receiving_balance stats", {
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
 
+test_that("simulator and post-hoc agree on interrupted triadic timing stats", {
+  stats <- c("transitivity_time_recent_interrupted",
+             "transitivity_time_first_interrupted",
+             "cyclic_time_recent_interrupted",
+             "cyclic_time_first_interrupted",
+             "sending_balance_time_recent_interrupted",
+             "sending_balance_time_first_interrupted",
+             "receiving_balance_time_recent_interrupted",
+             "receiving_balance_time_first_interrupted")
+  out <- sim_vs_posthoc(stats, seed = 121)
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
 test_that("simulator and post-hoc agree on per-actor / single-direction stats", {
   stats <- c("sender_outdegree", "receiver_indegree", "recency")
   set.seed(107)

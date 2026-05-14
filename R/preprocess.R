@@ -310,14 +310,21 @@ compute_endogenous_features <- function(
     "transitivity_exp_decay", "transitivity_exp_decay_ordered",
     "transitivity_time_recent", "transitivity_time_first",
     "transitivity_time_recent_ordered", "transitivity_time_first_ordered",
+    "transitivity_time_recent_interrupted",
+    "transitivity_time_first_interrupted",
     "cyclic_binary", "cyclic_count", "cyclic_time_recent", "cyclic_time_first",
     "cyclic_exp_decay",
+    "cyclic_time_recent_interrupted", "cyclic_time_first_interrupted",
     "sending_balance_binary", "sending_balance_count",
     "sending_balance_time_recent", "sending_balance_time_first",
     "sending_balance_exp_decay",
+    "sending_balance_time_recent_interrupted",
+    "sending_balance_time_first_interrupted",
     "receiving_balance_binary", "receiving_balance_count",
     "receiving_balance_time_recent", "receiving_balance_time_first",
-    "receiving_balance_exp_decay"
+    "receiving_balance_exp_decay",
+    "receiving_balance_time_recent_interrupted",
+    "receiving_balance_time_first_interrupted"
   )
   bad <- setdiff(stats, allowed)
   if (length(bad)) {
@@ -357,16 +364,24 @@ compute_endogenous_features <- function(
                    "transitivity_exp_decay", "transitivity_exp_decay_ordered",
                    "transitivity_time_recent", "transitivity_time_first",
                    "transitivity_time_recent_ordered",
-                   "transitivity_time_first_ordered")
+                   "transitivity_time_first_ordered",
+                   "transitivity_time_recent_interrupted",
+                   "transitivity_time_first_interrupted")
   cyc_names   <- c("cyclic_binary", "cyclic_count",
                    "cyclic_time_recent", "cyclic_time_first",
-                   "cyclic_exp_decay")
+                   "cyclic_exp_decay",
+                   "cyclic_time_recent_interrupted",
+                   "cyclic_time_first_interrupted")
   sb_names    <- c("sending_balance_binary", "sending_balance_count",
                    "sending_balance_time_recent", "sending_balance_time_first",
-                   "sending_balance_exp_decay")
+                   "sending_balance_exp_decay",
+                   "sending_balance_time_recent_interrupted",
+                   "sending_balance_time_first_interrupted")
   rb_names    <- c("receiving_balance_binary", "receiving_balance_count",
                    "receiving_balance_time_recent", "receiving_balance_time_first",
-                   "receiving_balance_exp_decay")
+                   "receiving_balance_exp_decay",
+                   "receiving_balance_time_recent_interrupted",
+                   "receiving_balance_time_first_interrupted")
   need_triadic <- any(c(trans_names, cyc_names, sb_names, rb_names) %in% stats)
 
   # --- Tracking data structures ---
@@ -436,8 +451,12 @@ compute_endogenous_features <- function(
   # --- Triadic helper --------------------------------------------------
   # Computes binary / count / time / exp-decay stats for a given set of
   # intermediaries whose two edges are retrieved via get_e1_times / get_e2_times.
+  # `t_closure` is the time of the most recent same-direction (s, r) event,
+  # or `-Inf` if no closure has occurred. Used to filter per-k formation
+  # times for the *_time_*_interrupted variants.
   compute_triadic <- function(s, r, t_now, prefix, intermediaries,
-                              get_e1_times, get_e2_times) {
+                              get_e1_times, get_e2_times,
+                              t_closure = -Inf) {
     res <- list()
     req <- stats[startsWith(stats, paste0(prefix, "_"))]
     if (!length(req)) return(res)
@@ -460,6 +479,7 @@ compute_endogenous_features <- function(
     need_ord  <- any(grepl("ordered", req))
     need_exp  <- any(grepl("exp_decay", req))
     need_time <- any(grepl("time_", req))
+    need_int  <- any(grepl("_time_[a-z]+_interrupted$", req))
 
     form_recent     <- -Inf
     form_first      <- Inf
@@ -468,6 +488,10 @@ compute_endogenous_features <- function(
     form_ord_first  <- Inf
     exp_sum         <- 0
     exp_ord_sum     <- 0
+    # Interrupted-window aggregates: only per-k formation times that
+    # occurred strictly after the most recent (s, r) closure.
+    form_int_recent <- -Inf
+    form_int_first  <- Inf
 
     for (ki in seq_along(intermediaries)) {
       k  <- intermediaries[ki]
@@ -484,6 +508,10 @@ compute_endogenous_features <- function(
       if (need_time) {
         if (formation > form_recent) form_recent <- formation
         if (formation < form_first)  form_first  <- formation
+      }
+      if (need_int && formation > t_closure) {
+        if (formation > form_int_recent) form_int_recent <- formation
+        if (formation < form_int_first)  form_int_first  <- formation
       }
       if (need_exp && !is.null(half_life)) {
         exp_sum <- exp_sum +
@@ -530,6 +558,18 @@ compute_endogenous_features <- function(
       if (tro_nm %in% req) res[[tro_nm]] <- NA_real_
       if (tfo_nm %in% req) res[[tfo_nm]] <- NA_real_
       if (eo_nm  %in% req) res[[eo_nm]]  <- 0
+    }
+
+    # Interrupted timing outputs (no count / binary / exp_decay variants
+    # in this batch -- only the *_time_recent_interrupted / _time_first_
+    # interrupted slots are populated).
+    tri_nm <- paste0(prefix, "_time_recent_interrupted")
+    tfi_nm <- paste0(prefix, "_time_first_interrupted")
+    if (tri_nm %in% req) {
+      res[[tri_nm]] <- if (form_int_recent > -Inf) t_now - form_int_recent else NA_real_
+    }
+    if (tfi_nm %in% req) {
+      res[[tfi_nm]] <- if (form_int_first  <  Inf) t_now - form_int_first  else NA_real_
     }
 
     res
@@ -617,12 +657,19 @@ compute_endogenous_features <- function(
       s_in  <- in_sources[[s]];  if (is.null(s_in))  s_in  <- character(0)
       r_in  <- in_sources[[r]];  if (is.null(r_in))  r_in  <- character(0)
 
+      # Time of the most recent same-direction (s, r) event -- the
+      # closure event for every triadic family's interrupted variants.
+      # `-Inf` if (s, r) has never fired before this row.
+      last_sr <- dyad_last_time[[key_sr]]
+      t_closure <- if (is.null(last_sr)) -Inf else last_sr
+
       # Transitivity: s -> k -> r
       if (any(trans_names %in% stats)) {
         ks <- setdiff(intersect(s_out, r_in), c(s, r))
         tri <- compute_triadic(s, r, ti, "transitivity", ks,
           function(k) dyad_times[[dyad_key(s, k)]],
-          function(k) dyad_times[[dyad_key(k, r)]])
+          function(k) dyad_times[[dyad_key(k, r)]],
+          t_closure = t_closure)
         for (nm in names(tri)) log_df[[nm]][i] <- tri[[nm]]
       }
 
@@ -631,7 +678,8 @@ compute_endogenous_features <- function(
         ks <- setdiff(intersect(r_out, s_in), c(s, r))
         cyc <- compute_triadic(s, r, ti, "cyclic", ks,
           function(k) dyad_times[[dyad_key(r, k)]],
-          function(k) dyad_times[[dyad_key(k, s)]])
+          function(k) dyad_times[[dyad_key(k, s)]],
+          t_closure = t_closure)
         for (nm in names(cyc)) log_df[[nm]][i] <- cyc[[nm]]
       }
 
@@ -640,7 +688,8 @@ compute_endogenous_features <- function(
         ks <- setdiff(intersect(s_out, r_out), c(s, r))
         sb <- compute_triadic(s, r, ti, "sending_balance", ks,
           function(k) dyad_times[[dyad_key(s, k)]],
-          function(k) dyad_times[[dyad_key(r, k)]])
+          function(k) dyad_times[[dyad_key(r, k)]],
+          t_closure = t_closure)
         for (nm in names(sb)) log_df[[nm]][i] <- sb[[nm]]
       }
 
@@ -649,7 +698,8 @@ compute_endogenous_features <- function(
         ks <- setdiff(intersect(s_in, r_in), c(s, r))
         rb <- compute_triadic(s, r, ti, "receiving_balance", ks,
           function(k) dyad_times[[dyad_key(k, s)]],
-          function(k) dyad_times[[dyad_key(k, r)]])
+          function(k) dyad_times[[dyad_key(k, r)]],
+          t_closure = t_closure)
         for (nm in names(rb)) log_df[[nm]][i] <- rb[[nm]]
       }
     }
