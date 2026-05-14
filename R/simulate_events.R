@@ -33,14 +33,31 @@
 #' @param endogenous_stats Optional character vector of endogenous mechanisms to
 #'   include in the rate. Each entry updates a state matrix after every event so
 #'   the intensity of the next event depends on the realized history. Supported
-#'   values: \code{"reciprocity_count"} (number of past reverse-dyad events),
-#'   \code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
-#'   least once), \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
-#'   events with exponential half-life decay; requires \code{half_life}), and
-#'   \code{"recency"} (elapsed time on the same ordered dyad:
-#'   \eqn{t - t_{\text{last}}(s,r)}, defaulting to
-#'   \eqn{t - \text{start\_time}} for dyads that have never fired). Defaults
-#'   to \code{NULL} for a memoryless process.
+#'   values:
+#'   \itemize{
+#'     \item \code{"reciprocity_count"} — number of past reverse-dyad events.
+#'     \item \code{"reciprocity_binary"} — 1 if the reverse dyad has fired at
+#'       least once, 0 otherwise.
+#'     \item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
+#'       with exponential half-life decay (requires \code{half_life}).
+#'     \item \code{"recency"} — elapsed time on the same ordered dyad
+#'       \eqn{t - t_{\text{last}}(s,r)}, defaulting to
+#'       \eqn{t - \text{start\_time}} for dyads that have never fired.
+#'     \item \code{"transitivity_count"} / \code{"transitivity_binary"} —
+#'       number of intermediaries \eqn{k} (or indicator that at least one
+#'       exists) for which both \eqn{(s,k)} and \eqn{(k,r)} have fired.
+#'     \item \code{"cyclic_count"} / \code{"cyclic_binary"} — number of
+#'       intermediaries \eqn{k} (or indicator) for which both \eqn{(r,k)} and
+#'       \eqn{(k,s)} have fired (cyclic two-path closing \eqn{s \to r}).
+#'     \item \code{"sending_balance_count"} / \code{"sending_balance_binary"} —
+#'       number of shared targets \eqn{k} (or indicator) where both
+#'       \eqn{(s,k)} and \eqn{(r,k)} have fired.
+#'     \item \code{"receiving_balance_count"} /
+#'       \code{"receiving_balance_binary"} — number of shared sources
+#'       \eqn{k} (or indicator) where both \eqn{(k,s)} and \eqn{(k,r)} have
+#'       fired.
+#'   }
+#'   Defaults to \code{NULL} for a memoryless process.
 #' @param endogenous_effects Numeric vector of linear coefficients for
 #'   \code{endogenous_stats}. May be named (names must match
 #'   \code{endogenous_stats}) or unnamed (positionally matched). Required when
@@ -240,11 +257,16 @@ simulate_relational_events <- function(
     global_log_mult <- as.numeric(global_cov_matrix %*% global_effects)
   }
 
-  supported_endogenous <- c("reciprocity_count", "reciprocity_binary",
-                            "reciprocity_exp_decay", "recency")
-  # `recency` is a per-dyad stat with no reverse-dyad semantics, so it works
-  # for bipartite settings too. Only the reciprocity_* family requires the
-  # one-mode constraint enforced below.
+  reciprocity_stats <- c("reciprocity_count", "reciprocity_binary",
+                         "reciprocity_exp_decay")
+  network_stats <- c("transitivity_count", "transitivity_binary",
+                     "cyclic_count", "cyclic_binary",
+                     "sending_balance_count", "sending_balance_binary",
+                     "receiving_balance_count", "receiving_balance_binary")
+  supported_endogenous <- c(reciprocity_stats, "recency", network_stats)
+  # `recency` is a per-dyad stat with no actor-graph semantics, so it works
+  # for bipartite settings too. The reciprocity_* and network_* families
+  # require a one-mode setting (square actor universe) enforced below.
   endogenous_active <- !is.null(endogenous_stats) && length(endogenous_stats) > 0
   if (endogenous_active) {
     endogenous_stats <- as.character(endogenous_stats)
@@ -292,23 +314,23 @@ simulate_relational_events <- function(
     stop("Both sender and receiver sets must be non-empty.")
   }
 
-  reciprocity_stats <- c("reciprocity_count", "reciprocity_binary",
-                         "reciprocity_exp_decay")
+  one_mode_required_stats <- c(reciprocity_stats, network_stats)
   needs_one_mode <- endogenous_active &&
-    any(endogenous_stats %in% reciprocity_stats)
+    any(endogenous_stats %in% one_mode_required_stats)
   if (needs_one_mode) {
     # The reciprocity_* stats maintain a state matrix indexed by
-    # (sender, receiver) and update the *reverse* dyad after each event. That
-    # update assumes a shared actor universe: senders and receivers must be the
-    # same set in the same order. Without this restriction the post-event
-    # update writes to the wrong cell on rectangular (bipartite / two-mode)
-    # cases. `recency` is per-dyad and works for any S/R, so it does not
-    # trigger this check.
+    # (sender, receiver) and update the *reverse* dyad after each event;
+    # the network_* (transitivity / cyclic / balance) stats use a binary
+    # adjacency matrix and matrix products that only make sense when the
+    # actor universe is the same on both axes. Both families require senders
+    # and receivers to be the same character vector in the same order.
+    # `recency` is per-dyad with no reverse-dyad or path semantics, so it
+    # does not trigger this check.
     if (S != R || !identical(senders, receivers)) {
-      stop("reciprocity_* endogenous stats currently require senders and ",
-           "receivers to be the same character vector in the same order ",
-           "(one-mode networks). Bipartite / two-mode support is on the ",
-           "roadmap.")
+      stop("reciprocity_* and network_* endogenous stats currently require ",
+           "senders and receivers to be the same character vector in the ",
+           "same order (one-mode networks). Bipartite / two-mode support ",
+           "is on the roadmap.")
     }
   }
 
@@ -384,6 +406,16 @@ simulate_relational_events <- function(
     }
   }
 
+  # Shared binary adjacency matrix used by every network_* stat
+  # (transitivity / cyclic / sending_balance / receiving_balance). Only
+  # allocated when at least one such stat is active. The matrix is square
+  # because needs_one_mode is enforced earlier.
+  has_network_stats <- endogenous_active &&
+    any(endogenous_stats %in% network_stats)
+  adj_state <- if (has_network_stats) {
+    matrix(0, nrow = S, ncol = S)
+  } else NULL
+
   has_exp_decay <- endogenous_active &&
     "reciprocity_exp_decay" %in% endogenous_stats
   last_state_time <- start_time
@@ -407,18 +439,49 @@ simulate_relational_events <- function(
     invisible()
   }
 
+  endo_stat_values <- function() {
+    # Returns a named list of S x R stat-value matrices, one per requested
+    # stat, evaluated at the current clock time and state. Used by both
+    # score (linear predictor) and snapshot (output columns). Recomputed
+    # whenever called -- callers should reuse the result within a step.
+    if (!endogenous_active) return(NULL)
+    needs_AA  <- any(endogenous_stats %in% c("transitivity_count",
+                                              "transitivity_binary",
+                                              "cyclic_count",
+                                              "cyclic_binary"))
+    needs_AAt <- any(endogenous_stats %in% c("sending_balance_count",
+                                              "sending_balance_binary"))
+    needs_AtA <- any(endogenous_stats %in% c("receiving_balance_count",
+                                              "receiving_balance_binary"))
+    AA  <- if (needs_AA)  adj_state %*% adj_state         else NULL
+    AAt <- if (needs_AAt) adj_state %*% t(adj_state)       else NULL
+    AtA <- if (needs_AtA) t(adj_state) %*% adj_state       else NULL
+    vals <- list()
+    for (st in endogenous_stats) {
+      vals[[st]] <- switch(st,
+        "recency"                   = current_time - endo_state[[st]],
+        "transitivity_count"        = AA,
+        "transitivity_binary"       = (AA > 0) * 1.0,
+        "cyclic_count"              = t(AA),
+        "cyclic_binary"             = (t(AA) > 0) * 1.0,
+        "sending_balance_count"     = AAt,
+        "sending_balance_binary"    = (AAt > 0) * 1.0,
+        "receiving_balance_count"   = AtA,
+        "receiving_balance_binary"  = (AtA > 0) * 1.0,
+        endo_state[[st]]
+      )
+    }
+    vals
+  }
+
   endo_score_matrix <- function() {
     if (!endogenous_active) {
       return(NULL)
     }
+    vals <- endo_stat_values()
     es <- matrix(0, nrow = S, ncol = R)
     for (st in endogenous_stats) {
-      stat_value <- if (st == "recency") {
-        current_time - endo_state[[st]]
-      } else {
-        endo_state[[st]]
-      }
-      es <- es + endogenous_effects[[st]] * stat_value
+      es <- es + endogenous_effects[[st]] * vals[[st]]
     }
     es
   }
@@ -526,13 +589,15 @@ simulate_relational_events <- function(
         ev_dyads <- ev_dyads[ord]
         ev_times <- ev_times[ord]
 
-        # Snapshot endogenous state at start of step. All events in the
-        # step are scored against this snapshot; the live state is updated
-        # once at the end of the step.
-        state_snapshot <- if (endogenous_active) {
-          snap <- list()
-          for (st in endogenous_stats) snap[[st]] <- endo_state[[st]]
-          snap
+        # Snapshot stat-value matrices at the start of the step. All events
+        # in the step are scored against this snapshot; the live state is
+        # updated once at the end of the step. For `recency` (which depends
+        # on the clock), we keep the raw last-seen-time matrix and subtract
+        # the per-event time when emitting the row.
+        step_vals_snapshot <- if (endogenous_active) endo_stat_values() else NULL
+        recency_state_snapshot <- if (endogenous_active &&
+                                       "recency" %in% endogenous_stats) {
+          endo_state[["recency"]]
         } else NULL
 
         for (k in seq_len(n_in_step)) {
@@ -549,9 +614,9 @@ simulate_relational_events <- function(
           if (endogenous_active) {
             for (st in endogenous_stats) {
               event_stat_vals[event_counter, st] <- if (st == "recency") {
-                ev_times[k] - state_snapshot[[st]][s_idx, r_idx]
+                ev_times[k] - recency_state_snapshot[s_idx, r_idx]
               } else {
-                state_snapshot[[st]][s_idx, r_idx]
+                step_vals_snapshot[[st]][s_idx, r_idx]
               }
             }
           }
@@ -582,11 +647,10 @@ simulate_relational_events <- function(
             if (endogenous_active) {
               ctrl_rows <- ctrl_start_idx:ctrl_end_idx
               for (st in endogenous_stats) {
-                cell_vals <- state_snapshot[[st]][cbind(c_s_idxs, c_r_idxs)]
                 control_stat_vals[ctrl_rows, st] <- if (st == "recency") {
-                  ev_times[k] - cell_vals
+                  ev_times[k] - recency_state_snapshot[cbind(c_s_idxs, c_r_idxs)]
                 } else {
-                  cell_vals
+                  step_vals_snapshot[[st]][cbind(c_s_idxs, c_r_idxs)]
                 }
               }
             }
@@ -616,6 +680,9 @@ simulate_relational_events <- function(
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
                 }
+              }
+              if (has_network_stats) {
+                adj_state[s_k, r_k] <- 1
               }
             }
             if (risk == "remove") {
@@ -705,14 +772,14 @@ simulate_relational_events <- function(
     # so the value carried on the output row reflects the time elapsed
     # since the previous event.
     apply_exp_decay()
+    # Compute the full stat-value matrices once per event so the same
+    # values are reused for both the event row and any control rows
+    # below.
+    step_vals <- if (endogenous_active) endo_stat_values() else NULL
 
     if (endogenous_active) {
       for (st in endogenous_stats) {
-        event_stat_vals[event_counter, st] <- if (st == "recency") {
-          current_time - endo_state[[st]][s_idx, r_idx]
-        } else {
-          endo_state[[st]][s_idx, r_idx]
-        }
+        event_stat_vals[event_counter, st] <- step_vals[[st]][s_idx, r_idx]
       }
     }
 
@@ -749,12 +816,8 @@ simulate_relational_events <- function(
       if (endogenous_active) {
         ctrl_rows <- ctrl_start_idx:ctrl_end_idx
         for (st in endogenous_stats) {
-          cell_vals <- endo_state[[st]][cbind(c_s_idxs, c_r_idxs)]
-          control_stat_vals[ctrl_rows, st] <- if (st == "recency") {
-            current_time - cell_vals
-          } else {
-            cell_vals
-          }
+          control_stat_vals[ctrl_rows, st] <-
+            step_vals[[st]][cbind(c_s_idxs, c_r_idxs)]
         }
       }
 
@@ -771,6 +834,7 @@ simulate_relational_events <- function(
       # Update state matrices using the realized event (s_idx -> r_idx).
       # reciprocity_* stats update the *reverse* dyad (r_idx, s_idx).
       # recency updates the *same* dyad (s_idx, r_idx) with the event time.
+      # network_* stats share the binary adjacency adj_state, updated below.
       for (st in endogenous_stats) {
         if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
           endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
@@ -779,6 +843,9 @@ simulate_relational_events <- function(
         } else if (st == "recency") {
           endo_state[[st]][s_idx, r_idx] <- current_time
         }
+      }
+      if (has_network_stats) {
+        adj_state[s_idx, r_idx] <- 1
       }
     }
 

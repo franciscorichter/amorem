@@ -70,14 +70,31 @@ regression / GAM modeling. Defaults to 0.}
 \item{endogenous_stats}{Optional character vector of endogenous mechanisms to
 include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
-values: \code{"reciprocity_count"} (number of past reverse-dyad events),
-\code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
-least once), \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
-events with exponential half-life decay; requires \code{half_life}), and
-\code{"recency"} (elapsed time on the same ordered dyad:
+values:
+\itemize{
+\item \code{"reciprocity_count"} — number of past reverse-dyad events.
+\item \code{"reciprocity_binary"} — 1 if the reverse dyad has fired at
+least once, 0 otherwise.
+\item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
+with exponential half-life decay (requires \code{half_life}).
+\item \code{"recency"} — elapsed time on the same ordered dyad
 \eqn{t - t_{\text{last}}(s,r)}, defaulting to
-\eqn{t - \text{start\_time}} for dyads that have never fired). Defaults
-to \code{NULL} for a memoryless process.}
+\eqn{t - \text{start\_time}} for dyads that have never fired.
+\item \code{"transitivity_count"} / \code{"transitivity_binary"} —
+number of intermediaries \eqn{k} (or indicator that at least one
+exists) for which both \eqn{(s,k)} and \eqn{(k,r)} have fired.
+\item \code{"cyclic_count"} / \code{"cyclic_binary"} — number of
+intermediaries \eqn{k} (or indicator) for which both \eqn{(r,k)} and
+\eqn{(k,s)} have fired (cyclic two-path closing \eqn{s \to r}).
+\item \code{"sending_balance_count"} / \code{"sending_balance_binary"} —
+number of shared targets \eqn{k} (or indicator) where both
+\eqn{(s,k)} and \eqn{(r,k)} have fired.
+\item \code{"receiving_balance_count"} /
+\code{"receiving_balance_binary"} — number of shared sources
+\eqn{k} (or indicator) where both \eqn{(k,s)} and \eqn{(k,r)} have
+fired.
+}
+Defaults to \code{NULL} for a memoryless process.}
 
 \item{endogenous_effects}{Numeric vector of linear coefficients for
 \code{endogenous_stats}. May be named (names must match
