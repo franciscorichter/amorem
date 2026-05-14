@@ -88,6 +88,29 @@ richer fits (thin-plate splines on the differences, sender/receiver
 random effects) typically reweight the ranking in favour of the temporal
 definitions, matching the empirical findings of the paper.
 
+### Multiple controls per case
+
+For 1:1 matching the helper fits a no-intercept binomial GLM on
+case-minus-control differences. Set `n_controls > 1` to switch to
+stratified conditional logistic regression via
+[`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html) — the
+right tool when you want more controls per case for tighter inference:
+
+``` r
+
+compare_models(classroom_events, specs,
+               n_controls = 3, seed = 11)
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1       count       2   691 -730.3872 1464.774    0.0000
+#> 2  continuous       2   691 -850.2339 1704.468  239.6934
+#> 3 interrupted       2   691 -931.9619 1867.924  403.1494
+```
+
+The `n_obs` column now reports the number of strata (one per case), and
+`survival` is in the package’s *Suggests* — required only when
+`n_controls > 1`. AIC values across specs remain comparable because
+every spec sees the same shared case-control sample.
+
 ## 4. Inspect coefficients of a chosen specification
 
 [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)

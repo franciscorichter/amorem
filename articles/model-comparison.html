@@ -135,6 +135,27 @@ comparison — recall that this is a no-smooth, no-random-effect baseline;
 richer fits (thin-plate splines on the differences, sender/receiver
 random effects) typically reweight the ranking in favour of the temporal
 definitions, matching the empirical findings of the paper.</p>
+<div class="section level3">
+<h3 id="multiple-controls-per-case">Multiple controls per case<a class="anchor" aria-label="anchor" href="#multiple-controls-per-case"></a>
+</h3>
+<p>For 1:1 matching the helper fits a no-intercept binomial GLM on
+case-minus-control differences. Set <code>n_controls &gt; 1</code> to
+switch to stratified conditional logistic regression via
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> — the right tool when you want more
+controls per case for tighter inference:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">specs</span>,</span>
+<span>               n_controls <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
+<span><span class="co">#&gt; 1       count       2   691 -730.3872 1464.774    0.0000</span></span>
+<span><span class="co">#&gt; 2  continuous       2   691 -850.2339 1704.468  239.6934</span></span>
+<span><span class="co">#&gt; 3 interrupted       2   691 -931.9619 1867.924  403.1494</span></span></code></pre></div>
+<p>The <code>n_obs</code> column now reports the number of strata (one
+per case), and <code>survival</code> is in the package’s
+<em>Suggests</em> — required only when <code>n_controls &gt; 1</code>.
+AIC values across specs remain comparable because every spec sees the
+same shared case-control sample.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="inspect-coefficients-of-a-chosen-specification">4. Inspect coefficients of a chosen specification<a class="anchor" aria-label="anchor" href="#inspect-coefficients-of-a-chosen-specification"></a>
@@ -142,7 +163,7 @@ definitions, matching the empirical findings of the paper.</p>
 <p><code><a href="../reference/compare_models.html">compare_models()</a></code> returns AIC summaries. To inspect
 coefficients for a single spec, build the case-control sample once and
 fit directly:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stat_set</span> <span class="op">&lt;-</span> <span class="va">specs</span><span class="op">$</span><span class="va">interrupted</span></span>
 <span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>, n_controls <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                        scope <span class="op">=</span> <span class="st">"all"</span>, mode <span class="op">=</span> <span class="st">"one"</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
@@ -182,7 +203,7 @@ to test a model selection pipeline against ground-truth coefficients,
 you can simulate data with <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code>
 using known effects and use <code><a href="../reference/compare_models.html">compare_models()</a></code> to confirm the
 ranking.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events <span class="op">=</span> <span class="fl">600</span>,</span>
