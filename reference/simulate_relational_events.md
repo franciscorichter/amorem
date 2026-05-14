@@ -148,6 +148,15 @@ simulate_relational_events(
     of shared sources \\k\\ (or indicator) where both \\(k,s)\\ and
     \\(k,r)\\ have fired.
 
+  - `"transitivity_time_recent"` — elapsed time since the most recent
+    two-path \\s \to k \to r\\ was completed, for any intermediary \\k\\
+    (definition 7ac of Juozaitienė & Wit, 2024). Reports `0` for dyads
+    where no two-path has ever existed.
+
+  - `"transitivity_time_first"` — elapsed time since the *first*
+    two-path \\s \to k \to r\\ was completed (definition 7bc of
+    Juozaitienė & Wit, 2024). Same `0`-for-never-seen convention.
+
   Defaults to `NULL` for a memoryless process.
 
 - endogenous_effects:
