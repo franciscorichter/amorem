@@ -93,6 +93,18 @@ post-hoc \code{NA}, so the rate computation stays numeric).
 \item \code{"reciprocity_time_first"} — elapsed time since the
 \emph{first} reverse-dyad event \eqn{t - t_{\text{first}}(r,s)};
 same \code{0}-for-never-seen convention.
+\item \code{"reciprocity_binary_interrupted"} /
+\code{"reciprocity_count_interrupted"} /
+\code{"reciprocity_exp_decay_interrupted"} /
+\code{"reciprocity_time_recent_interrupted"} /
+\code{"reciprocity_time_first_interrupted"} — the \emph{interrupted}
+reciprocity family of Juozaitienė & Wit (2024) §2.1.3
+(definitions \eqn{r^{(1i)}, r^{(2i)}, r^{(3i)}, r^{(4ai)},
+      r^{(4bi)}}). Each variant measures the same quantity as its
+continuous counterpart but considers only those reverse-dyad
+events that occurred \emph{since} the most recent same-direction
+\eqn{s \to r} event. Firing \eqn{s \to r} resets the
+interrupted state for dyad \eqn{(s, r)}.
 \item \code{"recency"} — elapsed time on the same ordered dyad
 \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 \eqn{t - \text{start\_time}} for dyads that have never fired.

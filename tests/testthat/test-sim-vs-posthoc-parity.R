@@ -54,6 +54,15 @@ test_that("simulator and post-hoc agree on reciprocity-family stats", {
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
 
+test_that("simulator and post-hoc agree on interrupted reciprocity stats", {
+  stats <- c("reciprocity_binary_interrupted", "reciprocity_count_interrupted",
+             "reciprocity_exp_decay_interrupted",
+             "reciprocity_time_recent_interrupted",
+             "reciprocity_time_first_interrupted")
+  out <- sim_vs_posthoc(stats, seed = 111, half_life = 1)
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
 test_that("simulator and post-hoc agree on transitivity unordered stats", {
   stats <- c("transitivity_binary", "transitivity_count",
              "transitivity_time_recent", "transitivity_time_first",

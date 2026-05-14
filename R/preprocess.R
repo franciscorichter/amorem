@@ -301,6 +301,10 @@ compute_endogenous_features <- function(
     "sender_outdegree", "receiver_indegree", "recency",
     "reciprocity", "reciprocity_binary", "reciprocity_count",
     "reciprocity_exp_decay", "reciprocity_time_recent", "reciprocity_time_first",
+    "reciprocity_binary_interrupted", "reciprocity_count_interrupted",
+    "reciprocity_exp_decay_interrupted",
+    "reciprocity_time_recent_interrupted",
+    "reciprocity_time_first_interrupted",
     "transitivity_binary", "transitivity_count",
     "transitivity_binary_ordered", "transitivity_count_ordered",
     "transitivity_exp_decay", "transitivity_exp_decay_ordered",
@@ -321,7 +325,8 @@ compute_endogenous_features <- function(
   }
 
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
-                       "transitivity_exp_decay_ordered")
+                       "transitivity_exp_decay_ordered",
+                       "reciprocity_exp_decay_interrupted")
   if (any(exp_decay_stats %in% stats) &&
       (is.null(half_life) || !is.numeric(half_life) || half_life <= 0)) {
     stop("`half_life` must be a positive number when ",
@@ -365,6 +370,23 @@ compute_endogenous_features <- function(
   dyad_event_count <- new.env(parent = emptyenv())
   dyad_times      <- new.env(parent = emptyenv())
 
+  # Interrupted reciprocity tracking: each dyad (s, r) accumulates
+  # information about reverse-dyad (r, s) events that occurred SINCE
+  # the most recent (s, r) event. State for dyad (s, r) is reset
+  # whenever event (s, r) fires.
+  interrupted_recip_stats <- c("reciprocity_count_interrupted",
+                                "reciprocity_binary_interrupted",
+                                "reciprocity_exp_decay_interrupted",
+                                "reciprocity_time_recent_interrupted",
+                                "reciprocity_time_first_interrupted")
+  need_interrupted <- any(interrupted_recip_stats %in% stats)
+  if (need_interrupted) {
+    dyad_int_count <- new.env(parent = emptyenv())
+    dyad_int_times <- new.env(parent = emptyenv())  # decay summands
+    dyad_int_last  <- new.env(parent = emptyenv())
+    dyad_int_first <- new.env(parent = emptyenv())
+  }
+
   if (need_triadic) {
     out_targets <- new.env(parent = emptyenv())
     in_sources  <- new.env(parent = emptyenv())
@@ -379,6 +401,7 @@ compute_endogenous_features <- function(
 
   # --- Initialize output columns ---
   binary_set <- c("reciprocity", "reciprocity_binary",
+                  "reciprocity_binary_interrupted",
                   "transitivity_binary", "transitivity_binary_ordered",
                   "cyclic_binary", "sending_balance_binary",
                   "receiving_balance_binary")
@@ -387,7 +410,9 @@ compute_endogenous_features <- function(
                  "transitivity_count", "transitivity_count_ordered",
                  "transitivity_exp_decay", "transitivity_exp_decay_ordered",
                  "cyclic_count", "sending_balance_count",
-                 "receiving_balance_count")
+                 "receiving_balance_count",
+                 "reciprocity_count_interrupted",
+                 "reciprocity_exp_decay_interrupted")
   for (stat in stats) {
     if (stat %in% binary_set) {
       log_df[[stat]] <- integer(n)
@@ -544,6 +569,37 @@ compute_endogenous_features <- function(
       if (!is.null(ft_rs)) log_df$reciprocity_time_first[i] <- ti - ft_rs
     }
 
+    # Interrupted reciprocity family: each variant reads the SAME-DIRECTION
+    # state slot (dyad (s, r)) — the state was populated by reverse-direction
+    # events (r, s) since the most recent (s, r) event. The corresponding
+    # update step below resets state[key_sr] and bumps state[key_rs].
+    if (need_interrupted) {
+      if ("reciprocity_count_interrupted" %in% stats) {
+        v <- dyad_int_count[[key_sr]]
+        log_df$reciprocity_count_interrupted[i] <- if (is.null(v)) 0 else v
+      }
+      if ("reciprocity_binary_interrupted" %in% stats) {
+        v <- dyad_int_count[[key_sr]]
+        log_df$reciprocity_binary_interrupted[i] <-
+          if (is.null(v) || v == 0) 0L else 1L
+      }
+      if ("reciprocity_exp_decay_interrupted" %in% stats) {
+        ts <- dyad_int_times[[key_sr]]
+        log_df$reciprocity_exp_decay_interrupted[i] <-
+          if (is.null(ts)) 0 else sum(exp(-(ti - ts) * log(2) / half_life))
+      }
+      if ("reciprocity_time_recent_interrupted" %in% stats) {
+        lt <- dyad_int_last[[key_sr]]
+        if (!is.null(lt))
+          log_df$reciprocity_time_recent_interrupted[i] <- ti - lt
+      }
+      if ("reciprocity_time_first_interrupted" %in% stats) {
+        ft <- dyad_int_first[[key_sr]]
+        if (!is.null(ft))
+          log_df$reciprocity_time_first_interrupted[i] <- ti - ft
+      }
+    }
+
     # Triadic statistics
     if (need_triadic) {
       s_out <- out_targets[[s]]; if (is.null(s_out)) s_out <- character(0)
@@ -596,6 +652,22 @@ compute_endogenous_features <- function(
     prev_c <- dyad_event_count[[key_sr]]
     dyad_event_count[[key_sr]] <- if (is.null(prev_c)) 1L else prev_c + 1L
     dyad_times[[key_sr]] <- c(dyad_times[[key_sr]], ti)
+
+    # Interrupted reciprocity: event (s, r) closes the cycle for dyad
+    # (s, r) -- reset its state -- AND counts as a reverse-direction
+    # event for dyad (r, s).
+    if (need_interrupted) {
+      dyad_int_count[[key_sr]] <- 0L
+      for (env in list(dyad_int_times, dyad_int_last, dyad_int_first)) {
+        if (exists(key_sr, envir = env, inherits = FALSE))
+          rm(list = key_sr, envir = env)
+      }
+      prev_int_c <- dyad_int_count[[key_rs]]
+      dyad_int_count[[key_rs]] <- if (is.null(prev_int_c)) 1L else prev_int_c + 1L
+      dyad_int_times[[key_rs]] <- c(dyad_int_times[[key_rs]], ti)
+      dyad_int_last[[key_rs]]  <- ti
+      if (is.null(dyad_int_first[[key_rs]])) dyad_int_first[[key_rs]] <- ti
+    }
 
     if (need_triadic) {
       cur_out <- out_targets[[s]]
