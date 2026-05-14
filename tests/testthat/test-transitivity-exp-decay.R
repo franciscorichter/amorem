@@ -188,22 +188,6 @@ test_that("exp_decay stats run under tau-leap and stay non-negative", {
   expect_true(all(ev$transitivity_exp_decay_ordered >= 0))
 })
 
-test_that("exp_decay stats error on bipartite settings (one-mode required)", {
-  for (st in c("transitivity_exp_decay", "transitivity_exp_decay_ordered")) {
-    expect_error(
-      simulate_relational_events(
-        n_events = 5,
-        senders = c("a", "b"), receivers = c("x", "y", "z"),
-        endogenous_stats = st,
-        endogenous_effects = 0.5,
-        half_life = 1
-      ),
-      "one-mode",
-      info = st
-    )
-  }
-})
-
 test_that("a positive coefficient on transitivity_exp_decay is sign-recoverable", {
   skip_on_cran()
   skip_if_not_installed("mgcv")

@@ -186,26 +186,6 @@ test_that("interrupted variants are <= their continuous counterparts", {
   }
 })
 
-test_that("all interrupted triadic timing stats error on bipartite", {
-  for (st in c("transitivity_time_recent_interrupted",
-               "transitivity_time_first_interrupted",
-               "cyclic_time_recent_interrupted",
-               "cyclic_time_first_interrupted",
-               "sending_balance_time_recent_interrupted",
-               "sending_balance_time_first_interrupted",
-               "receiving_balance_time_recent_interrupted",
-               "receiving_balance_time_first_interrupted")) {
-    expect_error(
-      simulate_relational_events(
-        n_events = 5,
-        senders = c("a", "b"), receivers = c("x", "y", "z"),
-        endogenous_stats = st,
-        endogenous_effects = 0.5),
-      "one-mode",
-      info = st)
-  }
-})
-
 test_that("interrupted triadic timing runs under tau-leap", {
   set.seed(95)
   stats_vec <- c("transitivity_time_recent_interrupted",

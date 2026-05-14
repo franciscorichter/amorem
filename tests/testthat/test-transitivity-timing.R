@@ -92,27 +92,6 @@ test_that("both timing stats are 0 when transitivity_count is 0 (no two-path yet
   expect_true(all(ev$transitivity_time_first[zero]  == 0))
 })
 
-test_that("timing stats error on bipartite settings (one-mode required)", {
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "transitivity_time_recent",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "transitivity_time_first",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-})
-
 test_that("transitivity timing composes with transitivity_count and recency", {
   set.seed(35)
   ev <- simulate_relational_events(

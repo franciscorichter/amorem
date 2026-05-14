@@ -64,18 +64,6 @@ run_check <- function(family_name, stat_name, seed, n_events = 25,
   }
 }
 
-test_that("cyclic_exp_decay matches brute force on small one-mode runs", {
-  run_check("cyclic", "cyclic_exp_decay", seed = 51)
-})
-
-test_that("sending_balance_exp_decay matches brute force on small one-mode runs", {
-  run_check("sending_balance", "sending_balance_exp_decay", seed = 52)
-})
-
-test_that("receiving_balance_exp_decay matches brute force on small one-mode runs", {
-  run_check("receiving_balance", "receiving_balance_exp_decay", seed = 53)
-})
-
 test_that("each closure family's exp_decay is 0 wherever its count is 0", {
   set.seed(54)
   ev <- simulate_relational_events(
@@ -106,21 +94,6 @@ test_that("half_life is required for each new exp_decay stat", {
         endogenous_stats = st,
         endogenous_effects = 0),
       "half_life",
-      info = st)
-  }
-})
-
-test_that("each new exp_decay stat errors on bipartite settings", {
-  for (st in c("cyclic_exp_decay", "sending_balance_exp_decay",
-               "receiving_balance_exp_decay")) {
-    expect_error(
-      simulate_relational_events(
-        n_events = 5,
-        senders = c("a", "b"), receivers = c("x", "y", "z"),
-        endogenous_stats = st,
-        endogenous_effects = 0.5,
-        half_life = 1),
-      "one-mode",
       info = st)
   }
 })

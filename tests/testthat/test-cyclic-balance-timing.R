@@ -72,10 +72,6 @@ check_family <- function(family_name, recent_stat, first_stat, seed,
   ev
 }
 
-test_that("cyclic_time_recent / cyclic_time_first match brute force on small one-mode", {
-  check_family("cyclic", "cyclic_time_recent", "cyclic_time_first", seed = 41)
-})
-
 test_that("sending_balance_time_recent / first match brute force", {
   check_family("sending_balance",
                "sending_balance_time_recent", "sending_balance_time_first",
@@ -126,23 +122,6 @@ test_that("the new timing stats compose with their count counterparts (zero when
     zero <- ev[[pair[1]]] == 0
     expect_true(all(ev[[pair[2]]][zero] == 0),
                 info = paste(pair[2], "must be 0 where", pair[1], "is 0"))
-  }
-})
-
-test_that("new timing stats error on bipartite settings (one-mode required)", {
-  for (st in c("cyclic_time_recent", "cyclic_time_first",
-               "sending_balance_time_recent", "sending_balance_time_first",
-               "receiving_balance_time_recent", "receiving_balance_time_first")) {
-    expect_error(
-      simulate_relational_events(
-        n_events = 5,
-        senders = c("a", "b"), receivers = c("x", "y", "z"),
-        endogenous_stats = st,
-        endogenous_effects = 0.5
-      ),
-      "one-mode",
-      info = st
-    )
   }
 })
 

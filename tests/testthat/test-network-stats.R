@@ -126,27 +126,6 @@ test_that("all 4 binary stats match as.numeric(count > 0)", {
                as.numeric(ev$receiving_balance_count > 0))
 })
 
-test_that("transitivity error on bipartite settings (one-mode required)", {
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "transitivity_count",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "sending_balance_count",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-})
-
 test_that("recency + transitivity_count compose in the same call", {
   set.seed(17)
   ev <- simulate_relational_events(

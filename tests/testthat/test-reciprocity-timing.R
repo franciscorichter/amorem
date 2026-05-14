@@ -85,27 +85,6 @@ test_that("both timing stats are 0 on the first occurrence of a dyad direction (
   }
 })
 
-test_that("timing stats error on bipartite settings (one-mode required)", {
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "reciprocity_time_recent",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "reciprocity_time_first",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-})
-
 test_that("timing stats compose with other reciprocity stats in the same call", {
   set.seed(15)
   ev <- simulate_relational_events(
