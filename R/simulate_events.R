@@ -86,6 +86,18 @@
 #'       \code{"receiving_balance_time_first"} — elapsed time since the
 #'       most recent / first shared-source two-path
 #'       \eqn{k \to s,\ k \to r} was completed.
+#'     \item \code{"transitivity_count_ordered"} /
+#'       \code{"transitivity_binary_ordered"} — number of intermediaries
+#'       \eqn{k} (or indicator) for which an ordered two-path
+#'       \eqn{s \to k} \emph{before} \eqn{k \to r} has been observed
+#'       (definitions \eqn{t^{(4c)}} / \eqn{t^{(2c)}} of
+#'       Juozaitienė & Wit, 2024).
+#'     \item \code{"transitivity_time_recent_ordered"} /
+#'       \code{"transitivity_time_first_ordered"} — elapsed time since
+#'       the most recent / first ordered two-path
+#'       \eqn{s \to k} \emph{before} \eqn{k \to r} was completed
+#'       (definitions \eqn{t^{(8ac)}} / \eqn{t^{(8bc)}} of
+#'       Juozaitienė & Wit, 2024).
 #'   }
 #'   Defaults to \code{NULL} for a memoryless process.
 #' @param endogenous_effects Numeric vector of linear coefficients for
@@ -298,7 +310,15 @@ simulate_relational_events <- function(
                      "cyclic_time_recent", "cyclic_time_first",
                      "sending_balance_time_recent", "sending_balance_time_first",
                      "receiving_balance_time_recent",
-                     "receiving_balance_time_first")
+                     "receiving_balance_time_first",
+                     "transitivity_count_ordered",
+                     "transitivity_binary_ordered",
+                     "transitivity_time_recent_ordered",
+                     "transitivity_time_first_ordered")
+  ordered_stats <- c("transitivity_count_ordered",
+                     "transitivity_binary_ordered",
+                     "transitivity_time_recent_ordered",
+                     "transitivity_time_first_ordered")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -448,7 +468,9 @@ simulate_relational_events <- function(
                             "sending_balance_time_recent",
                             "sending_balance_time_first",
                             "receiving_balance_time_recent",
-                            "receiving_balance_time_first")) {
+                            "receiving_balance_time_first",
+                            "transitivity_time_recent_ordered",
+                            "transitivity_time_first_ordered")) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
         # matrices so the rate computation stays numeric (see
@@ -469,6 +491,26 @@ simulate_relational_events <- function(
   adj_state <- if (has_network_stats) {
     matrix(0, nrow = S, ncol = S)
   } else NULL
+
+  # Ordered transitivity needs per-dyad first / last event timestamps so we
+  # can detect when an event (i, j) is the first (i, j) AFTER a previously
+  # observed (s, i) -- the only situation in which a chronologically
+  # ordered chain s -> i -> j is newly validated.
+  has_ordered_stats <- endogenous_active &&
+    any(endogenous_stats %in% ordered_stats)
+  if (has_ordered_stats) {
+    first_dyad_time <- matrix(NA_real_, nrow = S, ncol = S)
+    last_dyad_time  <- matrix(NA_real_, nrow = S, ncol = S)
+    # Shared count state, fed by every ordered stat (count, binary,
+    # time_recent, time_first) so that the binary version can be
+    # derived from the count even when the count itself isn't
+    # requested by the caller.
+    ord_count_state <- matrix(0L, nrow = S, ncol = S)
+  } else {
+    first_dyad_time <- NULL
+    last_dyad_time  <- NULL
+    ord_count_state <- NULL
+  }
 
   # Per-actor accumulators for the degree_* stats. Length-S sender count
   # vector and length-R receiver count vector, both starting at zero.
@@ -560,6 +602,56 @@ simulate_relational_events <- function(
     M
   }
 
+  # Detects every chronologically ordered chain s -> i -> j that is *newly
+  # validated* by the event (i, j) firing at time `t_now`. A chain
+  # (s, i, j) is newly validated iff
+  #   (a) first_dyad_time[s, i] is set (s -> i happened earlier in the run),
+  #   (b) this (i, j) event is the first (i, j) AFTER first_dyad_time[s, i].
+  # Condition (b) holds when there is no prior (i, j) event, or when the
+  # most recent (i, j) event was earlier than the first (s, i) event.
+  # Returns the integer index vector of senders s whose chain was newly
+  # validated by this event. Callers update ord_count_state and the
+  # time_*_ordered state matrices using this vector.
+  ordered_validation_mask <- function(i, j) {
+    if (!has_ordered_stats) return(integer(0))
+    col_first_si <- first_dyad_time[, i]
+    last_ij_prev <- last_dyad_time[i, j]
+    mask <- !is.na(col_first_si) &
+            (is.na(last_ij_prev) | col_first_si > last_ij_prev)
+    which(mask)
+  }
+
+  # Single helper that performs the full ordered-stat update for an event
+  # (i, j) at time t_now: validates new ordered chains, increments
+  # ord_count_state, refreshes the time_*_ordered state matrices, and
+  # bumps first_dyad_time / last_dyad_time. Called from both the Gillespie
+  # and tau-leap inner loops.
+  apply_ordered_update <- function(i, j, t_now) {
+    if (has_ordered_stats) {
+      validated <- ordered_validation_mask(i, j)
+      if (length(validated)) {
+        ord_count_state[cbind(validated, rep(j, length(validated)))] <<-
+          ord_count_state[cbind(validated, rep(j, length(validated)))] + 1L
+        if (!is.null(endo_state[["transitivity_time_recent_ordered"]])) {
+          endo_state[["transitivity_time_recent_ordered"]][
+            cbind(validated, rep(j, length(validated)))] <<- t_now
+        }
+        if (!is.null(endo_state[["transitivity_time_first_ordered"]])) {
+          M <- endo_state[["transitivity_time_first_ordered"]]
+          idx <- cbind(validated, rep(j, length(validated)))
+          fresh <- is.na(M[idx])
+          if (any(fresh)) M[idx[fresh, , drop = FALSE]] <- t_now
+          endo_state[["transitivity_time_first_ordered"]] <<- M
+        }
+      }
+      # Per-dyad bookkeeping after the validation sweep so the *current*
+      # event doesn't pollute its own predecessor view.
+      if (is.na(first_dyad_time[i, j])) first_dyad_time[i, j] <<- t_now
+      last_dyad_time[i, j] <<- t_now
+    }
+    invisible()
+  }
+
   apply_exp_decay <- function() {
     # Multiplicative decay of the exp-decay state cell-wise to the current
     # clock time. Called when reading or snapshotting state so the value
@@ -619,6 +711,10 @@ simulate_relational_events <- function(
         "sending_balance_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_recent" = time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_first"  = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_count_ordered"      = ord_count_state * 1.0,
+        "transitivity_binary_ordered"     = (ord_count_state > 0) * 1.0,
+        "transitivity_time_recent_ordered"= time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_first_ordered" = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -769,7 +865,9 @@ simulate_relational_events <- function(
                        "sending_balance_time_recent",
                        "sending_balance_time_first",
                        "receiving_balance_time_recent",
-                       "receiving_balance_time_first")) {
+                       "receiving_balance_time_first",
+                       "transitivity_time_recent_ordered",
+                       "transitivity_time_first_ordered")) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -889,6 +987,7 @@ simulate_relational_events <- function(
               if (has_network_stats) {
                 adj_state[s_k, r_k] <- 1
               }
+              apply_ordered_update(s_k, r_k, ev_times[k])
               if (has_outdeg) sender_out_count[s_k]  <- sender_out_count[s_k]  + 1
               if (has_indeg)  receiver_in_count[r_k] <- receiver_in_count[r_k] + 1
             }
@@ -1073,6 +1172,7 @@ simulate_relational_events <- function(
       if (has_network_stats) {
         adj_state[s_idx, r_idx] <- 1
       }
+      apply_ordered_update(s_idx, r_idx, current_time)
       if (has_outdeg) sender_out_count[s_idx]  <- sender_out_count[s_idx]  + 1
       if (has_indeg)  receiver_in_count[r_idx] <- receiver_in_count[r_idx] + 1
     }
