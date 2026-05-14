@@ -34,7 +34,9 @@ simulation-based REM studies:
   endogenous effects (recency, multiple reciprocity forms, transitivity,
   cyclic closure, sending/receiving balance) following Juozaitienė & Wit (2025).
 - **Relational event simulation.** `simulate_relational_events()` runs
-  Gillespie-style simulations with optional controls for partial likelihood.
+  Gillespie-style simulations with optional controls for partial likelihood,
+  including endogenous mechanisms (`reciprocity_count` / `reciprocity_binary`)
+  whose state updates between events.
 - **Non-event sampling.** `sample_non_events()` constructs nested case-control
   tables with appearance, citation, and remove risk-set rules.
 - **Inference-ready design matrices.** Simulations or sampled logs can be fed to
@@ -358,6 +360,37 @@ events <- simulate_relational_events(
 
 See `vignette("exogenous-covariates")` for the full workflow including GAM
 recovery of the non-linear distance effect.
+
+### Endogenous mechanisms during simulation
+
+`simulate_relational_events()` can also drive the next-event rate from the
+realized history. Pass `endogenous_stats` and matching `endogenous_effects`:
+
+```r
+set.seed(2024)
+actors <- as.character(1:10)
+
+cc <- simulate_relational_events(
+  n_events            = 1500,
+  senders             = actors,
+  receivers           = actors,
+  baseline_rate       = 1,
+  allow_loops         = FALSE,
+  n_controls          = 1,
+  endogenous_stats    = "reciprocity_count",
+  endogenous_effects  = 0.6
+)
+
+head(cc[, c("stratum", "event", "sender", "receiver", "reciprocity_count")])
+```
+
+The output gains one column per stat carrying the value each row's dyad had
+at its event time, so the coefficient is directly recoverable by conditional
+logistic / GAM regression on the case–control table (see
+`tests/testthat/test-endogenous-simulation.R`). Supported stats in this first
+cut are `reciprocity_count` and `reciprocity_binary`; additional endogenous
+mechanisms (transitivity, recency, decay-weighted variants) are tracked in
+the issue queue.
 
 ## Documentation
 

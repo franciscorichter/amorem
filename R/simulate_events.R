@@ -28,12 +28,25 @@
 #'   uniformly at random for each realized event. If \code{n_controls > 0}, the
 #'   function returns a case-control data frame suitable for conditional logistic
 #'   regression / GAM modeling. Defaults to 0.
+#' @param endogenous_stats Optional character vector of endogenous mechanisms to
+#'   include in the rate. Each entry updates a state matrix after every event so
+#'   the intensity of the next event depends on the realized history. Supported
+#'   values: \code{"reciprocity_count"} (number of past reverse-dyad events) and
+#'   \code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
+#'   least once). Defaults to \code{NULL} for a memoryless process.
+#' @param endogenous_effects Numeric vector of linear coefficients for
+#'   \code{endogenous_stats}. May be named (names must match
+#'   \code{endogenous_stats}) or unnamed (positionally matched). Required when
+#'   \code{endogenous_stats} is supplied.
 #'
 #' @return If \code{n_controls = 0}, a data.frame with columns \code{sender},
 #'   \code{receiver} and \code{time}. If \code{n_controls > 0}, it returns a
 #'   long-format data.frame with additional columns \code{stratum} (grouping an
 #'   event with its controls) and \code{event} (1 for the realized event,
-#'   0 for controls).
+#'   0 for controls). When \code{endogenous_stats} is supplied, one extra column
+#'   per stat is appended carrying the value each row's dyad had at its event
+#'   time (immediately before the event fired), so downstream conditional
+#'   logistic / GAM estimators can recover the effects.
 #' @export
 #'
 #' @examples
@@ -76,12 +89,46 @@ simulate_relational_events <- function(
     receiver_covariates = NULL,
     receiver_effects = NULL,
     allow_loops = FALSE,
-    n_controls = 0) {
+    n_controls = 0,
+    endogenous_stats = NULL,
+    endogenous_effects = NULL) {
   stopifnot(length(n_events) == 1, n_events > 0)
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
   stopifnot(length(horizon) == 1)
   stopifnot(length(n_controls) == 1, n_controls >= 0)
+
+  supported_endogenous <- c("reciprocity_count", "reciprocity_binary")
+  endogenous_active <- !is.null(endogenous_stats) && length(endogenous_stats) > 0
+  if (endogenous_active) {
+    endogenous_stats <- as.character(endogenous_stats)
+    bad <- setdiff(endogenous_stats, supported_endogenous)
+    if (length(bad)) {
+      stop("Unsupported endogenous_stats: ", paste(bad, collapse = ", "),
+           ". Supported: ", paste(supported_endogenous, collapse = ", "), ".")
+    }
+    if (anyDuplicated(endogenous_stats)) {
+      stop("endogenous_stats must not contain duplicates.")
+    }
+    if (is.null(endogenous_effects)) {
+      stop("endogenous_effects must be supplied when endogenous_stats is set.")
+    }
+    eff_names <- names(endogenous_effects)
+    eff_vals <- as.numeric(endogenous_effects)
+    if (length(eff_vals) != length(endogenous_stats)) {
+      stop("endogenous_effects must have the same length as endogenous_stats.")
+    }
+    if (!is.null(eff_names) && !all(eff_names == "")) {
+      if (!setequal(eff_names, endogenous_stats)) {
+        stop("Names of endogenous_effects must match endogenous_stats.")
+      }
+      names(eff_vals) <- eff_names
+      endogenous_effects <- eff_vals[endogenous_stats]
+    } else {
+      names(eff_vals) <- endogenous_stats
+      endogenous_effects <- eff_vals
+    }
+  }
 
   senders <- as.character(senders)
   receivers <- as.character(receivers)
@@ -131,25 +178,47 @@ simulate_relational_events <- function(
     receiver_score <- as.numeric(rc %*% receiver_effects)
   }
 
-  log_weights <- baseline_logits + outer(sender_score, receiver_score, "+")
+  static_log_weights <- baseline_logits + outer(sender_score, receiver_score, "+")
 
   if (!allow_loops) {
     same_actor <- outer(senders, receivers, "==")
-    log_weights[same_actor] <- -Inf
+    static_log_weights[same_actor] <- -Inf
   }
 
-  weights <- exp(log_weights) * baseline_rate
-  weights[!is.finite(weights)] <- 0
-  total_weight <- sum(weights)
-  if (total_weight <= 0) {
-    stop("No admissible dyads with positive intensity.")
+  compute_weights <- function(log_w) {
+    w <- exp(log_w) * baseline_rate
+    w[!is.finite(w)] <- 0
+    tot <- sum(w)
+    if (tot <= 0) {
+      stop("No admissible dyads with positive intensity.")
+    }
+    list(weights = w, total = tot, probs = as.vector(w) / tot,
+         valid = which(w > 0))
   }
 
-  # Normalize weights into probabilities
-  probs <- as.vector(weights) / total_weight
+  endo_state <- list()
+  if (endogenous_active) {
+    for (st in endogenous_stats) {
+      endo_state[[st]] <- matrix(0, nrow = S, ncol = R)
+    }
+  }
 
-  # Ensure enough valid non-events can be sampled if requested
-  valid_dyads <- which(weights > 0)
+  endo_score_matrix <- function() {
+    if (!endogenous_active) {
+      return(NULL)
+    }
+    es <- matrix(0, nrow = S, ncol = R)
+    for (st in endogenous_stats) {
+      es <- es + endogenous_effects[[st]] * endo_state[[st]]
+    }
+    es
+  }
+
+  ww <- compute_weights(static_log_weights)
+  weights <- ww$weights
+  total_weight <- ww$total
+  probs <- ww$probs
+  valid_dyads <- ww$valid
   n_valid_dyads <- length(valid_dyads)
   if (n_controls > 0 && n_controls >= n_valid_dyads) {
     stop("Requested n_controls is >= the number of admissible dyads.")
@@ -166,10 +235,33 @@ simulate_relational_events <- function(
     control_strata <- integer(n_events * n_controls)
   }
 
+  if (endogenous_active) {
+    event_stat_vals <- matrix(0,
+        nrow = n_events, ncol = length(endogenous_stats),
+        dimnames = list(NULL, endogenous_stats))
+    if (n_controls > 0) {
+      control_stat_vals <- matrix(0,
+          nrow = n_events * n_controls, ncol = length(endogenous_stats),
+          dimnames = list(NULL, endogenous_stats))
+    }
+  }
+
   current_time <- start_time
   event_counter <- 0L
 
   for (i in seq_len(n_events)) {
+    if (endogenous_active) {
+      es <- endo_score_matrix()
+      ww <- compute_weights(static_log_weights + es)
+      weights <- ww$weights
+      total_weight <- ww$total
+      probs <- ww$probs
+      valid_dyads <- ww$valid
+      if (n_controls > 0 && n_controls >= length(valid_dyads)) {
+        stop("Requested n_controls is >= the number of admissible dyads at step ", i, ".")
+      }
+    }
+
     # Gillespie timing: rexp(1, rate = sum of all hazards)
     dt <- stats::rexp(1, rate = total_weight)
     current_time <- current_time + dt
@@ -185,6 +277,12 @@ simulate_relational_events <- function(
     event_senders[event_counter] <- senders[s_idx]
     event_receivers[event_counter] <- receivers[r_idx]
     event_times[event_counter] <- current_time
+
+    if (endogenous_active) {
+      for (st in endogenous_stats) {
+        event_stat_vals[event_counter, st] <- endo_state[[st]][s_idx, r_idx]
+      }
+    }
 
     if (n_controls > 0) {
       # Sample 'n_controls' non-events uniformally from valid dyads excluding the chosen one
@@ -208,27 +306,59 @@ simulate_relational_events <- function(
       control_receivers[ctrl_start_idx:ctrl_end_idx] <- receivers[c_r_idxs]
       control_times[ctrl_start_idx:ctrl_end_idx] <- current_time
       control_strata[ctrl_start_idx:ctrl_end_idx] <- event_counter
+
+      if (endogenous_active) {
+        ctrl_rows <- ctrl_start_idx:ctrl_end_idx
+        for (st in endogenous_stats) {
+          control_stat_vals[ctrl_rows, st] <-
+            endo_state[[st]][cbind(c_s_idxs, c_r_idxs)]
+        }
+      }
+    }
+
+    if (endogenous_active) {
+      # Update state matrices using the realized event (s_idx -> r_idx).
+      # The reciprocity stat at candidate dyad (s, r) counts past events
+      # (r -> s); on event (s_idx, r_idx), that contributes to future
+      # reciprocity at dyad (r_idx, s_idx).
+      for (st in endogenous_stats) {
+        if (st == "reciprocity_count") {
+          endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
+        } else if (st == "reciprocity_binary") {
+          endo_state[[st]][r_idx, s_idx] <- 1
+        }
+      }
     }
   }
 
   if (event_counter == 0L) {
     if (n_controls == 0) {
-      return(data.frame(sender = character(0), receiver = character(0), time = numeric(0)))
+      out <- data.frame(sender = character(0), receiver = character(0), time = numeric(0))
     } else {
-      return(data.frame(
+      out <- data.frame(
         stratum = integer(0), event = integer(0),
         sender = character(0), receiver = character(0), time = numeric(0)
-      ))
+      )
     }
+    if (endogenous_active) {
+      for (st in endogenous_stats) out[[st]] <- numeric(0)
+    }
+    return(out)
   }
 
   if (n_controls == 0) {
-    return(data.frame(
+    out <- data.frame(
       sender = event_senders[seq_len(event_counter)],
       receiver = event_receivers[seq_len(event_counter)],
       time = event_times[seq_len(event_counter)],
       stringsAsFactors = FALSE
-    ))
+    )
+    if (endogenous_active) {
+      for (st in endogenous_stats) {
+        out[[st]] <- event_stat_vals[seq_len(event_counter), st]
+      }
+    }
+    return(out)
   } else {
     realized_df <- data.frame(
       stratum = seq_len(event_counter),
@@ -248,6 +378,13 @@ simulate_relational_events <- function(
       time = control_times[seq_len(c_records)],
       stringsAsFactors = FALSE
     )
+
+    if (endogenous_active) {
+      for (st in endogenous_stats) {
+        realized_df[[st]] <- event_stat_vals[seq_len(event_counter), st]
+        control_df[[st]] <- control_stat_vals[seq_len(c_records), st]
+      }
+    }
 
     out <- rbind(realized_df, control_df)
     out <- out[order(out$time, decreasing = FALSE), ]
