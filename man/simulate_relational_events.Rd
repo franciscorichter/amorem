@@ -95,6 +95,23 @@ shared-target two-paths \eqn{s \to k,\ r \to k} (paper
 \item \code{"receiving_balance_exp_decay"} — exp-decayed sum over
 shared-source two-paths \eqn{k \to s,\ k \to r} (paper
 \eqn{rb^{(5c)}}).  Requires \code{half_life}.
+\item \code{"transitivity_time_recent_interrupted"} /
+\code{"transitivity_time_first_interrupted"} —
+\emph{interrupted} timing variants of the transitivity family
+(paper \eqn{t^{(7ai)} / t^{(7bi)}}). Every \eqn{s \to r}
+event resets the firing dyad's interrupted state to
+\code{NA}, so the value at \eqn{(s, r)} reflects the most
+recent / first two-path \eqn{s \to k \to r} formed
+\emph{since the most recent closure event}.
+\item \code{"cyclic_time_recent_interrupted"} /
+\code{"cyclic_time_first_interrupted"} — same pattern for
+cyclic two-paths \eqn{r \to k \to s}.
+\item \code{"sending_balance_time_recent_interrupted"} /
+\code{"sending_balance_time_first_interrupted"} — same
+pattern for shared-target two-paths.
+\item \code{"receiving_balance_time_recent_interrupted"} /
+\code{"receiving_balance_time_first_interrupted"} — same
+pattern for shared-source two-paths.
 \item \code{"reciprocity_time_recent"} — elapsed time since the most
 recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
 \code{0} for dyads whose reverse has never fired (rather than the
