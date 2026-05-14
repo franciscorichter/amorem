@@ -144,9 +144,12 @@ include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
 values: <code>"reciprocity_count"</code> (number of past reverse-dyad events),
 <code>"reciprocity_binary"</code> (indicator that the reverse dyad has fired at
-least once), and <code>"reciprocity_exp_decay"</code> (sum of past reverse-dyad
-events with exponential half-life decay; requires <code>half_life</code>).
-Defaults to <code>NULL</code> for a memoryless process.</p></dd>
+least once), <code>"reciprocity_exp_decay"</code> (sum of past reverse-dyad
+events with exponential half-life decay; requires <code>half_life</code>), and
+<code>"recency"</code> (elapsed time on the same ordered dyad:
+\(t - t_{\text{last}}(s,r)\), defaulting to
+\(t - \text{start\_time}\) for dyads that have never fired). Defaults
+to <code>NULL</code> for a memoryless process.</p></dd>
 
 
 <dt id="arg-endogenous-effects">endogenous_effects<a class="anchor" aria-label="anchor" href="#arg-endogenous-effects"></a></dt>

@@ -105,9 +105,12 @@ simulate_relational_events(
   intensity of the next event depends on the realized history. Supported
   values: `"reciprocity_count"` (number of past reverse-dyad events),
   `"reciprocity_binary"` (indicator that the reverse dyad has fired at
-  least once), and `"reciprocity_exp_decay"` (sum of past reverse-dyad
-  events with exponential half-life decay; requires `half_life`).
-  Defaults to `NULL` for a memoryless process.
+  least once), `"reciprocity_exp_decay"` (sum of past reverse-dyad
+  events with exponential half-life decay; requires `half_life`), and
+  `"recency"` (elapsed time on the same ordered dyad: \\t -
+  t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\ for
+  dyads that have never fired). Defaults to `NULL` for a memoryless
+  process.
 
 - endogenous_effects:
 
