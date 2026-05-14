@@ -49,16 +49,18 @@ exploratory and simulation-based REM studies:
   (`method = "tau_leap", tau = ...`) — with optional controls for
   partial likelihood, a growing endogenous catalog (reciprocity:
   `reciprocity_count`, `reciprocity_binary`, half-life-decayed
-  `reciprocity_exp_decay`; degree-style: per-dyad `recency`; two-path:
+  `reciprocity_exp_decay`; per-actor degree: `sender_outdegree`,
+  `receiver_indegree`; per-dyad `recency`; two-path:
   `transitivity_count`/`_binary`, `cyclic_count`/`_binary`;
   shared-target / shared-source: `sending_balance_count`/`_binary`,
   `receiving_balance_count`/`_binary`) whose state updates between
   events, time-varying global covariates via a boundary-aware scheme
   (weekday/weekend rate switches, policy regimes, …), and a
   `risk = "remove"` rule for one-shot processes such as species
-  invasions or first-citation events. `recency` works in bipartite /
-  two-mode settings; the reciprocity and network (transitivity / cyclic
-  / balance) families currently require one-mode networks.
+  invasions or first-citation events. `recency`, `sender_outdegree`, and
+  `receiver_indegree` work in bipartite / two-mode settings; the
+  reciprocity and network (transitivity / cyclic / balance) families
+  currently require one-mode networks.
 - **Non-event sampling.**
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   constructs nested case-control tables with appearance, citation, and

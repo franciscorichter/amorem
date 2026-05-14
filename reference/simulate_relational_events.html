@@ -150,6 +150,10 @@ with exponential half-life decay (requires <code>half_life</code>).</p></li>
 <li><p><code>"recency"</code> — elapsed time on the same ordered dyad
 \(t - t_{\text{last}}(s,r)\), defaulting to
 \(t - \text{start\_time}\) for dyads that have never fired.</p></li>
+<li><p><code>"sender_outdegree"</code> — total number of events previously sent
+by \(s\) (constant across receivers).</p></li>
+<li><p><code>"receiver_indegree"</code> — total number of events previously
+received by \(r\) (constant across senders).</p></li>
 <li><p><code>"transitivity_count"</code> / <code>"transitivity_binary"</code> —
 number of intermediaries \(k\) (or indicator that at least one
 exists) for which both \((s,k)\) and \((k,r)\) have fired.</p></li>

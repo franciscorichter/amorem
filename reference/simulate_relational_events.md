@@ -117,6 +117,12 @@ simulate_relational_events(
     t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\
     for dyads that have never fired.
 
+  - `"sender_outdegree"` — total number of events previously sent by
+    \\s\\ (constant across receivers).
+
+  - `"receiver_indegree"` — total number of events previously received
+    by \\r\\ (constant across senders).
+
   - `"transitivity_count"` / `"transitivity_binary"` — number of
     intermediaries \\k\\ (or indicator that at least one exists) for
     which both \\(s,k)\\ and \\(k,r)\\ have fired.
