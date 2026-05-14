@@ -23,7 +23,9 @@ simulate_relational_events(
   global_covariates = NULL,
   global_effects = NULL,
   method = c("gillespie", "tau_leap"),
-  tau = NULL
+  tau = NULL,
+  half_life = NULL,
+  risk = c("standard", "remove")
 )
 }
 \arguments{
@@ -68,9 +70,11 @@ regression / GAM modeling. Defaults to 0.}
 \item{endogenous_stats}{Optional character vector of endogenous mechanisms to
 include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
-values: \code{"reciprocity_count"} (number of past reverse-dyad events) and
+values: \code{"reciprocity_count"} (number of past reverse-dyad events),
 \code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
-least once). Defaults to \code{NULL} for a memoryless process.}
+least once), and \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
+events with exponential half-life decay; requires \code{half_life}).
+Defaults to \code{NULL} for a memoryless process.}
 
 \item{endogenous_effects}{Numeric vector of linear coefficients for
 \code{endogenous_stats}. May be named (names must match
@@ -101,6 +105,17 @@ Required when method is \code{"tau_leap"} and ignored otherwise. Smaller
 values give better approximation but more iterations; as \eqn{\tau \to 0}
 the tau-leap result converges in distribution to the exact Gillespie
 result.}
+
+\item{half_life}{Positive scalar; the half-life \eqn{T} (in time units) used
+by the \code{"reciprocity_exp_decay"} stat. A past reverse-dyad event at
+time \eqn{t_k} contributes \eqn{\exp(-(t - t_k)\,\log 2/T)} to the stat
+value at time \eqn{t}. Required when \code{"reciprocity_exp_decay"} is in
+\code{endogenous_stats}.}
+
+\item{risk}{Risk-set rule. \code{"standard"} (the default) keeps every dyad
+eligible at every step. \code{"remove"} removes a dyad from the risk set
+as soon as it fires, which mimics one-shot processes such as species
+invasions or first-citation events.}
 }
 \value{
 If \code{n_controls = 0}, a data.frame with columns \code{sender},

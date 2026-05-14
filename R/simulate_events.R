@@ -33,13 +33,24 @@
 #' @param endogenous_stats Optional character vector of endogenous mechanisms to
 #'   include in the rate. Each entry updates a state matrix after every event so
 #'   the intensity of the next event depends on the realized history. Supported
-#'   values: \code{"reciprocity_count"} (number of past reverse-dyad events) and
+#'   values: \code{"reciprocity_count"} (number of past reverse-dyad events),
 #'   \code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
-#'   least once). Defaults to \code{NULL} for a memoryless process.
+#'   least once), and \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
+#'   events with exponential half-life decay; requires \code{half_life}).
+#'   Defaults to \code{NULL} for a memoryless process.
 #' @param endogenous_effects Numeric vector of linear coefficients for
 #'   \code{endogenous_stats}. May be named (names must match
 #'   \code{endogenous_stats}) or unnamed (positionally matched). Required when
 #'   \code{endogenous_stats} is supplied.
+#' @param half_life Positive scalar; the half-life \eqn{T} (in time units) used
+#'   by the \code{"reciprocity_exp_decay"} stat. A past reverse-dyad event at
+#'   time \eqn{t_k} contributes \eqn{\exp(-(t - t_k)\,\log 2/T)} to the stat
+#'   value at time \eqn{t}. Required when \code{"reciprocity_exp_decay"} is in
+#'   \code{endogenous_stats}.
+#' @param risk Risk-set rule. \code{"standard"} (the default) keeps every dyad
+#'   eligible at every step. \code{"remove"} removes a dyad from the risk set
+#'   as soon as it fires, which mimics one-shot processes such as species
+#'   invasions or first-citation events.
 #' @param global_covariates Optional data.frame describing piecewise-constant
 #'   global covariates: variables whose value at time \eqn{t} is the same for
 #'   every dyad (e.g. weekday/weekend, weather, policy regime). Must contain a
@@ -147,7 +158,10 @@ simulate_relational_events <- function(
     global_covariates = NULL,
     global_effects = NULL,
     method = c("gillespie", "tau_leap"),
-    tau = NULL) {
+    tau = NULL,
+    half_life = NULL,
+    risk = c("standard", "remove")) {
+  risk <- match.arg(risk)
   stopifnot(length(n_events) == 1, n_events > 0)
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
@@ -223,7 +237,8 @@ simulate_relational_events <- function(
     global_log_mult <- as.numeric(global_cov_matrix %*% global_effects)
   }
 
-  supported_endogenous <- c("reciprocity_count", "reciprocity_binary")
+  supported_endogenous <- c("reciprocity_count", "reciprocity_binary",
+                            "reciprocity_exp_decay")
   endogenous_active <- !is.null(endogenous_stats) && length(endogenous_stats) > 0
   if (endogenous_active) {
     endogenous_stats <- as.character(endogenous_stats)
@@ -231,6 +246,13 @@ simulate_relational_events <- function(
     if (length(bad)) {
       stop("Unsupported endogenous_stats: ", paste(bad, collapse = ", "),
            ". Supported: ", paste(supported_endogenous, collapse = ", "), ".")
+    }
+    if ("reciprocity_exp_decay" %in% endogenous_stats) {
+      if (is.null(half_life) || length(half_life) != 1 || !is.finite(half_life) ||
+          half_life <= 0) {
+        stop("half_life must be a positive finite scalar when ",
+             "\"reciprocity_exp_decay\" is in endogenous_stats.")
+      }
     }
     if (anyDuplicated(endogenous_stats)) {
       stop("endogenous_stats must not contain duplicates.")
@@ -342,6 +364,29 @@ simulate_relational_events <- function(
     }
   }
 
+  has_exp_decay <- endogenous_active &&
+    "reciprocity_exp_decay" %in% endogenous_stats
+  last_state_time <- start_time
+  if (has_exp_decay) {
+    decay_rate <- log(2) / half_life
+  }
+
+  apply_exp_decay <- function() {
+    # Multiplicative decay of the exp-decay state cell-wise to the current
+    # clock time. Called when reading or snapshotting state so the value
+    # carried is correctly attenuated for the time elapsed since the last
+    # update.
+    if (!has_exp_decay) return(invisible())
+    dt_decay <- current_time - last_state_time
+    if (dt_decay > 0) {
+      decay_factor <- exp(-dt_decay * decay_rate)
+      endo_state[["reciprocity_exp_decay"]] <<-
+        endo_state[["reciprocity_exp_decay"]] * decay_factor
+      last_state_time <<- current_time
+    }
+    invisible()
+  }
+
   endo_score_matrix <- function() {
     if (!endogenous_active) {
       return(NULL)
@@ -407,6 +452,10 @@ simulate_relational_events <- function(
 
   if (method == "tau_leap") {
     while (event_counter < n_events && current_time < horizon) {
+      # Decay exp-decay state up to the start of this step so the rates
+      # used below are correctly attenuated.
+      apply_exp_decay()
+
       # Start-of-step rate matrix.
       log_w <- static_log_weights
       if (endogenous_active) {
@@ -414,6 +463,10 @@ simulate_relational_events <- function(
       }
       weights <- exp(log_w) * baseline_rate
       weights[!is.finite(weights)] <- 0
+      if (sum(weights) <= 0) {
+        if (risk == "remove") break
+        stop("No admissible dyads with positive intensity.")
+      }
       if (global_active) {
         idx_step <- interval_at(current_time)
         g_mult <- exp(global_log_mult[idx_step])
@@ -423,7 +476,16 @@ simulate_relational_events <- function(
 
       step <- min(tau, horizon - current_time)
       expected <- weights * g_mult * step
-      counts <- stats::rpois(S * R, as.vector(expected))
+      if (risk == "remove") {
+        # One-shot dyads: at most one event per dyad per step. Use a
+        # Bernoulli with success probability 1 - exp(-lambda*tau) rather
+        # than Poisson, which would allow more than one event on a dyad
+        # that must be removed after its first firing.
+        p_fire <- 1 - exp(-as.vector(expected))
+        counts <- stats::rbinom(S * R, size = 1, prob = p_fire)
+      } else {
+        counts <- stats::rpois(S * R, as.vector(expected))
+      }
       n_in_step <- sum(counts)
 
       if (n_in_step > 0L) {
@@ -507,18 +569,22 @@ simulate_relational_events <- function(
         # End-of-step bulk update of live endogenous state with every
         # event from this step (events emitted past the n_events cap are
         # excluded — they were not recorded).
-        if (endogenous_active) {
-          n_emitted <- min(n_in_step, event_counter - (event_counter - n_in_step))
+        if (endogenous_active || risk == "remove") {
           for (k in seq_len(n_in_step)) {
             choice <- ev_dyads[k]
             s_k <- ((choice - 1L) %% S) + 1L
             r_k <- ((choice - 1L) %/% S) + 1L
-            for (st in endogenous_stats) {
-              if (st == "reciprocity_count") {
-                endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
-              } else if (st == "reciprocity_binary") {
-                endo_state[[st]][r_k, s_k] <- 1
+            if (endogenous_active) {
+              for (st in endogenous_stats) {
+                if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
+                  endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
+                } else if (st == "reciprocity_binary") {
+                  endo_state[[st]][r_k, s_k] <- 1
+                }
               }
+            }
+            if (risk == "remove") {
+              static_log_weights[s_k, r_k] <- -Inf
             }
           }
         }
@@ -529,13 +595,24 @@ simulate_relational_events <- function(
   } else {
 
   for (i in seq_len(n_events)) {
-    if (endogenous_active) {
-      es <- endo_score_matrix()
-      ww <- compute_weights(static_log_weights + es)
-      weights <- ww$weights
-      total_weight <- ww$total
-      probs <- ww$probs
-      valid_dyads <- ww$valid
+    if (endogenous_active || risk == "remove") {
+      log_w <- static_log_weights
+      if (endogenous_active) {
+        log_w <- log_w + endo_score_matrix()
+      }
+      weights <- exp(log_w) * baseline_rate
+      weights[!is.finite(weights)] <- 0
+      total_weight <- sum(weights)
+      if (total_weight <= 0) {
+        if (risk == "remove") {
+          # All admissible dyads have fired and been removed -- stop
+          # gracefully and return whatever was produced so far.
+          break
+        }
+        stop("No admissible dyads with positive intensity.")
+      }
+      probs <- as.vector(weights) / total_weight
+      valid_dyads <- which(weights > 0)
       if (n_controls > 0 && n_controls >= length(valid_dyads)) {
         stop("Requested n_controls is >= the number of admissible dyads at step ", i, ".")
       }
@@ -588,6 +665,11 @@ simulate_relational_events <- function(
     event_senders[event_counter] <- senders[s_idx]
     event_receivers[event_counter] <- receivers[r_idx]
     event_times[event_counter] <- current_time
+
+    # Decay exp-decay state up to the event time before snapshotting it,
+    # so the value carried on the output row reflects the time elapsed
+    # since the previous event.
+    apply_exp_decay()
 
     if (endogenous_active) {
       for (st in endogenous_stats) {
@@ -648,12 +730,17 @@ simulate_relational_events <- function(
       # (r -> s); on event (s_idx, r_idx), that contributes to future
       # reciprocity at dyad (r_idx, s_idx).
       for (st in endogenous_stats) {
-        if (st == "reciprocity_count") {
+        if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
           endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
         } else if (st == "reciprocity_binary") {
           endo_state[[st]][r_idx, s_idx] <- 1
         }
       }
+    }
+
+    if (risk == "remove") {
+      # One-shot dyad: drop it from the risk set so it cannot fire again.
+      static_log_weights[s_idx, r_idx] <- -Inf
     }
   }
   }  # end method == "gillespie" branch
