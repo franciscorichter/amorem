@@ -6,6 +6,7 @@
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage[round,authoryear]{natbib}
+\usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{microtype}
 
@@ -429,46 +430,181 @@ path adds the boundary-aware redraws.}
 \label{tab:bench}
 \end{table}
 
+\section{Real-data demonstrations}\label{sec:realdata}
+
+The synthetic experiments of Section~\ref{sec:experiments} establish
+that the simulator and inference pipeline are internally consistent.
+This section turns to real-world event logs and shows that the same
+case--control / GAM pipeline recovers qualitatively sensible
+endogenous effects on two of the five datasets analysed by
+\citet{juozaitiene2024about}.  We use the version of those datasets
+that ships with the package itself
+(Section~\ref{sec:bundled-datasets}).
+
+For each dataset we (i) build a one-row-per-event case--control table
+with \texttt{sample\_non\_events(n\_controls = 1, scope = "all",
+mode = "one")}; (ii) compute four endogenous statistics on the
+combined table with \texttt{compute\_endogenous\_features()} so each
+control row carries the value its dyad had at the corresponding event
+time; (iii) fit a no-intercept binomial GAM on the case-minus-control
+differences, which corresponds to the standard conditional-logistic
+parametrisation of the partial likelihood
+\citep{juozaitiene2024about,vu2017relational}.
+
+The four statistics are
+\texttt{reciprocity\_count},
+\texttt{reciprocity\_time\_recent} (paper definition $r^{(4ac)}$),
+\texttt{transitivity\_count}, and
+\texttt{transitivity\_time\_recent} (paper definition $t^{(7ac)}$).
+Estimates and 95\% Wald intervals are reported in
+Table~\ref{tab:realdata} and visualised in
+Figure~\ref{fig:realdata}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Statistic & \multicolumn{2}{c}{Classroom ($n{=}691$)} &
+            \multicolumn{2}{c}{Radoslaw $\le 30$\,d ($n{=}10{,}776$)} \\
+          & Estimate & $p$ & Estimate & $p$ \\
+\midrule
+\texttt{reciprocity\_count}        &  $\phantom{-}0.228$ & $3{\times}10^{-8\phantom{0}}$ & $\phantom{-}0.222$ & $<10^{-30}$ \\
+\texttt{reciprocity\_time\_recent} &  $-0.111$           & $1{\times}10^{-7\phantom{0}}$ & $-0.138$           & $<10^{-30}$ \\
+\texttt{transitivity\_count}       &  $\phantom{-}0.167$ & $6{\times}10^{-4\phantom{0}}$ & $\phantom{-}0.035$ & $<10^{-10}$ \\
+\texttt{transitivity\_time\_recent}&  $-0.200$           & $0.28$                       & $-0.944$           & $<10^{-15}$ \\
+\bottomrule
+\end{tabular}
+\caption{Case-control GAM coefficients for two of the five datasets
+analysed by \citet{juozaitiene2024about}.  Classroom is the McFarland
+(2001) high-school session; Radoslaw is a 30-day slice
+of the \citet{michalski2014radoslaw} manufacturing-email log (loops
+removed).  Both reproduce the qualitative findings of the paper:
+positive reciprocity and transitivity effects, with the
+\emph{time-recent} variant carrying additional signal beyond the raw
+count.}
+\label{tab:realdata}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/realdata_coefficients.pdf}
+\caption{Coefficient estimates and 95\% Wald intervals for the four
+endogenous statistics fitted on Classroom (left) and a 30-day slice
+of Radoslaw (right).  Both datasets show a positive reciprocity
+count, a negative \emph{time-recent} reciprocity coefficient (the
+older the reverse event, the smaller its boost), and a positive
+transitivity effect.  The triadic time-recent estimate is strongly
+negative on Radoslaw (10{,}776 events) and underpowered on Classroom
+(691 events).}
+\label{fig:realdata}
+\end{figure}
+
+\paragraph{Interpretation.}  On both datasets the signs and relative
+magnitudes match the qualitative findings of
+\citet[Table~3, Figure~6]{juozaitiene2024about}: reciprocity is the
+dominant driver, with a positive count effect and a negative
+elapsed-time effect indicating that more recent reverse events carry
+more weight than older ones.  Triadic closure is also positive on
+both datasets.  On the larger Radoslaw slice the triadic
+\emph{time-recent} effect is strongly negative ($-0.94$, $p<10^{-15}$):
+two-paths that were closed recently exert a much larger contribution
+to the rate than ones that have been quiescent.  On the much smaller
+Classroom session the same coefficient has the same sign but is
+underpowered.
+
+\paragraph{Reproducibility.}  All numbers in this section are
+produced by \texttt{data-raw/}-style helper scripts that load the
+shipped datasets, call \texttt{sample\_non\_events()} and
+\texttt{compute\_endogenous\_features()}, and feed the result to
+\texttt{mgcv::gam}.  The full driver is \texttt{paper/experiments/
+realdata\_fit.R}.
+
+\subsection{Bundled paper datasets}\label{sec:bundled-datasets}
+
+Four of the five empirical datasets analysed by
+\citet{juozaitiene2024about} ship directly with the package, both as
+tidy event tables in \texttt{data/} and as their original raw
+sources in \texttt{inst/extdata/}:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrl}
+\toprule
+Dataset & Event table & Events & Actors & Source \\
+\midrule
+Classroom         & \texttt{classroom\_events}        &     691 &  20 & \citealp{mcfarland2001classrooms} \\
+Social Evolution  & \texttt{social\_evolution\_calls} &     439 &  54 & \citealp{madan2011social} \\
+Manufacturing     & \texttt{radoslaw\_email}          &  82{,}927 & 167 & \citealp{michalski2014radoslaw,networkrepository} \\
+\bottomrule
+\end{tabular}
+\caption{Bundled real-world REM datasets.  Classroom comes from the
+\texttt{networkDynamic} CRAN package, Social Evolution from the
+\texttt{goldfish} GitHub package, and Manufacturing from Network
+Repository (\texttt{ia-radoslaw-email}).  Times are normalised to
+minutes (Classroom) or days since the first event; original Unix
+epochs are preserved as a \texttt{unix\_origin} attribute on each
+event frame.}
+\label{tab:bundled}
+\end{table}
+
+The Enron email dataset of the original paper is intentionally not
+bundled: the only publicly archived version is an aggregated daily
+edge-weight table, not the event-level slice the paper actually
+analyses.
+
 \section{Limitations and roadmap}\label{sec:limits}
 
 \paragraph{What the package does well today.}  Composable simulation
 across the three covariate families with correct boundary-aware
-semantics for time-varying globals, snapshot-at-event-time
-case--control output ready for \texttt{clogit}, and a rich post-hoc
-endogenous feature catalogue.
+semantics for time-varying globals, an exact-Gillespie inner loop
+\emph{plus} a $\tau$-leap approximation for high-rate regimes, a rich
+generative endogenous catalogue
+(reciprocity counts/binary/exp-decay/time-recent/time-first;
+transitivity, cyclic closure, sending/receiving balance counts and
+binaries; transitivity time-recent / time-first; per-actor in/out
+degree; recency), and a parallel post-hoc feature catalogue exposed
+through \texttt{compute\_endogenous\_features()}.
 
 \paragraph{Honest limitations.}
 \begin{itemize}
-\item \textbf{One-mode endogenous only.}  Endogenous statistics
-      require \texttt{identical(senders, receivers)}; bipartite /
-      two-mode support is future work.
-\item \textbf{Endogenous catalogue in the simulator is small.}
-      Only \texttt{reciprocity\_count} and
-      \texttt{reciprocity\_binary} are wired into the inner loop.
-      Transitivity, cyclic closure, balance, recency, and
-      exp-decay variants are computed post-hoc by
-      \texttt{compute\_endogenous\_features()} but not yet
-      available as generative mechanisms.
+\item \textbf{One-mode constraint for the closure family.}
+      Reciprocity-, transitivity-, cyclic-, and balance-style
+      statistics require \texttt{identical(senders, receivers)}.
+      Bipartite endogenous statistics
+      (\texttt{recency}, \texttt{sender\_outdegree},
+      \texttt{receiver\_indegree}) already work; the rest is future
+      work.
+\item \textbf{Generative catalogue still smaller than the post-hoc
+      one.}  In particular the \emph{ordered} two-path variants of
+      transitivity, exp-decay and time-* variants for cyclic /
+      balance, and the \emph{interrupted} reciprocity / triadicity
+      family of \citet{juozaitiene2024about} are recognised by
+      \texttt{compute\_endogenous\_features()} but not yet by the
+      simulator.
 \item \textbf{No global-effect inference.}  Because the global
       multiplier cancels in the partial-likelihood ratio,
       $\beta_g$ is not identifiable from case--control output
       alone.  Full-likelihood inference (or auxiliary information
-      such as the realized time grid) is required and is not yet
+      such as the realised time grid) is required and is not yet
       provided.
-\item \textbf{No tau-leap simulator.}  At very high total rates the
-      exact Gillespie algorithm becomes slow.  An approximate
-      tau-leap mode is not implemented.
 \item \textbf{No native time-varying \emph{dyadic} covariates.}
       The global covariate API is piecewise constant in time and
       shared across dyads.  Dyad-time grids (e.g.\ dyad-specific
       seasonality) would require an extended API.
+\item \textbf{R-only inner loop.}  Acceptable up to a few thousand
+      actors at a few thousand events; very large logs
+      ($\ge 10^5$ events with $\ge 10^3$ actors) need either careful
+      slicing, the $\tau$-leap path, or eventually a C++ backend.
 \end{itemize}
 
-\paragraph{Near-term roadmap.}  (i) Bipartite support for endogenous
-state matrices; (ii) wire transitivity and decayed statistics into
-the simulator; (iii) full-likelihood path for $\beta_g$;
-(iv) a dyad-time-grid covariate API; (v) optional C++ inner loop for
-high-rate regimes.
+\paragraph{Near-term roadmap.}  (i) Bipartite support for the closure
+family of endogenous statistics; (ii) wire ordered-two-path
+transitivity, exp-decay and time-* variants for cyclic / balance, and
+the interrupted family into the simulator; (iii) full-likelihood path
+for $\beta_g$; (iv) a dyad-time-grid covariate API; (v) optional C++
+inner loop for high-rate regimes.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
