@@ -10,3 +10,7 @@
 .vscode/
 Rplots.pdf
 vignettes/*.html
+# Rcpp build artefacts
+src/*.o
+src/*.so
+src/*.dll

@@ -352,6 +352,24 @@ compute_endogenous_features <- function(
     log_df <- log_df[ord, , drop = FALSE]
   }
 
+  # Fast path: when every requested statistic is supported by the
+  # C++ inner loop, dispatch there. The C++ implementation uses
+  # integer-indexed std::vector state, eliminating the env-based
+  # hashmap lookups that account for ~80% of the R loop's runtime
+  # on dense logs (paper/figures/benchmark_C_posthoc.csv).
+  cpp_ok_stats <- cpp_supported_stats()
+  if (nrow(log_df) > 0L && all(stats %in% cpp_ok_stats)) {
+    cpp_cols <- compute_features_cpp(
+      as.character(log_df$sender),
+      as.character(log_df$receiver),
+      as.numeric(log_df$time),
+      stats)
+    for (st in stats) {
+      log_df[[st]] <- cpp_cols[[st]]
+    }
+    return(log_df)
+  }
+
   n <- nrow(log_df)
   if (!n) {
     for (stat in stats) log_df[[stat]] <- numeric(0)

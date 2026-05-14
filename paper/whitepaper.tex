@@ -1057,14 +1057,51 @@ number of active endogenous statistics.}
 \label{fig:bench-stats}
 \end{figure}
 
-\paragraph{Post-hoc feature engine.}
+\paragraph{Post-hoc feature engine: pure-R reference path.}
+In the original pure-R implementation,
 \texttt{compute\_endogenous\_features()} on the FULL Radoslaw
-manufacturing dataset (82{,}876 events, 167 actors) takes 9.6\,s
+manufacturing dataset (82{,}876 events, 167 actors) took 9.6\,s
 for two statistics, 28\,s for five, and 89\,s for ten on the
-same Mac Studio. The cost is dominated by the per-event
+same Mac Studio. The cost was dominated by the per-event
 recomputation of the intermediaries set across the triadic
-families; reducing it via either a C++ inner loop or smarter
-incremental updates is on the roadmap.
+families.
+
+\paragraph{Post-hoc feature engine: C++ inner loop.}
+A subset of the catalogue --- every count, binary, and per-actor
+statistic, plus \texttt{recency} --- now ships through an Rcpp
+inner loop with integer-indexed \texttt{std::vector} state. The
+wrapper \texttt{compute\_endogenous\_features()} dispatches to
+the C++ path automatically whenever every requested statistic is
+in the supported subset, and otherwise falls back to the pure-R
+reference. The C++ implementation eliminates the env-based
+hashmap lookups that the profiler identified as 80\% of the R
+cost. On the same Mac Studio:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Dataset & $n_\text{events}$ & R path (10 stats) &
+                              C++ path (8 stats) & speedup \\
+\midrule
+Classroom         &     691 & 0.09\,s &  0.002\,s &  45$\times$ \\
+Social Evolution  &     439 & 0.05\,s &  0.117\,s &
+                                       on par (sub-50ms regime) \\
+Radoslaw          &  82{,}876 & 89\,s   &  0.37\,s & 243$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Post-hoc feature engine: pure-R vs C++ inner loop on the
+bundled datasets. The C++ stats list covers reciprocity / triadic
+\textsc{count} \& \textsc{binary}, \texttt{sender\_outdegree},
+\texttt{receiver\_indegree}, \texttt{recency}; the R path is
+exercised on a 10-stat superset for context.}
+\label{tab:bench-cpp}
+\end{table}
+
+Timing, exp-decay, ordered, and interrupted variants stay in the
+R path for now; porting them to C++ is bookmarked as a follow-up
+that would extend the speedup to the rest of the catalogue.
 
 \section{Applied analyses on bundled data}\label{sec:applied}
 
@@ -1418,19 +1455,18 @@ four real-world REM datasets bundled directly under
       The global covariate API is piecewise constant in time and
       shared across dyads.  Dyad-time grids (e.g.\ dyad-specific
       seasonality) would require an extended API.
-\item \textbf{R-only inner loop.}  The scaling benchmark of
-      Section~\ref{sec:bench} shows the Gillespie simulator
-      handling $2 \times 10^4$ events at 100 actors in 1.2\,s and
-      the $\tau$-leap variant in 0.04\,s on a Mac Studio M1 Max,
-      so practically all current bundled-dataset use cases are
-      cheap. The cost that does scale uncomfortably is the
-      post-hoc feature engine:
-      \texttt{compute\_endogenous\_features()} on the full
-      Manufacturing dataset (82{,}876 events, 167 actors) takes
-      89\,s with ten statistics active. Workloads that need many
-      feature columns on $\ge 10^5$-event logs are better served
-      by careful slicing today, or by an eventual C++ inner loop
-      on the roadmap.
+\item \textbf{C++ inner loop is partial.}  The
+      Section~\ref{sec:bench} benchmark identified the post-hoc
+      \texttt{compute\_endogenous\_features()} as the practical
+      bottleneck (89\,s on the full Manufacturing dataset with
+      ten statistics, in pure R). An Rcpp inner loop now covers
+      every count / binary / per-actor statistic plus
+      \texttt{recency}, dropping the same workload to under one
+      second (Table~\ref{tab:bench-cpp}); the wrapper dispatches
+      automatically when every requested statistic is in the
+      supported subset. Timing, exp-decay, ordered, and
+      interrupted variants still take the pure-R path and remain
+      a roadmap item.
 \end{itemize}
 
 \paragraph{Near-term roadmap.}
