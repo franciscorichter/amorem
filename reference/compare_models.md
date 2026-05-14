@@ -37,7 +37,9 @@ compare_models(
 
   Number of controls per case in
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md).
-  Currently must be `1`.
+  `1` uses a binomial GLM on differences; `> 1` uses
+  [`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html)
+  on the stratified case-control table.
 
 - scope, mode:
 
@@ -70,9 +72,12 @@ specification with the appropriate subset of columns. The fitted models
 are equivalent to the partial-likelihood parametrisation used in
 case-control REM inference (Vu et al. 2017; Juozaitienė & Wit 2024).
 
-The helper currently supports `n_controls = 1` only; richer case-control
-designs (more controls per case, conditional-logistic aggregation) are
-on the roadmap.
+For `n_controls = 1` the helper fits a no-intercept binomial GLM on
+case-minus-control differences. For `n_controls > 1` it falls back to
+[`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html) — a
+true conditional-logistic fit that correctly handles multiple controls
+per stratum. The `survival` package is in Suggests and is required only
+when `n_controls > 1`.
 
 ## References
 

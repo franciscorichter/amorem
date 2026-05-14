@@ -77,7 +77,9 @@ endogenous statistics it includes. Stats must be valid names for
 
 <dt id="arg-n-controls">n_controls<a class="anchor" aria-label="anchor" href="#arg-n-controls"></a></dt>
 <dd><p>Number of controls per case in
-<code><a href="sample_non_events.html">sample_non_events()</a></code>. Currently must be <code>1</code>.</p></dd>
+<code><a href="sample_non_events.html">sample_non_events()</a></code>. <code>1</code> uses a binomial GLM on differences;
+<code>&gt; 1</code> uses <code><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">survival::clogit()</a></code> on the stratified case-control
+table.</p></dd>
 
 
 <dt id="arg-scope-mode">scope, mode<a class="anchor" aria-label="anchor" href="#arg-scope-mode"></a></dt>
@@ -110,9 +112,12 @@ binomial GLM per specification with the appropriate subset of
 columns. The fitted models are equivalent to the partial-likelihood
 parametrisation used in case-control REM inference
 (Vu et al. 2017; Juozaitienė &amp; Wit 2024).</p>
-<p>The helper currently supports <code>n_controls = 1</code> only; richer
-case-control designs (more controls per case, conditional-logistic
-aggregation) are on the roadmap.</p>
+<p>For <code>n_controls = 1</code> the helper fits a no-intercept binomial GLM
+on case-minus-control differences. For <code>n_controls &gt; 1</code> it falls
+back to <code><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">survival::clogit()</a></code> — a true conditional-logistic fit
+that correctly handles multiple controls per stratum. The
+<code>survival</code> package is in Suggests and is required only when
+<code>n_controls &gt; 1</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
