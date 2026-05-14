@@ -83,7 +83,7 @@
 <li>
 <strong>Endogenous covariates.</strong> <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> now implements 28 endogenous effects (recency, multiple reciprocity forms, transitivity, cyclic closure, sending/receiving balance) following Juozaitienė &amp; Wit (2025).</li>
 <li>
-<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs Gillespie-style simulations with optional controls for partial likelihood, endogenous mechanisms (<code>reciprocity_count</code> / <code>reciprocity_binary</code>) whose state updates between events, and time-varying global covariates via a boundary-aware scheme (weekday/weekend rate switches, policy regimes, …).</li>
+<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs two simulation algorithms — the default exact Gillespie (<code>method = "gillespie"</code>) and an approximate time-driven tau-leap (<code>method = "tau_leap", tau = ...</code>) — with optional controls for partial likelihood, endogenous mechanisms (<code>reciprocity_count</code> / <code>reciprocity_binary</code>) whose state updates between events, and time-varying global covariates via a boundary-aware scheme (weekday/weekend rate switches, policy regimes, …).</li>
 <li>
 <strong>Non-event sampling.</strong> <code><a href="reference/sample_non_events.html">sample_non_events()</a></code> constructs nested case-control tables with appearance, citation, and remove risk-set rules.</li>
 <li>
@@ -582,6 +582,22 @@
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">weekday</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span>  <span class="co"># share of events in weekday=1 intervals</span></span></code></pre></div>
 <p>Under the hood the simulator uses a <strong>boundary-aware Gillespie</strong> scheme: if a sampled waiting time would cross an interval boundary, the clock is advanced to the boundary without recording an event and the next waiting time is redrawn under the new global multiplier. Dyad-selection probabilities are unchanged (the global factor multiplies all rates equally), only the inter-event timing reflects the time-varying global state. Each output row carries the global covariate values it experienced at its event time, and the feature composes with the endogenous machinery above so both can be active simultaneously.</p>
 </div>
+<div class="section level3">
+<h3 id="tau-leap-simulator">Tau-leap simulator<a class="anchor" aria-label="anchor" href="#tau-leap-simulator"></a>
+</h3>
+<p><code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> offers a second algorithm:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>  n_events       <span class="op">=</span> <span class="fl">1000</span>,</span>
+<span>  senders        <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>  receivers      <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
+<span>  baseline_rate  <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  method         <span class="op">=</span> <span class="st">"tau_leap"</span>,</span>
+<span>  tau            <span class="op">=</span> <span class="fl">0.05</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Instead of drawing one waiting time at a time (Gillespie), the tau-leap algorithm advances the clock by a fixed <code>tau</code> and Poisson-samples the number of events on each dyad in <code>[t, t+tau)</code> using the rates at the start of the step. As <code>tau</code> → 0 the distribution converges to exact Gillespie. Tau-leap is most useful when the per-event recomputation in the Gillespie path dominates wall-clock — for example, in high-rate regimes or with a large endogenous state space. Choose <code>tau</code> small enough that (a) <code>lambda * tau &lt;&lt; 1</code> on every active dyad and (b) <code>tau</code> is smaller than the shortest interval in <code>global_covariates</code>; within-step global-boundary crossings are not resolved.</p>
+<p>All features (case-control sampling, endogenous mechanisms, global covariates, output columns) compose with both algorithms.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -593,7 +609,7 @@
 </li>
 </ul>
 <p>For function usage:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">simulate_relational_events</span></span>
 <span><span class="op">?</span><span class="va">simulate_actor_covariates</span></span></code></pre></div>
 </div>
@@ -603,7 +619,7 @@
 <ul>
 <li>
 <p>During development, work from the package root and let R load the in-tree code with:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li><p>Document + namespace: <code>devtools::document()</code></p></li>

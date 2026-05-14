@@ -26,7 +26,9 @@ simulate_relational_events(
   endogenous_stats = NULL,
   endogenous_effects = NULL,
   global_covariates = NULL,
-  global_effects = NULL
+  global_effects = NULL,
+  method = c("gillespie", "tau_leap"),
+  tau = NULL
 )
 ```
 
@@ -126,6 +128,22 @@ simulate_relational_events(
   `global_covariates`) or unnamed (positionally matched). Required when
   `global_covariates` is supplied.
 
+- method:
+
+  Simulation algorithm. Either `"gillespie"` (the default, exact
+  event-driven algorithm: draw inter-event waiting times one at a time)
+  or `"tau_leap"` (approximate, time-driven algorithm: advance the clock
+  in fixed `tau` increments and Poisson-sample event counts per dyad
+  within each step).
+
+- tau:
+
+  Positive scalar; the step size for `method = "tau_leap"`. Required
+  when method is `"tau_leap"` and ignored otherwise. Smaller values give
+  better approximation but more iterations; as \\\tau \to 0\\ the
+  tau-leap result converges in distribution to the exact Gillespie
+  result.
+
 ## Value
 
 If `n_controls = 0`, a data.frame with columns `sender`, `receiver` and
@@ -151,6 +169,22 @@ selection probabilities (the multiplier cancels), only the waiting-time
 distribution. When combined with `endogenous_stats`, the per-dyad rates
 are recomputed at every step from the current endogenous state and then
 rescaled by the global multiplier.
+
+The `"tau_leap"` algorithm advances the clock by a user-chosen step
+\\\tau\\ and draws, for every dyad, a
+\\\mathrm{Poisson}(\lambda\_{sr}(t)\\\tau)\\ number of events using the
+rates at the *start* of the step. Multiple events can fire in the same
+step; they are placed at uniform times within \\\[t, t+\tau)\\ and
+reported in time order, but they share the start-of-step endogenous
+state and global multiplier. Endogenous state is updated once at the end
+of the step using all events in that step. The tau-leap algorithm trades
+exactness for predictable, vectorised work per step; it is most useful
+for high-rate regimes or for problems where the per-event recomputation
+in the Gillespie path is the bottleneck. Choose \\\tau\\ small enough
+that (i) \\\lambda \tau \ll 1\\ on every active dyad and (ii) \\\tau\\
+is smaller than the shortest interval in `global_covariates`
+(within-step boundary crossings are not resolved; the start-of-step
+global multiplier is used for the entire step).
 
 ## Examples
 

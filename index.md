@@ -44,8 +44,10 @@ exploratory and simulation-based REM studies:
   following Juozaitienė & Wit (2025).
 - **Relational event simulation.**
   [`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
-  runs Gillespie-style simulations with optional controls for partial
-  likelihood, endogenous mechanisms (`reciprocity_count` /
+  runs two simulation algorithms — the default exact Gillespie
+  (`method = "gillespie"`) and an approximate time-driven tau-leap
+  (`method = "tau_leap", tau = ...`) — with optional controls for
+  partial likelihood, endogenous mechanisms (`reciprocity_count` /
   `reciprocity_binary`) whose state updates between events, and
   time-varying global covariates via a boundary-aware scheme
   (weekday/weekend rate switches, policy regimes, …).
@@ -472,6 +474,37 @@ equally), only the inter-event timing reflects the time-varying global
 state. Each output row carries the global covariate values it
 experienced at its event time, and the feature composes with the
 endogenous machinery above so both can be active simultaneously.
+
+### Tau-leap simulator
+
+[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+offers a second algorithm:
+
+``` r
+
+ev <- simulate_relational_events(
+  n_events       = 1000,
+  senders        = letters[1:6],
+  receivers      = letters[1:6],
+  baseline_rate  = 1,
+  method         = "tau_leap",
+  tau            = 0.05
+)
+```
+
+Instead of drawing one waiting time at a time (Gillespie), the tau-leap
+algorithm advances the clock by a fixed `tau` and Poisson-samples the
+number of events on each dyad in `[t, t+tau)` using the rates at the
+start of the step. As `tau` → 0 the distribution converges to exact
+Gillespie. Tau-leap is most useful when the per-event recomputation in
+the Gillespie path dominates wall-clock — for example, in high-rate
+regimes or with a large endogenous state space. Choose `tau` small
+enough that (a) `lambda * tau << 1` on every active dyad and (b) `tau`
+is smaller than the shortest interval in `global_covariates`;
+within-step global-boundary crossings are not resolved.
+
+All features (case-control sampling, endogenous mechanisms, global
+covariates, output columns) compose with both algorithms.
 
 ## Documentation
 

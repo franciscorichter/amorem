@@ -62,7 +62,9 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  endogenous_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  endogenous_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  global_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  global_effects <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  global_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gillespie"</span>, <span class="st">"tau_leap"</span><span class="op">)</span>,</span>
+<span>  tau <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -166,6 +168,22 @@ covariates. May be named (names must match the covariate columns in
 <code>global_covariates</code>) or unnamed (positionally matched). Required when
 <code>global_covariates</code> is supplied.</p></dd>
 
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>Simulation algorithm. Either <code>"gillespie"</code> (the default,
+exact event-driven algorithm: draw inter-event waiting times one at a time)
+or <code>"tau_leap"</code> (approximate, time-driven algorithm: advance the clock
+in fixed <code>tau</code> increments and Poisson-sample event counts per dyad
+within each step).</p></dd>
+
+
+<dt id="arg-tau">tau<a class="anchor" aria-label="anchor" href="#arg-tau"></a></dt>
+<dd><p>Positive scalar; the step size for <code>method = "tau_leap"</code>.
+Required when method is <code>"tau_leap"</code> and ignored otherwise. Smaller
+values give better approximation but more iterations; as \(\tau \to 0\)
+the tau-leap result converges in distribution to the exact Gillespie
+result.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -192,6 +210,21 @@ probabilities (the multiplier cancels), only the waiting-time
 distribution.  When combined with <code>endogenous_stats</code>, the
 per-dyad rates are recomputed at every step from the current endogenous
 state and then rescaled by the global multiplier.</p>
+<p>The <code>"tau_leap"</code> algorithm advances the clock by a user-chosen step
+\(\tau\) and draws, for every dyad, a \(\mathrm{Poisson}(\lambda_{sr}(t)\,\tau)\)
+number of events using the rates at the <em>start</em> of the step. Multiple
+events can fire in the same step; they are placed at uniform times within
+\([t, t+\tau)\) and reported in time order, but they share the
+start-of-step endogenous state and global multiplier. Endogenous state is
+updated once at the end of the step using all events in that step. The
+tau-leap algorithm trades exactness for predictable, vectorised work per
+step; it is most useful for high-rate regimes or for problems where the
+per-event recomputation in the Gillespie path is the bottleneck. Choose
+\(\tau\) small enough that (i) \(\lambda \tau \ll 1\) on every active
+dyad and (ii) \(\tau\) is smaller than the shortest interval in
+<code>global_covariates</code> (within-step boundary crossings are not
+resolved; the start-of-step global multiplier is used for the entire
+step).</p>
     </div>
 
     <div class="section level2">
