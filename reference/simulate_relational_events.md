@@ -124,6 +124,17 @@ simulate_relational_events(
     k strictly before k → r), definition \\t^{(6c)}\\. Requires
     `half_life`.
 
+  - `"cyclic_exp_decay"` — exp-decayed sum over cyclic two-paths \\r \to
+    k \to s\\ (paper \\c^{(5c)}\\). Requires `half_life`.
+
+  - `"sending_balance_exp_decay"` — exp-decayed sum over shared-target
+    two-paths \\s \to k,\\ r \to k\\ (paper \\sb^{(5c)}\\). Requires
+    `half_life`.
+
+  - `"receiving_balance_exp_decay"` — exp-decayed sum over shared-source
+    two-paths \\k \to s,\\ k \to r\\ (paper \\rb^{(5c)}\\). Requires
+    `half_life`.
+
   - `"reciprocity_time_recent"` — elapsed time since the most recent
     reverse-dyad event \\t - t\_{\text{recent}}(r,s)\\; reports `0` for
     dyads whose reverse has never fired (rather than the post-hoc `NA`,

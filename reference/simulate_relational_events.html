@@ -156,6 +156,15 @@ Juozaitienė &amp; Wit, 2024). Requires <code>half_life</code>.</p></li>
 <code>"transitivity_exp_decay"</code> but only counts <em>ordered</em>
 two-paths (s → k strictly before k → r), definition
 \(t^{(6c)}\).  Requires <code>half_life</code>.</p></li>
+<li><p><code>"cyclic_exp_decay"</code> — exp-decayed sum over cyclic
+two-paths \(r \to k \to s\) (paper \(c^{(5c)}\)).  Requires
+<code>half_life</code>.</p></li>
+<li><p><code>"sending_balance_exp_decay"</code> — exp-decayed sum over
+shared-target two-paths \(s \to k,\ r \to k\) (paper
+\(sb^{(5c)}\)).  Requires <code>half_life</code>.</p></li>
+<li><p><code>"receiving_balance_exp_decay"</code> — exp-decayed sum over
+shared-source two-paths \(k \to s,\ k \to r\) (paper
+\(rb^{(5c)}\)).  Requires <code>half_life</code>.</p></li>
 <li><p><code>"reciprocity_time_recent"</code> — elapsed time since the most
 recent reverse-dyad event \(t - t_{\text{recent}}(r,s)\); reports
 <code>0</code> for dyads whose reverse has never fired (rather than the
