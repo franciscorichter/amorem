@@ -92,18 +92,18 @@ p      <- 20
 actors <- as.character(1:p)
 
 # Dyadic covariate x ~ N(0,1) with true effect b1 = 1
-x        <- matrix(rnorm(p * p), nrow = p, ncol = p)
-b1       <- 1
-baseline <- b1 * x
+x            <- matrix(rnorm(p * p), nrow = p, ncol = p)
+b1           <- 1
+contribution <- b1 * x
 
 # Simulate 500 events + 1 control per event for partial likelihood
 events <- simulate_relational_events(
-  n_events       = 500,
-  senders        = actors,
-  receivers      = actors,
-  baseline_logits = baseline,
-  allow_loops    = FALSE,
-  n_controls     = 1
+  n_events            = 500,
+  senders             = actors,
+  receivers           = actors,
+  contribution_logits = contribution,
+  allow_loops         = FALSE,
+  n_controls          = 1
 )
 
 head(events)
@@ -120,7 +120,7 @@ objects that can be composed as needed:
     by the event process (e.g., geography, demographics). These can be
     simulated via
     [`simulate_actor_covariates()`](https://franciscorichter.github.io/amore/reference/simulate_actor_covariates.md)
-    or supplied as `baseline_logits`/lookup tables.
+    or supplied as `contribution_logits`/lookup tables.
 3.  **Endogenous covariates (eventnet)** — summaries derived from the
     evolving event history (recency, reciprocity, shared partners). Use
     [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
@@ -275,7 +275,7 @@ cases_controls <- simulate_relational_events(
   n_events = 100,
   senders = unique(event_log$sender),
   receivers = unique(event_log$receiver),
-  baseline_logits = matrix(0, nrow = 3, ncol = 3),
+  contribution_logits = matrix(0, nrow = 3, ncol = 3),
   allow_loops = FALSE,
   n_controls = 1
 )
@@ -377,8 +377,8 @@ coef(fit)
 ### Exogenous dyadic covariates
 
 The package ships a 56 × 56 US state distance matrix and supports
-non-linear effects via `baseline_logits`. For example, using geographic
-distance with a smooth true effect:
+non-linear effects via `contribution_logits`. For example, using
+geographic distance with a smooth true effect:
 
 ``` r
 
@@ -391,7 +391,7 @@ events <- simulate_relational_events(
   n_events        = 800,
   senders         = rownames(dist_matrix),
   receivers       = rownames(dist_matrix),
-  baseline_logits = true_effect,
+  contribution_logits = true_effect,
   allow_loops     = FALSE,
   n_controls      = 1
 )

@@ -52,7 +52,7 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  baseline_rate <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  start_time <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  horizon <span class="op">=</span> <span class="cn">Inf</span>,</span>
-<span>  baseline_logits <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  contribution_logits <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sender_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sender_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  receiver_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -96,9 +96,11 @@ applied to all dyads. Defaults to 1.</p></dd>
 time would exceed this value.</p></dd>
 
 
-<dt id="arg-baseline-logits">baseline_logits<a class="anchor" aria-label="anchor" href="#arg-baseline-logits"></a></dt>
+<dt id="arg-contribution-logits">contribution_logits<a class="anchor" aria-label="anchor" href="#arg-contribution-logits"></a></dt>
 <dd><p>Optional <code>length(senders) x length(receivers)</code>
-matrix of baseline log-intensities. Defaults to zeros.</p></dd>
+matrix of dyad-level contributions to the log-rate (i.e. the dyad-specific
+part of the linear predictor, distinct from the baseline hazard). Defaults
+to zeros.</p></dd>
 
 
 <dt id="arg-sender-covariates">sender_covariates<a class="anchor" aria-label="anchor" href="#arg-sender-covariates"></a></dt>

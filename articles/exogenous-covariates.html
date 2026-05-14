@@ -66,7 +66,7 @@ Richter</h4>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span></code></pre></div>
 <p>Exogenous information — such as geographic distance between actors —
 can drive the rate at which relational events occur. <code>amore</code>
-supports this through the <code>baseline_logits</code> argument of
+supports this through the <code>contribution_logits</code> argument of
 <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code>, which accepts any sender ×
 receiver matrix of log-intensities.</p>
 <div class="section level2">
@@ -104,10 +104,10 @@ is the log-transformed distance.</p>
 <div class="section level2">
 <h2 id="simulating-events-with-exogenous-covariates">Simulating events with exogenous covariates<a class="anchor" aria-label="anchor" href="#simulating-events-with-exogenous-covariates"></a>
 </h2>
-<p>We pass the effect matrix directly as <code>baseline_logits</code>.
-The Gillespie algorithm uses these values to weight which dyad fires
-next. We also request one control per event for downstream
-inference:</p>
+<p>We pass the effect matrix directly as
+<code>contribution_logits</code>. The Gillespie algorithm uses these
+values to weight which dyad fires next. We also request one control per
+event for downstream inference:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span></span>
@@ -117,7 +117,7 @@ inference:</p>
 <span>    n_events        <span class="op">=</span> <span class="fl">800</span>,</span>
 <span>    senders         <span class="op">=</span> <span class="va">states</span>,</span>
 <span>    receivers       <span class="op">=</span> <span class="va">states</span>,</span>
-<span>    baseline_logits <span class="op">=</span> <span class="va">true_effect</span>,</span>
+<span>    contribution_logits <span class="op">=</span> <span class="va">true_effect</span>,</span>
 <span>    allow_loops     <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    n_controls      <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
@@ -192,7 +192,7 @@ inference:</p>
 <p>The GAM successfully captures the non-linear relationship between
 distance and event intensity, demonstrating that <code>amore</code>
 handles exogenous dyadic covariates seamlessly through
-<code>baseline_logits</code>.</p>
+<code>contribution_logits</code>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

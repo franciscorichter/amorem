@@ -7,7 +7,7 @@ library(amore)
 
 Exogenous information — such as geographic distance between actors — can
 drive the rate at which relational events occur. `amore` supports this
-through the `baseline_logits` argument of
+through the `contribution_logits` argument of
 [`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md),
 which accepts any sender × receiver matrix of log-intensities.
 
@@ -56,9 +56,9 @@ plot(d_seq, sin(-d_seq / 1.5),
 
 ## Simulating events with exogenous covariates
 
-We pass the effect matrix directly as `baseline_logits`. The Gillespie
-algorithm uses these values to weight which dyad fires next. We also
-request one control per event for downstream inference:
+We pass the effect matrix directly as `contribution_logits`. The
+Gillespie algorithm uses these values to weight which dyad fires next.
+We also request one control per event for downstream inference:
 
 ``` r
 
@@ -70,7 +70,7 @@ events <- simulate_relational_events(
     n_events        = 800,
     senders         = states,
     receivers       = states,
-    baseline_logits = true_effect,
+    contribution_logits = true_effect,
     allow_loops     = FALSE,
     n_controls      = 1
 )
@@ -150,4 +150,4 @@ abline(h = 0, lty = 2, col = "grey50")
 
 The GAM successfully captures the non-linear relationship between
 distance and event intensity, demonstrating that `amore` handles
-exogenous dyadic covariates seamlessly through `baseline_logits`.
+exogenous dyadic covariates seamlessly through `contribution_logits`.
