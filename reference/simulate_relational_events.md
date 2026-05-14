@@ -103,14 +103,37 @@ simulate_relational_events(
   Optional character vector of endogenous mechanisms to include in the
   rate. Each entry updates a state matrix after every event so the
   intensity of the next event depends on the realized history. Supported
-  values: `"reciprocity_count"` (number of past reverse-dyad events),
-  `"reciprocity_binary"` (indicator that the reverse dyad has fired at
-  least once), `"reciprocity_exp_decay"` (sum of past reverse-dyad
-  events with exponential half-life decay; requires `half_life`), and
-  `"recency"` (elapsed time on the same ordered dyad: \\t -
-  t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\ for
-  dyads that have never fired). Defaults to `NULL` for a memoryless
-  process.
+  values:
+
+  - `"reciprocity_count"` — number of past reverse-dyad events.
+
+  - `"reciprocity_binary"` — 1 if the reverse dyad has fired at least
+    once, 0 otherwise.
+
+  - `"reciprocity_exp_decay"` — sum of past reverse-dyad events with
+    exponential half-life decay (requires `half_life`).
+
+  - `"recency"` — elapsed time on the same ordered dyad \\t -
+    t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\
+    for dyads that have never fired.
+
+  - `"transitivity_count"` / `"transitivity_binary"` — number of
+    intermediaries \\k\\ (or indicator that at least one exists) for
+    which both \\(s,k)\\ and \\(k,r)\\ have fired.
+
+  - `"cyclic_count"` / `"cyclic_binary"` — number of intermediaries
+    \\k\\ (or indicator) for which both \\(r,k)\\ and \\(k,s)\\ have
+    fired (cyclic two-path closing \\s \to r\\).
+
+  - `"sending_balance_count"` / `"sending_balance_binary"` — number of
+    shared targets \\k\\ (or indicator) where both \\(s,k)\\ and
+    \\(r,k)\\ have fired.
+
+  - `"receiving_balance_count"` / `"receiving_balance_binary"` — number
+    of shared sources \\k\\ (or indicator) where both \\(k,s)\\ and
+    \\(k,r)\\ have fired.
+
+  Defaults to `NULL` for a memoryless process.
 
 - endogenous_effects:
 

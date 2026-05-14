@@ -142,14 +142,28 @@ regression / GAM modeling. Defaults to 0.</p></dd>
 <dd><p>Optional character vector of endogenous mechanisms to
 include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
-values: <code>"reciprocity_count"</code> (number of past reverse-dyad events),
-<code>"reciprocity_binary"</code> (indicator that the reverse dyad has fired at
-least once), <code>"reciprocity_exp_decay"</code> (sum of past reverse-dyad
-events with exponential half-life decay; requires <code>half_life</code>), and
-<code>"recency"</code> (elapsed time on the same ordered dyad:
+values:</p><ul><li><p><code>"reciprocity_count"</code> — number of past reverse-dyad events.</p></li>
+<li><p><code>"reciprocity_binary"</code> — 1 if the reverse dyad has fired at
+least once, 0 otherwise.</p></li>
+<li><p><code>"reciprocity_exp_decay"</code> — sum of past reverse-dyad events
+with exponential half-life decay (requires <code>half_life</code>).</p></li>
+<li><p><code>"recency"</code> — elapsed time on the same ordered dyad
 \(t - t_{\text{last}}(s,r)\), defaulting to
-\(t - \text{start\_time}\) for dyads that have never fired). Defaults
-to <code>NULL</code> for a memoryless process.</p></dd>
+\(t - \text{start\_time}\) for dyads that have never fired.</p></li>
+<li><p><code>"transitivity_count"</code> / <code>"transitivity_binary"</code> —
+number of intermediaries \(k\) (or indicator that at least one
+exists) for which both \((s,k)\) and \((k,r)\) have fired.</p></li>
+<li><p><code>"cyclic_count"</code> / <code>"cyclic_binary"</code> — number of
+intermediaries \(k\) (or indicator) for which both \((r,k)\) and
+\((k,s)\) have fired (cyclic two-path closing \(s \to r\)).</p></li>
+<li><p><code>"sending_balance_count"</code> / <code>"sending_balance_binary"</code> —
+number of shared targets \(k\) (or indicator) where both
+\((s,k)\) and \((r,k)\) have fired.</p></li>
+<li><p><code>"receiving_balance_count"</code> /
+<code>"receiving_balance_binary"</code> — number of shared sources
+\(k\) (or indicator) where both \((k,s)\) and \((k,r)\) have
+fired.</p></li>
+</ul><p>Defaults to <code>NULL</code> for a memoryless process.</p></dd>
 
 
 <dt id="arg-endogenous-effects">endogenous_effects<a class="anchor" aria-label="anchor" href="#arg-endogenous-effects"></a></dt>
