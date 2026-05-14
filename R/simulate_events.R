@@ -40,6 +40,13 @@
 #'       least once, 0 otherwise.
 #'     \item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
 #'       with exponential half-life decay (requires \code{half_life}).
+#'     \item \code{"reciprocity_time_recent"} — elapsed time since the most
+#'       recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
+#'       \code{0} for dyads whose reverse has never fired (rather than the
+#'       post-hoc \code{NA}, so the rate computation stays numeric).
+#'     \item \code{"reciprocity_time_first"} — elapsed time since the
+#'       \emph{first} reverse-dyad event \eqn{t - t_{\text{first}}(r,s)};
+#'       same \code{0}-for-never-seen convention.
 #'     \item \code{"recency"} — elapsed time on the same ordered dyad
 #'       \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 #'       \eqn{t - \text{start\_time}} for dyads that have never fired.
@@ -262,7 +269,8 @@ simulate_relational_events <- function(
   }
 
   reciprocity_stats <- c("reciprocity_count", "reciprocity_binary",
-                         "reciprocity_exp_decay")
+                         "reciprocity_exp_decay",
+                         "reciprocity_time_recent", "reciprocity_time_first")
   network_stats <- c("transitivity_count", "transitivity_binary",
                      "cyclic_count", "cyclic_binary",
                      "sending_balance_count", "sending_balance_binary",
@@ -407,6 +415,12 @@ simulate_relational_events <- function(
         # stat is zero for every dyad at t = start_time and grows from
         # there.
         endo_state[[st]] <- matrix(start_time, nrow = S, ncol = R)
+      } else if (st %in% c("reciprocity_time_recent",
+                            "reciprocity_time_first")) {
+        # NA marks "the reverse dyad has never fired". Replaced with 0 in
+        # the score / output matrices so the rate computation stays
+        # numeric (see endo_stat_values()).
+        endo_state[[st]] <- matrix(NA_real_, nrow = S, ncol = R)
       } else {
         endo_state[[st]] <- matrix(0, nrow = S, ncol = R)
       }
@@ -475,10 +489,19 @@ simulate_relational_events <- function(
     # Broadcasting via matrix(v, S, R) (column-fill) replicates the
     # length-S sender vector across columns; matrix(v, S, R, byrow = TRUE)
     # replicates the length-R receiver vector across rows.
+    # Helper: time-elapsed stat with NA -> 0 replacement so the score stays
+    # numeric for never-seen cells. Used by the reciprocity_time_* family.
+    time_elapsed_or_zero <- function(state_mat) {
+      v <- current_time - state_mat
+      v[is.na(v)] <- 0
+      v
+    }
     vals <- list()
     for (st in endogenous_stats) {
       vals[[st]] <- switch(st,
         "recency"                   = current_time - endo_state[[st]],
+        "reciprocity_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
+        "reciprocity_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -613,14 +636,37 @@ simulate_relational_events <- function(
 
         # Snapshot stat-value matrices at the start of the step. All events
         # in the step are scored against this snapshot; the live state is
-        # updated once at the end of the step. For `recency` (which depends
-        # on the clock), we keep the raw last-seen-time matrix and subtract
-        # the per-event time when emitting the row.
+        # updated once at the end of the step. For time-dependent stats
+        # (recency, reciprocity_time_recent, reciprocity_time_first) we
+        # capture the raw state and subtract the per-event time when
+        # emitting each row, so the value carried is correct for that
+        # specific event time within the step.
         step_vals_snapshot <- if (endogenous_active) endo_stat_values() else NULL
-        recency_state_snapshot <- if (endogenous_active &&
-                                       "recency" %in% endogenous_stats) {
-          endo_state[["recency"]]
-        } else NULL
+        time_state_snapshots <- if (endogenous_active) {
+          snap <- list()
+          for (ts in c("recency", "reciprocity_time_recent",
+                       "reciprocity_time_first")) {
+            if (ts %in% endogenous_stats) {
+              snap[[ts]] <- endo_state[[ts]]
+            }
+          }
+          snap
+        } else list()
+
+        # Per-event time-dependent stat value, single-cell variant.
+        time_stat_at <- function(st, s, r, t) {
+          v <- t - time_state_snapshots[[st]][s, r]
+          if (st == "recency") v else if (is.na(v)) 0 else v
+        }
+        # Per-event time-dependent stat value, vectorized (rectangular
+        # selection) variant.
+        time_stat_at_v <- function(st, ss, rs, t) {
+          v <- t - time_state_snapshots[[st]][cbind(ss, rs)]
+          if (st == "recency") return(v)
+          v[is.na(v)] <- 0
+          v
+        }
+        time_stats_active <- names(time_state_snapshots)
 
         for (k in seq_len(n_in_step)) {
           if (event_counter >= n_events) break
@@ -635,8 +681,8 @@ simulate_relational_events <- function(
 
           if (endogenous_active) {
             for (st in endogenous_stats) {
-              event_stat_vals[event_counter, st] <- if (st == "recency") {
-                ev_times[k] - recency_state_snapshot[s_idx, r_idx]
+              event_stat_vals[event_counter, st] <- if (st %in% time_stats_active) {
+                time_stat_at(st, s_idx, r_idx, ev_times[k])
               } else {
                 step_vals_snapshot[[st]][s_idx, r_idx]
               }
@@ -669,8 +715,8 @@ simulate_relational_events <- function(
             if (endogenous_active) {
               ctrl_rows <- ctrl_start_idx:ctrl_end_idx
               for (st in endogenous_stats) {
-                control_stat_vals[ctrl_rows, st] <- if (st == "recency") {
-                  ev_times[k] - recency_state_snapshot[cbind(c_s_idxs, c_r_idxs)]
+                control_stat_vals[ctrl_rows, st] <- if (st %in% time_stats_active) {
+                  time_stat_at_v(st, c_s_idxs, c_r_idxs, ev_times[k])
                 } else {
                   step_vals_snapshot[[st]][cbind(c_s_idxs, c_r_idxs)]
                 }
@@ -699,6 +745,12 @@ simulate_relational_events <- function(
                   endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
                 } else if (st == "reciprocity_binary") {
                   endo_state[[st]][r_k, s_k] <- 1
+                } else if (st == "reciprocity_time_recent") {
+                  endo_state[[st]][r_k, s_k] <- ev_times[k]
+                } else if (st == "reciprocity_time_first") {
+                  if (is.na(endo_state[[st]][r_k, s_k])) {
+                    endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  }
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
                 }
@@ -865,6 +917,12 @@ simulate_relational_events <- function(
           endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
         } else if (st == "reciprocity_binary") {
           endo_state[[st]][r_idx, s_idx] <- 1
+        } else if (st == "reciprocity_time_recent") {
+          endo_state[[st]][r_idx, s_idx] <- current_time
+        } else if (st == "reciprocity_time_first") {
+          if (is.na(endo_state[[st]][r_idx, s_idx])) {
+            endo_state[[st]][r_idx, s_idx] <- current_time
+          }
         } else if (st == "recency") {
           endo_state[[st]][s_idx, r_idx] <- current_time
         }
