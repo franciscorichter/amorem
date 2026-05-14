@@ -58,6 +58,23 @@
 #'     \item \code{"receiving_balance_exp_decay"} — exp-decayed sum over
 #'       shared-source two-paths \eqn{k \to s,\ k \to r} (paper
 #'       \eqn{rb^{(5c)}}).  Requires \code{half_life}.
+#'     \item \code{"transitivity_time_recent_interrupted"} /
+#'       \code{"transitivity_time_first_interrupted"} —
+#'       \emph{interrupted} timing variants of the transitivity family
+#'       (paper \eqn{t^{(7ai)} / t^{(7bi)}}). Every \eqn{s \to r}
+#'       event resets the firing dyad's interrupted state to
+#'       \code{NA}, so the value at \eqn{(s, r)} reflects the most
+#'       recent / first two-path \eqn{s \to k \to r} formed
+#'       \emph{since the most recent closure event}.
+#'     \item \code{"cyclic_time_recent_interrupted"} /
+#'       \code{"cyclic_time_first_interrupted"} — same pattern for
+#'       cyclic two-paths \eqn{r \to k \to s}.
+#'     \item \code{"sending_balance_time_recent_interrupted"} /
+#'       \code{"sending_balance_time_first_interrupted"} — same
+#'       pattern for shared-target two-paths.
+#'     \item \code{"receiving_balance_time_recent_interrupted"} /
+#'       \code{"receiving_balance_time_first_interrupted"} — same
+#'       pattern for shared-source two-paths.
 #'     \item \code{"reciprocity_time_recent"} — elapsed time since the most
 #'       recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
 #'       \code{0} for dyads whose reverse has never fired (rather than the
@@ -361,7 +378,15 @@ simulate_relational_events <- function(
                      "transitivity_exp_decay_ordered",
                      "cyclic_exp_decay",
                      "sending_balance_exp_decay",
-                     "receiving_balance_exp_decay")
+                     "receiving_balance_exp_decay",
+                     "transitivity_time_recent_interrupted",
+                     "transitivity_time_first_interrupted",
+                     "cyclic_time_recent_interrupted",
+                     "cyclic_time_first_interrupted",
+                     "sending_balance_time_recent_interrupted",
+                     "sending_balance_time_first_interrupted",
+                     "receiving_balance_time_recent_interrupted",
+                     "receiving_balance_time_first_interrupted")
   ordered_stats <- c("transitivity_count_ordered",
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
@@ -528,7 +553,15 @@ simulate_relational_events <- function(
                             "transitivity_time_recent_ordered",
                             "transitivity_time_first_ordered",
                             "reciprocity_time_recent_interrupted",
-                            "reciprocity_time_first_interrupted")) {
+                            "reciprocity_time_first_interrupted",
+                            "transitivity_time_recent_interrupted",
+                            "transitivity_time_first_interrupted",
+                            "cyclic_time_recent_interrupted",
+                            "cyclic_time_first_interrupted",
+                            "sending_balance_time_recent_interrupted",
+                            "sending_balance_time_first_interrupted",
+                            "receiving_balance_time_recent_interrupted",
+                            "receiving_balance_time_first_interrupted")) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
         # matrices so the rate computation stays numeric (see
@@ -598,13 +631,21 @@ simulate_relational_events <- function(
   )
 
   two_path_time_lookup <- list(
-    transitivity_time_recent      = list(family = "transitivity",      first = FALSE),
-    transitivity_time_first       = list(family = "transitivity",      first = TRUE),
-    cyclic_time_recent            = list(family = "cyclic",            first = FALSE),
-    cyclic_time_first             = list(family = "cyclic",            first = TRUE),
-    sending_balance_time_recent   = list(family = "sending_balance",   first = FALSE),
-    sending_balance_time_first    = list(family = "sending_balance",   first = TRUE),
-    receiving_balance_time_recent = list(family = "receiving_balance", first = FALSE),
+    transitivity_time_recent      = list(family = "transitivity",      first = FALSE, interrupted = FALSE),
+    transitivity_time_first       = list(family = "transitivity",      first = TRUE,  interrupted = FALSE),
+    cyclic_time_recent            = list(family = "cyclic",            first = FALSE, interrupted = FALSE),
+    cyclic_time_first             = list(family = "cyclic",            first = TRUE,  interrupted = FALSE),
+    sending_balance_time_recent   = list(family = "sending_balance",   first = FALSE, interrupted = FALSE),
+    sending_balance_time_first    = list(family = "sending_balance",   first = TRUE,  interrupted = FALSE),
+    receiving_balance_time_recent = list(family = "receiving_balance", first = FALSE, interrupted = FALSE),
+    transitivity_time_recent_interrupted      = list(family = "transitivity",      first = FALSE, interrupted = TRUE),
+    transitivity_time_first_interrupted       = list(family = "transitivity",      first = TRUE,  interrupted = TRUE),
+    cyclic_time_recent_interrupted            = list(family = "cyclic",            first = FALSE, interrupted = TRUE),
+    cyclic_time_first_interrupted             = list(family = "cyclic",            first = TRUE,  interrupted = TRUE),
+    sending_balance_time_recent_interrupted   = list(family = "sending_balance",   first = FALSE, interrupted = TRUE),
+    sending_balance_time_first_interrupted    = list(family = "sending_balance",   first = TRUE,  interrupted = TRUE),
+    receiving_balance_time_recent_interrupted = list(family = "receiving_balance", first = FALSE, interrupted = TRUE),
+    receiving_balance_time_first_interrupted  = list(family = "receiving_balance", first = TRUE,  interrupted = TRUE),
     receiving_balance_time_first  = list(family = "receiving_balance", first = TRUE)
   )
 
@@ -800,6 +841,14 @@ simulate_relational_events <- function(
         "reciprocity_exp_decay_interrupted"    = endo_state[[st]],
         "reciprocity_time_recent_interrupted"  = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_first_interrupted"   = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_recent_interrupted"     = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_first_interrupted"      = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_time_recent_interrupted"           = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_time_first_interrupted"            = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_time_recent_interrupted"  = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_time_first_interrupted"   = time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_time_recent_interrupted"= time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_time_first_interrupted" = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -954,7 +1003,15 @@ simulate_relational_events <- function(
                        "transitivity_time_recent_ordered",
                        "transitivity_time_first_ordered",
                        "reciprocity_time_recent_interrupted",
-                       "reciprocity_time_first_interrupted")) {
+                       "reciprocity_time_first_interrupted",
+                       "transitivity_time_recent_interrupted",
+                       "transitivity_time_first_interrupted",
+                       "cyclic_time_recent_interrupted",
+                       "cyclic_time_first_interrupted",
+                       "sending_balance_time_recent_interrupted",
+                       "sending_balance_time_first_interrupted",
+                       "receiving_balance_time_recent_interrupted",
+                       "receiving_balance_time_first_interrupted")) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -1078,11 +1135,14 @@ simulate_relational_events <- function(
                   }
                   endo_state[[st]][s_k, r_k] <- NA_real_
                 } else if (!is.null(two_path_time_lookup[[st]])) {
+                  info <- two_path_time_lookup[[st]]
                   if (adj_state[s_k, r_k] == 0) {
-                    info <- two_path_time_lookup[[st]]
                     writes <- two_path_writes(info$family, s_k, r_k, adj_state)
                     endo_state[[st]] <- apply_time_writes(
                       endo_state[[st]], writes, ev_times[k], info$first)
+                  }
+                  if (isTRUE(info$interrupted)) {
+                    endo_state[[st]][s_k, r_k] <- NA_real_
                   }
                 } else if (!is.null(exp_decay_family_lookup[[st]])) {
                   if (adj_state[s_k, r_k] == 0) {
@@ -1290,11 +1350,20 @@ simulate_relational_events <- function(
           # new two-paths. So only sweep when this is the first
           # occurrence of dyad (s_idx, r_idx). The per-family geometry
           # is encapsulated in two_path_writes().
+          info <- two_path_time_lookup[[st]]
           if (adj_state[s_idx, r_idx] == 0) {
-            info <- two_path_time_lookup[[st]]
             writes <- two_path_writes(info$family, s_idx, r_idx, adj_state)
             endo_state[[st]] <- apply_time_writes(
               endo_state[[st]], writes, current_time, info$first)
+          }
+          # Interrupted variant: every (s, r) event closes any open
+          # triad rooted at dyad (s, r), so reset the firing dyad's
+          # own state to NA regardless of whether new formations
+          # happened above. The writes from apply_time_writes never
+          # target the firing dyad itself, so this reset is safe to
+          # apply after the writes block.
+          if (isTRUE(info$interrupted)) {
+            endo_state[[st]][s_idx, r_idx] <- NA_real_
           }
         } else if (!is.null(exp_decay_family_lookup[[st]])) {
           # Unordered exp-decay for any closure family: each newly-formed
