@@ -75,6 +75,17 @@
 #'       \emph{first} two-path \eqn{s \to k \to r} was completed
 #'       (definition 7bc of Juozaitienė & Wit, 2024). Same
 #'       \code{0}-for-never-seen convention.
+#'     \item \code{"cyclic_time_recent"} / \code{"cyclic_time_first"} —
+#'       elapsed time since the most recent / first cyclic two-path
+#'       \eqn{r \to k \to s} was completed.
+#'     \item \code{"sending_balance_time_recent"} /
+#'       \code{"sending_balance_time_first"} — elapsed time since the
+#'       most recent / first shared-target two-path
+#'       \eqn{s \to k,\ r \to k} was completed.
+#'     \item \code{"receiving_balance_time_recent"} /
+#'       \code{"receiving_balance_time_first"} — elapsed time since the
+#'       most recent / first shared-source two-path
+#'       \eqn{k \to s,\ k \to r} was completed.
 #'   }
 #'   Defaults to \code{NULL} for a memoryless process.
 #' @param endogenous_effects Numeric vector of linear coefficients for
@@ -283,7 +294,11 @@ simulate_relational_events <- function(
                      "cyclic_count", "cyclic_binary",
                      "sending_balance_count", "sending_balance_binary",
                      "receiving_balance_count", "receiving_balance_binary",
-                     "transitivity_time_recent", "transitivity_time_first")
+                     "transitivity_time_recent", "transitivity_time_first",
+                     "cyclic_time_recent", "cyclic_time_first",
+                     "sending_balance_time_recent", "sending_balance_time_first",
+                     "receiving_balance_time_recent",
+                     "receiving_balance_time_first")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -427,7 +442,13 @@ simulate_relational_events <- function(
       } else if (st %in% c("reciprocity_time_recent",
                             "reciprocity_time_first",
                             "transitivity_time_recent",
-                            "transitivity_time_first")) {
+                            "transitivity_time_first",
+                            "cyclic_time_recent",
+                            "cyclic_time_first",
+                            "sending_balance_time_recent",
+                            "sending_balance_time_first",
+                            "receiving_balance_time_recent",
+                            "receiving_balance_time_first")) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
         # matrices so the rate computation stays numeric (see
@@ -461,6 +482,82 @@ simulate_relational_events <- function(
   last_state_time <- start_time
   if (has_exp_decay) {
     decay_rate <- log(2) / half_life
+  }
+
+  # Map each generative "two-path timing" stat to (family, is_first) so the
+  # state-update sweep can be derived in a single helper instead of branching
+  # per stat name in two places (Gillespie + tau-leap inner loops).
+  two_path_time_lookup <- list(
+    transitivity_time_recent      = list(family = "transitivity",      first = FALSE),
+    transitivity_time_first       = list(family = "transitivity",      first = TRUE),
+    cyclic_time_recent            = list(family = "cyclic",            first = FALSE),
+    cyclic_time_first             = list(family = "cyclic",            first = TRUE),
+    sending_balance_time_recent   = list(family = "sending_balance",   first = FALSE),
+    sending_balance_time_first    = list(family = "sending_balance",   first = TRUE),
+    receiving_balance_time_recent = list(family = "receiving_balance", first = FALSE),
+    receiving_balance_time_first  = list(family = "receiving_balance", first = TRUE)
+  )
+
+  # Returns the (row, col) integer matrix of state-matrix cells that are
+  # newly "two-path-formed" by event (i, j), given `adj` = current binary
+  # adjacency *before* (i, j) is added. The four families correspond to the
+  # four endogenous-closure structures:
+  #   transitivity      : s -> k -> r (two-path closing s -> r)
+  #   cyclic            : r -> k -> s (cyclic counterpart)
+  #   sending_balance   : (s -> k) and (r -> k), shared target k
+  #   receiving_balance : (k -> s) and (k -> r), shared source k
+  # The caller is responsible for the gate `adj[i, j] == 0`: a re-fire
+  # of an already-present edge doesn't form any new two-path.
+  two_path_writes <- function(family, i, j, adj) {
+    switch(family,
+      transitivity = {
+        a <- which(adj[, i] == 1L)  # a -> i exists -> chain a -> i -> j forms
+        b <- which(adj[j, ] == 1L)  # j -> b exists -> chain i -> j -> b forms
+        rbind(
+          cbind(a,                  rep(j, length(a))),
+          cbind(rep(i, length(b)),  b))
+      },
+      cyclic = {
+        s_A <- which(adj[j, ] == 1L)   # j -> s exists -> cyclic r=i, k=j, s
+        r_B <- which(adj[, i] == 1L)   # r -> i exists -> cyclic r, k=i, s=j
+        rbind(
+          cbind(s_A,                rep(i, length(s_A))),
+          cbind(rep(j, length(r_B)), r_B))
+      },
+      sending_balance = {
+        k_targets <- which(adj[, j] == 1L)  # nodes that already sent to k=j
+        # As (s = i, k = j): for each r in k_targets (r != i), state[i, r] forms
+        r_A <- k_targets[k_targets != i]
+        # As (r = i, k = j): for each s in k_targets (s != i), state[s, i] forms
+        s_B <- k_targets[k_targets != i]
+        rbind(
+          cbind(rep(i, length(r_A)), r_A),
+          cbind(s_B,                 rep(i, length(s_B))))
+      },
+      receiving_balance = {
+        k_sources <- which(adj[i, ] == 1L)  # nodes already targeted by k=i
+        r_A <- k_sources[k_sources != j]
+        s_B <- k_sources[k_sources != j]
+        rbind(
+          cbind(rep(j, length(r_A)), r_A),
+          cbind(s_B,                 rep(j, length(s_B))))
+      },
+      stop("Unknown two-path family: ", family)
+    )
+  }
+
+  # Apply the (row, col) writes to a state matrix. `is_first = TRUE` only
+  # touches NA cells (preserves the first-formation time); otherwise
+  # overwrites unconditionally (records the most-recent formation time).
+  apply_time_writes <- function(M, writes, t_now, is_first) {
+    if (!nrow(writes)) return(M)
+    if (is_first) {
+      mask <- is.na(M[writes])
+      if (any(mask)) M[writes[mask, , drop = FALSE]] <- t_now
+    } else {
+      M[writes] <- t_now
+    }
+    M
   }
 
   apply_exp_decay <- function() {
@@ -514,8 +611,14 @@ simulate_relational_events <- function(
         "recency"                   = current_time - endo_state[[st]],
         "reciprocity_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
-        "transitivity_time_recent"  = time_elapsed_or_zero(endo_state[[st]]),
-        "transitivity_time_first"   = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_recent"      = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_first"       = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_time_recent"            = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_time_first"             = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_time_recent" = time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_time_first"  = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -661,7 +764,12 @@ simulate_relational_events <- function(
           for (ts in c("recency", "reciprocity_time_recent",
                        "reciprocity_time_first",
                        "transitivity_time_recent",
-                       "transitivity_time_first")) {
+                       "transitivity_time_first",
+                       "cyclic_time_recent", "cyclic_time_first",
+                       "sending_balance_time_recent",
+                       "sending_balance_time_first",
+                       "receiving_balance_time_recent",
+                       "receiving_balance_time_first")) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -769,31 +877,12 @@ simulate_relational_events <- function(
                   }
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
-                } else if (st == "transitivity_time_recent" ||
-                           st == "transitivity_time_first") {
+                } else if (!is.null(two_path_time_lookup[[st]])) {
                   if (adj_state[s_k, r_k] == 0) {
-                    a_idxs <- which(adj_state[, s_k] == 1)
-                    if (length(a_idxs)) {
-                      if (st == "transitivity_time_recent") {
-                        endo_state[[st]][a_idxs, r_k] <- ev_times[k]
-                      } else {
-                        fresh <- is.na(endo_state[[st]][a_idxs, r_k])
-                        if (any(fresh)) {
-                          endo_state[[st]][a_idxs[fresh], r_k] <- ev_times[k]
-                        }
-                      }
-                    }
-                    b_idxs <- which(adj_state[r_k, ] == 1)
-                    if (length(b_idxs)) {
-                      if (st == "transitivity_time_recent") {
-                        endo_state[[st]][s_k, b_idxs] <- ev_times[k]
-                      } else {
-                        fresh <- is.na(endo_state[[st]][s_k, b_idxs])
-                        if (any(fresh)) {
-                          endo_state[[st]][s_k, b_idxs[fresh]] <- ev_times[k]
-                        }
-                      }
-                    }
+                    info <- two_path_time_lookup[[st]]
+                    writes <- two_path_writes(info$family, s_k, r_k, adj_state)
+                    endo_state[[st]] <- apply_time_writes(
+                      endo_state[[st]], writes, ev_times[k], info$first)
                   }
                 }
               }
@@ -967,42 +1056,17 @@ simulate_relational_events <- function(
           }
         } else if (st == "recency") {
           endo_state[[st]][s_idx, r_idx] <- current_time
-        } else if (st == "transitivity_time_recent" ||
-                   st == "transitivity_time_first") {
-          # A two-path s -> k -> r is *formed* at the time the second of
-          # its two legs is first observed. Re-fires of an existing leg
-          # don't form new two-paths. So only sweep when this is the
-          # first occurrence of dyad (s_idx, r_idx).
+        } else if (!is.null(two_path_time_lookup[[st]])) {
+          # A two-path is *formed* at the time the second of its two legs
+          # is first observed; re-fires of an existing leg don't form
+          # new two-paths. So only sweep when this is the first
+          # occurrence of dyad (s_idx, r_idx). The per-family geometry
+          # is encapsulated in two_path_writes().
           if (adj_state[s_idx, r_idx] == 0) {
-            # As second leg (k = s_idx, r = r_idx): chains a -> s_idx -> r_idx
-            # form now for every a with adj_state[a, s_idx] = 1 that doesn't
-            # already participate in such a chain. The "didn't already
-            # participate" condition is precisely "the first leg fired but
-            # the second leg (s_idx -> r_idx) had not, until now".
-            a_idxs <- which(adj_state[, s_idx] == 1)
-            if (length(a_idxs)) {
-              if (st == "transitivity_time_recent") {
-                endo_state[[st]][a_idxs, r_idx] <- current_time
-              } else {
-                fresh <- is.na(endo_state[[st]][a_idxs, r_idx])
-                if (any(fresh)) {
-                  endo_state[[st]][a_idxs[fresh], r_idx] <- current_time
-                }
-              }
-            }
-            # As first leg (s = s_idx, k = r_idx): chains s_idx -> r_idx -> b
-            # form now for every b with adj_state[r_idx, b] = 1.
-            b_idxs <- which(adj_state[r_idx, ] == 1)
-            if (length(b_idxs)) {
-              if (st == "transitivity_time_recent") {
-                endo_state[[st]][s_idx, b_idxs] <- current_time
-              } else {
-                fresh <- is.na(endo_state[[st]][s_idx, b_idxs])
-                if (any(fresh)) {
-                  endo_state[[st]][s_idx, b_idxs[fresh]] <- current_time
-                }
-              }
-            }
+            info <- two_path_time_lookup[[st]]
+            writes <- two_path_writes(info$family, s_idx, r_idx, adj_state)
+            endo_state[[st]] <- apply_time_writes(
+              endo_state[[st]], writes, current_time, info$first)
           }
         }
       }
