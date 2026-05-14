@@ -135,6 +135,26 @@ simulate_relational_events(
     two-paths \\k \to s,\\ k \to r\\ (paper \\rb^{(5c)}\\). Requires
     `half_life`.
 
+  - `"transitivity_time_recent_interrupted"` /
+    `"transitivity_time_first_interrupted"` — *interrupted* timing
+    variants of the transitivity family (paper \\t^{(7ai)} /
+    t^{(7bi)}\\). Every \\s \to r\\ event resets the firing dyad's
+    interrupted state to `NA`, so the value at \\(s, r)\\ reflects the
+    most recent / first two-path \\s \to k \to r\\ formed *since the
+    most recent closure event*.
+
+  - `"cyclic_time_recent_interrupted"` /
+    `"cyclic_time_first_interrupted"` — same pattern for cyclic
+    two-paths \\r \to k \to s\\.
+
+  - `"sending_balance_time_recent_interrupted"` /
+    `"sending_balance_time_first_interrupted"` — same pattern for
+    shared-target two-paths.
+
+  - `"receiving_balance_time_recent_interrupted"` /
+    `"receiving_balance_time_first_interrupted"` — same pattern for
+    shared-source two-paths.
+
   - `"reciprocity_time_recent"` — elapsed time since the most recent
     reverse-dyad event \\t - t\_{\text{recent}}(r,s)\\; reports `0` for
     dyads whose reverse has never fired (rather than the post-hoc `NA`,
