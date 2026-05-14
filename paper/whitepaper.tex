@@ -39,19 +39,32 @@
 
 \begin{abstract}
 \noindent
-\texttt{amore} is an R package for simulating and prototyping
-relational event models (REMs).  It implements a Gillespie-style
-event simulator with three composable layers of structure:
-exogenous actor covariates, time-varying global covariates with
-boundary-aware waiting times, and an endogenous state machinery for
-network-driven mechanisms such as reciprocity.  The simulator emits
-either plain event logs or stratified case--control data ready for
-partial-likelihood and GAM inference.  We describe the model,
-the algorithms, the function surface, and a battery of validation
-experiments (linear recovery of an endogenous effect, non-linear
-smooth recovery, time-varying global rate switching, and
-composition).  All experiments were executed against the head of the
-package and the reported numbers are the captured outputs.
+\texttt{amore} is an R package for the end-to-end relational
+event modelling workflow: simulation, case--control sampling,
+endogenous feature engineering, model selection, and inference.
+It implements a Gillespie-style event simulator with composable
+exogenous, endogenous, and time-varying global covariate machinery,
+and exposes a single 41-statistic endogenous catalogue --- spanning
+the full continuous / ordered / exp-decay / interrupted family
+from \citet{juozaitiene2024about} --- through both the simulator's
+inner loop and a parallel post-hoc feature engine. Every shared
+statistic is cross-validated row-by-row by a dedicated parity
+suite. The package ships three real-world REM datasets directly
+(Classroom, Social Evolution, Manufacturing), so the documented
+workflows run on real data out of the box. A one-call
+\texttt{compare\_models()} helper fits competing endogenous
+specifications via no-intercept binomial GLM (matched 1:1) or
+conditional logistic regression (matched 1:$k$, via
+\texttt{survival::coxph}), and emits a tidy AIC ranking. This
+whitepaper describes the underlying model, the algorithms, the
+package's function surface with worked code listings for every
+capability, the bundled datasets, the validation experiments
+(linear recovery, non-linear smooth recovery, time-varying global
+rate switching, composition), and a real-data analysis on
+Classroom and Manufacturing including smooth time-effect curves
+that mirror Figure~6 of \citet{juozaitiene2024about}. All numbers
+in the document are produced by reproducibility scripts under
+\texttt{paper/experiments/}.
 \end{abstract}
 
 \section{Motivation}
@@ -141,6 +154,271 @@ exactly why case--control sampling with one or a few controls per
 event is computationally attractive: only the contribution of the
 realized dyad and a small Monte Carlo sample of unrealized dyads
 need to be evaluated.
+
+\section{Bundled datasets}\label{sec:datasets}
+
+\texttt{amore} ships three of the five real-world REM datasets
+analysed by \citet{juozaitiene2024about} directly, both as tidy
+event tables in \texttt{data/} (loadable via \texttt{data(\dots)})
+and as their original raw sources in \texttt{inst/extdata/}. The
+fourth (Enron) is intentionally not bundled because the only
+publicly archived version is an aggregated daily edge-weight table,
+not the event-level slice the paper analyses. Table~\ref{tab:bundled}
+summarises them and Figure~\ref{fig:datasets} shows their basic
+shape.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrl}
+\toprule
+Dataset & Event table & Events & Actors & Source \\
+\midrule
+Classroom         & \texttt{classroom\_events}        &     691 &  20 & \citealp{mcfarland2001classrooms} \\
+Social Evolution  & \texttt{social\_evolution\_calls} &     439 &  54 & \citealp{madan2011social} \\
+Manufacturing     & \texttt{radoslaw\_email}          &  82{,}927 & 167 & \citealp{michalski2014radoslaw,networkrepository} \\
+\bottomrule
+\end{tabular}
+\caption{Bundled REM datasets. Classroom comes from the
+\texttt{networkDynamic} CRAN package, Social Evolution from the
+\texttt{goldfish} GitHub package, and Manufacturing from Network
+Repository (\texttt{ia-radoslaw-email}). Times are normalised to
+minutes (Classroom) or days since the first event; original Unix
+epochs are preserved as a \texttt{unix\_origin} attribute on each
+event frame.}
+\label{tab:bundled}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/cumulative_events.pdf}\\[2pt]
+\includegraphics[width=\linewidth]{figures/inter_event.pdf}
+\caption{Top row: cumulative event counts. Classroom unfolds in 44
+minutes of sustained activity; Social Evolution spans 42 days with
+intermittent calls; Manufacturing is a long, dense stream over 9
+months. Bottom row: histograms of $\log_{10}$ inter-event times.
+All three exhibit the heavy-tailed inter-event distributions
+typical of human communication processes.}
+\label{fig:datasets}
+\end{figure}
+
+\paragraph{Classroom (McFarland 2001).}
+Twenty actors (one instructor, nineteen grade-11 / grade-12
+students) and 691 directed interactions in 44 minutes of classroom
+time, with each event tagged by \texttt{interaction\_type} (social,
+sanction, task). The actor-covariate table
+\texttt{classroom\_actors} carries \texttt{sex} (F/M) and
+\texttt{role} (instructor / grade\_11 / grade\_12).
+Figure~\ref{fig:classroom-network} shows the full sociogram.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/classroom_network.pdf}
+\caption{Classroom sociogram (stress layout). Nodes are coloured by
+role and shaped by sex; directed edges are scaled by event count.
+The instructor (\texttt{7}, red triangle) is the dominant hub;
+within-student interactions concentrate on a few high-activity
+dyads.}
+\label{fig:classroom-network}
+\end{figure}
+
+\paragraph{Social Evolution (Madan et al.\ 2011).}
+Phone-call events between 54 active students from a larger pool of
+84, gathered as part of an MIT residence-hall study. The companion
+table \texttt{social\_evolution\_actors} provides dorm-floor
+(\texttt{floor}) and grade-type (\texttt{gradeType}) actor
+covariates, and \texttt{social\_evolution\_friendship} records
+self-reported friendship-survey ties as a parallel event stream
+useful as a time-varying covariate.
+
+\paragraph{Manufacturing emails (Michalski et al.\ 2014).}
+A nine-month email log inside a mid-sized manufacturing company
+(167 active employees, 82{,}927 directed emails). The dataset
+exhibits a clear weekday rhythm (visible in the early-day
+oscillation of the cumulative-events plot, top-right of
+Figure~\ref{fig:datasets}) and a heavy core/periphery activity
+structure (Figure~\ref{fig:radoslaw-heatmap}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\linewidth]{figures/radoslaw_heatmap.pdf}
+\caption{Manufacturing dataset, first 30 days, top-40 most-active
+actors. Log-scaled $(sender, receiver)$ event counts. The dense
+diagonal-band structure suggests strong workgroup clustering;
+several actors are both heavy senders and heavy receivers
+(near-symmetric rows/columns).}
+\label{fig:radoslaw-heatmap}
+\end{figure}
+
+\section{A capability tour}\label{sec:tour}
+
+This section walks through the \texttt{amore} function surface
+with short worked R blocks, in the order a typical study would use
+them. Section~\ref{sec:methods} describes the underlying algorithms;
+this section is the user's-eye view.
+
+\subsection{Simulating a relational event stream}
+\label{sec:tour-sim}
+
+\begin{lstlisting}
+library(amore)
+
+set.seed(2026)
+ev <- simulate_relational_events(
+  n_events      = 500,
+  senders       = LETTERS[1:10],
+  receivers     = LETTERS[1:10],
+  baseline_rate = 1,
+  allow_loops   = FALSE)
+head(ev, 3)
+#>   sender receiver       time
+#> 1      F        A 0.01187...
+#> 2      C        I 0.02541...
+#> 3      G        H 0.04318...
+\end{lstlisting}
+
+The minimal call generates a memoryless Gillespie stream. Three
+optional ingredients make the simulator interesting:
+
+\paragraph{Exogenous covariates.}
+Pass an $S \times R$ \texttt{contribution\_logits} matrix encoding
+the linear predictor contribution of each $(s, r)$ dyad. The
+\texttt{simulate\_actor\_covariates()} helper draws static or
+AR(1)-dynamic Gaussian traits, and
+\texttt{attach\_static\_covariates()} joins them back into an
+event log:
+
+\begin{lstlisting}
+covs <- simulate_actor_covariates(
+  senders   = LETTERS[1:10],
+  receivers = LETTERS[1:10],
+  covariate_names = c("activity", "popularity"),
+  seed = 1)
+contribution <- outer(covs$sender_covariates$activity,
+                      covs$receiver_covariates$popularity)
+ev <- simulate_relational_events(
+  n_events = 500, senders = LETTERS[1:10], receivers = LETTERS[1:10],
+  contribution_logits = contribution)
+\end{lstlisting}
+
+\paragraph{Endogenous covariates.}
+The full 41-statistic catalogue (Table~\ref{tab:catalog-full}) is
+exposed via \texttt{endogenous\_stats} / \texttt{endogenous\_effects}.
+The simulator updates each stat's state matrix between events and
+inserts the value at each event row of the output:
+
+\begin{lstlisting}
+ev <- simulate_relational_events(
+  n_events = 800,
+  senders   = LETTERS[1:8], receivers = LETTERS[1:8],
+  baseline_rate = 1, allow_loops = FALSE,
+  endogenous_stats   = c("reciprocity_time_recent",
+                          "transitivity_time_recent_interrupted"),
+  endogenous_effects = c(reciprocity_time_recent              = -0.3,
+                          transitivity_time_recent_interrupted =  0.4),
+  n_controls = 1)
+# Each row carries the stat value its dyad had at event time:
+head(ev[, c("stratum", "event", "sender", "receiver",
+            "reciprocity_time_recent",
+            "transitivity_time_recent_interrupted")], 4)
+\end{lstlisting}
+
+\paragraph{Time-varying global covariates.}
+Pass a piecewise-constant \texttt{global\_covariates} table with a
+\texttt{time\_start} column and one column per covariate, together
+with matching \texttt{global\_effects}. The simulator switches to
+a boundary-aware scheme (Section~\ref{sec:methods}) that advances
+the clock to interval boundaries without recording events:
+
+\begin{lstlisting}
+gc <- data.frame(time_start = seq(0, 10, by = 1),
+                 weekday    = rep(c(0, 1), length.out = 11))
+ev <- simulate_relational_events(
+  n_events = 300, senders = letters[1:5], receivers = letters[1:5],
+  global_covariates = gc, global_effects = c(weekday = 2),
+  horizon = 11)
+\end{lstlisting}
+
+\paragraph{Algorithm choice.}
+Two simulation algorithms are exposed:
+\texttt{method = "gillespie"} (default; exact event-driven) and
+\texttt{method = "tau\_leap"} (approximate; advance the clock by
+$\tau$ and Poisson-sample event counts per dyad). For very high
+total rates the $\tau$-leap path is faster because the per-event
+state recomputation collapses into one per-step recomputation.
+
+\paragraph{Risk-set rule.}
+\texttt{risk = "remove"} models one-shot processes (e.g.\ species
+invasions, first-citation events) by dropping each realised dyad
+from the risk set after it fires. The
+\texttt{species-invasion.Rmd} vignette walks through this mode.
+
+\subsection{Computing endogenous features post-hoc}
+\label{sec:tour-features}
+
+For real (externally observed) event logs the simulator's path is
+not available; the post-hoc engine
+\texttt{compute\_endogenous\_features()} produces the same 41-stat
+catalogue from a $(\textsf{sender}, \textsf{receiver}, \textsf{time})$
+data frame. Every name accepted by the simulator is also accepted
+here, and a dedicated parity test
+(\texttt{test-sim-vs-posthoc-parity.R}) guarantees the two paths
+emit identical columns row-for-row on a common event log.
+
+\begin{lstlisting}
+data(classroom_events)
+feat <- compute_endogenous_features(
+  classroom_events,
+  stats = c("reciprocity_count", "reciprocity_time_recent",
+            "transitivity_count", "transitivity_time_recent"))
+head(feat, 3)
+\end{lstlisting}
+
+\subsection{Sampling non-events}
+\label{sec:tour-controls}
+
+Case--control inference needs counterfactual dyads paired with each
+realised event.\@ \texttt{sample\_non\_events()} draws them with
+three knobs:
+
+\begin{lstlisting}
+data(classroom_events)
+cc <- sample_non_events(
+  classroom_events,
+  n_controls   = 3,        # k controls per case
+  scope        = "all",    # candidate pool: "all" / "appearance" / "citation"
+  mode         = "one",    # "one" (single-mode) or "two" (bipartite)
+  risk         = "standard", # or "remove" for one-shot processes
+  allow_loops  = FALSE,
+  seed         = 11)
+table(cc$event)
+#>    0    1
+#> 2073  691
+\end{lstlisting}
+
+\subsection{Comparing model specifications}
+\label{sec:tour-compare}
+
+The \texttt{compare\_models()} helper fits an arbitrary list of
+candidate specifications on a single shared case--control sample
+and returns a tidy AIC table:
+
+\begin{lstlisting}
+compare_models(
+  classroom_events,
+  models = list(
+    count        = c("reciprocity_count", "transitivity_count"),
+    continuous   = c("reciprocity_time_recent",
+                     "transitivity_time_recent"),
+    interrupted  = c("reciprocity_time_recent_interrupted",
+                     "transitivity_time_recent_interrupted")),
+  n_controls = 3, seed = 11)
+\end{lstlisting}
+
+With $n_{\text{controls}} = 1$ the helper fits a no-intercept
+binomial GLM on case-minus-control differences; with
+$n_{\text{controls}} > 1$ it switches to
+\texttt{survival::coxph} on the stratified design.
 
 \section{Methods}\label{sec:methods}
 
@@ -439,7 +717,7 @@ case--control / GAM pipeline recovers qualitatively sensible
 endogenous effects on two of the five datasets analysed by
 \citet{juozaitiene2024about}.  We use the version of those datasets
 that ships with the package itself
-(Section~\ref{sec:bundled-datasets}).
+(Section~\ref{sec:datasets}).
 
 For each dataset we (i) build a one-row-per-event case--control table
 with \texttt{sample\_non\_events(n\_controls = 1, scope = "all",
@@ -576,39 +854,47 @@ sign of their continuous counterparts. The driver script for both
 the table and the joint fit is
 \texttt{paper/experiments/realdata\_interrupted\_comparison.R}.
 
-\subsection{Bundled paper datasets}\label{sec:bundled-datasets}
+\subsection{Smooth effect curves}\label{sec:smooth}
 
-Four of the five empirical datasets analysed by
-\citet{juozaitiene2024about} ship directly with the package, both as
-tidy event tables in \texttt{data/} and as their original raw
-sources in \texttt{inst/extdata/}:
+The case-control + binomial-GLM recipe of
+Section~\ref{sec:realdata} treats each statistic as a linear
+contribution to the log-rate.
+\citet[Section~3.1]{juozaitiene2024about} argue for fitting
+\emph{smooth} functions of the time-difference statistics
+(thin-plate regression splines on $\Delta t^{\text{rec}}$ /
+$\Delta t^{\text{tri}}$), and report the resulting effect curves
+in their Figure~6.
 
-\begin{table}[h]
+We replicate the spirit of that figure on the Manufacturing
+30-day slice. The driver
+\texttt{paper/experiments/figures\_smooth\_effects.R} draws a
+three-control case-control sample, fits a stratified Cox model
+with $\texttt{pspline}(\cdot, \texttt{df} = 4)$ smooths on four
+endogenous statistics
+(reciprocity time-recent, transitivity time-recent, and their
+interrupted variants), and emits the partial-effect curves shown
+in Figure~\ref{fig:smooth-effects}.
+
+\begin{figure}[h]
 \centering
-\small
-\begin{tabular}{llrrl}
-\toprule
-Dataset & Event table & Events & Actors & Source \\
-\midrule
-Classroom         & \texttt{classroom\_events}        &     691 &  20 & \citealp{mcfarland2001classrooms} \\
-Social Evolution  & \texttt{social\_evolution\_calls} &     439 &  54 & \citealp{madan2011social} \\
-Manufacturing     & \texttt{radoslaw\_email}          &  82{,}927 & 167 & \citealp{michalski2014radoslaw,networkrepository} \\
-\bottomrule
-\end{tabular}
-\caption{Bundled real-world REM datasets.  Classroom comes from the
-\texttt{networkDynamic} CRAN package, Social Evolution from the
-\texttt{goldfish} GitHub package, and Manufacturing from Network
-Repository (\texttt{ia-radoslaw-email}).  Times are normalised to
-minutes (Classroom) or days since the first event; original Unix
-epochs are preserved as a \texttt{unix\_origin} attribute on each
-event frame.}
-\label{tab:bundled}
-\end{table}
+\includegraphics[width=\linewidth]{figures/smooth_effects.pdf}
+\caption{Smooth partial-effect curves on the Manufacturing 30-day
+slice: each panel shows the fitted log-rate contribution of one
+statistic against its elapsed-time value (days since formation), at
+fixed levels of every other statistic. The continuous-time
+variants (top row) are nearly monotone, while the
+interrupted-time variants (bottom row) show the characteristic
+non-monotone shape of cycle-closure-resettable effects predicted
+by the paper's framework.}
+\label{fig:smooth-effects}
+\end{figure}
 
-The Enron email dataset of the original paper is intentionally not
-bundled: the only publicly archived version is an aggregated daily
-edge-weight table, not the event-level slice the paper actually
-analyses.
+The Cox fit has AIC = 25{,}012 and log-likelihood = $-12{,}490$
+on $2{,}694$ strata. As discussed in
+Section~\ref{sec:limits}, a full quantitative match against
+\citet[Table~3]{juozaitiene2024about} would also need sender and
+receiver random effects (\texttt{frailty()} in \texttt{coxph}
+parlance), which the current pipeline does not inject.
 
 \section{Endogenous catalogue at a glance}\label{sec:catalog}
 
@@ -653,7 +939,78 @@ Per-actor statistics (\texttt{sender\_outdegree},
 \texttt{receiver\_indegree}, \texttt{recency}) are also exposed and
 work in bipartite settings; the closure-family statistics in
 Table~\ref{tab:catalog} currently require one-mode inputs
-(see Limitations).
+(see Limitations). Table~\ref{tab:catalog-full} lists every stat
+name by family.
+
+\begin{table}[h]
+\centering
+\footnotesize
+\begin{tabular}{p{0.18\linewidth} p{0.78\linewidth}}
+\toprule
+Family & Statistic names \\
+\midrule
+Per-actor &
+\texttt{sender\_outdegree},
+\texttt{receiver\_indegree},
+\texttt{recency} \\[2pt]
+Reciprocity &
+\texttt{reciprocity\_binary},
+\texttt{reciprocity\_count},
+\texttt{reciprocity\_exp\_decay},
+\texttt{reciprocity\_time\_recent},
+\texttt{reciprocity\_time\_first},
+\texttt{reciprocity\_binary\_interrupted},
+\texttt{reciprocity\_count\_interrupted},
+\texttt{reciprocity\_exp\_decay\_interrupted},
+\texttt{reciprocity\_time\_recent\_interrupted},
+\texttt{reciprocity\_time\_first\_interrupted} \\[2pt]
+Transitivity &
+\texttt{transitivity\_binary},
+\texttt{transitivity\_count},
+\texttt{transitivity\_binary\_ordered},
+\texttt{transitivity\_count\_ordered},
+\texttt{transitivity\_exp\_decay},
+\texttt{transitivity\_exp\_decay\_ordered},
+\texttt{transitivity\_time\_recent},
+\texttt{transitivity\_time\_first},
+\texttt{transitivity\_time\_recent\_ordered},
+\texttt{transitivity\_time\_first\_ordered},
+\texttt{transitivity\_time\_recent\_interrupted},
+\texttt{transitivity\_time\_first\_interrupted} \\[2pt]
+Cyclic &
+\texttt{cyclic\_binary},
+\texttt{cyclic\_count},
+\texttt{cyclic\_exp\_decay},
+\texttt{cyclic\_time\_recent},
+\texttt{cyclic\_time\_first},
+\texttt{cyclic\_time\_recent\_interrupted},
+\texttt{cyclic\_time\_first\_interrupted} \\[2pt]
+Sending balance &
+\texttt{sending\_balance\_binary},
+\texttt{sending\_balance\_count},
+\texttt{sending\_balance\_exp\_decay},
+\texttt{sending\_balance\_time\_recent},
+\texttt{sending\_balance\_time\_first},
+\texttt{sending\_balance\_time\_recent\_interrupted},
+\texttt{sending\_balance\_time\_first\_interrupted} \\[2pt]
+Receiving balance &
+\texttt{receiving\_balance\_binary},
+\texttt{receiving\_balance\_count},
+\texttt{receiving\_balance\_exp\_decay},
+\texttt{receiving\_balance\_time\_recent},
+\texttt{receiving\_balance\_time\_first},
+\texttt{receiving\_balance\_time\_recent\_interrupted},
+\texttt{receiving\_balance\_time\_first\_interrupted} \\
+\bottomrule
+\end{tabular}
+\caption{The full 41-statistic endogenous catalogue, by family.
+Each name is accepted both by
+\texttt{simulate\_relational\_events(endogenous\_stats = \dots)}
+and by \texttt{compute\_endogenous\_features(stats = \dots)}; the
+cross-implementation parity test verifies row-for-row agreement
+on common event logs.}
+\label{tab:catalog-full}
+\end{table}
 
 \section{Limitations and roadmap}\label{sec:limits}
 
