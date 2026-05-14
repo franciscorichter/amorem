@@ -520,6 +520,62 @@ shipped datasets, call \texttt{sample\_non\_events()} and
 \texttt{mgcv::gam}.  The full driver is \texttt{paper/experiments/
 realdata\_fit.R}.
 
+\subsection{Continuous vs interrupted timing}\label{sec:int-vs-cont}
+
+A central methodological contribution of
+\citet{juozaitiene2024about} is the distinction between
+\emph{continuous} and \emph{interrupted} timing definitions: the
+interrupted variants reset to baseline as soon as the relevant
+reciprocity / triadic cycle closes (paper~\S\S 2.1.3, 2.2.2). The
+package now exposes both variants for every closure family
+(Section~\ref{sec:catalog}), so we can ask which functional form
+fits better on the same Classroom and Radoslaw slices.
+
+Table~\ref{tab:realdata-aic} reports AIC values for three minimal
+specifications fitted via the same case-control / no-intercept
+binomial-GAM recipe used above. The specifications differ only in
+which pair of statistics is supplied:
+\textsc{count} = \{reciprocity\_count, transitivity\_count\};
+\textsc{continuous} = \{reciprocity\_time\_recent,
+transitivity\_time\_recent\};
+\textsc{interrupted} = \{reciprocity\_time\_recent\_interrupted,
+transitivity\_time\_recent\_interrupted\}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Specification & Classroom & Radoslaw 30\,d \\
+\midrule
+\textsc{count} (no timing)             &  615.0 &  6{,}631.2 \\
+\textsc{continuous} (paper $r^{(4ac)} / t^{(7ac)}$) &  846.2 & 14{,}547.6 \\
+\textsc{interrupted} (paper $r^{(4ai)} / t^{(7ai)}$) &  883.4 & 13{,}211.8 \\
+\bottomrule
+\end{tabular}
+\caption{AIC by model specification on the same case--control
+($n_\text{controls}=1$) data. The minimal count specification is
+unsurprisingly best in this stripped-down setup (no random effects,
+no smooth functions, raw event-time differences); the table is
+meant to be read \emph{within} the two timing rows. On the larger
+Radoslaw slice the interrupted timing variant beats the continuous
+one by 1{,}336 AIC points, mirroring the qualitative finding in
+\citet[Table~3]{juozaitiene2024about} that interrupted definitions
+fit better when the dataset is large enough to identify the cycle
+closure events.}
+\label{tab:realdata-aic}
+\end{table}
+
+A joint model fitted on the Radoslaw slice with all four timing
+statistics simultaneously confirms that the continuous and
+interrupted variants carry \emph{distinct} information rather than
+redundant signal: every coefficient is highly significant
+(\(p < 4 \times 10^{-3}\) for the worst term, all others
+\(p < 10^{-15}\)), and the interrupted estimates take the opposite
+sign of their continuous counterparts. The driver script for both
+the table and the joint fit is
+\texttt{paper/experiments/realdata\_interrupted\_comparison.R}.
+
 \subsection{Bundled paper datasets}\label{sec:bundled-datasets}
 
 Four of the five empirical datasets analysed by
@@ -554,35 +610,80 @@ bundled: the only publicly archived version is an aggregated daily
 edge-weight table, not the event-level slice the paper actually
 analyses.
 
+\section{Endogenous catalogue at a glance}\label{sec:catalog}
+
+The simulator and the post-hoc feature engine both expose the same
+41 endogenous statistics, organised by family and variant. Every
+statistic in the simulator has a brute-force-validated counterpart
+in \texttt{compute\_endogenous\_features()}, and a dedicated
+parity test suite verifies that the two paths produce identical
+columns on a common event log
+(\texttt{tests/testthat/test-sim-vs-posthoc-parity.R}).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Family & \shortstack{count\\/ binary} & \shortstack{ordered} &
+\shortstack{exp\\decay} & \shortstack{time\\\(_{recent} / _{first}\)} &
+\shortstack{interrupted\\time} \\
+\midrule
+Reciprocity            & \checkmark & --- & \checkmark & \checkmark & \checkmark \\
+Transitivity           & \checkmark & \checkmark & \checkmark$^{*}$ & \checkmark & \checkmark \\
+Cyclic                 & \checkmark & --- & \checkmark & \checkmark & \checkmark \\
+Sending balance        & \checkmark & --- & \checkmark & \checkmark & \checkmark \\
+Receiving balance      & \checkmark & --- & \checkmark & \checkmark & \checkmark \\
+\bottomrule
+\end{tabular}
+\caption{Endogenous statistics available in both the simulator and
+the post-hoc feature engine. Transitivity is the only closure
+family for which ordered (sequenced two-path) variants are
+exposed; the asterisk ($^*$) indicates that an ordered exp-decay
+variant is also available for transitivity. The reciprocity
+\emph{interrupted} column covers all five variants
+(binary/count/exp-decay/time-recent/time-first); for the four
+closure families the interrupted column covers the
+\emph{time-recent} and \emph{time-first} variants empirically
+preferred by \citet[Table~3]{juozaitiene2024about}.}
+\label{tab:catalog}
+\end{table}
+
+Per-actor statistics (\texttt{sender\_outdegree},
+\texttt{receiver\_indegree}, \texttt{recency}) are also exposed and
+work in bipartite settings; the closure-family statistics in
+Table~\ref{tab:catalog} currently require one-mode inputs
+(see Limitations).
+
 \section{Limitations and roadmap}\label{sec:limits}
 
 \paragraph{What the package does well today.}  Composable simulation
 across the three covariate families with correct boundary-aware
-semantics for time-varying globals, an exact-Gillespie inner loop
-\emph{plus} a $\tau$-leap approximation for high-rate regimes, a rich
-generative endogenous catalogue
-(reciprocity counts/binary/exp-decay/time-recent/time-first;
-transitivity, cyclic closure, sending/receiving balance counts and
-binaries; transitivity time-recent / time-first; per-actor in/out
-degree; recency), and a parallel post-hoc feature catalogue exposed
-through \texttt{compute\_endogenous\_features()}.
+semantics for time-varying globals; an exact-Gillespie inner loop
+\emph{plus} a $\tau$-leap approximation for high-rate regimes; the
+41-stat endogenous catalogue of Table~\ref{tab:catalog}, exposed
+identically by the simulator and the post-hoc engine and guarded
+by a brute-force-validated cross-implementation parity suite;
+four real-world REM datasets bundled directly under
+\texttt{data/} / \texttt{inst/extdata/}.
 
 \paragraph{Honest limitations.}
 \begin{itemize}
 \item \textbf{One-mode constraint for the closure family.}
-      Reciprocity-, transitivity-, cyclic-, and balance-style
-      statistics require \texttt{identical(senders, receivers)}.
-      Bipartite endogenous statistics
-      (\texttt{recency}, \texttt{sender\_outdegree},
-      \texttt{receiver\_indegree}) already work; the rest is future
+      Reciprocity, transitivity, cyclic, and balance statistics
+      require \texttt{identical(senders, receivers)}. The per-actor
+      family (\texttt{sender\_outdegree},
+      \texttt{receiver\_indegree}, \texttt{recency}) already works
+      in bipartite settings; bipartite closure stats are future
       work.
-\item \textbf{Generative catalogue still smaller than the post-hoc
-      one.}  In particular the \emph{ordered} two-path variants of
-      transitivity, exp-decay and time-* variants for cyclic /
-      balance, and the \emph{interrupted} reciprocity / triadicity
-      family of \citet{juozaitiene2024about} are recognised by
-      \texttt{compute\_endogenous\_features()} but not yet by the
-      simulator.
+\item \textbf{Remaining catalogue gaps.}  The interrupted
+      \emph{count} / \emph{binary} / \emph{exp-decay} variants of
+      the triadic closure family
+      (paper $t^{(1i)}\ldots t^{(8bii)}$ in their entirety) and
+      the ordered variants of cyclic / sending balance / receiving
+      balance are not yet supported. The timing variants of those
+      remaining specifications are the ones empirically selected
+      by Table~3 of the paper and they are already in place.
 \item \textbf{No global-effect inference.}  Because the global
       multiplier cancels in the partial-likelihood ratio,
       $\beta_g$ is not identifiable from case--control output
@@ -600,11 +701,12 @@ through \texttt{compute\_endogenous\_features()}.
 \end{itemize}
 
 \paragraph{Near-term roadmap.}  (i) Bipartite support for the closure
-family of endogenous statistics; (ii) wire ordered-two-path
-transitivity, exp-decay and time-* variants for cyclic / balance, and
-the interrupted family into the simulator; (iii) full-likelihood path
-for $\beta_g$; (iv) a dyad-time-grid covariate API; (v) optional C++
-inner loop for high-rate regimes.
+family of endogenous statistics; (ii) the remaining gaps from
+Table~3 of \citet{juozaitiene2024about} that are still missing
+(ordered cyclic / balance, full interrupted count / binary /
+exp-decay families for the triadic closure stats);
+(iii) full-likelihood path for $\beta_g$; (iv) a dyad-time-grid
+covariate API; (v) optional C++ inner loop for high-rate regimes.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
