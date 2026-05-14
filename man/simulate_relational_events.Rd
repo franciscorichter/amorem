@@ -21,7 +21,9 @@ simulate_relational_events(
   endogenous_stats = NULL,
   endogenous_effects = NULL,
   global_covariates = NULL,
-  global_effects = NULL
+  global_effects = NULL,
+  method = c("gillespie", "tau_leap"),
+  tau = NULL
 )
 }
 \arguments{
@@ -87,6 +89,18 @@ global covariate. Defaults to \code{NULL} (no global effects).}
 covariates. May be named (names must match the covariate columns in
 \code{global_covariates}) or unnamed (positionally matched). Required when
 \code{global_covariates} is supplied.}
+
+\item{method}{Simulation algorithm. Either \code{"gillespie"} (the default,
+exact event-driven algorithm: draw inter-event waiting times one at a time)
+or \code{"tau_leap"} (approximate, time-driven algorithm: advance the clock
+in fixed \code{tau} increments and Poisson-sample event counts per dyad
+within each step).}
+
+\item{tau}{Positive scalar; the step size for \code{method = "tau_leap"}.
+Required when method is \code{"tau_leap"} and ignored otherwise. Smaller
+values give better approximation but more iterations; as \eqn{\tau \to 0}
+the tau-leap result converges in distribution to the exact Gillespie
+result.}
 }
 \value{
 If \code{n_controls = 0}, a data.frame with columns \code{sender},
@@ -117,6 +131,22 @@ probabilities (the multiplier cancels), only the waiting-time
 distribution.  When combined with \code{endogenous_stats}, the
 per-dyad rates are recomputed at every step from the current endogenous
 state and then rescaled by the global multiplier.
+
+The \code{"tau_leap"} algorithm advances the clock by a user-chosen step
+\eqn{\tau} and draws, for every dyad, a \eqn{\mathrm{Poisson}(\lambda_{sr}(t)\,\tau)}
+number of events using the rates at the \emph{start} of the step. Multiple
+events can fire in the same step; they are placed at uniform times within
+\eqn{[t, t+\tau)} and reported in time order, but they share the
+start-of-step endogenous state and global multiplier. Endogenous state is
+updated once at the end of the step using all events in that step. The
+tau-leap algorithm trades exactness for predictable, vectorised work per
+step; it is most useful for high-rate regimes or for problems where the
+per-event recomputation in the Gillespie path is the bottleneck. Choose
+\eqn{\tau} small enough that (i) \eqn{\lambda \tau \ll 1} on every active
+dyad and (ii) \eqn{\tau} is smaller than the shortest interval in
+\code{global_covariates} (within-step boundary crossings are not
+resolved; the start-of-step global multiplier is used for the entire
+step).
 }
 \examples{
 set.seed(1)
