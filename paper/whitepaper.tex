@@ -1,0 +1,476 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage[round,authoryear]{natbib}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=black,
+  urlcolor=blue!50!black
+}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  showstringspaces=false,
+  columns=fullflexible,
+  xleftmargin=0.5em,
+  framesep=4pt
+}
+
+\title{\textbf{\texttt{amore}: Simulation and Case-Control Inference \\
+       for Relational Event Models}}
+\author{Francisco Richter Mendoza\\
+        \small Universit\`a della Svizzera italiana, Lugano \\
+        \small \texttt{richtf@usi.ch}}
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+\texttt{amore} is an R package for simulating and prototyping
+relational event models (REMs).  It implements a Gillespie-style
+event simulator with three composable layers of structure:
+exogenous actor covariates, time-varying global covariates with
+boundary-aware waiting times, and an endogenous state machinery for
+network-driven mechanisms such as reciprocity.  The simulator emits
+either plain event logs or stratified case--control data ready for
+partial-likelihood and GAM inference.  We describe the model,
+the algorithms, the function surface, and a battery of validation
+experiments (linear recovery of an endogenous effect, non-linear
+smooth recovery, time-varying global rate switching, and
+composition).  All experiments were executed against the head of the
+package and the reported numbers are the captured outputs.
+\end{abstract}
+
+\section{Motivation}
+
+Relational event models (REMs)~\citep{butts2008relational,perry2013point}
+treat directed dyadic interactions as a marked point process: each
+event $(s, r, t)$ is a sender--receiver--time triple, and the
+intensity at which a given dyad fires is a function of structural
+covariates, exogenous attributes, and the realized event history.
+The framework has become a standard tool in social, organizational,
+and citation network analysis~\citep{vu2017relational,stadtfeld2017dynamic}.
+
+Applied REM work has two recurring pain points.  First, the
+\emph{simulator} side is typically bespoke: there is no easy way to
+mix exogenous actor covariates, endogenous mechanisms (reciprocity,
+transitivity), and time-varying global covariates (weekday/weekend,
+policy regimes) into a single generative engine while preserving
+correct time-inhomogeneous semantics.  Second, the \emph{inference}
+side is fragmented: estimating an REM via partial likelihood
+\citep{perry2013point} requires case--control output (each event
+paired with one or more unrealized dyads) with the relevant covariate
+values evaluated at the event time, which most simulators do not
+produce out of the box.
+
+\texttt{amore} addresses both: it offers a composable simulator that
+covers all three covariate families, and it emits case--control data
+in the exact shape consumed by \texttt{survival::clogit} and
+\texttt{mgcv::gam}.  The package is designed for prototyping new REM
+methodology, not for high-throughput production runs; its scope and
+limits are stated explicitly in Section~\ref{sec:limits}.
+
+\section{Background}
+
+\paragraph{Setup.}
+Let $\mathcal{A}$ be a finite set of actors and let
+$\mathcal{D} = \{(s, r) : s, r \in \mathcal{A}, s \neq r\}$ be the
+set of admissible directed dyads (self-loops can optionally be
+included).  An event log is a sequence
+$(s_1, r_1, t_1), (s_2, r_2, t_2), \dots$ with $t_i$ strictly
+increasing.  We denote by $\mathcal{H}_t$ the realized history up to
+time~$t^-$.
+
+\paragraph{Intensity.}
+For dyad $d = (s, r)$ and time $t$, the conditional intensity is
+\begin{equation}
+\lambda_d(t \mid \mathcal{H}_t) \;=\;
+\lambda_0(t) \,\exp\!\bigl\{\eta_d(t; \mathcal{H}_t)\bigr\},
+\qquad
+\eta_d(t; \mathcal{H}_t) \;=\;
+x_d^\top \beta_x \,+\, z_d(t; \mathcal{H}_t)^\top \beta_z
+\,+\, g(t)^\top \beta_g,
+\label{eq:intensity}
+\end{equation}
+where $\lambda_0(t)$ is a baseline hazard (constant in this package),
+$x_d$ are static dyadic / actor covariates, $z_d(t; \mathcal{H}_t)$
+are endogenous statistics computed from the past, and $g(t)$ is a
+vector of global (dyad-independent) covariates that may be piecewise
+constant in time.
+
+\paragraph{Three covariate families.}
+The three families place different demands on the simulator.
+\emph{Static actor covariates} only affect the linear predictor
+once, so they fold into a precomputed $S \times R$ matrix of log
+weights.  \emph{Endogenous statistics} change after \emph{every}
+realized event and must be recomputed on the fly.  \emph{Global
+time-varying covariates} change at known interval boundaries, not at
+event times; under standard Gillespie the rate is no longer constant
+between events, so the algorithm must explicitly track interval
+boundaries (Section~\ref{sec:methods}).
+
+\paragraph{Case--control likelihood.}
+Conditional on an event $(s_i, r_i, t_i)$ having fired, the
+probability that dyad $d$ is the one observed is the multinomial
+\begin{equation}
+\Pr(d \mid \text{event at } t_i, \mathcal{H}_{t_i}) \;=\;
+\frac{\exp\bigl\{\eta_d(t_i; \mathcal{H}_{t_i})\bigr\}}
+     {\sum_{d' \in \mathcal{D}}
+        \exp\bigl\{\eta_{d'}(t_i; \mathcal{H}_{t_i})\bigr\}}.
+\label{eq:partial}
+\end{equation}
+The baseline $\lambda_0(t)$ and the global multiplier
+$\exp\{g(t)^\top \beta_g\}$ cancel from numerator and denominator;
+they are not identifiable from~\eqref{eq:partial}.  Inference on the
+global effect requires the full likelihood and is not supported in
+this release (see Section~\ref{sec:limits}).  The cancellation is
+exactly why case--control sampling with one or a few controls per
+event is computationally attractive: only the contribution of the
+realized dyad and a small Monte Carlo sample of unrealized dyads
+need to be evaluated.
+
+\section{Methods}\label{sec:methods}
+
+\subsection{Plain Gillespie simulation}
+With no time-inhomogeneous components, the simulator implements the
+classical Gillespie algorithm~\citep{gillespie1977exact}: the total
+rate $\Lambda = \sum_d w_d$ is constant between events, where
+$w_d = \exp\{\eta_d\} \cdot \lambda_0$.  The next inter-event time is
+$\Delta t \sim \mathrm{Exp}(\Lambda)$, and the dyad is selected by a
+softmax draw, $\Pr(d) = w_d / \Lambda$.
+
+\subsection{Endogenous mechanisms}
+When an endogenous statistic such as \texttt{reciprocity\_count} is
+active, the simulator maintains a per-stat $S \times R$ state matrix
+that is updated after each realized event.  For
+\texttt{reciprocity\_count}, on event $(s, r)$ the state cell
+$(r, s)$ is incremented by one, since a future event at dyad
+$(r, s)$ would view $(s, r)$ as a past reverse-direction event.  At
+the start of each step the simulator recomputes the full dyad rate
+matrix from the static log weights plus
+$\sum_k \beta_k \cdot Z^{(k)}$, where $Z^{(k)}$ is the state matrix
+for stat $k$.
+
+The case--control output records, for each row (event or control),
+the value the corresponding dyad held \emph{at the moment} the event
+fired (snapshot-at-event-time semantics).  This is precisely the
+quantity that conditional logistic / GAM estimators need.  The
+package supports two reciprocity flavours --- a count
+(\texttt{reciprocity\_count}) and an indicator
+(\texttt{reciprocity\_binary}); transitivity, recency, decay, and
+related stats are available post-hoc through
+\texttt{compute\_endogenous\_features()} but not yet wired into the
+simulator.
+
+\subsection{Boundary-aware Gillespie for time-varying globals}
+When a global covariate is piecewise constant on intervals with
+breakpoints $\tau_0 < \tau_1 < \dots$, the rate is constant
+\emph{within} an interval but jumps at boundaries.  Standard
+Gillespie draws $\Delta t \sim \mathrm{Exp}(\Lambda \cdot g_k)$ with
+$g_k = \exp\{g_k^\top \beta_g\}$ in interval $k$, but is invalid
+once the sample crosses $\tau_{k+1}$.  We implement the standard fix:
+\begin{enumerate}
+\item Draw $\Delta t \sim \mathrm{Exp}(\Lambda \cdot g_k)$.
+\item If $t + \Delta t < \tau_{k+1}$: accept; the event fires at
+      $t + \Delta t$.
+\item Otherwise: advance the clock to $\tau_{k+1}$ (no event
+      recorded), move to interval $k+1$, and redraw with the new
+      $g_{k+1}$.
+\end{enumerate}
+This is correct by the memorylessness of the exponential
+distribution: the residual time after reaching the boundary is
+again exponential under the new rate.
+
+\paragraph{Cancellation in case-control output.}  Because $g(t)$ is
+dyad-independent, $\exp\{g(t)^\top \beta_g\}$ cancels in the
+partial-likelihood ratio~\eqref{eq:partial}.  The package therefore
+appends the global covariate value to each case--control row for
+descriptive purposes, but \emph{partial-likelihood inference cannot
+recover $\beta_g$}.  Full-likelihood inference for $\beta_g$ is
+deferred to a future release.
+
+\subsection{Composition}
+When endogenous statistics and globals are both active, every step
+of the inner loop (i) recomputes the dyad rate matrix from the
+current endogenous state, (ii) rescales the total rate by the
+current global multiplier $g_k$, and (iii) draws a boundary-aware
+waiting time.  Once an event fires, the endogenous state is updated.
+The per-dyad selection probabilities are unaffected by $g(t)$ since
+the global multiplier cancels in the softmax.
+
+\section{Implementation}
+
+The package exports six functions:
+
+\begin{itemize}
+\item \texttt{standardize\_event\_log()} -- preprocessing.  Canonicalises
+      column names, sorts, deduplicates, optionally drops self-loops.
+\item \texttt{attach\_static\_covariates()} -- left-joins per-actor static
+      covariate tables onto an event log with configurable prefixes.
+\item \texttt{compute\_endogenous\_features()} -- post-hoc computation of
+      28 endogenous statistics (degree, reciprocity, transitivity,
+      cyclic closure, sending balance, receiving balance, with binary /
+      count / time-recent / time-first / exp-decay variants), following
+      the taxonomy of~\citet{juozaitiene2024nonparametric}.
+\item \texttt{sample\_non\_events()} -- generates case--control data
+      from an observed event log, with three scope rules
+      (\texttt{all}, \texttt{appearance}, \texttt{citation}), one- vs.
+      two-mode sampling, and standard vs. removed-risk strategies.
+\item \texttt{simulate\_actor\_covariates()} -- generates static or
+      AR(1) dynamic actor covariates as a quick scaffolding helper.
+\item \texttt{simulate\_relational\_events()} -- the main simulator.
+\end{itemize}
+
+\subsection{Simulator argument map}
+
+Table~\ref{tab:args} summarises the simulator's per-feature
+arguments.  Static covariates and dyad-level contributions enter via
+\texttt{contribution\_logits}, \texttt{sender\_covariates},
+and \texttt{receiver\_covariates}; endogenous mechanisms via
+\texttt{endogenous\_stats} and \texttt{endogenous\_effects};
+time-varying globals via \texttt{global\_covariates} and
+\texttt{global\_effects}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+Feature & Arguments & Notes \\
+\midrule
+Dyad-level contribution &
+  \texttt{contribution\_logits} &
+  $S \times R$ matrix of log-rate contributions. \\
+Static sender / receiver &
+  \texttt{sender\_covariates}, \texttt{sender\_effects}, &
+  Per-actor numeric tables; effects required. \\
+& \texttt{receiver\_covariates}, \texttt{receiver\_effects} & \\
+Endogenous &
+  \texttt{endogenous\_stats}, \texttt{endogenous\_effects} &
+  Currently \texttt{reciprocity\_count}, \texttt{reciprocity\_binary}. \\
+Time-varying global &
+  \texttt{global\_covariates}, \texttt{global\_effects} &
+  Piecewise constant on \texttt{time\_start} intervals. \\
+Case--control output &
+  \texttt{n\_controls} &
+  $\geq 1$ activates stratified output. \\
+\bottomrule
+\end{tabular}
+\caption{Per-feature simulator argument summary.}
+\label{tab:args}
+\end{table}
+
+\subsection{One-mode constraint for endogenous statistics}
+
+The current endogenous state machine maintains a single $S \times R$
+matrix indexed by \emph{the same} actor universe.  After an event
+$(s, r)$ it writes to cell $(r, s)$ of the reciprocity state.  This
+only makes sense when senders and receivers are the same character
+vector in the same order (one-mode networks).  Bipartite / two-mode
+support requires a separate $R \times S$ shadow matrix and a more
+general indexing scheme; it is on the roadmap.  The simulator
+enforces \texttt{identical(senders, receivers)} whenever
+\texttt{endogenous\_stats} is supplied.
+
+\subsection{Validation strategy and fast path}
+
+All input arguments are validated at the function boundary
+(matrix dimensions, name agreement between effects and statistics,
+ordering of \texttt{time\_start}, non-negativity of rates, sufficient
+admissible dyads relative to \texttt{n\_controls}).  When all the
+optional features are \texttt{NULL}, the simulator skips state
+allocation entirely and runs the plain Gillespie inner loop, which
+is the fast path measured in Section~\ref{sec:bench}.  The package
+ships with 284 unit tests covering each feature and their
+composition; \texttt{R CMD check} reports 0 errors and 0 warnings.
+
+\section{Validation experiments}\label{sec:experiments}
+
+All experiments below were run against the package head with seed
+\texttt{20260514}.  Captured outputs are reproduced verbatim from
+\texttt{paper/experiments/exp*\_out.txt}.
+
+\subsection{Experiment 1: linear reciprocity recovery}
+We simulate 1200 events on a one-mode network of 20 actors with
+$\beta_{\mathrm{reciprocity\_count}} = 0.6$, one control per event, and
+fit a stratified conditional logistic regression
+(\texttt{survival::clogit}) on the case--control output.
+
+\begin{lstlisting}
+cc <- simulate_relational_events(
+  n_events = 1200, senders = actors, receivers = actors,
+  n_controls = 1,
+  endogenous_stats = "reciprocity_count",
+  endogenous_effects = c(reciprocity_count = 0.6))
+fit <- clogit(event ~ reciprocity_count + strata(stratum), data = cc)
+\end{lstlisting}
+
+Captured output:
+\begin{verbatim}
+Estimated beta = 0.6930 (SE 0.1463)  [true = 0.60]
+z statistic (b_hat - true)/SE = 0.636
+\end{verbatim}
+The estimate is within one standard error of the truth.
+
+\subsection{Experiment 2: non-linear distance recovery}
+We use the package's \texttt{dist\_matrix} data (US-state geographic
+distances), rescale to a unitless log-distance $d$, set the true
+per-dyad contribution to $f(d) = \sin(-d/1.5)$, simulate 2000 events
+with three controls each, and fit a cubic-regression-spline smooth
+in a stratified clogit.
+
+\begin{lstlisting}
+contribution_logits <- sin(-log_d / 1.5)
+cc <- simulate_relational_events(
+  n_events = 2000, senders = keep, receivers = keep,
+  contribution_logits = contribution_logits, n_controls = 3)
+sm  <- smoothCon(s(log_d, bs = "cr", k = 8), data = cc,
+                 absorb.cons = TRUE)[[1]]
+fit <- clogit(event ~ <basis cols> + strata(stratum), data = cc_aug)
+\end{lstlisting}
+
+Captured output:
+\begin{verbatim}
+RMSE (centered) = 0.1213,  cor(true, pred) = 0.9831
+\end{verbatim}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/exp2_distance.pdf}
+\caption{Experiment 2: estimated GAM smooth (dashed) vs.\ the true
+sinusoidal effect (solid).  Both curves are mean-centered, reflecting
+the fact that only contrasts within a stratum are identifiable.}
+\label{fig:exp2}
+\end{figure}
+
+\subsection{Experiment 3: weekday rate switching}
+A piecewise global covariate \texttt{weekday} alternates 0/1 over
+400 intervals of length 1 with effect $\beta_w = 0.8$.  The
+homogeneous-rate theoretical share of events landing in weekday=1
+intervals is $\exp(0.8) / (1 + \exp(0.8)) = 0.6900$.
+
+\begin{lstlisting}
+global_df <- data.frame(time_start = 0:399,
+                        weekday    = rep(c(0,1), length.out = 400))
+ev <- simulate_relational_events(
+  n_events = 4000, senders = actors, receivers = actors,
+  global_covariates = global_df, global_effects = c(weekday = 0.8))
+\end{lstlisting}
+
+Captured output:
+\begin{verbatim}
+Events realized: 4000
+Expected share in weekday=1 intervals: 0.6900
+Observed share: 0.6877  (SE 0.0073)
+z = -0.304
+\end{verbatim}
+The observed share is within one third of a standard error of the
+analytic prediction, confirming the boundary-aware Gillespie clock.
+
+\subsection{Experiment 4: composition smoke test}
+Both endogenous reciprocity ($\beta_r = 0.6$) and the weekday global
+($\beta_w = 0.8$) are active simultaneously.  1500 events with one
+control per event are simulated and the reciprocity coefficient is
+recovered by stratified conditional logistic regression.
+
+Captured output:
+\begin{verbatim}
+Recovered beta_r = 0.6249 (SE 0.1925) [true = 0.60]
+z = 0.129
+Weekday share among events: observed 0.9900
+                            (homogeneous-rate limit 0.6900)
+\end{verbatim}
+The reciprocity coefficient is recovered to within $0.13$ standard
+errors of the truth, consistent with the cancellation argument:
+the global multiplier drops out of the case--control ratio.  The
+weekday share is far from the 0.69 limit precisely because the
+endogenous reciprocity inflates the within-interval rate as history
+accumulates, making the rate strongly time-inhomogeneous \emph{within}
+weekday=1 intervals; the simple analytic share does not apply when
+endogenous state is active.
+
+\subsection{Experiment 5: performance microbenchmark}\label{sec:bench}
+Wall-clock times for the four simulator modes at two problem sizes,
+median over three runs:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Size & Mode & Events & Actors & Median (s) & Range (s) \\
+\midrule
+small & plain      &  500 & 10 & 0.004 & 0.002 -- 0.102 \\
+small & endogenous &  500 & 10 & 0.007 & 0.006 -- 0.010 \\
+small & global     &  500 & 10 & 0.010 & 0.009 -- 0.011 \\
+small & both       &  500 & 10 & 0.013 & 0.012 -- 0.023 \\
+large & plain      & 3000 & 30 & 0.031 & 0.027 -- 0.033 \\
+large & endogenous & 3000 & 30 & 0.144 & 0.140 -- 0.151 \\
+large & global     & 3000 & 30 & 0.060 & 0.057 -- 0.060 \\
+large & both       & 3000 & 30 & 0.178 & 0.175 -- 0.180 \\
+\bottomrule
+\end{tabular}
+\caption{Wall-clock (R + base + \texttt{stats}) for the four
+simulator modes.  The endogenous-active path is dominated by the
+per-step recomputation of the $S \times R$ rate matrix; the global
+path adds the boundary-aware redraws.}
+\label{tab:bench}
+\end{table}
+
+\section{Limitations and roadmap}\label{sec:limits}
+
+\paragraph{What the package does well today.}  Composable simulation
+across the three covariate families with correct boundary-aware
+semantics for time-varying globals, snapshot-at-event-time
+case--control output ready for \texttt{clogit}, and a rich post-hoc
+endogenous feature catalogue.
+
+\paragraph{Honest limitations.}
+\begin{itemize}
+\item \textbf{One-mode endogenous only.}  Endogenous statistics
+      require \texttt{identical(senders, receivers)}; bipartite /
+      two-mode support is future work.
+\item \textbf{Endogenous catalogue in the simulator is small.}
+      Only \texttt{reciprocity\_count} and
+      \texttt{reciprocity\_binary} are wired into the inner loop.
+      Transitivity, cyclic closure, balance, recency, and
+      exp-decay variants are computed post-hoc by
+      \texttt{compute\_endogenous\_features()} but not yet
+      available as generative mechanisms.
+\item \textbf{No global-effect inference.}  Because the global
+      multiplier cancels in the partial-likelihood ratio,
+      $\beta_g$ is not identifiable from case--control output
+      alone.  Full-likelihood inference (or auxiliary information
+      such as the realized time grid) is required and is not yet
+      provided.
+\item \textbf{No tau-leap simulator.}  At very high total rates the
+      exact Gillespie algorithm becomes slow.  An approximate
+      tau-leap mode is not implemented.
+\item \textbf{No native time-varying \emph{dyadic} covariates.}
+      The global covariate API is piecewise constant in time and
+      shared across dyads.  Dyad-time grids (e.g.\ dyad-specific
+      seasonality) would require an extended API.
+\end{itemize}
+
+\paragraph{Near-term roadmap.}  (i) Bipartite support for endogenous
+state matrices; (ii) wire transitivity and decayed statistics into
+the simulator; (iii) full-likelihood path for $\beta_g$;
+(iv) a dyad-time-grid covariate API; (v) optional C++ inner loop for
+high-rate regimes.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

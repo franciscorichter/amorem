@@ -1,0 +1,9 @@
+Warning message:
+package ‘testthat’ was built under R version 4.4.3 
+nrow(cc) = 2400 
+table(event):
+
+   0    1 
+1200 1200 
+Estimated beta = 0.6930 (SE 0.1463)  [true = 0.60]
+z statistic (b_hat - true)/SE = 0.636
