@@ -19,7 +19,9 @@ simulate_relational_events(
   allow_loops = FALSE,
   n_controls = 0,
   endogenous_stats = NULL,
-  endogenous_effects = NULL
+  endogenous_effects = NULL,
+  global_covariates = NULL,
+  global_effects = NULL
 )
 }
 \arguments{
@@ -70,6 +72,19 @@ least once). Defaults to \code{NULL} for a memoryless process.}
 \code{endogenous_stats}. May be named (names must match
 \code{endogenous_stats}) or unnamed (positionally matched). Required when
 \code{endogenous_stats} is supplied.}
+
+\item{global_covariates}{Optional data.frame describing piecewise-constant
+global covariates: variables whose value at time \eqn{t} is the same for
+every dyad (e.g. weekday/weekend, weather, policy regime). Must contain a
+numeric \code{time_start} column giving the start of each interval; rows
+are assumed sorted in time and the first \code{time_start} must be at or
+before \code{start_time}. Each additional numeric column is treated as a
+global covariate. Defaults to \code{NULL} (no global effects).}
+
+\item{global_effects}{Numeric vector of linear coefficients for the global
+covariates. May be named (names must match the covariate columns in
+\code{global_covariates}) or unnamed (positionally matched). Required when
+\code{global_covariates} is supplied.}
 }
 \value{
 If \code{n_controls = 0}, a data.frame with columns \code{sender},
@@ -79,13 +94,27 @@ event with its controls) and \code{event} (1 for the realized event,
 0 for controls). When \code{endogenous_stats} is supplied, one extra column
 per stat is appended carrying the value each row's dyad had at its event
 time (immediately before the event fired), so downstream conditional
-logistic / GAM estimators can recover the effects.
+logistic / GAM estimators can recover the effects. When
+\code{global_covariates} is supplied, one column per covariate is appended
+carrying the value of that covariate at each row's event time.
 }
 \description{
 Generate a simple relational event log for a sender set and receiver set
 using a softmax allocation rule over dyadic intensities. The process follows
 the Gillespie algorithm, where the time between events is drawn from an
 exponential distribution with rate equal to the sum of all dyadic intensities.
+}
+\details{
+When \code{global_covariates} is supplied, the simulator uses a
+boundary-aware Gillespie scheme: the total event rate is rescaled by
+\eqn{\exp(\sum_k \beta_k\,x_k(t))}; whenever a sampled waiting time would
+cross an interval boundary, the clock is advanced to the boundary without
+recording an event, and the next waiting time is redrawn under the new
+global multiplier.  Global covariates do not change the per-dyad selection
+probabilities (the multiplier cancels), only the waiting-time
+distribution.  When combined with \code{endogenous_stats}, the
+per-dyad rates are recomputed at every step from the current endogenous
+state and then rescaled by the global multiplier.
 }
 \examples{
 set.seed(1)

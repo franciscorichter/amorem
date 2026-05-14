@@ -38,6 +38,17 @@
 #'   \code{endogenous_stats}. May be named (names must match
 #'   \code{endogenous_stats}) or unnamed (positionally matched). Required when
 #'   \code{endogenous_stats} is supplied.
+#' @param global_covariates Optional data.frame describing piecewise-constant
+#'   global covariates: variables whose value at time \eqn{t} is the same for
+#'   every dyad (e.g. weekday/weekend, weather, policy regime). Must contain a
+#'   numeric \code{time_start} column giving the start of each interval; rows
+#'   are assumed sorted in time and the first \code{time_start} must be at or
+#'   before \code{start_time}. Each additional numeric column is treated as a
+#'   global covariate. Defaults to \code{NULL} (no global effects).
+#' @param global_effects Numeric vector of linear coefficients for the global
+#'   covariates. May be named (names must match the covariate columns in
+#'   \code{global_covariates}) or unnamed (positionally matched). Required when
+#'   \code{global_covariates} is supplied.
 #'
 #' @return If \code{n_controls = 0}, a data.frame with columns \code{sender},
 #'   \code{receiver} and \code{time}. If \code{n_controls > 0}, it returns a
@@ -46,7 +57,20 @@
 #'   0 for controls). When \code{endogenous_stats} is supplied, one extra column
 #'   per stat is appended carrying the value each row's dyad had at its event
 #'   time (immediately before the event fired), so downstream conditional
-#'   logistic / GAM estimators can recover the effects.
+#'   logistic / GAM estimators can recover the effects. When
+#'   \code{global_covariates} is supplied, one column per covariate is appended
+#'   carrying the value of that covariate at each row's event time.
+#'
+#' @details When \code{global_covariates} is supplied, the simulator uses a
+#'   boundary-aware Gillespie scheme: the total event rate is rescaled by
+#'   \eqn{\exp(\sum_k \beta_k\,x_k(t))}; whenever a sampled waiting time would
+#'   cross an interval boundary, the clock is advanced to the boundary without
+#'   recording an event, and the next waiting time is redrawn under the new
+#'   global multiplier.  Global covariates do not change the per-dyad selection
+#'   probabilities (the multiplier cancels), only the waiting-time
+#'   distribution.  When combined with \code{endogenous_stats}, the
+#'   per-dyad rates are recomputed at every step from the current endogenous
+#'   state and then rescaled by the global multiplier.
 #' @export
 #'
 #' @examples
@@ -91,12 +115,69 @@ simulate_relational_events <- function(
     allow_loops = FALSE,
     n_controls = 0,
     endogenous_stats = NULL,
-    endogenous_effects = NULL) {
+    endogenous_effects = NULL,
+    global_covariates = NULL,
+    global_effects = NULL) {
   stopifnot(length(n_events) == 1, n_events > 0)
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
   stopifnot(length(horizon) == 1)
   stopifnot(length(n_controls) == 1, n_controls >= 0)
+
+  global_active <- !is.null(global_covariates)
+  if (global_active) {
+    if (!is.data.frame(global_covariates)) {
+      stop("global_covariates must be a data.frame.")
+    }
+    if (!"time_start" %in% names(global_covariates)) {
+      stop("global_covariates must include a 'time_start' column.")
+    }
+    if (nrow(global_covariates) == 0) {
+      stop("global_covariates must have at least one row.")
+    }
+    global_cov_names <- setdiff(names(global_covariates), "time_start")
+    if (!length(global_cov_names)) {
+      stop("global_covariates must include at least one covariate column besides 'time_start'.")
+    }
+    time_breaks <- as.numeric(global_covariates$time_start)
+    if (any(is.na(time_breaks))) {
+      stop("time_start in global_covariates must be numeric and non-missing.")
+    }
+    if (is.unsorted(time_breaks, strictly = TRUE)) {
+      stop("global_covariates$time_start must be strictly increasing.")
+    }
+    if (time_breaks[1] > start_time) {
+      stop("global_covariates$time_start must begin at or before start_time.")
+    }
+    global_cov_matrix <- as.matrix(
+      global_covariates[, global_cov_names, drop = FALSE]
+    )
+    if (!is.numeric(global_cov_matrix)) {
+      stop("Global covariate columns must be numeric.")
+    }
+    if (any(is.na(global_cov_matrix))) {
+      stop("Global covariate values must be non-missing.")
+    }
+    if (is.null(global_effects)) {
+      stop("global_effects must be supplied when global_covariates is set.")
+    }
+    g_eff_names <- names(global_effects)
+    g_eff_vals <- as.numeric(global_effects)
+    if (length(g_eff_vals) != length(global_cov_names)) {
+      stop("global_effects must have one entry per global covariate column.")
+    }
+    if (!is.null(g_eff_names) && !all(g_eff_names == "")) {
+      if (!setequal(g_eff_names, global_cov_names)) {
+        stop("Names of global_effects must match the covariate columns of global_covariates.")
+      }
+      names(g_eff_vals) <- g_eff_names
+      global_effects <- g_eff_vals[global_cov_names]
+    } else {
+      names(g_eff_vals) <- global_cov_names
+      global_effects <- g_eff_vals
+    }
+    global_log_mult <- as.numeric(global_cov_matrix %*% global_effects)
+  }
 
   supported_endogenous <- c("reciprocity_count", "reciprocity_binary")
   endogenous_active <- !is.null(endogenous_stats) && length(endogenous_stats) > 0
@@ -246,8 +327,25 @@ simulate_relational_events <- function(
     }
   }
 
+  if (global_active) {
+    event_global_vals <- matrix(0,
+        nrow = n_events, ncol = length(global_cov_names),
+        dimnames = list(NULL, global_cov_names))
+    if (n_controls > 0) {
+      control_global_vals <- matrix(0,
+          nrow = n_events * n_controls, ncol = length(global_cov_names),
+          dimnames = list(NULL, global_cov_names))
+    }
+  }
+
+  interval_at <- function(t) {
+    idx <- findInterval(t, time_breaks, rightmost.closed = FALSE)
+    if (idx < 1L) 1L else idx
+  }
+
   current_time <- start_time
   event_counter <- 0L
+  exceeded_horizon <- FALSE
 
   for (i in seq_len(n_events)) {
     if (endogenous_active) {
@@ -262,11 +360,43 @@ simulate_relational_events <- function(
       }
     }
 
-    # Gillespie timing: rexp(1, rate = sum of all hazards)
-    dt <- stats::rexp(1, rate = total_weight)
-    current_time <- current_time + dt
-    if (current_time > horizon) {
-      break
+    if (global_active) {
+      # Boundary-aware waiting time: redraw whenever a sampled dt would
+      # cross into the next interval. Each boundary crossing advances
+      # `current_time` to the boundary without emitting an event.
+      repeat {
+        idx <- interval_at(current_time)
+        g_mult <- exp(global_log_mult[idx])
+        next_boundary <- if (idx < length(time_breaks)) {
+          time_breaks[idx + 1L]
+        } else {
+          Inf
+        }
+        rate_eff <- total_weight * g_mult
+        dt <- stats::rexp(1, rate = rate_eff)
+        t_new <- current_time + dt
+        if (t_new < next_boundary) {
+          if (t_new > horizon) {
+            exceeded_horizon <- TRUE
+            break
+          }
+          current_time <- t_new
+          break
+        }
+        if (next_boundary > horizon) {
+          exceeded_horizon <- TRUE
+          break
+        }
+        current_time <- next_boundary
+      }
+      if (exceeded_horizon) break
+    } else {
+      # Gillespie timing: rexp(1, rate = sum of all hazards)
+      dt <- stats::rexp(1, rate = total_weight)
+      current_time <- current_time + dt
+      if (current_time > horizon) {
+        break
+      }
     }
 
     choice <- sample.int(S * R, size = 1, prob = probs)
@@ -281,6 +411,13 @@ simulate_relational_events <- function(
     if (endogenous_active) {
       for (st in endogenous_stats) {
         event_stat_vals[event_counter, st] <- endo_state[[st]][s_idx, r_idx]
+      }
+    }
+
+    if (global_active) {
+      idx_evt <- interval_at(current_time)
+      for (cn in global_cov_names) {
+        event_global_vals[event_counter, cn] <- global_cov_matrix[idx_evt, cn]
       }
     }
 
@@ -314,6 +451,14 @@ simulate_relational_events <- function(
             endo_state[[st]][cbind(c_s_idxs, c_r_idxs)]
         }
       }
+
+      if (global_active) {
+        idx_evt <- interval_at(current_time)
+        ctrl_rows <- ctrl_start_idx:ctrl_end_idx
+        for (cn in global_cov_names) {
+          control_global_vals[ctrl_rows, cn] <- global_cov_matrix[idx_evt, cn]
+        }
+      }
     }
 
     if (endogenous_active) {
@@ -343,6 +488,9 @@ simulate_relational_events <- function(
     if (endogenous_active) {
       for (st in endogenous_stats) out[[st]] <- numeric(0)
     }
+    if (global_active) {
+      for (cn in global_cov_names) out[[cn]] <- numeric(0)
+    }
     return(out)
   }
 
@@ -356,6 +504,11 @@ simulate_relational_events <- function(
     if (endogenous_active) {
       for (st in endogenous_stats) {
         out[[st]] <- event_stat_vals[seq_len(event_counter), st]
+      }
+    }
+    if (global_active) {
+      for (cn in global_cov_names) {
+        out[[cn]] <- event_global_vals[seq_len(event_counter), cn]
       }
     }
     return(out)
@@ -383,6 +536,12 @@ simulate_relational_events <- function(
       for (st in endogenous_stats) {
         realized_df[[st]] <- event_stat_vals[seq_len(event_counter), st]
         control_df[[st]] <- control_stat_vals[seq_len(c_records), st]
+      }
+    }
+    if (global_active) {
+      for (cn in global_cov_names) {
+        realized_df[[cn]] <- event_global_vals[seq_len(event_counter), cn]
+        control_df[[cn]] <- control_global_vals[seq_len(c_records), cn]
       }
     }
 
