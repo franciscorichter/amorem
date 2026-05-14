@@ -142,7 +142,11 @@ They are grouped into five families.
 
 - `cyclic_time_recent`:
 
-  Time since the most recent cyclic two-path; `NA` if none.
+  Time since the most recent cyclic two-path formation; `NA` if none.
+
+- `cyclic_time_first`:
+
+  Time since the first cyclic two-path formation; `NA` if none.
 
 **Sending balance** — shared target: both \\s \to k\\ and \\r \to k\\
 exist:
@@ -157,7 +161,12 @@ exist:
 
 - `sending_balance_time_recent`:
 
-  Time since the most recent shared-target two-path; `NA` if none.
+  Time since the most recent shared-target two-path formation; `NA` if
+  none.
+
+- `sending_balance_time_first`:
+
+  Time since the first shared-target two-path formation; `NA` if none.
 
 **Receiving balance** — shared source: both \\k \to s\\ and \\k \to r\\
 exist:
@@ -172,4 +181,9 @@ exist:
 
 - `receiving_balance_time_recent`:
 
-  Time since the most recent shared-source two-path; `NA` if none.
+  Time since the most recent shared-source two-path formation; `NA` if
+  none.
+
+- `receiving_balance_time_first`:
+
+  Time since the first shared-source two-path formation; `NA` if none.
