@@ -113,6 +113,15 @@ simulate_relational_events(
   - `"reciprocity_exp_decay"` — sum of past reverse-dyad events with
     exponential half-life decay (requires `half_life`).
 
+  - `"reciprocity_time_recent"` — elapsed time since the most recent
+    reverse-dyad event \\t - t\_{\text{recent}}(r,s)\\; reports `0` for
+    dyads whose reverse has never fired (rather than the post-hoc `NA`,
+    so the rate computation stays numeric).
+
+  - `"reciprocity_time_first"` — elapsed time since the *first*
+    reverse-dyad event \\t - t\_{\text{first}}(r,s)\\; same
+    `0`-for-never-seen convention.
+
   - `"recency"` — elapsed time on the same ordered dyad \\t -
     t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\
     for dyads that have never fired.

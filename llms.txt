@@ -49,7 +49,8 @@ exploratory and simulation-based REM studies:
   (`method = "tau_leap", tau = ...`) — with optional controls for
   partial likelihood, a growing endogenous catalog (reciprocity:
   `reciprocity_count`, `reciprocity_binary`, half-life-decayed
-  `reciprocity_exp_decay`; per-actor degree: `sender_outdegree`,
+  `reciprocity_exp_decay`, `reciprocity_time_recent`,
+  `reciprocity_time_first`; per-actor degree: `sender_outdegree`,
   `receiver_indegree`; per-dyad `recency`; two-path:
   `transitivity_count`/`_binary`, `cyclic_count`/`_binary`;
   shared-target / shared-source: `sending_balance_count`/`_binary`,

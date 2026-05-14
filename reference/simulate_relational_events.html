@@ -147,6 +147,13 @@ values:</p><ul><li><p><code>"reciprocity_count"</code> — number of past revers
 least once, 0 otherwise.</p></li>
 <li><p><code>"reciprocity_exp_decay"</code> — sum of past reverse-dyad events
 with exponential half-life decay (requires <code>half_life</code>).</p></li>
+<li><p><code>"reciprocity_time_recent"</code> — elapsed time since the most
+recent reverse-dyad event \(t - t_{\text{recent}}(r,s)\); reports
+<code>0</code> for dyads whose reverse has never fired (rather than the
+post-hoc <code>NA</code>, so the rate computation stays numeric).</p></li>
+<li><p><code>"reciprocity_time_first"</code> — elapsed time since the
+<em>first</em> reverse-dyad event \(t - t_{\text{first}}(r,s)\);
+same <code>0</code>-for-never-seen convention.</p></li>
 <li><p><code>"recency"</code> — elapsed time on the same ordered dyad
 \(t - t_{\text{last}}(s,r)\), defaulting to
 \(t - \text{start\_time}\) for dyads that have never fired.</p></li>
