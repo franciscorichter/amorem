@@ -476,24 +476,43 @@ simulate_relational_events <- function(
     stop("Both sender and receiver sets must be non-empty.")
   }
 
-  one_mode_required_stats <- c(reciprocity_stats, network_stats)
-  needs_one_mode <- endogenous_active &&
-    any(endogenous_stats %in% one_mode_required_stats)
-  if (needs_one_mode) {
-    # The reciprocity_* stats maintain a state matrix indexed by
-    # (sender, receiver) and update the *reverse* dyad after each event;
-    # the network_* (transitivity / cyclic / balance) stats use a binary
-    # adjacency matrix and matrix products that only make sense when the
-    # actor universe is the same on both axes. Both families require senders
-    # and receivers to be the same character vector in the same order.
-    # `recency` is per-dyad with no reverse-dyad or path semantics, so it
-    # does not trigger this check.
-    if (S != R || !identical(senders, receivers)) {
-      stop("reciprocity_* and network_* endogenous stats currently require ",
-           "senders and receivers to be the same character vector in the ",
-           "same order (one-mode networks). Bipartite / two-mode support ",
-           "is on the roadmap.")
-    }
+  # The closure-family endogenous statistics (reciprocity_*,
+  # transitivity_*, cyclic_*, sending_balance_*, receiving_balance_*)
+  # operate on the joint actor universe U = unique(c(senders, receivers)).
+  # State matrices are sized |U| x |U| in unified coordinates and the
+  # rate computation reads back the S x R sub-block via the position
+  # vectors S_pos / R_pos.
+  #
+  # When senders == receivers (one-mode), |U| == S == R, S_pos == R_pos
+  # == 1:S, and the new code path is byte-identical to the previous
+  # implementation in behaviour.
+  closure_family_stats <- c(reciprocity_stats, network_stats)
+  needs_closure <- endogenous_active &&
+    any(endogenous_stats %in% closure_family_stats)
+  if (needs_closure) {
+    actor_universe <- unique(c(senders, receivers))
+    S_pos <- match(senders,   actor_universe)
+    R_pos <- match(receivers, actor_universe)
+    U_size <- length(actor_universe)
+  } else {
+    actor_universe <- NULL
+    S_pos  <- NULL
+    R_pos  <- NULL
+    U_size <- 0L
+  }
+  is_one_mode <- needs_closure && S == R && identical(senders, receivers)
+
+  # Phase 1: the unified-actor infrastructure above is in place, but
+  # the simulator's state-update paths are still written against S x R
+  # matrices with one-mode-only swap semantics. The constraint check
+  # below stays active until Phase 2 wires the new infrastructure
+  # through every state read/write site.
+  if (needs_closure && !is_one_mode) {
+    stop("reciprocity_* and network_* endogenous stats currently require ",
+         "senders and receivers to be the same character vector in the ",
+         "same order (one-mode networks). Bipartite / two-mode support ",
+         "is partially implemented (Phase 1: unified actor universe) ",
+         "and tracked under issue 'bipartite closure stats'.")
   }
 
   if (is.null(contribution_logits)) {
@@ -555,42 +574,48 @@ simulate_relational_events <- function(
 
   endo_state <- list()
   if (endogenous_active) {
+    time_recent_first_stats <- c("reciprocity_time_recent",
+                                  "reciprocity_time_first",
+                                  "transitivity_time_recent",
+                                  "transitivity_time_first",
+                                  "cyclic_time_recent",
+                                  "cyclic_time_first",
+                                  "sending_balance_time_recent",
+                                  "sending_balance_time_first",
+                                  "receiving_balance_time_recent",
+                                  "receiving_balance_time_first",
+                                  "transitivity_time_recent_ordered",
+                                  "transitivity_time_first_ordered",
+                                  "reciprocity_time_recent_interrupted",
+                                  "reciprocity_time_first_interrupted",
+                                  "transitivity_time_recent_interrupted",
+                                  "transitivity_time_first_interrupted",
+                                  "cyclic_time_recent_interrupted",
+                                  "cyclic_time_first_interrupted",
+                                  "sending_balance_time_recent_interrupted",
+                                  "sending_balance_time_first_interrupted",
+                                  "receiving_balance_time_recent_interrupted",
+                                  "receiving_balance_time_first_interrupted")
+    # Closure-family state matrices are sized |U| x |U| in unified
+    # actor coordinates; the simulator reads back the S x R sub-block
+    # via [S_pos, R_pos]. For one-mode networks U_size == S == R and
+    # the indexing collapses to the identity.
     for (st in endogenous_stats) {
+      is_closure <- st %in% closure_family_stats
+      mat_nrow <- if (is_closure) U_size else S
+      mat_ncol <- if (is_closure) U_size else R
       if (st == "recency") {
-        # State cell holds the time of the last event on dyad (s, r);
-        # initialised to start_time so the "elapsed time since last event"
-        # stat is zero for every dyad at t = start_time and grows from
-        # there.
+        # `recency` is per-dyad (sender, receiver), not closure-family,
+        # so it stays S x R.
         endo_state[[st]] <- matrix(start_time, nrow = S, ncol = R)
-      } else if (st %in% c("reciprocity_time_recent",
-                            "reciprocity_time_first",
-                            "transitivity_time_recent",
-                            "transitivity_time_first",
-                            "cyclic_time_recent",
-                            "cyclic_time_first",
-                            "sending_balance_time_recent",
-                            "sending_balance_time_first",
-                            "receiving_balance_time_recent",
-                            "receiving_balance_time_first",
-                            "transitivity_time_recent_ordered",
-                            "transitivity_time_first_ordered",
-                            "reciprocity_time_recent_interrupted",
-                            "reciprocity_time_first_interrupted",
-                            "transitivity_time_recent_interrupted",
-                            "transitivity_time_first_interrupted",
-                            "cyclic_time_recent_interrupted",
-                            "cyclic_time_first_interrupted",
-                            "sending_balance_time_recent_interrupted",
-                            "sending_balance_time_first_interrupted",
-                            "receiving_balance_time_recent_interrupted",
-                            "receiving_balance_time_first_interrupted")) {
+      } else if (st %in% time_recent_first_stats) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
         # matrices so the rate computation stays numeric (see
         # endo_stat_values()).
-        endo_state[[st]] <- matrix(NA_real_, nrow = S, ncol = R)
+        endo_state[[st]] <- matrix(NA_real_, nrow = mat_nrow, ncol = mat_ncol)
       } else {
-        endo_state[[st]] <- matrix(0, nrow = S, ncol = R)
+        endo_state[[st]] <- matrix(0, nrow = mat_nrow, ncol = mat_ncol)
       }
     }
   }
@@ -602,7 +627,7 @@ simulate_relational_events <- function(
   has_network_stats <- endogenous_active &&
     any(endogenous_stats %in% network_stats)
   adj_state <- if (has_network_stats) {
-    matrix(0, nrow = S, ncol = S)
+    matrix(0, nrow = U_size, ncol = U_size)
   } else NULL
 
   # Ordered transitivity needs per-dyad first / last event timestamps so we
@@ -612,13 +637,13 @@ simulate_relational_events <- function(
   has_ordered_stats <- endogenous_active &&
     any(endogenous_stats %in% ordered_stats)
   if (has_ordered_stats) {
-    first_dyad_time <- matrix(NA_real_, nrow = S, ncol = S)
-    last_dyad_time  <- matrix(NA_real_, nrow = S, ncol = S)
+    first_dyad_time <- matrix(NA_real_, nrow = U_size, ncol = U_size)
+    last_dyad_time  <- matrix(NA_real_, nrow = U_size, ncol = U_size)
     # Shared count state, fed by every ordered stat (count, binary,
     # time_recent, time_first) so that the binary version can be
     # derived from the count even when the count itself isn't
     # requested by the caller.
-    ord_count_state <- matrix(0L, nrow = S, ncol = S)
+    ord_count_state <- matrix(0L, nrow = U_size, ncol = U_size)
   } else {
     first_dyad_time <- NULL
     last_dyad_time  <- NULL
