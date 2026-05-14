@@ -123,6 +123,18 @@ most recent / first shared-target two-path
 \code{"receiving_balance_time_first"} — elapsed time since the
 most recent / first shared-source two-path
 \eqn{k \to s,\ k \to r} was completed.
+\item \code{"transitivity_count_ordered"} /
+\code{"transitivity_binary_ordered"} — number of intermediaries
+\eqn{k} (or indicator) for which an ordered two-path
+\eqn{s \to k} \emph{before} \eqn{k \to r} has been observed
+(definitions \eqn{t^{(4c)}} / \eqn{t^{(2c)}} of
+Juozaitienė & Wit, 2024).
+\item \code{"transitivity_time_recent_ordered"} /
+\code{"transitivity_time_first_ordered"} — elapsed time since
+the most recent / first ordered two-path
+\eqn{s \to k} \emph{before} \eqn{k \to r} was completed
+(definitions \eqn{t^{(8ac)}} / \eqn{t^{(8bc)}} of
+Juozaitienė & Wit, 2024).
 }
 Defaults to \code{NULL} for a memoryless process.}
 
