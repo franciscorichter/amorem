@@ -89,8 +89,10 @@ two-path; \code{NA} if none.}
 \describe{
 \item{\code{cyclic_binary}}{1 if any cyclic two-path exists.}
 \item{\code{cyclic_count}}{Number of cyclic intermediaries.}
-\item{\code{cyclic_time_recent}}{Time since the most recent cyclic two-path;
-\code{NA} if none.}
+\item{\code{cyclic_time_recent}}{Time since the most recent cyclic two-path
+formation; \code{NA} if none.}
+\item{\code{cyclic_time_first}}{Time since the first cyclic two-path
+formation; \code{NA} if none.}
 }
 
 \strong{Sending balance} — shared target: both \eqn{s \to k} and \eqn{r \to k}
@@ -99,7 +101,9 @@ exist:
 \item{\code{sending_balance_binary}}{1 if any shared target exists.}
 \item{\code{sending_balance_count}}{Number of shared targets.}
 \item{\code{sending_balance_time_recent}}{Time since the most recent
-shared-target two-path; \code{NA} if none.}
+shared-target two-path formation; \code{NA} if none.}
+\item{\code{sending_balance_time_first}}{Time since the first
+shared-target two-path formation; \code{NA} if none.}
 }
 
 \strong{Receiving balance} — shared source: both \eqn{k \to s} and
@@ -108,6 +112,8 @@ shared-target two-path; \code{NA} if none.}
 \item{\code{receiving_balance_binary}}{1 if any shared source exists.}
 \item{\code{receiving_balance_count}}{Number of shared sources.}
 \item{\code{receiving_balance_time_recent}}{Time since the most recent
-shared-source two-path; \code{NA} if none.}
+shared-source two-path formation; \code{NA} if none.}
+\item{\code{receiving_balance_time_first}}{Time since the first
+shared-source two-path formation; \code{NA} if none.}
 }
 }
