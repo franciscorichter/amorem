@@ -60,7 +60,9 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  allow_loops <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  n_controls <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  endogenous_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  endogenous_effects <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  endogenous_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  global_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  global_effects <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -145,6 +147,23 @@ least once). Defaults to <code>NULL</code> for a memoryless process.</p></dd>
 <code>endogenous_stats</code>) or unnamed (positionally matched). Required when
 <code>endogenous_stats</code> is supplied.</p></dd>
 
+
+<dt id="arg-global-covariates">global_covariates<a class="anchor" aria-label="anchor" href="#arg-global-covariates"></a></dt>
+<dd><p>Optional data.frame describing piecewise-constant
+global covariates: variables whose value at time \(t\) is the same for
+every dyad (e.g. weekday/weekend, weather, policy regime). Must contain a
+numeric <code>time_start</code> column giving the start of each interval; rows
+are assumed sorted in time and the first <code>time_start</code> must be at or
+before <code>start_time</code>. Each additional numeric column is treated as a
+global covariate. Defaults to <code>NULL</code> (no global effects).</p></dd>
+
+
+<dt id="arg-global-effects">global_effects<a class="anchor" aria-label="anchor" href="#arg-global-effects"></a></dt>
+<dd><p>Numeric vector of linear coefficients for the global
+covariates. May be named (names must match the covariate columns in
+<code>global_covariates</code>) or unnamed (positionally matched). Required when
+<code>global_covariates</code> is supplied.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -155,7 +174,22 @@ event with its controls) and <code>event</code> (1 for the realized event,
 0 for controls). When <code>endogenous_stats</code> is supplied, one extra column
 per stat is appended carrying the value each row's dyad had at its event
 time (immediately before the event fired), so downstream conditional
-logistic / GAM estimators can recover the effects.</p>
+logistic / GAM estimators can recover the effects. When
+<code>global_covariates</code> is supplied, one column per covariate is appended
+carrying the value of that covariate at each row's event time.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>When <code>global_covariates</code> is supplied, the simulator uses a
+boundary-aware Gillespie scheme: the total event rate is rescaled by
+\(\exp(\sum_k \beta_k\,x_k(t))\); whenever a sampled waiting time would
+cross an interval boundary, the clock is advanced to the boundary without
+recording an event, and the next waiting time is redrawn under the new
+global multiplier.  Global covariates do not change the per-dyad selection
+probabilities (the multiplier cancels), only the waiting-time
+distribution.  When combined with <code>endogenous_stats</code>, the
+per-dyad rates are recomputed at every step from the current endogenous
+state and then rescaled by the global multiplier.</p>
     </div>
 
     <div class="section level2">

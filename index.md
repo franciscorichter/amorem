@@ -45,8 +45,10 @@ exploratory and simulation-based REM studies:
 - **Relational event simulation.**
   [`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
   runs Gillespie-style simulations with optional controls for partial
-  likelihood, including endogenous mechanisms (`reciprocity_count` /
-  `reciprocity_binary`) whose state updates between events.
+  likelihood, endogenous mechanisms (`reciprocity_count` /
+  `reciprocity_binary`) whose state updates between events, and
+  time-varying global covariates via a boundary-aware scheme
+  (weekday/weekend rate switches, policy regimes, …).
 - **Non-event sampling.**
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   constructs nested case-control tables with appearance, citation, and
@@ -432,6 +434,44 @@ conditional logistic / GAM regression on the case–control table (see
 first cut are `reciprocity_count` and `reciprocity_binary`; additional
 endogenous mechanisms (transitivity, recency, decay-weighted variants)
 are tracked in the issue queue.
+
+### Time-varying global covariates
+
+Global covariates (e.g. weekday vs weekend, weather regime, policy
+state) take the same value for every dyad at a given time but vary over
+time. Pass a `global_covariates` table with a `time_start` column plus
+one column per covariate, together with matching `global_effects`:
+
+``` r
+
+set.seed(1)
+gc <- data.frame(
+  time_start = seq(0, 10, by = 1),
+  weekday    = rep(c(0, 1), length.out = 11)
+)
+
+ev <- simulate_relational_events(
+  n_events           = 200,
+  senders            = letters[1:5],
+  receivers          = letters[1:5],
+  baseline_rate      = 0.3,
+  horizon            = 11,
+  global_covariates  = gc,
+  global_effects     = c(weekday = 2)
+)
+
+mean(ev$weekday == 1)  # share of events in weekday=1 intervals
+```
+
+Under the hood the simulator uses a **boundary-aware Gillespie** scheme:
+if a sampled waiting time would cross an interval boundary, the clock is
+advanced to the boundary without recording an event and the next waiting
+time is redrawn under the new global multiplier. Dyad-selection
+probabilities are unchanged (the global factor multiplies all rates
+equally), only the inter-event timing reflects the time-varying global
+state. Each output row carries the global covariate values it
+experienced at its event time, and the feature composes with the
+endogenous machinery above so both can be active simultaneously.
 
 ## Documentation
 

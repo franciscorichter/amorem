@@ -24,7 +24,9 @@ simulate_relational_events(
   allow_loops = FALSE,
   n_controls = 0,
   endogenous_stats = NULL,
-  endogenous_effects = NULL
+  endogenous_effects = NULL,
+  global_covariates = NULL,
+  global_effects = NULL
 )
 ```
 
@@ -105,6 +107,23 @@ simulate_relational_events(
   named (names must match `endogenous_stats`) or unnamed (positionally
   matched). Required when `endogenous_stats` is supplied.
 
+- global_covariates:
+
+  Optional data.frame describing piecewise-constant global covariates:
+  variables whose value at time \\t\\ is the same for every dyad (e.g.
+  weekday/weekend, weather, policy regime). Must contain a numeric
+  `time_start` column giving the start of each interval; rows are
+  assumed sorted in time and the first `time_start` must be at or before
+  `start_time`. Each additional numeric column is treated as a global
+  covariate. Defaults to `NULL` (no global effects).
+
+- global_effects:
+
+  Numeric vector of linear coefficients for the global covariates. May
+  be named (names must match the covariate columns in
+  `global_covariates`) or unnamed (positionally matched). Required when
+  `global_covariates` is supplied.
+
 ## Value
 
 If `n_controls = 0`, a data.frame with columns `sender`, `receiver` and
@@ -114,7 +133,22 @@ additional columns `stratum` (grouping an event with its controls) and
 `endogenous_stats` is supplied, one extra column per stat is appended
 carrying the value each row's dyad had at its event time (immediately
 before the event fired), so downstream conditional logistic / GAM
-estimators can recover the effects.
+estimators can recover the effects. When `global_covariates` is
+supplied, one column per covariate is appended carrying the value of
+that covariate at each row's event time.
+
+## Details
+
+When `global_covariates` is supplied, the simulator uses a
+boundary-aware Gillespie scheme: the total event rate is rescaled by
+\\\exp(\sum_k \beta_k\\x_k(t))\\; whenever a sampled waiting time would
+cross an interval boundary, the clock is advanced to the boundary
+without recording an event, and the next waiting time is redrawn under
+the new global multiplier. Global covariates do not change the per-dyad
+selection probabilities (the multiplier cancels), only the waiting-time
+distribution. When combined with `endogenous_stats`, the per-dyad rates
+are recomputed at every step from the current endogenous state and then
+rescaled by the global multiplier.
 
 ## Examples
 
