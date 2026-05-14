@@ -311,10 +311,13 @@ compute_endogenous_features <- function(
     "transitivity_time_recent", "transitivity_time_first",
     "transitivity_time_recent_ordered", "transitivity_time_first_ordered",
     "cyclic_binary", "cyclic_count", "cyclic_time_recent", "cyclic_time_first",
+    "cyclic_exp_decay",
     "sending_balance_binary", "sending_balance_count",
     "sending_balance_time_recent", "sending_balance_time_first",
+    "sending_balance_exp_decay",
     "receiving_balance_binary", "receiving_balance_count",
-    "receiving_balance_time_recent", "receiving_balance_time_first"
+    "receiving_balance_time_recent", "receiving_balance_time_first",
+    "receiving_balance_exp_decay"
   )
   bad <- setdiff(stats, allowed)
   if (length(bad)) {
@@ -326,7 +329,10 @@ compute_endogenous_features <- function(
 
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
                        "transitivity_exp_decay_ordered",
-                       "reciprocity_exp_decay_interrupted")
+                       "reciprocity_exp_decay_interrupted",
+                       "cyclic_exp_decay",
+                       "sending_balance_exp_decay",
+                       "receiving_balance_exp_decay")
   if (any(exp_decay_stats %in% stats) &&
       (is.null(half_life) || !is.numeric(half_life) || half_life <= 0)) {
     stop("`half_life` must be a positive number when ",
@@ -353,11 +359,14 @@ compute_endogenous_features <- function(
                    "transitivity_time_recent_ordered",
                    "transitivity_time_first_ordered")
   cyc_names   <- c("cyclic_binary", "cyclic_count",
-                   "cyclic_time_recent", "cyclic_time_first")
+                   "cyclic_time_recent", "cyclic_time_first",
+                   "cyclic_exp_decay")
   sb_names    <- c("sending_balance_binary", "sending_balance_count",
-                   "sending_balance_time_recent", "sending_balance_time_first")
+                   "sending_balance_time_recent", "sending_balance_time_first",
+                   "sending_balance_exp_decay")
   rb_names    <- c("receiving_balance_binary", "receiving_balance_count",
-                   "receiving_balance_time_recent", "receiving_balance_time_first")
+                   "receiving_balance_time_recent", "receiving_balance_time_first",
+                   "receiving_balance_exp_decay")
   need_triadic <- any(c(trans_names, cyc_names, sb_names, rb_names) %in% stats)
 
   # --- Tracking data structures ---
@@ -409,8 +418,9 @@ compute_endogenous_features <- function(
                  "reciprocity_count", "reciprocity_exp_decay",
                  "transitivity_count", "transitivity_count_ordered",
                  "transitivity_exp_decay", "transitivity_exp_decay_ordered",
-                 "cyclic_count", "sending_balance_count",
-                 "receiving_balance_count",
+                 "cyclic_count", "cyclic_exp_decay",
+                 "sending_balance_count", "sending_balance_exp_decay",
+                 "receiving_balance_count", "receiving_balance_exp_decay",
                  "reciprocity_count_interrupted",
                  "reciprocity_exp_decay_interrupted")
   for (stat in stats) {
