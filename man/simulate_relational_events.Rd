@@ -72,9 +72,12 @@ include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
 values: \code{"reciprocity_count"} (number of past reverse-dyad events),
 \code{"reciprocity_binary"} (indicator that the reverse dyad has fired at
-least once), and \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
-events with exponential half-life decay; requires \code{half_life}).
-Defaults to \code{NULL} for a memoryless process.}
+least once), \code{"reciprocity_exp_decay"} (sum of past reverse-dyad
+events with exponential half-life decay; requires \code{half_life}), and
+\code{"recency"} (elapsed time on the same ordered dyad:
+\eqn{t - t_{\text{last}}(s,r)}, defaulting to
+\eqn{t - \text{start\_time}} for dyads that have never fired). Defaults
+to \code{NULL} for a memoryless process.}
 
 \item{endogenous_effects}{Numeric vector of linear coefficients for
 \code{endogenous_stats}. May be named (names must match
