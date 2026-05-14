@@ -104,6 +104,14 @@ number of shared targets \eqn{k} (or indicator) where both
 \code{"receiving_balance_binary"} — number of shared sources
 \eqn{k} (or indicator) where both \eqn{(k,s)} and \eqn{(k,r)} have
 fired.
+\item \code{"transitivity_time_recent"} — elapsed time since the most
+recent two-path \eqn{s \to k \to r} was completed, for any
+intermediary \eqn{k} (definition 7ac of Juozaitienė & Wit, 2024).
+Reports \code{0} for dyads where no two-path has ever existed.
+\item \code{"transitivity_time_first"} — elapsed time since the
+\emph{first} two-path \eqn{s \to k \to r} was completed
+(definition 7bc of Juozaitienė & Wit, 2024). Same
+\code{0}-for-never-seen convention.
 }
 Defaults to \code{NULL} for a memoryless process.}
 

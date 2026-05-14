@@ -67,6 +67,14 @@
 #'       \code{"receiving_balance_binary"} — number of shared sources
 #'       \eqn{k} (or indicator) where both \eqn{(k,s)} and \eqn{(k,r)} have
 #'       fired.
+#'     \item \code{"transitivity_time_recent"} — elapsed time since the most
+#'       recent two-path \eqn{s \to k \to r} was completed, for any
+#'       intermediary \eqn{k} (definition 7ac of Juozaitienė & Wit, 2024).
+#'       Reports \code{0} for dyads where no two-path has ever existed.
+#'     \item \code{"transitivity_time_first"} — elapsed time since the
+#'       \emph{first} two-path \eqn{s \to k \to r} was completed
+#'       (definition 7bc of Juozaitienė & Wit, 2024). Same
+#'       \code{0}-for-never-seen convention.
 #'   }
 #'   Defaults to \code{NULL} for a memoryless process.
 #' @param endogenous_effects Numeric vector of linear coefficients for
@@ -274,7 +282,8 @@ simulate_relational_events <- function(
   network_stats <- c("transitivity_count", "transitivity_binary",
                      "cyclic_count", "cyclic_binary",
                      "sending_balance_count", "sending_balance_binary",
-                     "receiving_balance_count", "receiving_balance_binary")
+                     "receiving_balance_count", "receiving_balance_binary",
+                     "transitivity_time_recent", "transitivity_time_first")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -416,10 +425,13 @@ simulate_relational_events <- function(
         # there.
         endo_state[[st]] <- matrix(start_time, nrow = S, ncol = R)
       } else if (st %in% c("reciprocity_time_recent",
-                            "reciprocity_time_first")) {
-        # NA marks "the reverse dyad has never fired". Replaced with 0 in
-        # the score / output matrices so the rate computation stays
-        # numeric (see endo_stat_values()).
+                            "reciprocity_time_first",
+                            "transitivity_time_recent",
+                            "transitivity_time_first")) {
+        # NA marks "the relevant past event (reverse dyad, or two-path)
+        # has never happened". Replaced with 0 in the score / output
+        # matrices so the rate computation stays numeric (see
+        # endo_stat_values()).
         endo_state[[st]] <- matrix(NA_real_, nrow = S, ncol = R)
       } else {
         endo_state[[st]] <- matrix(0, nrow = S, ncol = R)
@@ -502,6 +514,8 @@ simulate_relational_events <- function(
         "recency"                   = current_time - endo_state[[st]],
         "reciprocity_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_recent"  = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_time_first"   = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -645,7 +659,9 @@ simulate_relational_events <- function(
         time_state_snapshots <- if (endogenous_active) {
           snap <- list()
           for (ts in c("recency", "reciprocity_time_recent",
-                       "reciprocity_time_first")) {
+                       "reciprocity_time_first",
+                       "transitivity_time_recent",
+                       "transitivity_time_first")) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -753,6 +769,32 @@ simulate_relational_events <- function(
                   }
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
+                } else if (st == "transitivity_time_recent" ||
+                           st == "transitivity_time_first") {
+                  if (adj_state[s_k, r_k] == 0) {
+                    a_idxs <- which(adj_state[, s_k] == 1)
+                    if (length(a_idxs)) {
+                      if (st == "transitivity_time_recent") {
+                        endo_state[[st]][a_idxs, r_k] <- ev_times[k]
+                      } else {
+                        fresh <- is.na(endo_state[[st]][a_idxs, r_k])
+                        if (any(fresh)) {
+                          endo_state[[st]][a_idxs[fresh], r_k] <- ev_times[k]
+                        }
+                      }
+                    }
+                    b_idxs <- which(adj_state[r_k, ] == 1)
+                    if (length(b_idxs)) {
+                      if (st == "transitivity_time_recent") {
+                        endo_state[[st]][s_k, b_idxs] <- ev_times[k]
+                      } else {
+                        fresh <- is.na(endo_state[[st]][s_k, b_idxs])
+                        if (any(fresh)) {
+                          endo_state[[st]][s_k, b_idxs[fresh]] <- ev_times[k]
+                        }
+                      }
+                    }
+                  }
                 }
               }
               if (has_network_stats) {
@@ -925,6 +967,43 @@ simulate_relational_events <- function(
           }
         } else if (st == "recency") {
           endo_state[[st]][s_idx, r_idx] <- current_time
+        } else if (st == "transitivity_time_recent" ||
+                   st == "transitivity_time_first") {
+          # A two-path s -> k -> r is *formed* at the time the second of
+          # its two legs is first observed. Re-fires of an existing leg
+          # don't form new two-paths. So only sweep when this is the
+          # first occurrence of dyad (s_idx, r_idx).
+          if (adj_state[s_idx, r_idx] == 0) {
+            # As second leg (k = s_idx, r = r_idx): chains a -> s_idx -> r_idx
+            # form now for every a with adj_state[a, s_idx] = 1 that doesn't
+            # already participate in such a chain. The "didn't already
+            # participate" condition is precisely "the first leg fired but
+            # the second leg (s_idx -> r_idx) had not, until now".
+            a_idxs <- which(adj_state[, s_idx] == 1)
+            if (length(a_idxs)) {
+              if (st == "transitivity_time_recent") {
+                endo_state[[st]][a_idxs, r_idx] <- current_time
+              } else {
+                fresh <- is.na(endo_state[[st]][a_idxs, r_idx])
+                if (any(fresh)) {
+                  endo_state[[st]][a_idxs[fresh], r_idx] <- current_time
+                }
+              }
+            }
+            # As first leg (s = s_idx, k = r_idx): chains s_idx -> r_idx -> b
+            # form now for every b with adj_state[r_idx, b] = 1.
+            b_idxs <- which(adj_state[r_idx, ] == 1)
+            if (length(b_idxs)) {
+              if (st == "transitivity_time_recent") {
+                endo_state[[st]][s_idx, b_idxs] <- current_time
+              } else {
+                fresh <- is.na(endo_state[[st]][s_idx, b_idxs])
+                if (any(fresh)) {
+                  endo_state[[st]][s_idx, b_idxs[fresh]] <- current_time
+                }
+              }
+            }
+          }
         }
       }
       if (has_network_stats) {
