@@ -33,6 +33,9 @@ reference:
       - attach_static_covariates
       - compute_endogenous_features
       - sample_non_events
+  - title: "Model comparison"
+    contents:
+      - compare_models
   - title: "Data"
     contents:
       - dist_matrix
