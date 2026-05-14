@@ -37,9 +37,11 @@ simulation-based REM studies:
   two simulation algorithms — the default exact Gillespie (`method = "gillespie"`)
   and an approximate time-driven tau-leap (`method = "tau_leap", tau = ...`) —
   with optional controls for partial likelihood, endogenous mechanisms
-  (`reciprocity_count` / `reciprocity_binary`) whose state updates between
-  events, and time-varying global covariates via a boundary-aware scheme
-  (weekday/weekend rate switches, policy regimes, …).
+  (`reciprocity_count`, `reciprocity_binary`, half-life-decayed
+  `reciprocity_exp_decay`) whose state updates between events, time-varying
+  global covariates via a boundary-aware scheme (weekday/weekend rate
+  switches, policy regimes, …), and a `risk = "remove"` rule for one-shot
+  processes such as species invasions or first-citation events.
 - **Non-event sampling.** `sample_non_events()` constructs nested case-control
   tables with appearance, citation, and remove risk-set rules.
 - **Inference-ready design matrices.** Simulations or sampled logs can be fed to
