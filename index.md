@@ -45,7 +45,8 @@ exploratory and simulation-based REM studies:
 - **Relational event simulation.**
   [`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
   runs Gillespie-style simulations with optional controls for partial
-  likelihood.
+  likelihood, including endogenous mechanisms (`reciprocity_count` /
+  `reciprocity_binary`) whose state updates between events.
 - **Non-event sampling.**
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   constructs nested case-control tables with appearance, citation, and
@@ -59,6 +60,7 @@ exploratory and simulation-based REM studies:
 ## Installation
 
 ``` r
+
 # install the development version from GitHub
 # install.packages("pak")
 pak::pak("franciscorichter/amore")
@@ -68,6 +70,7 @@ install.packages(".", repos = NULL, type = "source")
 ```
 
 ``` r
+
 library(amore)
 ```
 
@@ -79,6 +82,7 @@ dyadic hazards, and dyads are selected proportionally to their
 intensity.
 
 ``` r
+
 library(amore)
 set.seed(1)
 
@@ -127,6 +131,7 @@ objects that can be composed as needed:
 A small preprocessing example:
 
 ``` r
+
 library(amore)
 
 # 1. Event log direct from a data source
@@ -146,6 +151,7 @@ event_log <- standardize_event_log(
 ```
 
 ``` r
+
 # 2. Exogenous covariates
 covs <- simulate_actor_covariates(
   senders = unique(event_log$sender),
@@ -162,6 +168,7 @@ event_log <- attach_static_covariates(
 ```
 
 ``` r
+
 # 3. Endogenous stats from the evolving event net
 event_log <- compute_endogenous_features(event_log,
   stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency")
@@ -197,69 +204,70 @@ Pass one or more stat names to
 
 **Degree / baseline**
 
-| Stat name           | Description                                                                                  |
-|---------------------|----------------------------------------------------------------------------------------------|
-| `sender_outdegree`  | Number of events the sender has issued so far.                                               |
-| `receiver_indegree` | Number of events the receiver has received so far.                                           |
-| `recency`           | Elapsed time since the last event on the same ordered pair; `NA` when the dyad is brand new. |
+| Stat name | Description |
+|----|----|
+| `sender_outdegree` | Number of events the sender has issued so far. |
+| `receiver_indegree` | Number of events the receiver has received so far. |
+| `recency` | Elapsed time since the last event on the same ordered pair; `NA` when the dyad is brand new. |
 
 **Reciprocity** — history of the reverse dyad (receiver → sender)
 
-| Stat name                            | Description                                                                                                    |
-|--------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| `reciprocity` / `reciprocity_binary` | 1 if the reverse dyad has ever been observed, 0 otherwise.                                                     |
-| `reciprocity_count`                  | Total number of past reverse-dyad events.                                                                      |
-| `reciprocity_exp_decay`              | Exponentially weighted sum of past reverse-dyad events; older events contribute less according to `half_life`. |
-| `reciprocity_time_recent`            | Elapsed time since the most recent reverse-dyad event; `NA` if none.                                           |
-| `reciprocity_time_first`             | Elapsed time since the first reverse-dyad event; `NA` if none.                                                 |
+| Stat name | Description |
+|----|----|
+| `reciprocity` / `reciprocity_binary` | 1 if the reverse dyad has ever been observed, 0 otherwise. |
+| `reciprocity_count` | Total number of past reverse-dyad events. |
+| `reciprocity_exp_decay` | Exponentially weighted sum of past reverse-dyad events; older events contribute less according to `half_life`. |
+| `reciprocity_time_recent` | Elapsed time since the most recent reverse-dyad event; `NA` if none. |
+| `reciprocity_time_first` | Elapsed time since the first reverse-dyad event; `NA` if none. |
 
 **Transitivity** — two-path s → k → r (the sender previously contacted
 some intermediary k who in turn contacted the receiver)
 
-| Stat name                          | Description                                                                    |
-|------------------------------------|--------------------------------------------------------------------------------|
-| `transitivity_binary`              | 1 if any such intermediary k exists, 0 otherwise.                              |
-| `transitivity_count`               | Number of distinct intermediaries.                                             |
-| `transitivity_binary_ordered`      | Like binary, but requiring the s → k event to precede the k → r event in time. |
-| `transitivity_count_ordered`       | Count with order restriction.                                                  |
-| `transitivity_exp_decay`           | Exp-decay weighted sum over two-paths (requires `half_life`).                  |
-| `transitivity_exp_decay_ordered`   | Exp-decay with order restriction.                                              |
-| `transitivity_time_recent`         | Time since the most recently completed two-path; `NA` if none.                 |
-| `transitivity_time_first`          | Time since the earliest two-path; `NA` if none.                                |
-| `transitivity_time_recent_ordered` | Time since the most recent ordered two-path; `NA` if none.                     |
-| `transitivity_time_first_ordered`  | Time since the earliest ordered two-path; `NA` if none.                        |
+| Stat name | Description |
+|----|----|
+| `transitivity_binary` | 1 if any such intermediary k exists, 0 otherwise. |
+| `transitivity_count` | Number of distinct intermediaries. |
+| `transitivity_binary_ordered` | Like binary, but requiring the s → k event to precede the k → r event in time. |
+| `transitivity_count_ordered` | Count with order restriction. |
+| `transitivity_exp_decay` | Exp-decay weighted sum over two-paths (requires `half_life`). |
+| `transitivity_exp_decay_ordered` | Exp-decay with order restriction. |
+| `transitivity_time_recent` | Time since the most recently completed two-path; `NA` if none. |
+| `transitivity_time_first` | Time since the earliest two-path; `NA` if none. |
+| `transitivity_time_recent_ordered` | Time since the most recent ordered two-path; `NA` if none. |
+| `transitivity_time_first_ordered` | Time since the earliest ordered two-path; `NA` if none. |
 
 **Cyclic closure** — two-path r → k → s, closed by event s → r (the
 receiver previously contacted k, and k previously contacted the sender)
 
-| Stat name            | Description                                               |
-|----------------------|-----------------------------------------------------------|
-| `cyclic_binary`      | 1 if any cyclic two-path exists, 0 otherwise.             |
-| `cyclic_count`       | Number of cyclic intermediaries.                          |
+| Stat name | Description |
+|----|----|
+| `cyclic_binary` | 1 if any cyclic two-path exists, 0 otherwise. |
+| `cyclic_count` | Number of cyclic intermediaries. |
 | `cyclic_time_recent` | Time since the most recent cyclic two-path; `NA` if none. |
 
 **Sending balance** — shared target: both s → k and r → k exist (the
 sender and receiver have both contacted the same third actor k)
 
-| Stat name                     | Description                                                      |
-|-------------------------------|------------------------------------------------------------------|
-| `sending_balance_binary`      | 1 if any shared target exists, 0 otherwise.                      |
-| `sending_balance_count`       | Number of shared targets.                                        |
+| Stat name | Description |
+|----|----|
+| `sending_balance_binary` | 1 if any shared target exists, 0 otherwise. |
+| `sending_balance_count` | Number of shared targets. |
 | `sending_balance_time_recent` | Time since the most recent shared-target two-path; `NA` if none. |
 
 **Receiving balance** — shared source: both k → s and k → r exist (the
 sender and receiver have both been contacted by the same third actor k)
 
-| Stat name                       | Description                                                      |
-|---------------------------------|------------------------------------------------------------------|
-| `receiving_balance_binary`      | 1 if any shared source exists, 0 otherwise.                      |
-| `receiving_balance_count`       | Number of shared sources.                                        |
+| Stat name | Description |
+|----|----|
+| `receiving_balance_binary` | 1 if any shared source exists, 0 otherwise. |
+| `receiving_balance_count` | Number of shared sources. |
 | `receiving_balance_time_recent` | Time since the most recent shared-source two-path; `NA` if none. |
 
 All `*_exp_decay` statistics require a `half_life` argument that
 controls how quickly the influence of past events diminishes.
 
 ``` r
+
 # 4. Inference-ready case-control data
 cases_controls <- simulate_relational_events(
   n_events = 100,
@@ -278,6 +286,7 @@ To create case-control tables from empirical event data, use
 to append synthetic controls to each realized event:
 
 ``` r
+
 case_control_df <- sample_non_events(
   event_log,
   n_controls = 2,
@@ -319,13 +328,13 @@ with the observed event.
 The three sampling schemes we discussed earlier map directly onto these
 knobs:
 
-| Strategy label                | `scope`                   | `mode`                                   |
-|-------------------------------|---------------------------|------------------------------------------|
-| **all + one-mode**            | `"all"`                   | `"one"`                                  |
-| **all + two-mode**            | `"all"`                   | `"two"`                                  |
-| **appearance + one/two-mode** | `"appearance"`            | `"one"` or `"two"`                       |
-| **citation**                  | `"citation"`              | typically `"two"`                        |
-| **remove one/two-mode**       | `"all"` or `"appearance"` | `"one"` / `"two"`; set `risk = "remove"` |
+| Strategy label | `scope` | `mode` |
+|----|----|----|
+| **all + one-mode** | `"all"` | `"one"` |
+| **all + two-mode** | `"all"` | `"two"` |
+| **appearance + one/two-mode** | `"appearance"` | `"one"` or `"two"` |
+| **citation** | `"citation"` | typically `"two"` |
+| **remove one/two-mode** | `"all"` or `"appearance"` | `"one"` / `"two"`; set `risk = "remove"` |
 
 The last option is listed twice because you may want either a
 single-mode or a two-mode draw while still restricting to previously
@@ -345,6 +354,7 @@ happened instead.
 The case-control output lets you recover parameters via a GAM:
 
 ``` r
+
 library(mgcv)
 
 get_x  <- function(s, r) x[cbind(as.integer(s), as.integer(r))]
@@ -369,6 +379,7 @@ non-linear effects via `baseline_logits`. For example, using geographic
 distance with a smooth true effect:
 
 ``` r
+
 data("dist_matrix", package = "amore")
 
 dist_log     <- log(dist_matrix / 100000 + 1)
@@ -389,6 +400,39 @@ See
 for the full workflow including GAM recovery of the non-linear distance
 effect.
 
+### Endogenous mechanisms during simulation
+
+[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+can also drive the next-event rate from the realized history. Pass
+`endogenous_stats` and matching `endogenous_effects`:
+
+``` r
+
+set.seed(2024)
+actors <- as.character(1:10)
+
+cc <- simulate_relational_events(
+  n_events            = 1500,
+  senders             = actors,
+  receivers           = actors,
+  baseline_rate       = 1,
+  allow_loops         = FALSE,
+  n_controls          = 1,
+  endogenous_stats    = "reciprocity_count",
+  endogenous_effects  = 0.6
+)
+
+head(cc[, c("stratum", "event", "sender", "receiver", "reciprocity_count")])
+```
+
+The output gains one column per stat carrying the value each row’s dyad
+had at its event time, so the coefficient is directly recoverable by
+conditional logistic / GAM regression on the case–control table (see
+`tests/testthat/test-endogenous-simulation.R`). Supported stats in this
+first cut are `reciprocity_count` and `reciprocity_binary`; additional
+endogenous mechanisms (transitivity, recency, decay-weighted variants)
+are tracked in the issue queue.
+
 ## Documentation
 
 - Reference site + vignette: <https://franciscorichter.github.io/amore/>
@@ -397,6 +441,7 @@ effect.
 For function usage:
 
 ``` r
+
 ?simulate_relational_events
 ?simulate_actor_covariates
 ```
@@ -407,6 +452,7 @@ For function usage:
   in-tree code with:
 
   ``` r
+
   devtools::load_all()
   ```
 

@@ -85,7 +85,7 @@ states and territories. We load it and transform to a log-scale:</p>
 </h2>
 <p>Following the issue description, the true effect of distance on the
 log-rate is a smooth, non-linear function:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>d</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mo>sin</mo><mspace width="-0.167em"></mspace><mo minsize="1.2" maxsize="1.2" stretchy="false" form="prefix">(</mo><mo>−</mo><mi>d</mi><mi>/</mi><mn>1.5</mn><mo minsize="1.2" maxsize="1.2" stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d) = \sin\!\bigl(-d / 1.5\bigr)</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">(</mo><mo>−</mo><mi>d</mi><mi>/</mi><mn>1.5</mn><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d) = \sin\!\bigl(-d / 1.5\bigr)</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
 is the log-transformed distance.</p>
@@ -140,7 +140,7 @@ inference:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mgcv</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: nlme</span></span>
-<span><span class="co">#&gt; This is mgcv 1.9-3. For overview type 'help("mgcv-package")'.</span></span>
+<span><span class="co">#&gt; This is mgcv 1.9-4. For overview type '?mgcv'.</span></span>
 <span></span>
 <span><span class="va">get_dist</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">dist_log</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">s</span>, <span class="va">states</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">states</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>

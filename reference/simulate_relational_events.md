@@ -22,7 +22,9 @@ simulate_relational_events(
   receiver_covariates = NULL,
   receiver_effects = NULL,
   allow_loops = FALSE,
-  n_controls = 0
+  n_controls = 0,
+  endogenous_stats = NULL,
+  endogenous_effects = NULL
 )
 ```
 
@@ -88,12 +90,31 @@ simulate_relational_events(
   case-control data frame suitable for conditional logistic regression /
   GAM modeling. Defaults to 0.
 
+- endogenous_stats:
+
+  Optional character vector of endogenous mechanisms to include in the
+  rate. Each entry updates a state matrix after every event so the
+  intensity of the next event depends on the realized history. Supported
+  values: `"reciprocity_count"` (number of past reverse-dyad events) and
+  `"reciprocity_binary"` (indicator that the reverse dyad has fired at
+  least once). Defaults to `NULL` for a memoryless process.
+
+- endogenous_effects:
+
+  Numeric vector of linear coefficients for `endogenous_stats`. May be
+  named (names must match `endogenous_stats`) or unnamed (positionally
+  matched). Required when `endogenous_stats` is supplied.
+
 ## Value
 
 If `n_controls = 0`, a data.frame with columns `sender`, `receiver` and
 `time`. If `n_controls > 0`, it returns a long-format data.frame with
 additional columns `stratum` (grouping an event with its controls) and
-`event` (1 for the realized event, 0 for controls).
+`event` (1 for the realized event, 0 for controls). When
+`endogenous_stats` is supplied, one extra column per stat is appended
+carrying the value each row's dyad had at its event time (immediately
+before the event fired), so downstream conditional logistic / GAM
+estimators can recover the effects.
 
 ## Examples
 

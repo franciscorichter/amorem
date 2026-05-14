@@ -58,7 +58,9 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  receiver_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  receiver_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  allow_loops <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  n_controls <span class="op">=</span> <span class="fl">0</span></span>
+<span>  n_controls <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  endogenous_stats <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  endogenous_effects <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -127,6 +129,22 @@ uniformly at random for each realized event. If <code>n_controls &gt; 0</code>, 
 function returns a case-control data frame suitable for conditional logistic
 regression / GAM modeling. Defaults to 0.</p></dd>
 
+
+<dt id="arg-endogenous-stats">endogenous_stats<a class="anchor" aria-label="anchor" href="#arg-endogenous-stats"></a></dt>
+<dd><p>Optional character vector of endogenous mechanisms to
+include in the rate. Each entry updates a state matrix after every event so
+the intensity of the next event depends on the realized history. Supported
+values: <code>"reciprocity_count"</code> (number of past reverse-dyad events) and
+<code>"reciprocity_binary"</code> (indicator that the reverse dyad has fired at
+least once). Defaults to <code>NULL</code> for a memoryless process.</p></dd>
+
+
+<dt id="arg-endogenous-effects">endogenous_effects<a class="anchor" aria-label="anchor" href="#arg-endogenous-effects"></a></dt>
+<dd><p>Numeric vector of linear coefficients for
+<code>endogenous_stats</code>. May be named (names must match
+<code>endogenous_stats</code>) or unnamed (positionally matched). Required when
+<code>endogenous_stats</code> is supplied.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -134,7 +152,10 @@ regression / GAM modeling. Defaults to 0.</p></dd>
 <code>receiver</code> and <code>time</code>. If <code>n_controls &gt; 0</code>, it returns a
 long-format data.frame with additional columns <code>stratum</code> (grouping an
 event with its controls) and <code>event</code> (1 for the realized event,
-0 for controls).</p>
+0 for controls). When <code>endogenous_stats</code> is supplied, one extra column
+per stat is appended carrying the value each row's dyad had at its event
+time (immediately before the event fired), so downstream conditional
+logistic / GAM estimators can recover the effects.</p>
     </div>
 
     <div class="section level2">

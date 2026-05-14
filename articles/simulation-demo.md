@@ -1,6 +1,7 @@
 # Simulating relational events
 
 ``` r
+
 library(amore)
 ```
 
@@ -11,6 +12,7 @@ exogenous covariates. Static covariates return wide matrices, while
 time-varying covariates are emitted in tidy format.
 
 ``` r
+
 senders <- paste0("s", 1:3)
 receivers <- paste0("r", 1:2)
 
@@ -40,6 +42,7 @@ control how activity shapes outgoing intensity, and receiver effects do
 the same for popularity.
 
 ``` r
+
 static_sender <- reshape(
   covs$sender_covariates,
   direction = "wide",

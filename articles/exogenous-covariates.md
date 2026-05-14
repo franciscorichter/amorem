@@ -1,6 +1,7 @@
 # Exogenous dyadic covariates
 
 ``` r
+
 library(amore)
 ```
 
@@ -16,6 +17,7 @@ The package ships a 56 × 56 distance matrix (in metres) between US
 states and territories. We load it and transform to a log-scale:
 
 ``` r
+
 data("dist_matrix", package = "amore")
 
 # log-transform to compress the range
@@ -27,17 +29,21 @@ dist_log <- log(dist_matrix / 100000 + 1)
 Following the issue description, the true effect of distance on the
 log-rate is a smooth, non-linear function:
 
-$$f(d) = \sin\!( - d/1.5)$$
+``` math
+f(d) = \sin\!\bigl(-d / 1.5\bigr)
+```
 
-where $d$ is the log-transformed distance.
+where $`d`$ is the log-transformed distance.
 
 ``` r
+
 true_effect <- sin(-dist_log / 1.5)
 ```
 
 We can visualise this curve:
 
 ``` r
+
 d_seq <- seq(0, max(dist_log), length.out = 200)
 plot(d_seq, sin(-d_seq / 1.5),
     type = "l", lwd = 2, col = "red",
@@ -55,6 +61,7 @@ algorithm uses these values to weight which dyad fires next. We also
 request one control per event for downstream inference:
 
 ``` r
+
 set.seed(42)
 
 states <- rownames(dist_matrix)
@@ -85,9 +92,10 @@ log-distance. A GAM with a smooth term `s(delta_dist)` should recover
 the true curve.
 
 ``` r
+
 library(mgcv)
 #> Loading required package: nlme
-#> This is mgcv 1.9-3. For overview type 'help("mgcv-package")'.
+#> This is mgcv 1.9-4. For overview type '?mgcv'.
 
 get_dist <- function(s, r) {
     dist_log[cbind(match(s, states), match(r, states))]
@@ -125,6 +133,7 @@ summary(fit)
 ## Plotting estimated vs true effect
 
 ``` r
+
 x_grid <- seq(min(fit_df$delta_dist), max(fit_df$delta_dist), length.out = 300)
 pred <- predict(fit, newdata = data.frame(delta_dist = x_grid), type = "link")
 

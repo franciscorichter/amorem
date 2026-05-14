@@ -83,7 +83,7 @@
 <li>
 <strong>Endogenous covariates.</strong> <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> now implements 28 endogenous effects (recency, multiple reciprocity forms, transitivity, cyclic closure, sending/receiving balance) following Juozaitienė &amp; Wit (2025).</li>
 <li>
-<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs Gillespie-style simulations with optional controls for partial likelihood.</li>
+<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs Gillespie-style simulations with optional controls for partial likelihood, including endogenous mechanisms (<code>reciprocity_count</code> / <code>reciprocity_binary</code>) whose state updates between events.</li>
 <li>
 <strong>Non-event sampling.</strong> <code><a href="reference/sample_non_events.html">sample_non_events()</a></code> constructs nested case-control tables with appearance, citation, and remove risk-set rules.</li>
 <li>
@@ -205,20 +205,20 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>sender_outdegree</code></td>
 <td>Number of events the sender has issued so far.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>receiver_indegree</code></td>
 <td>Number of events the receiver has received so far.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>recency</code></td>
 <td>Elapsed time since the last event on the same ordered pair; <code>NA</code> when the dyad is brand new.</td>
 </tr>
@@ -230,30 +230,30 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>
 <code>reciprocity</code> / <code>reciprocity_binary</code>
 </td>
 <td>1 if the reverse dyad has ever been observed, 0 otherwise.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>reciprocity_count</code></td>
 <td>Total number of past reverse-dyad events.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>reciprocity_exp_decay</code></td>
 <td>Exponentially weighted sum of past reverse-dyad events; older events contribute less according to <code>half_life</code>.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>reciprocity_time_recent</code></td>
 <td>Elapsed time since the most recent reverse-dyad event; <code>NA</code> if none.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>reciprocity_time_first</code></td>
 <td>Elapsed time since the first reverse-dyad event; <code>NA</code> if none.</td>
 </tr>
@@ -265,48 +265,48 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>transitivity_binary</code></td>
 <td>1 if any such intermediary k exists, 0 otherwise.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>transitivity_count</code></td>
 <td>Number of distinct intermediaries.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>transitivity_binary_ordered</code></td>
 <td>Like binary, but requiring the s → k event to precede the k → r event in time.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>transitivity_count_ordered</code></td>
 <td>Count with order restriction.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>transitivity_exp_decay</code></td>
 <td>Exp-decay weighted sum over two-paths (requires <code>half_life</code>).</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>transitivity_exp_decay_ordered</code></td>
 <td>Exp-decay with order restriction.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>transitivity_time_recent</code></td>
 <td>Time since the most recently completed two-path; <code>NA</code> if none.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>transitivity_time_first</code></td>
 <td>Time since the earliest two-path; <code>NA</code> if none.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>transitivity_time_recent_ordered</code></td>
 <td>Time since the most recent ordered two-path; <code>NA</code> if none.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>transitivity_time_first_ordered</code></td>
 <td>Time since the earliest ordered two-path; <code>NA</code> if none.</td>
 </tr>
@@ -318,20 +318,20 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>cyclic_binary</code></td>
 <td>1 if any cyclic two-path exists, 0 otherwise.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>cyclic_count</code></td>
 <td>Number of cyclic intermediaries.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>cyclic_time_recent</code></td>
 <td>Time since the most recent cyclic two-path; <code>NA</code> if none.</td>
 </tr>
@@ -343,20 +343,20 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>sending_balance_binary</code></td>
 <td>1 if any shared target exists, 0 otherwise.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>sending_balance_count</code></td>
 <td>Number of shared targets.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>sending_balance_time_recent</code></td>
 <td>Time since the most recent shared-target two-path; <code>NA</code> if none.</td>
 </tr>
@@ -368,20 +368,20 @@
 <col width="45%">
 <col width="54%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Stat name</th>
 <th>Description</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>receiving_balance_binary</code></td>
 <td>1 if any shared source exists, 0 otherwise.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>receiving_balance_count</code></td>
 <td>Number of shared sources.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>receiving_balance_time_recent</code></td>
 <td>Time since the most recent shared-source two-path; <code>NA</code> if none.</td>
 </tr>
@@ -452,36 +452,36 @@
 <col width="22%">
 <col width="36%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Strategy label</th>
 <th><code>scope</code></th>
 <th><code>mode</code></th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><strong>all + one-mode</strong></td>
 <td><code>"all"</code></td>
 <td><code>"one"</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>all + two-mode</strong></td>
 <td><code>"all"</code></td>
 <td><code>"two"</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>appearance + one/two-mode</strong></td>
 <td><code>"appearance"</code></td>
 <td>
 <code>"one"</code> or <code>"two"</code>
 </td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>citation</strong></td>
 <td><code>"citation"</code></td>
 <td>typically <code>"two"</code>
 </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>remove one/two-mode</strong></td>
 <td>
 <code>"all"</code> or <code>"appearance"</code>
@@ -536,6 +536,28 @@
 <span><span class="op">)</span></span></code></pre></div>
 <p>See <code><a href="articles/exogenous-covariates.html">vignette("exogenous-covariates")</a></code> for the full workflow including GAM recovery of the non-linear distance effect.</p>
 </div>
+<div class="section level3">
+<h3 id="endogenous-mechanisms-during-simulation">Endogenous mechanisms during simulation<a class="anchor" aria-label="anchor" href="#endogenous-mechanisms-during-simulation"></a>
+</h3>
+<p><code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> can also drive the next-event rate from the realized history. Pass <code>endogenous_stats</code> and matching <code>endogenous_effects</code>:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2024</span><span class="op">)</span></span>
+<span><span class="va">actors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>  n_events            <span class="op">=</span> <span class="fl">1500</span>,</span>
+<span>  senders             <span class="op">=</span> <span class="va">actors</span>,</span>
+<span>  receivers           <span class="op">=</span> <span class="va">actors</span>,</span>
+<span>  baseline_rate       <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  allow_loops         <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  n_controls          <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  endogenous_stats    <span class="op">=</span> <span class="st">"reciprocity_count"</span>,</span>
+<span>  endogenous_effects  <span class="op">=</span> <span class="fl">0.6</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stratum"</span>, <span class="st">"event"</span>, <span class="st">"sender"</span>, <span class="st">"receiver"</span>, <span class="st">"reciprocity_count"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>The output gains one column per stat carrying the value each row’s dyad had at its event time, so the coefficient is directly recoverable by conditional logistic / GAM regression on the case–control table (see <code>tests/testthat/test-endogenous-simulation.R</code>). Supported stats in this first cut are <code>reciprocity_count</code> and <code>reciprocity_binary</code>; additional endogenous mechanisms (transitivity, recency, decay-weighted variants) are tracked in the issue queue.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -547,7 +569,7 @@
 </li>
 </ul>
 <p>For function usage:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">simulate_relational_events</span></span>
 <span><span class="op">?</span><span class="va">simulate_actor_covariates</span></span></code></pre></div>
 </div>
@@ -557,7 +579,7 @@
 <ul>
 <li>
 <p>During development, work from the package root and let R load the in-tree code with:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li><p>Document + namespace: <code>devtools::document()</code></p></li>
