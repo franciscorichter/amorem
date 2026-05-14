@@ -77,6 +77,13 @@ values:
 least once, 0 otherwise.
 \item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
 with exponential half-life decay (requires \code{half_life}).
+\item \code{"reciprocity_time_recent"} — elapsed time since the most
+recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
+\code{0} for dyads whose reverse has never fired (rather than the
+post-hoc \code{NA}, so the rate computation stays numeric).
+\item \code{"reciprocity_time_first"} — elapsed time since the
+\emph{first} reverse-dyad event \eqn{t - t_{\text{first}}(r,s)};
+same \code{0}-for-never-seen convention.
 \item \code{"recency"} — elapsed time on the same ordered dyad
 \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 \eqn{t - \text{start\_time}} for dyads that have never fired.
