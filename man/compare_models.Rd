@@ -24,7 +24,9 @@ endogenous statistics it includes. Stats must be valid names for
 \code{\link[=compute_endogenous_features]{compute_endogenous_features()}}.}
 
 \item{n_controls}{Number of controls per case in
-\code{\link[=sample_non_events]{sample_non_events()}}. Currently must be \code{1}.}
+\code{\link[=sample_non_events]{sample_non_events()}}. \code{1} uses a binomial GLM on differences;
+\verb{> 1} uses \code{survival::clogit()} on the stratified case-control
+table.}
 
 \item{scope, mode}{Passed through to \code{\link[=sample_non_events]{sample_non_events()}}; see that
 help page for semantics.}
@@ -56,9 +58,12 @@ columns. The fitted models are equivalent to the partial-likelihood
 parametrisation used in case-control REM inference
 (Vu et al. 2017; Juozaitienė & Wit 2024).
 
-The helper currently supports \code{n_controls = 1} only; richer
-case-control designs (more controls per case, conditional-logistic
-aggregation) are on the roadmap.
+For \code{n_controls = 1} the helper fits a no-intercept binomial GLM
+on case-minus-control differences. For \code{n_controls > 1} it falls
+back to \code{survival::clogit()} — a true conditional-logistic fit
+that correctly handles multiple controls per stratum. The
+\code{survival} package is in Suggests and is required only when
+\code{n_controls > 1}.
 }
 \examples{
 \dontrun{
