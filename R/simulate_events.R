@@ -13,8 +13,10 @@
 #' @param start_time Initial time stamp.
 #' @param horizon Optional maximum horizon; simulation stops once the cumulative
 #'   time would exceed this value.
-#' @param baseline_logits Optional \code{length(senders) x length(receivers)}
-#'   matrix of baseline log-intensities. Defaults to zeros.
+#' @param contribution_logits Optional \code{length(senders) x length(receivers)}
+#'   matrix of dyad-level contributions to the log-rate (i.e. the dyad-specific
+#'   part of the linear predictor, distinct from the baseline hazard). Defaults
+#'   to zeros.
 #' @param sender_covariates Optional numeric data.frame/matrix with one row per
 #'   sender.
 #' @param sender_effects Optional numeric vector of coefficients for
@@ -107,7 +109,7 @@ simulate_relational_events <- function(
     baseline_rate = 1,
     start_time = 0,
     horizon = Inf,
-    baseline_logits = NULL,
+    contribution_logits = NULL,
     sender_covariates = NULL,
     sender_effects = NULL,
     receiver_covariates = NULL,
@@ -220,11 +222,11 @@ simulate_relational_events <- function(
     stop("Both sender and receiver sets must be non-empty.")
   }
 
-  if (is.null(baseline_logits)) {
-    baseline_logits <- matrix(0, nrow = S, ncol = R)
+  if (is.null(contribution_logits)) {
+    contribution_logits <- matrix(0, nrow = S, ncol = R)
   }
-  if (!is.matrix(baseline_logits) || any(dim(baseline_logits) != c(S, R))) {
-    stop("baseline_logits must be an S x R matrix.")
+  if (!is.matrix(contribution_logits) || any(dim(contribution_logits) != c(S, R))) {
+    stop("contribution_logits must be an S x R matrix.")
   }
 
   sender_score <- rep(0, S)
@@ -259,7 +261,7 @@ simulate_relational_events <- function(
     receiver_score <- as.numeric(rc %*% receiver_effects)
   }
 
-  static_log_weights <- baseline_logits + outer(sender_score, receiver_score, "+")
+  static_log_weights <- contribution_logits + outer(sender_score, receiver_score, "+")
 
   if (!allow_loops) {
     same_actor <- outer(senders, receivers, "==")
