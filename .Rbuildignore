@@ -13,3 +13,5 @@
 ^\.vscode$
 ^AUDIT\.md$
 ^data-raw$
+^doc$
+^Meta$
