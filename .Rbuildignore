@@ -12,3 +12,4 @@
 ^pkgdown$
 ^\.vscode$
 ^AUDIT\.md$
+^data-raw$

@@ -36,6 +36,12 @@ reference:
   - title: "Data"
     contents:
       - dist_matrix
+      - classroom_events
+      - classroom_actors
+      - social_evolution_calls
+      - social_evolution_actors
+      - social_evolution_friendship
+      - radoslaw_email
 
 articles:
   - title: "Get started"
