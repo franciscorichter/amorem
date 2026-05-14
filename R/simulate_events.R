@@ -51,6 +51,16 @@
 #'   covariates. May be named (names must match the covariate columns in
 #'   \code{global_covariates}) or unnamed (positionally matched). Required when
 #'   \code{global_covariates} is supplied.
+#' @param method Simulation algorithm. Either \code{"gillespie"} (the default,
+#'   exact event-driven algorithm: draw inter-event waiting times one at a time)
+#'   or \code{"tau_leap"} (approximate, time-driven algorithm: advance the clock
+#'   in fixed \code{tau} increments and Poisson-sample event counts per dyad
+#'   within each step).
+#' @param tau Positive scalar; the step size for \code{method = "tau_leap"}.
+#'   Required when method is \code{"tau_leap"} and ignored otherwise. Smaller
+#'   values give better approximation but more iterations; as \eqn{\tau \to 0}
+#'   the tau-leap result converges in distribution to the exact Gillespie
+#'   result.
 #'
 #' @return If \code{n_controls = 0}, a data.frame with columns \code{sender},
 #'   \code{receiver} and \code{time}. If \code{n_controls > 0}, it returns a
@@ -73,6 +83,22 @@
 #'   distribution.  When combined with \code{endogenous_stats}, the
 #'   per-dyad rates are recomputed at every step from the current endogenous
 #'   state and then rescaled by the global multiplier.
+#'
+#'   The \code{"tau_leap"} algorithm advances the clock by a user-chosen step
+#'   \eqn{\tau} and draws, for every dyad, a \eqn{\mathrm{Poisson}(\lambda_{sr}(t)\,\tau)}
+#'   number of events using the rates at the *start* of the step. Multiple
+#'   events can fire in the same step; they are placed at uniform times within
+#'   \eqn{[t, t+\tau)} and reported in time order, but they share the
+#'   start-of-step endogenous state and global multiplier. Endogenous state is
+#'   updated once at the end of the step using all events in that step. The
+#'   tau-leap algorithm trades exactness for predictable, vectorised work per
+#'   step; it is most useful for high-rate regimes or for problems where the
+#'   per-event recomputation in the Gillespie path is the bottleneck. Choose
+#'   \eqn{\tau} small enough that (i) \eqn{\lambda \tau \ll 1} on every active
+#'   dyad and (ii) \eqn{\tau} is smaller than the shortest interval in
+#'   \code{global_covariates} (within-step boundary crossings are not
+#'   resolved; the start-of-step global multiplier is used for the entire
+#'   step).
 #' @export
 #'
 #' @examples
@@ -119,12 +145,28 @@ simulate_relational_events <- function(
     endogenous_stats = NULL,
     endogenous_effects = NULL,
     global_covariates = NULL,
-    global_effects = NULL) {
+    global_effects = NULL,
+    method = c("gillespie", "tau_leap"),
+    tau = NULL) {
   stopifnot(length(n_events) == 1, n_events > 0)
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
   stopifnot(length(horizon) == 1)
   stopifnot(length(n_controls) == 1, n_controls >= 0)
+
+  method <- match.arg(method)
+  if (method == "tau_leap") {
+    if (is.null(tau)) {
+      stop("tau must be supplied when method = \"tau_leap\".")
+    }
+    if (length(tau) != 1 || !is.finite(tau) || tau <= 0) {
+      stop("tau must be a positive finite scalar.")
+    }
+  } else {
+    if (!is.null(tau)) {
+      stop("tau is only used when method = \"tau_leap\".")
+    }
+  }
 
   global_active <- !is.null(global_covariates)
   if (global_active) {
@@ -363,6 +405,129 @@ simulate_relational_events <- function(
   event_counter <- 0L
   exceeded_horizon <- FALSE
 
+  if (method == "tau_leap") {
+    while (event_counter < n_events && current_time < horizon) {
+      # Start-of-step rate matrix.
+      log_w <- static_log_weights
+      if (endogenous_active) {
+        log_w <- log_w + endo_score_matrix()
+      }
+      weights <- exp(log_w) * baseline_rate
+      weights[!is.finite(weights)] <- 0
+      if (global_active) {
+        idx_step <- interval_at(current_time)
+        g_mult <- exp(global_log_mult[idx_step])
+      } else {
+        g_mult <- 1
+      }
+
+      step <- min(tau, horizon - current_time)
+      expected <- weights * g_mult * step
+      counts <- stats::rpois(S * R, as.vector(expected))
+      n_in_step <- sum(counts)
+
+      if (n_in_step > 0L) {
+        valid_dyads_step <- which(weights > 0)
+        if (n_controls > 0 && n_controls >= length(valid_dyads_step)) {
+          stop("Requested n_controls is >= the number of admissible dyads ",
+               "during a tau-leap step.")
+        }
+        # Build an event vector by repeating each dyad index `counts` times.
+        ev_dyads <- rep(seq_len(S * R), counts)
+        ev_times <- current_time + stats::runif(n_in_step, 0, step)
+        ord <- order(ev_times)
+        ev_dyads <- ev_dyads[ord]
+        ev_times <- ev_times[ord]
+
+        # Snapshot endogenous state at start of step. All events in the
+        # step are scored against this snapshot; the live state is updated
+        # once at the end of the step.
+        state_snapshot <- if (endogenous_active) {
+          snap <- list()
+          for (st in endogenous_stats) snap[[st]] <- endo_state[[st]]
+          snap
+        } else NULL
+
+        for (k in seq_len(n_in_step)) {
+          if (event_counter >= n_events) break
+          choice <- ev_dyads[k]
+          s_idx <- ((choice - 1L) %% S) + 1L
+          r_idx <- ((choice - 1L) %/% S) + 1L
+
+          event_counter <- event_counter + 1L
+          event_senders[event_counter] <- senders[s_idx]
+          event_receivers[event_counter] <- receivers[r_idx]
+          event_times[event_counter] <- ev_times[k]
+
+          if (endogenous_active) {
+            for (st in endogenous_stats) {
+              event_stat_vals[event_counter, st] <- state_snapshot[[st]][s_idx, r_idx]
+            }
+          }
+
+          if (global_active) {
+            for (cn in global_cov_names) {
+              event_global_vals[event_counter, cn] <- global_cov_matrix[idx_step, cn]
+            }
+          }
+
+          if (n_controls > 0) {
+            non_event_pool <- setdiff(valid_dyads_step, choice)
+            if (length(non_event_pool) < n_controls) {
+              non_event_choices <- non_event_pool
+            } else {
+              non_event_choices <- sample(non_event_pool, size = n_controls,
+                                          replace = FALSE)
+            }
+            ctrl_start_idx <- (event_counter - 1L) * n_controls + 1L
+            ctrl_end_idx <- event_counter * n_controls
+            c_s_idxs <- ((non_event_choices - 1L) %% S) + 1L
+            c_r_idxs <- ((non_event_choices - 1L) %/% S) + 1L
+            control_senders[ctrl_start_idx:ctrl_end_idx] <- senders[c_s_idxs]
+            control_receivers[ctrl_start_idx:ctrl_end_idx] <- receivers[c_r_idxs]
+            control_times[ctrl_start_idx:ctrl_end_idx] <- ev_times[k]
+            control_strata[ctrl_start_idx:ctrl_end_idx] <- event_counter
+
+            if (endogenous_active) {
+              ctrl_rows <- ctrl_start_idx:ctrl_end_idx
+              for (st in endogenous_stats) {
+                control_stat_vals[ctrl_rows, st] <-
+                  state_snapshot[[st]][cbind(c_s_idxs, c_r_idxs)]
+              }
+            }
+            if (global_active) {
+              ctrl_rows <- ctrl_start_idx:ctrl_end_idx
+              for (cn in global_cov_names) {
+                control_global_vals[ctrl_rows, cn] <- global_cov_matrix[idx_step, cn]
+              }
+            }
+          }
+        }
+
+        # End-of-step bulk update of live endogenous state with every
+        # event from this step (events emitted past the n_events cap are
+        # excluded — they were not recorded).
+        if (endogenous_active) {
+          n_emitted <- min(n_in_step, event_counter - (event_counter - n_in_step))
+          for (k in seq_len(n_in_step)) {
+            choice <- ev_dyads[k]
+            s_k <- ((choice - 1L) %% S) + 1L
+            r_k <- ((choice - 1L) %/% S) + 1L
+            for (st in endogenous_stats) {
+              if (st == "reciprocity_count") {
+                endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
+              } else if (st == "reciprocity_binary") {
+                endo_state[[st]][r_k, s_k] <- 1
+              }
+            }
+          }
+        }
+      }
+
+      current_time <- current_time + step
+    }
+  } else {
+
   for (i in seq_len(n_events)) {
     if (endogenous_active) {
       es <- endo_score_matrix()
@@ -491,6 +656,7 @@ simulate_relational_events <- function(
       }
     }
   }
+  }  # end method == "gillespie" branch
 
   if (event_counter == 0L) {
     if (n_controls == 0) {
