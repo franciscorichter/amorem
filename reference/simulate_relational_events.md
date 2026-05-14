@@ -157,6 +157,18 @@ simulate_relational_events(
     two-path \\s \to k \to r\\ was completed (definition 7bc of
     Juozaitienė & Wit, 2024). Same `0`-for-never-seen convention.
 
+  - `"cyclic_time_recent"` / `"cyclic_time_first"` — elapsed time since
+    the most recent / first cyclic two-path \\r \to k \to s\\ was
+    completed.
+
+  - `"sending_balance_time_recent"` / `"sending_balance_time_first"` —
+    elapsed time since the most recent / first shared-target two-path
+    \\s \to k,\\ r \to k\\ was completed.
+
+  - `"receiving_balance_time_recent"` / `"receiving_balance_time_first"`
+    — elapsed time since the most recent / first shared-source two-path
+    \\k \to s,\\ k \to r\\ was completed.
+
   Defaults to `NULL` for a memoryless process.
 
 - endogenous_effects:

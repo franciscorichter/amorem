@@ -182,6 +182,17 @@ Reports <code>0</code> for dyads where no two-path has ever existed.</p></li>
 <em>first</em> two-path \(s \to k \to r\) was completed
 (definition 7bc of Juozaitienė &amp; Wit, 2024). Same
 <code>0</code>-for-never-seen convention.</p></li>
+<li><p><code>"cyclic_time_recent"</code> / <code>"cyclic_time_first"</code> —
+elapsed time since the most recent / first cyclic two-path
+\(r \to k \to s\) was completed.</p></li>
+<li><p><code>"sending_balance_time_recent"</code> /
+<code>"sending_balance_time_first"</code> — elapsed time since the
+most recent / first shared-target two-path
+\(s \to k,\ r \to k\) was completed.</p></li>
+<li><p><code>"receiving_balance_time_recent"</code> /
+<code>"receiving_balance_time_first"</code> — elapsed time since the
+most recent / first shared-source two-path
+\(k \to s,\ k \to r\) was completed.</p></li>
 </ul><p>Defaults to <code>NULL</code> for a memoryless process.</p></dd>
 
 
