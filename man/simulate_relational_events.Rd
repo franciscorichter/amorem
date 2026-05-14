@@ -112,6 +112,17 @@ Reports \code{0} for dyads where no two-path has ever existed.
 \emph{first} two-path \eqn{s \to k \to r} was completed
 (definition 7bc of Juozaitienė & Wit, 2024). Same
 \code{0}-for-never-seen convention.
+\item \code{"cyclic_time_recent"} / \code{"cyclic_time_first"} —
+elapsed time since the most recent / first cyclic two-path
+\eqn{r \to k \to s} was completed.
+\item \code{"sending_balance_time_recent"} /
+\code{"sending_balance_time_first"} — elapsed time since the
+most recent / first shared-target two-path
+\eqn{s \to k,\ r \to k} was completed.
+\item \code{"receiving_balance_time_recent"} /
+\code{"receiving_balance_time_first"} — elapsed time since the
+most recent / first shared-source two-path
+\eqn{k \to s,\ k \to r} was completed.
 }
 Defaults to \code{NULL} for a memoryless process.}
 
