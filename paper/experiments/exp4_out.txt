@@ -1,0 +1,10 @@
+Warning message:
+package ‘testthat’ was built under R version 4.4.3 
+nrow(cc) = 3000 
+table(event):
+
+   0    1 
+1500 1500 
+Recovered beta_r = 0.6249 (SE 0.1925) [true = 0.60]
+z = 0.129
+Weekday share among events: observed 0.9900 (homogeneous-rate limit 0.6900)

@@ -1,0 +1,6 @@
+Warning message:
+package ‘testthat’ was built under R version 4.4.3 
+Events realized: 4000
+Expected share in weekday=1 intervals: 0.6900
+Observed share: 0.6877  (SE 0.0073)
+z = -0.304
