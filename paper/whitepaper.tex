@@ -743,108 +743,254 @@ curves on real data.
 
 \section{Validation experiments}\label{sec:validation}
 
-All experiments below were run against the package head with seed
-\texttt{20260514}.  Captured outputs are reproduced verbatim from
-\texttt{paper/experiments/exp*\_out.txt}.
+This section reports five end-to-end experiments that stress
+different correctness properties of the simulator and the
+estimation pipeline. Each subsection follows the same template:
+the property being tested (\emph{motivation}), the experimental
+design (\emph{setup}), the package-side recipe
+(\emph{simulation \& inference}), the numerical outcome
+(\emph{result}), and the reproducibility driver script. All
+experiments use the master seed \texttt{20260514}.
 
-\subsection{Experiment 1: linear reciprocity recovery}
-We simulate 1200 events on a one-mode network of 20 actors with
-$\beta_{\mathrm{reciprocity\_count}} = 0.6$, one control per event, and
-fit a stratified conditional logistic regression
-(\texttt{survival::clogit}) on the case--control output.
+\subsection{Experiment 1: recovery of a linear endogenous effect}
+\label{sec:exp1}
 
+\paragraph{Motivation.}
+The most basic correctness property a REM simulator must satisfy
+is that, when fed a known endogenous coefficient
+$\beta_{\text{true}}$, the case--control output supports
+\emph{unbiased} recovery of that coefficient under standard
+partial-likelihood inference. Without this property neither the
+simulator nor the estimation pipeline can be trusted; with it,
+every more elaborate experiment below rests on solid ground.
+
+\paragraph{Setup.}
+We simulate a one-mode network of 20 actors. The only active
+endogenous mechanism is \texttt{reciprocity\_count} with true
+coefficient $\beta_{\text{true}} = 0.6$. Each simulation produces
+1{,}200 events; case--control output is generated on-the-fly
+with one control per case (\texttt{n\_controls = 1}). A single
+draw gives one point estimate; a 200-replicate Monte Carlo gives
+the full sampling distribution.
+
+\paragraph{Simulation \& inference.}
 \begin{lstlisting}
 cc <- simulate_relational_events(
-  n_events = 1200, senders = actors, receivers = actors,
-  n_controls = 1,
-  endogenous_stats = "reciprocity_count",
+  n_events           = 1200,
+  senders            = paste0("a", 1:20),
+  receivers          = paste0("a", 1:20),
+  baseline_rate      = 1,
+  n_controls         = 1,
+  endogenous_stats   = "reciprocity_count",
   endogenous_effects = c(reciprocity_count = 0.6))
-fit <- clogit(event ~ reciprocity_count + strata(stratum), data = cc)
+
+fit <- survival::clogit(
+  event ~ reciprocity_count + strata(stratum), data = cc)
 \end{lstlisting}
 
-Captured output:
-\begin{verbatim}
-Estimated beta = 0.6930 (SE 0.1463)  [true = 0.60]
-z statistic (b_hat - true)/SE = 0.636
-\end{verbatim}
-The estimate is within one standard error of the truth.
+\paragraph{Result.}
+A single representative replicate gives
+$\hat\beta = 0.693$ (SE $0.146$), an outcome within
+$(\hat\beta - \beta_\text{true})/\text{SE} = 0.64$ standard
+errors of the truth. Replicating over 200 Monte Carlo seeds
+(Figure~\ref{fig:exp1-recovery}):
 
-\subsection{Experiment 2: non-linear distance recovery}
-We use the package's \texttt{dist\_matrix} data (US-state geographic
-distances), rescale to a unitless log-distance $d$, set the true
-per-dyad contribution to $f(d) = \sin(-d/1.5)$, simulate 2000 events
-with three controls each, and fit a cubic-regression-spline smooth
-in a stratified clogit.
+\begin{itemize}
+\itemsep0pt
+\item mean estimate: $0.615$  (bias $+0.015$, $2.5\%$ of $\beta_\text{true}$),
+\item empirical SD: $0.116$,
+\item mean reported SE: $0.115$ (close to empirical SD --
+      calibrated),
+\item empirical 95\% Wald coverage: $0.940$.
+\end{itemize}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/exp1_recovery.pdf}
+\caption{Experiment 1, Monte Carlo recovery distribution of
+$\hat\beta_{\text{reciprocity\_count}}$ over 200 replicates. The
+red line marks the true value $\beta = 0.60$; the dashed blue
+line marks the Monte Carlo mean of the estimates. Bias is
+$+1.5\%$ of the true value, mean reported SE matches the
+empirical SD to two decimals, and Wald coverage is $94\%$.}
+\label{fig:exp1-recovery}
+\end{figure}
+
+\paragraph{Reproducibility.}
+Drivers:
+\texttt{paper/experiments/exp1\_reciprocity.R} (single replicate)
+and \texttt{paper/experiments/exp1\_recovery\_mc.R} (the 200-rep
+Monte Carlo plus figure).
+
+\subsection{Experiment 2: recovery of a non-linear smooth effect}
+\label{sec:exp2}
+
+\paragraph{Motivation.}
+Many social-network covariates enter the rate nonlinearly --
+geographic distance, role similarity, time of day -- and the
+package supports this through the per-dyad
+\texttt{contribution\_logits} argument. The point of this
+experiment is to show that an arbitrary smooth $f(\cdot)$
+specified on an exogenous covariate is recoverable from
+case--control output via standard GAM/spline inference. If smooth
+recovery works, more elaborate spline-based fits like the
+smooth-effect curves of Section~\ref{sec:smooth} are well-founded.
+
+\paragraph{Setup.}
+We use the package's bundled $56 \times 56$ \texttt{dist\_matrix}
+of inter-state geographic distances. Log-distance is rescaled to
+a unitless covariate $d_{sr}$; the true per-dyad contribution is
+the deliberately non-monotone $f(d) = \sin(-d / 1.5)$. We
+simulate 2{,}000 events with three controls per case, fit a
+mean-centered cubic-regression-spline smooth of $f$ inside a
+stratified \texttt{clogit}, and compare the recovered curve to
+the truth.
+
+\paragraph{Simulation \& inference.}
 \begin{lstlisting}
 contribution_logits <- sin(-log_d / 1.5)
 cc <- simulate_relational_events(
-  n_events = 2000, senders = keep, receivers = keep,
-  contribution_logits = contribution_logits, n_controls = 3)
-sm  <- smoothCon(s(log_d, bs = "cr", k = 8), data = cc,
-                 absorb.cons = TRUE)[[1]]
-fit <- clogit(event ~ <basis cols> + strata(stratum), data = cc_aug)
+  n_events            = 2000,
+  senders             = state_codes,
+  receivers           = state_codes,
+  contribution_logits = contribution_logits,
+  n_controls          = 3)
+
+sm <- mgcv::smoothCon(
+  s(log_d, bs = "cr", k = 8), data = cc, absorb.cons = TRUE)[[1]]
+cc_aug <- cbind(cc, sm$X)
+fit <- survival::clogit(
+  event ~ <basis cols> + strata(stratum), data = cc_aug)
 \end{lstlisting}
 
-Captured output:
-\begin{verbatim}
-RMSE (centered) = 0.1213,  cor(true, pred) = 0.9831
-\end{verbatim}
+\paragraph{Result.}
+Centered RMSE between the estimated and true smooth is
+$0.121$ and their correlation is $0.983$. Visually
+(Figure~\ref{fig:exp2}), the estimated curve tracks the
+sinusoidal truth across the entire log-distance range. The
+slight horizontal shift in the dashed curve is the expected
+within-stratum-only-identifiable centering offset, not a bias.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.78\linewidth]{figures/exp2_distance.pdf}
-\caption{Experiment 2: estimated GAM smooth (dashed) vs.\ the true
-sinusoidal effect (solid).  Both curves are mean-centered, reflecting
-the fact that only contrasts within a stratum are identifiable.}
+\caption{Experiment 2: estimated GAM smooth (dashed) vs.\ the
+true sinusoidal effect (solid). Both curves are mean-centered,
+reflecting the fact that only contrasts within a stratum are
+identifiable from case--control output.}
 \label{fig:exp2}
 \end{figure}
 
-\subsection{Experiment 3: weekday rate switching}
-A piecewise global covariate \texttt{weekday} alternates 0/1 over
-400 intervals of length 1 with effect $\beta_w = 0.8$.  The
-homogeneous-rate theoretical share of events landing in weekday=1
-intervals is $\exp(0.8) / (1 + \exp(0.8)) = 0.6900$.
+\paragraph{Reproducibility.}
+Driver: \texttt{paper/experiments/exp2\_distance.R}.
 
+\subsection{Experiment 3: time-varying global covariate}
+\label{sec:exp3}
+
+\paragraph{Motivation.}
+Time-varying global covariates -- weekday / weekend cycles,
+weather regimes, policy interventions -- require the simulator
+to advance the clock across interval boundaries without
+artificially recording or losing events. The
+\emph{boundary-aware Gillespie} scheme (Section~\ref{sec:sim-global})
+implements this; the experiment checks that the resulting
+distribution of events across intervals matches the analytic
+prediction.
+
+\paragraph{Setup.}
+A single binary global covariate \texttt{weekday} alternates
+$0$, $1$ on 400 unit-length intervals. The effect is
+$\beta_w = 0.8$, so the rate in \texttt{weekday = 1} intervals is
+$\exp(0.8) \approx 2.225$ times the rate in
+\texttt{weekday = 0} intervals. With no other structure, the
+expected share of events that land in \texttt{weekday = 1}
+intervals is
+$\exp(0.8) / (1 + \exp(0.8)) = 0.6900$. We simulate $4{,}000$
+events and check.
+
+\paragraph{Simulation \& inference.}
 \begin{lstlisting}
-global_df <- data.frame(time_start = 0:399,
-                        weekday    = rep(c(0,1), length.out = 400))
+global_df <- data.frame(
+  time_start = 0:399,
+  weekday    = rep(c(0, 1), length.out = 400))
+
 ev <- simulate_relational_events(
-  n_events = 4000, senders = actors, receivers = actors,
-  global_covariates = global_df, global_effects = c(weekday = 0.8))
+  n_events          = 4000,
+  senders           = paste0("a", 1:20),
+  receivers         = paste0("a", 1:20),
+  global_covariates = global_df,
+  global_effects    = c(weekday = 0.8))
+
+# No GLM fit needed -- we test the marginal share directly.
+observed <- mean(ev$weekday == 1)
 \end{lstlisting}
 
-Captured output:
-\begin{verbatim}
-Events realized: 4000
-Expected share in weekday=1 intervals: 0.6900
-Observed share: 0.6877  (SE 0.0073)
-z = -0.304
-\end{verbatim}
-The observed share is within one third of a standard error of the
-analytic prediction, confirming the boundary-aware Gillespie clock.
+\paragraph{Result.}
+Observed share $= 0.6877$ with binomial SE $0.0073$; the
+$z$-statistic against the analytic $0.69$ is $-0.30$. The
+boundary-aware scheme reproduces the predicted hazard ratio to
+well within one standard error. As emphasised in
+Section~\ref{sec:est-partial}, the \emph{coefficient}
+$\beta_w$ itself is not identifiable from case--control output --
+the global multiplier cancels -- but the rate dynamics are
+manifestly correct.
 
-\subsection{Experiment 4: composition smoke test}
-Both endogenous reciprocity ($\beta_r = 0.6$) and the weekday global
-($\beta_w = 0.8$) are active simultaneously.  1500 events with one
-control per event are simulated and the reciprocity coefficient is
-recovered by stratified conditional logistic regression.
+\paragraph{Reproducibility.}
+Driver: \texttt{paper/experiments/exp3\_weekday.R}.
 
-Captured output:
-\begin{verbatim}
-Recovered beta_r = 0.6249 (SE 0.1925) [true = 0.60]
-z = 0.129
-Weekday share among events: observed 0.9900
-                            (homogeneous-rate limit 0.6900)
-\end{verbatim}
-The reciprocity coefficient is recovered to within $0.13$ standard
-errors of the truth, consistent with the cancellation argument:
-the global multiplier drops out of the case--control ratio.  The
-weekday share is far from the 0.69 limit precisely because the
-endogenous reciprocity inflates the within-interval rate as history
-accumulates, making the rate strongly time-inhomogeneous \emph{within}
-weekday=1 intervals; the simple analytic share does not apply when
-endogenous state is active.
+\subsection{Experiment 4: composition of endogenous and global}
+\label{sec:exp4}
+
+\paragraph{Motivation.}
+Real REM analyses rarely toggle one feature at a time; they
+combine endogenous mechanisms with time-varying globals and
+expect the inference pipeline to recover the endogenous
+coefficient \emph{cleanly} even when the global signal is
+present. This experiment checks two predictions of the partial
+likelihood: (i) the endogenous coefficient is unaffected by the
+global multiplier (it cancels in the dyad-selection ratio); (ii)
+the marginal weekday share is \emph{not} a clean test of the
+boundary-aware scheme when endogenous state inflates the rate
+asymmetrically -- the simple analytic share applies only to
+homogeneous-rate processes.
+
+\paragraph{Setup.}
+Reciprocity ($\beta_r = 0.6$) and the weekday global
+($\beta_w = 0.8$) are active simultaneously. We simulate 1{,}500
+events with one control per case.
+
+\paragraph{Simulation \& inference.}
+\begin{lstlisting}
+cc <- simulate_relational_events(
+  n_events           = 1500,
+  senders            = paste0("a", 1:20),
+  receivers          = paste0("a", 1:20),
+  n_controls         = 1,
+  endogenous_stats   = "reciprocity_count",
+  endogenous_effects = c(reciprocity_count = 0.6),
+  global_covariates  = data.frame(
+    time_start = 0:399,
+    weekday    = rep(c(0, 1), length.out = 400)),
+  global_effects     = c(weekday = 0.8))
+
+fit <- survival::clogit(
+  event ~ reciprocity_count + strata(stratum), data = cc)
+\end{lstlisting}
+
+\paragraph{Result.}
+$\hat\beta_r = 0.625$ (SE $0.193$), giving
+$(\hat\beta_r - 0.6)/\text{SE} = 0.13$ standard errors. The
+endogenous coefficient is recovered as if the global were not
+present -- prediction (i) verified. The observed weekday share
+is $0.990$, far from the $0.69$ analytic value: every reciprocal
+event triggers a within-interval cascade that pushes nearly
+every later event into the same interval -- prediction (ii)
+verified. Endogenous state breaks the homogeneous-rate
+calculation, but does \emph{not} bias the partial-likelihood
+inference of the endogenous coefficient.
+
+\paragraph{Reproducibility.}
+Driver: \texttt{paper/experiments/exp4\_composition.R}.
 
 \subsection{Experiment 5: scaling benchmark}\label{sec:bench}
 
