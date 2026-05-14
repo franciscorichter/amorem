@@ -133,6 +133,18 @@ simulate_relational_events(
     reverse-dyad event \\t - t\_{\text{first}}(r,s)\\; same
     `0`-for-never-seen convention.
 
+  - `"reciprocity_binary_interrupted"` /
+    `"reciprocity_count_interrupted"` /
+    `"reciprocity_exp_decay_interrupted"` /
+    `"reciprocity_time_recent_interrupted"` /
+    `"reciprocity_time_first_interrupted"` — the *interrupted*
+    reciprocity family of Juozaitienė & Wit (2024) §2.1.3 (definitions
+    \\r^{(1i)}, r^{(2i)}, r^{(3i)}, r^{(4ai)}, r^{(4bi)}\\). Each
+    variant measures the same quantity as its continuous counterpart but
+    considers only those reverse-dyad events that occurred *since* the
+    most recent same-direction \\s \to r\\ event. Firing \\s \to r\\
+    resets the interrupted state for dyad \\(s, r)\\.
+
   - `"recency"` — elapsed time on the same ordered dyad \\t -
     t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\
     for dyads that have never fired.

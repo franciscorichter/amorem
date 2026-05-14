@@ -163,6 +163,18 @@ post-hoc <code>NA</code>, so the rate computation stays numeric).</p></li>
 <li><p><code>"reciprocity_time_first"</code> — elapsed time since the
 <em>first</em> reverse-dyad event \(t - t_{\text{first}}(r,s)\);
 same <code>0</code>-for-never-seen convention.</p></li>
+<li><p><code>"reciprocity_binary_interrupted"</code> /
+<code>"reciprocity_count_interrupted"</code> /
+<code>"reciprocity_exp_decay_interrupted"</code> /
+<code>"reciprocity_time_recent_interrupted"</code> /
+<code>"reciprocity_time_first_interrupted"</code> — the <em>interrupted</em>
+reciprocity family of Juozaitienė &amp; Wit (2024) §2.1.3
+(definitions \(r^{(1i)}, r^{(2i)}, r^{(3i)}, r^{(4ai)},
+      r^{(4bi)}\)). Each variant measures the same quantity as its
+continuous counterpart but considers only those reverse-dyad
+events that occurred <em>since</em> the most recent same-direction
+\(s \to r\) event. Firing \(s \to r\) resets the
+interrupted state for dyad \((s, r)\).</p></li>
 <li><p><code>"recency"</code> — elapsed time on the same ordered dyad
 \(t - t_{\text{last}}(s,r)\), defaulting to
 \(t - \text{start\_time}\) for dyads that have never fired.</p></li>
