@@ -28,7 +28,9 @@ simulate_relational_events(
   global_covariates = NULL,
   global_effects = NULL,
   method = c("gillespie", "tau_leap"),
-  tau = NULL
+  tau = NULL,
+  half_life = NULL,
+  risk = c("standard", "remove")
 )
 ```
 
@@ -101,9 +103,11 @@ simulate_relational_events(
   Optional character vector of endogenous mechanisms to include in the
   rate. Each entry updates a state matrix after every event so the
   intensity of the next event depends on the realized history. Supported
-  values: `"reciprocity_count"` (number of past reverse-dyad events) and
+  values: `"reciprocity_count"` (number of past reverse-dyad events),
   `"reciprocity_binary"` (indicator that the reverse dyad has fired at
-  least once). Defaults to `NULL` for a memoryless process.
+  least once), and `"reciprocity_exp_decay"` (sum of past reverse-dyad
+  events with exponential half-life decay; requires `half_life`).
+  Defaults to `NULL` for a memoryless process.
 
 - endogenous_effects:
 
@@ -143,6 +147,21 @@ simulate_relational_events(
   better approximation but more iterations; as \\\tau \to 0\\ the
   tau-leap result converges in distribution to the exact Gillespie
   result.
+
+- half_life:
+
+  Positive scalar; the half-life \\T\\ (in time units) used by the
+  `"reciprocity_exp_decay"` stat. A past reverse-dyad event at time
+  \\t_k\\ contributes \\\exp(-(t - t_k)\\\log 2/T)\\ to the stat value
+  at time \\t\\. Required when `"reciprocity_exp_decay"` is in
+  `endogenous_stats`.
+
+- risk:
+
+  Risk-set rule. `"standard"` (the default) keeps every dyad eligible at
+  every step. `"remove"` removes a dyad from the risk set as soon as it
+  fires, which mimics one-shot processes such as species invasions or
+  first-citation events.
 
 ## Value
 

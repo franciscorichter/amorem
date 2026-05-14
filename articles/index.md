@@ -8,3 +8,5 @@
   covariates](https://franciscorichter.github.io/amore/articles/exogenous-covariates.md):
 - [Endogenous mechanisms and time-varying global
   covariates](https://franciscorichter.github.io/amore/articles/endogenous-and-global.md):
+- [Species invasions as a relational event
+  process](https://franciscorichter.github.io/amore/articles/species-invasion.md):

@@ -64,7 +64,9 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  global_covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  global_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gillespie"</span>, <span class="st">"tau_leap"</span><span class="op">)</span>,</span>
-<span>  tau <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  tau <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"remove"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -140,9 +142,11 @@ regression / GAM modeling. Defaults to 0.</p></dd>
 <dd><p>Optional character vector of endogenous mechanisms to
 include in the rate. Each entry updates a state matrix after every event so
 the intensity of the next event depends on the realized history. Supported
-values: <code>"reciprocity_count"</code> (number of past reverse-dyad events) and
+values: <code>"reciprocity_count"</code> (number of past reverse-dyad events),
 <code>"reciprocity_binary"</code> (indicator that the reverse dyad has fired at
-least once). Defaults to <code>NULL</code> for a memoryless process.</p></dd>
+least once), and <code>"reciprocity_exp_decay"</code> (sum of past reverse-dyad
+events with exponential half-life decay; requires <code>half_life</code>).
+Defaults to <code>NULL</code> for a memoryless process.</p></dd>
 
 
 <dt id="arg-endogenous-effects">endogenous_effects<a class="anchor" aria-label="anchor" href="#arg-endogenous-effects"></a></dt>
@@ -183,6 +187,21 @@ Required when method is <code>"tau_leap"</code> and ignored otherwise. Smaller
 values give better approximation but more iterations; as \(\tau \to 0\)
 the tau-leap result converges in distribution to the exact Gillespie
 result.</p></dd>
+
+
+<dt id="arg-half-life">half_life<a class="anchor" aria-label="anchor" href="#arg-half-life"></a></dt>
+<dd><p>Positive scalar; the half-life \(T\) (in time units) used
+by the <code>"reciprocity_exp_decay"</code> stat. A past reverse-dyad event at
+time \(t_k\) contributes \(\exp(-(t - t_k)\,\log 2/T)\) to the stat
+value at time \(t\). Required when <code>"reciprocity_exp_decay"</code> is in
+<code>endogenous_stats</code>.</p></dd>
+
+
+<dt id="arg-risk">risk<a class="anchor" aria-label="anchor" href="#arg-risk"></a></dt>
+<dd><p>Risk-set rule. <code>"standard"</code> (the default) keeps every dyad
+eligible at every step. <code>"remove"</code> removes a dyad from the risk set
+as soon as it fires, which mimics one-shot processes such as species
+invasions or first-citation events.</p></dd>
 
 </dl></div>
     <div class="section level2">
