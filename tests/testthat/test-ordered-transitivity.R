@@ -128,23 +128,6 @@ test_that("the time stats are 0 iff count_ordered is 0", {
   expect_true(all(ev$transitivity_time_first_ordered[zero]  == 0))
 })
 
-test_that("ordered stats error on bipartite settings (one-mode required)", {
-  for (st in c("transitivity_count_ordered", "transitivity_binary_ordered",
-               "transitivity_time_recent_ordered",
-               "transitivity_time_first_ordered")) {
-    expect_error(
-      simulate_relational_events(
-        n_events = 5,
-        senders = c("a", "b"), receivers = c("x", "y", "z"),
-        endogenous_stats = st,
-        endogenous_effects = 0.5
-      ),
-      "one-mode",
-      info = st
-    )
-  }
-})
-
 test_that("ordered stats work under tau-leap and stay consistent with the count", {
   set.seed(31)
   ev <- simulate_relational_events(

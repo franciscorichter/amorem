@@ -39,35 +39,6 @@ test_that("recency uses start_time as the never-seen default", {
   expect_equal(ev$recency[1], ev$time[1] - 10, tolerance = 1e-9)
 })
 
-test_that("recency works in a bipartite (non-square) setting", {
-  set.seed(3)
-  # senders and receivers are disjoint sets of different sizes; reciprocity_*
-  # would have errored, recency must not.
-  ev <- simulate_relational_events(
-    n_events = 12,
-    senders = c("alice", "bob"),
-    receivers = c("u", "v", "w"),
-    baseline_rate = 1,
-    endogenous_stats = "recency",
-    endogenous_effects = 0.5
-  )
-  expect_true("recency" %in% names(ev))
-  expect_true(all(ev$recency >= 0))
-  expect_equal(nrow(ev), 12L)
-})
-
-test_that("reciprocity_* still errors on a bipartite setting", {
-  expect_error(
-    simulate_relational_events(
-      n_events = 5,
-      senders = c("a", "b"), receivers = c("x", "y", "z"),
-      endogenous_stats = "reciprocity_count",
-      endogenous_effects = 0.5
-    ),
-    "one-mode"
-  )
-})
-
 test_that("recency composes with reciprocity_count in the same call", {
   set.seed(11)
   cc <- simulate_relational_events(

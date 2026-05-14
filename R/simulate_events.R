@@ -501,19 +501,11 @@ simulate_relational_events <- function(
     U_size <- 0L
   }
   is_one_mode <- needs_closure && S == R && identical(senders, receivers)
-
-  # Phase 1: the unified-actor infrastructure above is in place, but
-  # the simulator's state-update paths are still written against S x R
-  # matrices with one-mode-only swap semantics. The constraint check
-  # below stays active until Phase 2 wires the new infrastructure
-  # through every state read/write site.
-  if (needs_closure && !is_one_mode) {
-    stop("reciprocity_* and network_* endogenous stats currently require ",
-         "senders and receivers to be the same character vector in the ",
-         "same order (one-mode networks). Bipartite / two-mode support ",
-         "is partially implemented (Phase 1: unified actor universe) ",
-         "and tracked under issue 'bipartite closure stats'.")
-  }
+  # Phase 2: the per-event update paths and the rate-space read paths
+  # now operate on the unified |U| x |U| state matrices, so closure-
+  # family stats are well-defined for bipartite (and arbitrarily
+  # overlapping) sender / receiver sets. The previous one-mode
+  # constraint check has been removed.
 
   if (is.null(contribution_logits)) {
     contribution_logits <- matrix(0, nrow = S, ncol = R)
@@ -861,6 +853,12 @@ simulate_relational_events <- function(
       v
     }
     vals <- list()
+    # `closure_to_rate_space` converts a |U| x |U| closure-family state
+    # matrix back to the S x R rate-space view by sub-block extraction.
+    # For one-mode networks S_pos and R_pos are 1:S, so the call is the
+    # identity; for bipartite settings it correctly picks out the
+    # (senders, receivers) cells.
+    closure_to_rate_space <- function(M) M[S_pos, R_pos, drop = FALSE]
     for (st in endogenous_stats) {
       vals[[st]] <- switch(st,
         "recency"                   = current_time - endo_state[[st]],
@@ -909,6 +907,9 @@ simulate_relational_events <- function(
         "receiving_balance_binary"  = (AtA > 0) * 1.0,
         endo_state[[st]]
       )
+      if (st %in% closure_family_stats) {
+        vals[[st]] <- closure_to_rate_space(vals[[st]])
+      }
     }
     vals
   }
@@ -1067,14 +1068,26 @@ simulate_relational_events <- function(
         } else list()
 
         # Per-event time-dependent stat value, single-cell variant.
+        # For closure-family stats the snapshot is in unified actor
+        # coordinates (|U| x |U|), so the per-event S/R indices are
+        # translated via S_pos / R_pos. For `recency` (per-dyad, S x R)
+        # they are used directly.
         time_stat_at <- function(st, s, r, t) {
-          v <- t - time_state_snapshots[[st]][s, r]
+          if (st %in% closure_family_stats) {
+            v <- t - time_state_snapshots[[st]][S_pos[s], R_pos[r]]
+          } else {
+            v <- t - time_state_snapshots[[st]][s, r]
+          }
           if (st == "recency") v else if (is.na(v)) 0 else v
         }
         # Per-event time-dependent stat value, vectorized (rectangular
         # selection) variant.
         time_stat_at_v <- function(st, ss, rs, t) {
-          v <- t - time_state_snapshots[[st]][cbind(ss, rs)]
+          if (st %in% closure_family_stats) {
+            v <- t - time_state_snapshots[[st]][cbind(S_pos[ss], R_pos[rs])]
+          } else {
+            v <- t - time_state_snapshots[[st]][cbind(ss, rs)]
+          }
           if (st == "recency") return(v)
           v[is.na(v)] <- 0
           v
@@ -1153,48 +1166,50 @@ simulate_relational_events <- function(
             s_k <- ((choice - 1L) %% S) + 1L
             r_k <- ((choice - 1L) %/% S) + 1L
             if (endogenous_active) {
+              u_s <- if (needs_closure) S_pos[s_k] else s_k
+              u_r <- if (needs_closure) R_pos[r_k] else r_k
               for (st in endogenous_stats) {
                 if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
-                  endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
+                  endo_state[[st]][u_r, u_s] <- endo_state[[st]][u_r, u_s] + 1
                 } else if (st == "reciprocity_binary") {
-                  endo_state[[st]][r_k, s_k] <- 1
+                  endo_state[[st]][u_r, u_s] <- 1
                 } else if (st == "reciprocity_time_recent") {
-                  endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  endo_state[[st]][u_r, u_s] <- ev_times[k]
                 } else if (st == "reciprocity_time_first") {
-                  if (is.na(endo_state[[st]][r_k, s_k])) {
-                    endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  if (is.na(endo_state[[st]][u_r, u_s])) {
+                    endo_state[[st]][u_r, u_s] <- ev_times[k]
                   }
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
                 } else if (st == "reciprocity_count_interrupted" ||
                            st == "reciprocity_exp_decay_interrupted") {
-                  endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
-                  endo_state[[st]][s_k, r_k] <- 0
+                  endo_state[[st]][u_r, u_s] <- endo_state[[st]][u_r, u_s] + 1
+                  endo_state[[st]][u_s, u_r] <- 0
                 } else if (st == "reciprocity_binary_interrupted") {
-                  endo_state[[st]][r_k, s_k] <- 1
-                  endo_state[[st]][s_k, r_k] <- 0
+                  endo_state[[st]][u_r, u_s] <- 1
+                  endo_state[[st]][u_s, u_r] <- 0
                 } else if (st == "reciprocity_time_recent_interrupted") {
-                  endo_state[[st]][r_k, s_k] <- ev_times[k]
-                  endo_state[[st]][s_k, r_k] <- NA_real_
+                  endo_state[[st]][u_r, u_s] <- ev_times[k]
+                  endo_state[[st]][u_s, u_r] <- NA_real_
                 } else if (st == "reciprocity_time_first_interrupted") {
-                  if (is.na(endo_state[[st]][r_k, s_k])) {
-                    endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  if (is.na(endo_state[[st]][u_r, u_s])) {
+                    endo_state[[st]][u_r, u_s] <- ev_times[k]
                   }
-                  endo_state[[st]][s_k, r_k] <- NA_real_
+                  endo_state[[st]][u_s, u_r] <- NA_real_
                 } else if (!is.null(two_path_time_lookup[[st]])) {
                   info <- two_path_time_lookup[[st]]
-                  if (adj_state[s_k, r_k] == 0) {
-                    writes <- two_path_writes(info$family, s_k, r_k, adj_state)
+                  if (adj_state[u_s, u_r] == 0) {
+                    writes <- two_path_writes(info$family, u_s, u_r, adj_state)
                     endo_state[[st]] <- apply_time_writes(
                       endo_state[[st]], writes, ev_times[k], info$first)
                   }
                   if (isTRUE(info$interrupted)) {
-                    endo_state[[st]][s_k, r_k] <- NA_real_
+                    endo_state[[st]][u_s, u_r] <- NA_real_
                   }
                 } else if (!is.null(exp_decay_family_lookup[[st]])) {
-                  if (adj_state[s_k, r_k] == 0) {
+                  if (adj_state[u_s, u_r] == 0) {
                     fam <- exp_decay_family_lookup[[st]]
-                    writes <- two_path_writes(fam, s_k, r_k, adj_state)
+                    writes <- two_path_writes(fam, u_s, u_r, adj_state)
                     if (nrow(writes)) {
                       endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
                     }
@@ -1202,9 +1217,9 @@ simulate_relational_events <- function(
                 }
               }
               if (has_network_stats) {
-                adj_state[s_k, r_k] <- 1
+                adj_state[u_s, u_r] <- 1
               }
-              apply_ordered_update(s_k, r_k, ev_times[k])
+              apply_ordered_update(u_s, u_r, ev_times[k])
               if (has_outdeg) sender_out_count[s_k]  <- sender_out_count[s_k]  + 1
               if (has_indeg)  receiver_in_count[r_k] <- receiver_in_count[r_k] + 1
             }
@@ -1355,71 +1370,55 @@ simulate_relational_events <- function(
 
     if (endogenous_active) {
       # Update state matrices using the realized event (s_idx -> r_idx).
-      # reciprocity_* stats update the *reverse* dyad (r_idx, s_idx).
-      # recency updates the *same* dyad (s_idx, r_idx) with the event time.
-      # network_* stats share the binary adjacency adj_state, updated below.
-      # degree_* stats accumulate into per-actor vectors.
+      # All closure-family state matrices live in unified actor
+      # coordinates (size |U| x |U|), so we translate the per-event
+      # S- and R-axis indices to unified positions u_s and u_r before
+      # writing.  In one-mode networks u_s == s_idx and u_r == r_idx.
+      u_s <- if (needs_closure) S_pos[s_idx] else s_idx
+      u_r <- if (needs_closure) R_pos[r_idx] else r_idx
       for (st in endogenous_stats) {
         if (st == "reciprocity_count" || st == "reciprocity_exp_decay") {
-          endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
+          endo_state[[st]][u_r, u_s] <- endo_state[[st]][u_r, u_s] + 1
         } else if (st == "reciprocity_binary") {
-          endo_state[[st]][r_idx, s_idx] <- 1
+          endo_state[[st]][u_r, u_s] <- 1
         } else if (st == "reciprocity_time_recent") {
-          endo_state[[st]][r_idx, s_idx] <- current_time
+          endo_state[[st]][u_r, u_s] <- current_time
         } else if (st == "reciprocity_time_first") {
-          if (is.na(endo_state[[st]][r_idx, s_idx])) {
-            endo_state[[st]][r_idx, s_idx] <- current_time
+          if (is.na(endo_state[[st]][u_r, u_s])) {
+            endo_state[[st]][u_r, u_s] <- current_time
           }
         } else if (st == "recency") {
+          # Non-closure family; stays in S x R coordinates.
           endo_state[[st]][s_idx, r_idx] <- current_time
         } else if (st == "reciprocity_count_interrupted" ||
                    st == "reciprocity_exp_decay_interrupted") {
-          # Continuous-style update for the reverse dyad (s -> r is a
-          # reverse-direction event for dyad (r, s)), AND reset of the
-          # firing dyad's own state because (s, r) closes the
-          # reciprocity cycle for (s, r).
-          endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
-          endo_state[[st]][s_idx, r_idx] <- 0
+          endo_state[[st]][u_r, u_s] <- endo_state[[st]][u_r, u_s] + 1
+          endo_state[[st]][u_s, u_r] <- 0
         } else if (st == "reciprocity_binary_interrupted") {
-          endo_state[[st]][r_idx, s_idx] <- 1
-          endo_state[[st]][s_idx, r_idx] <- 0
+          endo_state[[st]][u_r, u_s] <- 1
+          endo_state[[st]][u_s, u_r] <- 0
         } else if (st == "reciprocity_time_recent_interrupted") {
-          endo_state[[st]][r_idx, s_idx] <- current_time
-          endo_state[[st]][s_idx, r_idx] <- NA_real_
+          endo_state[[st]][u_r, u_s] <- current_time
+          endo_state[[st]][u_s, u_r] <- NA_real_
         } else if (st == "reciprocity_time_first_interrupted") {
-          if (is.na(endo_state[[st]][r_idx, s_idx])) {
-            endo_state[[st]][r_idx, s_idx] <- current_time
+          if (is.na(endo_state[[st]][u_r, u_s])) {
+            endo_state[[st]][u_r, u_s] <- current_time
           }
-          endo_state[[st]][s_idx, r_idx] <- NA_real_
+          endo_state[[st]][u_s, u_r] <- NA_real_
         } else if (!is.null(two_path_time_lookup[[st]])) {
-          # A two-path is *formed* at the time the second of its two legs
-          # is first observed; re-fires of an existing leg don't form
-          # new two-paths. So only sweep when this is the first
-          # occurrence of dyad (s_idx, r_idx). The per-family geometry
-          # is encapsulated in two_path_writes().
           info <- two_path_time_lookup[[st]]
-          if (adj_state[s_idx, r_idx] == 0) {
-            writes <- two_path_writes(info$family, s_idx, r_idx, adj_state)
+          if (adj_state[u_s, u_r] == 0) {
+            writes <- two_path_writes(info$family, u_s, u_r, adj_state)
             endo_state[[st]] <- apply_time_writes(
               endo_state[[st]], writes, current_time, info$first)
           }
-          # Interrupted variant: every (s, r) event closes any open
-          # triad rooted at dyad (s, r), so reset the firing dyad's
-          # own state to NA regardless of whether new formations
-          # happened above. The writes from apply_time_writes never
-          # target the firing dyad itself, so this reset is safe to
-          # apply after the writes block.
           if (isTRUE(info$interrupted)) {
-            endo_state[[st]][s_idx, r_idx] <- NA_real_
+            endo_state[[st]][u_s, u_r] <- NA_real_
           }
         } else if (!is.null(exp_decay_family_lookup[[st]])) {
-          # Unordered exp-decay for any closure family: each newly-formed
-          # two-path contributes +1 (decay state was just attenuated to
-          # current_time, so a fresh contribution of weight exp(0) = 1 is
-          # correct). Same first-fire gate as the timing stats.
-          if (adj_state[s_idx, r_idx] == 0) {
+          if (adj_state[u_s, u_r] == 0) {
             fam <- exp_decay_family_lookup[[st]]
-            writes <- two_path_writes(fam, s_idx, r_idx, adj_state)
+            writes <- two_path_writes(fam, u_s, u_r, adj_state)
             if (nrow(writes)) {
               endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
             }
@@ -1427,9 +1426,9 @@ simulate_relational_events <- function(
         }
       }
       if (has_network_stats) {
-        adj_state[s_idx, r_idx] <- 1
+        adj_state[u_s, u_r] <- 1
       }
-      apply_ordered_update(s_idx, r_idx, current_time)
+      apply_ordered_update(u_s, u_r, current_time)
       if (has_outdeg) sender_out_count[s_idx]  <- sender_out_count[s_idx]  + 1
       if (has_indeg)  receiver_in_count[r_idx] <- receiver_in_count[r_idx] + 1
     }

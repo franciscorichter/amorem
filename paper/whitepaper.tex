@@ -1375,13 +1375,16 @@ four real-world REM datasets bundled directly under
 
 \paragraph{Honest limitations.}
 \begin{itemize}
-\item \textbf{One-mode constraint for the closure family.}
-      Reciprocity, transitivity, cyclic, and balance statistics
-      require \texttt{identical(senders, receivers)}. The per-actor
-      family (\texttt{sender\_outdegree},
-      \texttt{receiver\_indegree}, \texttt{recency}) already works
-      in bipartite settings; bipartite closure stats are future
-      work.
+\item \textbf{Cross-implementation parity for bipartite.}
+      The simulator now supports the closure-family statistics on
+      bipartite and arbitrarily overlapping sender / receiver sets
+      (the closure-family state matrices are sized
+      $|U| \times |U|$ over the unified actor universe). The
+      post-hoc engine \texttt{compute\_endogenous\_features()} has
+      not yet been audited for bipartite inputs in the same way;
+      its cross-implementation parity suite still seeds on
+      one-mode networks. Bipartite parity tests are tracked as
+      Phase 3 of the bipartite roadmap.
 \item \textbf{Remaining catalogue gaps.}  The interrupted
       \emph{count} / \emph{binary} / \emph{exp-decay} variants of
       the triadic closure family
@@ -1425,13 +1428,18 @@ four real-world REM datasets bundled directly under
       on the roadmap.
 \end{itemize}
 
-\paragraph{Near-term roadmap.}  (i) Bipartite support for the closure
-family of endogenous statistics; (ii) the remaining gaps from
-Table~3 of \citet{juozaitiene2024about} that are still missing
-(ordered cyclic / balance, full interrupted count / binary /
-exp-decay families for the triadic closure stats);
-(iii) full-likelihood path for $\beta_g$; (iv) a dyad-time-grid
-covariate API; (v) optional C++ inner loop for high-rate regimes.
+\paragraph{Near-term roadmap.}
+(i) Bipartite cross-implementation parity (the simulator now
+supports bipartite closure stats; mirroring the change in the
+post-hoc engine and extending the parity suite to bipartite seeds
+is Phase 3 of the bipartite work);
+(ii) the remaining gaps from Table~3 of
+\citet{juozaitiene2024about} that are still missing (ordered
+cyclic / balance, full interrupted count / binary / exp-decay
+families for the triadic closure stats);
+(iii) full-likelihood path for $\beta_g$;
+(iv) a dyad-time-grid covariate API;
+(v) optional C++ inner loop for high-rate regimes.
 
 \bibliographystyle{plainnat}
 \bibliography{references}
