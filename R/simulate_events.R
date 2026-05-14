@@ -40,6 +40,15 @@
 #'       least once, 0 otherwise.
 #'     \item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
 #'       with exponential half-life decay (requires \code{half_life}).
+#'     \item \code{"transitivity_exp_decay"} —
+#'       \eqn{\sum_{k} e^{-(t - t^{(s,k,r)}_{\text{form}}) \log 2 / T}}
+#'       where \eqn{t^{(s,k,r)}_{\text{form}}} is the formation time of
+#'       two-path \eqn{s \to k \to r} (definition \eqn{t^{(5c)}} of
+#'       Juozaitienė & Wit, 2024). Requires \code{half_life}.
+#'     \item \code{"transitivity_exp_decay_ordered"} — same as
+#'       \code{"transitivity_exp_decay"} but only counts \emph{ordered}
+#'       two-paths (s → k strictly before k → r), definition
+#'       \eqn{t^{(6c)}}.  Requires \code{half_life}.
 #'     \item \code{"reciprocity_time_recent"} — elapsed time since the most
 #'       recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
 #'       \code{0} for dyads whose reverse has never fired (rather than the
@@ -105,10 +114,12 @@
 #'   \code{endogenous_stats}) or unnamed (positionally matched). Required when
 #'   \code{endogenous_stats} is supplied.
 #' @param half_life Positive scalar; the half-life \eqn{T} (in time units) used
-#'   by the \code{"reciprocity_exp_decay"} stat. A past reverse-dyad event at
-#'   time \eqn{t_k} contributes \eqn{\exp(-(t - t_k)\,\log 2/T)} to the stat
-#'   value at time \eqn{t}. Required when \code{"reciprocity_exp_decay"} is in
-#'   \code{endogenous_stats}.
+#'   by every \code{*_exp_decay} stat. A past contribution at time \eqn{t_k}
+#'   carries weight \eqn{\exp(-(t - t_k)\,\log 2/T)} into the stat value at
+#'   time \eqn{t}. The same \eqn{T} is shared across all decay stats, matching
+#'   the convention in Juozaitienė & Wit (2024). Required when any of
+#'   \code{"reciprocity_exp_decay"}, \code{"transitivity_exp_decay"},
+#'   \code{"transitivity_exp_decay_ordered"} is in \code{endogenous_stats}.
 #' @param risk Risk-set rule. \code{"standard"} (the default) keeps every dyad
 #'   eligible at every step. \code{"remove"} removes a dyad from the risk set
 #'   as soon as it fires, which mimics one-shot processes such as species
@@ -314,11 +325,16 @@ simulate_relational_events <- function(
                      "transitivity_count_ordered",
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
-                     "transitivity_time_first_ordered")
+                     "transitivity_time_first_ordered",
+                     "transitivity_exp_decay",
+                     "transitivity_exp_decay_ordered")
   ordered_stats <- c("transitivity_count_ordered",
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
-                     "transitivity_time_first_ordered")
+                     "transitivity_time_first_ordered",
+                     "transitivity_exp_decay_ordered")
+  exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
+                       "transitivity_exp_decay_ordered")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -334,11 +350,13 @@ simulate_relational_events <- function(
       stop("Unsupported endogenous_stats: ", paste(bad, collapse = ", "),
            ". Supported: ", paste(supported_endogenous, collapse = ", "), ".")
     }
-    if ("reciprocity_exp_decay" %in% endogenous_stats) {
+    requires_half_life <- any(endogenous_stats %in% exp_decay_stats)
+    if (requires_half_life) {
       if (is.null(half_life) || length(half_life) != 1 || !is.finite(half_life) ||
           half_life <= 0) {
-        stop("half_life must be a positive finite scalar when ",
-             "\"reciprocity_exp_decay\" is in endogenous_stats.")
+        stop("half_life must be a positive finite scalar when any of ",
+             paste(sprintf("\"%s\"", exp_decay_stats), collapse = ", "),
+             " is in endogenous_stats.")
       }
     }
     if (anyDuplicated(endogenous_stats)) {
@@ -520,7 +538,10 @@ simulate_relational_events <- function(
   receiver_in_count <- if (has_indeg) numeric(R) else NULL
 
   has_exp_decay <- endogenous_active &&
-    "reciprocity_exp_decay" %in% endogenous_stats
+    any(endogenous_stats %in% exp_decay_stats)
+  active_exp_decay_stats <- if (has_exp_decay) {
+    intersect(endogenous_stats, exp_decay_stats)
+  } else character(0)
   last_state_time <- start_time
   if (has_exp_decay) {
     decay_rate <- log(2) / half_life
@@ -630,18 +651,23 @@ simulate_relational_events <- function(
     if (has_ordered_stats) {
       validated <- ordered_validation_mask(i, j)
       if (length(validated)) {
-        ord_count_state[cbind(validated, rep(j, length(validated)))] <<-
-          ord_count_state[cbind(validated, rep(j, length(validated)))] + 1L
+        idx <- cbind(validated, rep(j, length(validated)))
+        ord_count_state[idx] <<- ord_count_state[idx] + 1L
         if (!is.null(endo_state[["transitivity_time_recent_ordered"]])) {
-          endo_state[["transitivity_time_recent_ordered"]][
-            cbind(validated, rep(j, length(validated)))] <<- t_now
+          endo_state[["transitivity_time_recent_ordered"]][idx] <<- t_now
         }
         if (!is.null(endo_state[["transitivity_time_first_ordered"]])) {
           M <- endo_state[["transitivity_time_first_ordered"]]
-          idx <- cbind(validated, rep(j, length(validated)))
           fresh <- is.na(M[idx])
           if (any(fresh)) M[idx[fresh, , drop = FALSE]] <- t_now
           endo_state[["transitivity_time_first_ordered"]] <<- M
+        }
+        if (!is.null(endo_state[["transitivity_exp_decay_ordered"]])) {
+          # Decay state is current as of t_now (apply_exp_decay was called
+          # at the start of this event). Each newly validated chain adds a
+          # fresh contribution of weight 1, which then decays from t_now.
+          endo_state[["transitivity_exp_decay_ordered"]][idx] <<-
+            endo_state[["transitivity_exp_decay_ordered"]][idx] + 1
         }
       }
       # Per-dyad bookkeeping after the validation sweep so the *current*
@@ -653,16 +679,18 @@ simulate_relational_events <- function(
   }
 
   apply_exp_decay <- function() {
-    # Multiplicative decay of the exp-decay state cell-wise to the current
-    # clock time. Called when reading or snapshotting state so the value
-    # carried is correctly attenuated for the time elapsed since the last
-    # update.
+    # Multiplicative decay of every active exp-decay state matrix to the
+    # current clock time. Called when reading or snapshotting state so the
+    # value carried is correctly attenuated for the time elapsed since
+    # the last update. All exp-decay stats share `decay_rate` (= log 2 /
+    # half_life) per the convention of Juozaitienė & Wit (2024).
     if (!has_exp_decay) return(invisible())
     dt_decay <- current_time - last_state_time
     if (dt_decay > 0) {
       decay_factor <- exp(-dt_decay * decay_rate)
-      endo_state[["reciprocity_exp_decay"]] <<-
-        endo_state[["reciprocity_exp_decay"]] * decay_factor
+      for (st in active_exp_decay_stats) {
+        endo_state[[st]] <<- endo_state[[st]] * decay_factor
+      }
       last_state_time <<- current_time
     }
     invisible()
@@ -715,6 +743,8 @@ simulate_relational_events <- function(
         "transitivity_binary_ordered"     = (ord_count_state > 0) * 1.0,
         "transitivity_time_recent_ordered"= time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_time_first_ordered" = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_exp_decay"          = endo_state[[st]],
+        "transitivity_exp_decay_ordered"  = endo_state[[st]],
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -982,6 +1012,13 @@ simulate_relational_events <- function(
                     endo_state[[st]] <- apply_time_writes(
                       endo_state[[st]], writes, ev_times[k], info$first)
                   }
+                } else if (st == "transitivity_exp_decay") {
+                  if (adj_state[s_k, r_k] == 0) {
+                    writes <- two_path_writes("transitivity", s_k, r_k, adj_state)
+                    if (nrow(writes)) {
+                      endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
+                    }
+                  }
                 }
               }
               if (has_network_stats) {
@@ -1166,6 +1203,17 @@ simulate_relational_events <- function(
             writes <- two_path_writes(info$family, s_idx, r_idx, adj_state)
             endo_state[[st]] <- apply_time_writes(
               endo_state[[st]], writes, current_time, info$first)
+          }
+        } else if (st == "transitivity_exp_decay") {
+          # Unordered exp-decay: each newly-formed two-path contributes
+          # +1 (decay state was just attenuated to current_time, so a
+          # fresh contribution of weight exp(0) = 1 is correct). Same
+          # first-fire gate as the timing stats.
+          if (adj_state[s_idx, r_idx] == 0) {
+            writes <- two_path_writes("transitivity", s_idx, r_idx, adj_state)
+            if (nrow(writes)) {
+              endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
+            }
           }
         }
       }

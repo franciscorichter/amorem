@@ -77,6 +77,15 @@ values:
 least once, 0 otherwise.
 \item \code{"reciprocity_exp_decay"} — sum of past reverse-dyad events
 with exponential half-life decay (requires \code{half_life}).
+\item \code{"transitivity_exp_decay"} —
+\eqn{\sum_{k} e^{-(t - t^{(s,k,r)}_{\text{form}}) \log 2 / T}}
+where \eqn{t^{(s,k,r)}_{\text{form}}} is the formation time of
+two-path \eqn{s \to k \to r} (definition \eqn{t^{(5c)}} of
+Juozaitienė & Wit, 2024). Requires \code{half_life}.
+\item \code{"transitivity_exp_decay_ordered"} — same as
+\code{"transitivity_exp_decay"} but only counts \emph{ordered}
+two-paths (s → k strictly before k → r), definition
+\eqn{t^{(6c)}}.  Requires \code{half_life}.
 \item \code{"reciprocity_time_recent"} — elapsed time since the most
 recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
 \code{0} for dyads whose reverse has never fired (rather than the
@@ -169,10 +178,12 @@ the tau-leap result converges in distribution to the exact Gillespie
 result.}
 
 \item{half_life}{Positive scalar; the half-life \eqn{T} (in time units) used
-by the \code{"reciprocity_exp_decay"} stat. A past reverse-dyad event at
-time \eqn{t_k} contributes \eqn{\exp(-(t - t_k)\,\log 2/T)} to the stat
-value at time \eqn{t}. Required when \code{"reciprocity_exp_decay"} is in
-\code{endogenous_stats}.}
+by every \code{*_exp_decay} stat. A past contribution at time \eqn{t_k}
+carries weight \eqn{\exp(-(t - t_k)\,\log 2/T)} into the stat value at
+time \eqn{t}. The same \eqn{T} is shared across all decay stats, matching
+the convention in Juozaitienė & Wit (2024). Required when any of
+\code{"reciprocity_exp_decay"}, \code{"transitivity_exp_decay"},
+\code{"transitivity_exp_decay_ordered"} is in \code{endogenous_stats}.}
 
 \item{risk}{Risk-set rule. \code{"standard"} (the default) keeps every dyad
 eligible at every step. \code{"remove"} removes a dyad from the risk set
