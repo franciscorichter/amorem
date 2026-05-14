@@ -169,6 +169,18 @@ simulate_relational_events(
     — elapsed time since the most recent / first shared-source two-path
     \\k \to s,\\ k \to r\\ was completed.
 
+  - `"transitivity_count_ordered"` / `"transitivity_binary_ordered"` —
+    number of intermediaries \\k\\ (or indicator) for which an ordered
+    two-path \\s \to k\\ *before* \\k \to r\\ has been observed
+    (definitions \\t^{(4c)}\\ / \\t^{(2c)}\\ of Juozaitienė & Wit,
+    2024).
+
+  - `"transitivity_time_recent_ordered"` /
+    `"transitivity_time_first_ordered"` — elapsed time since the most
+    recent / first ordered two-path \\s \to k\\ *before* \\k \to r\\ was
+    completed (definitions \\t^{(8ac)}\\ / \\t^{(8bc)}\\ of Juozaitienė
+    & Wit, 2024).
+
   Defaults to `NULL` for a memoryless process.
 
 - endogenous_effects:

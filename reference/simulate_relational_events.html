@@ -193,6 +193,18 @@ most recent / first shared-target two-path
 <code>"receiving_balance_time_first"</code> — elapsed time since the
 most recent / first shared-source two-path
 \(k \to s,\ k \to r\) was completed.</p></li>
+<li><p><code>"transitivity_count_ordered"</code> /
+<code>"transitivity_binary_ordered"</code> — number of intermediaries
+\(k\) (or indicator) for which an ordered two-path
+\(s \to k\) <em>before</em> \(k \to r\) has been observed
+(definitions \(t^{(4c)}\) / \(t^{(2c)}\) of
+Juozaitienė &amp; Wit, 2024).</p></li>
+<li><p><code>"transitivity_time_recent_ordered"</code> /
+<code>"transitivity_time_first_ordered"</code> — elapsed time since
+the most recent / first ordered two-path
+\(s \to k\) <em>before</em> \(k \to r\) was completed
+(definitions \(t^{(8ac)}\) / \(t^{(8bc)}\) of
+Juozaitienė &amp; Wit, 2024).</p></li>
 </ul><p>Defaults to <code>NULL</code> for a memoryless process.</p></dd>
 
 
