@@ -80,6 +80,10 @@ with exponential half-life decay (requires \code{half_life}).
 \item \code{"recency"} — elapsed time on the same ordered dyad
 \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 \eqn{t - \text{start\_time}} for dyads that have never fired.
+\item \code{"sender_outdegree"} — total number of events previously sent
+by \eqn{s} (constant across receivers).
+\item \code{"receiver_indegree"} — total number of events previously
+received by \eqn{r} (constant across senders).
 \item \code{"transitivity_count"} / \code{"transitivity_binary"} —
 number of intermediaries \eqn{k} (or indicator that at least one
 exists) for which both \eqn{(s,k)} and \eqn{(k,r)} have fired.
