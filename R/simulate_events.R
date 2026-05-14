@@ -56,6 +56,18 @@
 #'     \item \code{"reciprocity_time_first"} — elapsed time since the
 #'       \emph{first} reverse-dyad event \eqn{t - t_{\text{first}}(r,s)};
 #'       same \code{0}-for-never-seen convention.
+#'     \item \code{"reciprocity_binary_interrupted"} /
+#'       \code{"reciprocity_count_interrupted"} /
+#'       \code{"reciprocity_exp_decay_interrupted"} /
+#'       \code{"reciprocity_time_recent_interrupted"} /
+#'       \code{"reciprocity_time_first_interrupted"} — the \emph{interrupted}
+#'       reciprocity family of Juozaitienė & Wit (2024) §2.1.3
+#'       (definitions \eqn{r^{(1i)}, r^{(2i)}, r^{(3i)}, r^{(4ai)},
+#'       r^{(4bi)}}). Each variant measures the same quantity as its
+#'       continuous counterpart but considers only those reverse-dyad
+#'       events that occurred \emph{since} the most recent same-direction
+#'       \eqn{s \to r} event. Firing \eqn{s \to r} resets the
+#'       interrupted state for dyad \eqn{(s, r)}.
 #'     \item \code{"recency"} — elapsed time on the same ordered dyad
 #'       \eqn{t - t_{\text{last}}(s,r)}, defaulting to
 #'       \eqn{t - \text{start\_time}} for dyads that have never fired.
@@ -312,7 +324,17 @@ simulate_relational_events <- function(
 
   reciprocity_stats <- c("reciprocity_count", "reciprocity_binary",
                          "reciprocity_exp_decay",
-                         "reciprocity_time_recent", "reciprocity_time_first")
+                         "reciprocity_time_recent", "reciprocity_time_first",
+                         "reciprocity_count_interrupted",
+                         "reciprocity_binary_interrupted",
+                         "reciprocity_exp_decay_interrupted",
+                         "reciprocity_time_recent_interrupted",
+                         "reciprocity_time_first_interrupted")
+  interrupted_recip_stats <- c("reciprocity_count_interrupted",
+                                "reciprocity_binary_interrupted",
+                                "reciprocity_exp_decay_interrupted",
+                                "reciprocity_time_recent_interrupted",
+                                "reciprocity_time_first_interrupted")
   network_stats <- c("transitivity_count", "transitivity_binary",
                      "cyclic_count", "cyclic_binary",
                      "sending_balance_count", "sending_balance_binary",
@@ -334,7 +356,8 @@ simulate_relational_events <- function(
                      "transitivity_time_first_ordered",
                      "transitivity_exp_decay_ordered")
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
-                       "transitivity_exp_decay_ordered")
+                       "transitivity_exp_decay_ordered",
+                       "reciprocity_exp_decay_interrupted")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -488,7 +511,9 @@ simulate_relational_events <- function(
                             "receiving_balance_time_recent",
                             "receiving_balance_time_first",
                             "transitivity_time_recent_ordered",
-                            "transitivity_time_first_ordered")) {
+                            "transitivity_time_first_ordered",
+                            "reciprocity_time_recent_interrupted",
+                            "reciprocity_time_first_interrupted")) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
         # matrices so the rate computation stays numeric (see
@@ -745,6 +770,11 @@ simulate_relational_events <- function(
         "transitivity_time_first_ordered" = time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_exp_decay"          = endo_state[[st]],
         "transitivity_exp_decay_ordered"  = endo_state[[st]],
+        "reciprocity_count_interrupted"        = endo_state[[st]],
+        "reciprocity_binary_interrupted"       = endo_state[[st]],
+        "reciprocity_exp_decay_interrupted"    = endo_state[[st]],
+        "reciprocity_time_recent_interrupted"  = time_elapsed_or_zero(endo_state[[st]]),
+        "reciprocity_time_first_interrupted"   = time_elapsed_or_zero(endo_state[[st]]),
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -897,7 +927,9 @@ simulate_relational_events <- function(
                        "receiving_balance_time_recent",
                        "receiving_balance_time_first",
                        "transitivity_time_recent_ordered",
-                       "transitivity_time_first_ordered")) {
+                       "transitivity_time_first_ordered",
+                       "reciprocity_time_recent_interrupted",
+                       "reciprocity_time_first_interrupted")) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -1005,6 +1037,21 @@ simulate_relational_events <- function(
                   }
                 } else if (st == "recency") {
                   endo_state[[st]][s_k, r_k] <- ev_times[k]
+                } else if (st == "reciprocity_count_interrupted" ||
+                           st == "reciprocity_exp_decay_interrupted") {
+                  endo_state[[st]][r_k, s_k] <- endo_state[[st]][r_k, s_k] + 1
+                  endo_state[[st]][s_k, r_k] <- 0
+                } else if (st == "reciprocity_binary_interrupted") {
+                  endo_state[[st]][r_k, s_k] <- 1
+                  endo_state[[st]][s_k, r_k] <- 0
+                } else if (st == "reciprocity_time_recent_interrupted") {
+                  endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  endo_state[[st]][s_k, r_k] <- NA_real_
+                } else if (st == "reciprocity_time_first_interrupted") {
+                  if (is.na(endo_state[[st]][r_k, s_k])) {
+                    endo_state[[st]][r_k, s_k] <- ev_times[k]
+                  }
+                  endo_state[[st]][s_k, r_k] <- NA_real_
                 } else if (!is.null(two_path_time_lookup[[st]])) {
                   if (adj_state[s_k, r_k] == 0) {
                     info <- two_path_time_lookup[[st]]
@@ -1192,6 +1239,25 @@ simulate_relational_events <- function(
           }
         } else if (st == "recency") {
           endo_state[[st]][s_idx, r_idx] <- current_time
+        } else if (st == "reciprocity_count_interrupted" ||
+                   st == "reciprocity_exp_decay_interrupted") {
+          # Continuous-style update for the reverse dyad (s -> r is a
+          # reverse-direction event for dyad (r, s)), AND reset of the
+          # firing dyad's own state because (s, r) closes the
+          # reciprocity cycle for (s, r).
+          endo_state[[st]][r_idx, s_idx] <- endo_state[[st]][r_idx, s_idx] + 1
+          endo_state[[st]][s_idx, r_idx] <- 0
+        } else if (st == "reciprocity_binary_interrupted") {
+          endo_state[[st]][r_idx, s_idx] <- 1
+          endo_state[[st]][s_idx, r_idx] <- 0
+        } else if (st == "reciprocity_time_recent_interrupted") {
+          endo_state[[st]][r_idx, s_idx] <- current_time
+          endo_state[[st]][s_idx, r_idx] <- NA_real_
+        } else if (st == "reciprocity_time_first_interrupted") {
+          if (is.na(endo_state[[st]][r_idx, s_idx])) {
+            endo_state[[st]][r_idx, s_idx] <- current_time
+          }
+          endo_state[[st]][s_idx, r_idx] <- NA_real_
         } else if (!is.null(two_path_time_lookup[[st]])) {
           # A two-path is *formed* at the time the second of its two legs
           # is first observed; re-fires of an existing leg don't form
