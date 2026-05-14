@@ -42,3 +42,4 @@ articles:
     contents:
       - simulation-demo
       - exogenous-covariates
+      - endogenous-and-global

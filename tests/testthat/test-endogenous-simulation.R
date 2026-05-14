@@ -130,6 +130,45 @@ test_that("validation: unknown stat, missing effects, length mismatch all error"
   )
 })
 
+test_that("endogenous_stats errors clearly on bipartite / two-mode sender/receiver sets", {
+  # The endogenous state machinery indexes a single (S x S) matrix and updates
+  # its reverse dyad after each event. That update assumes senders == receivers
+  # in the same order. The simulator should refuse rectangular / disjoint
+  # actor sets with a clear message rather than silently miscount reciprocity.
+  expect_error(
+    simulate_relational_events(
+      n_events = 5,
+      senders = letters[1:3],
+      receivers = LETTERS[1:3],            # disjoint receiver set
+      endogenous_stats = "reciprocity_count",
+      endogenous_effects = 0.5
+    ),
+    "same character vector"
+  )
+
+  expect_error(
+    simulate_relational_events(
+      n_events = 5,
+      senders = letters[1:3],
+      receivers = letters[1:4],            # different length
+      endogenous_stats = "reciprocity_count",
+      endogenous_effects = 0.5
+    ),
+    "same character vector"
+  )
+
+  expect_error(
+    simulate_relational_events(
+      n_events = 5,
+      senders = letters[1:3],
+      receivers = letters[3:1],            # same set, reordered
+      endogenous_stats = "reciprocity_count",
+      endogenous_effects = 0.5
+    ),
+    "same character vector"
+  )
+})
+
 test_that("positive reciprocity effect is recoverable via conditional logistic regression", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
