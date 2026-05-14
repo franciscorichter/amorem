@@ -690,6 +690,16 @@ four real-world REM datasets bundled directly under
       alone.  Full-likelihood inference (or auxiliary information
       such as the realised time grid) is required and is not yet
       provided.
+\item \textbf{No actor random effects in the model-comparison
+      pipeline.}  \texttt{compare\_models()} fits a no-intercept
+      binomial GLM (for \texttt{n\_controls = 1}) or a stratified
+      Cox model (for \texttt{n\_controls > 1}) without sender or
+      receiver random effects.  Replicating
+      \citet[Table 3]{juozaitiene2024about} requires their
+      frailty-style actor random effects, which the present
+      pipeline does not inject; the experiment driver
+      \texttt{paper/experiments/paper\_replication.R} confirms the
+      gap empirically.
 \item \textbf{No native time-varying \emph{dyadic} covariates.}
       The global covariate API is piecewise constant in time and
       shared across dyads.  Dyad-time grids (e.g.\ dyad-specific
