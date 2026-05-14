@@ -81,15 +81,19 @@
 <li>
 <strong>Exogenous actor covariates.</strong> <code><a href="reference/simulate_actor_covariates.html">simulate_actor_covariates()</a></code> generates static or AR(1) dynamic traits, while <code><a href="reference/attach_static_covariates.html">attach_static_covariates()</a></code> merges user data.</li>
 <li>
-<strong>Endogenous covariates.</strong> <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> now implements 28 endogenous effects (recency, multiple reciprocity forms, transitivity, cyclic closure, sending/receiving balance) following Juozaitienė &amp; Wit (2025).</li>
+<strong>Endogenous covariates.</strong> Both the simulator and the post-hoc <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> engine expose the same <strong>41-stat</strong> catalogue covering every paper definition from <a href="https://doi.org/10.1093/jrsssa/qnae132" class="external-link">Juozaitienė &amp; Wit (2024, <em>JRSS-A</em> 188(4))</a> that Table 3 of that paper selects on real-world data: reciprocity (continuous + interrupted; count, binary, exp-decay, time-recent, time-first), transitivity (continuous, ordered, exp-decay, interrupted-time; same five variants where applicable), cyclic / sending balance / receiving balance (continuous, exp-decay, interrupted timing). See <em>Endogenous network statistics</em> below for the full per-family tables.</li>
 <li>
-<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs two simulation algorithms — the default exact Gillespie (<code>method = "gillespie"</code>) and an approximate time-driven tau-leap (<code>method = "tau_leap", tau = ...</code>) — with optional controls for partial likelihood, a growing endogenous catalog (reciprocity: <code>reciprocity_count</code>, <code>reciprocity_binary</code>, half-life-decayed <code>reciprocity_exp_decay</code>, <code>reciprocity_time_recent</code>, <code>reciprocity_time_first</code>; per-actor degree: <code>sender_outdegree</code>, <code>receiver_indegree</code>; per-dyad <code>recency</code>; two-path: <code>transitivity_count</code>/<code>_binary</code>, <code>cyclic_count</code>/<code>_binary</code>; shared-target / shared-source: <code>sending_balance_count</code>/<code>_binary</code>, <code>receiving_balance_count</code>/<code>_binary</code>) whose state updates between events, time-varying global covariates via a boundary-aware scheme (weekday/weekend rate switches, policy regimes, …), and a <code>risk = "remove"</code> rule for one-shot processes such as species invasions or first-citation events. <code>recency</code>, <code>sender_outdegree</code>, and <code>receiver_indegree</code> work in bipartite / two-mode settings; the reciprocity and network (transitivity / cyclic / balance) families currently require one-mode networks.</li>
+<strong>Relational event simulation.</strong> <code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code> runs two simulation algorithms — the default exact Gillespie (<code>method = "gillespie"</code>) and an approximate time-driven tau-leap (<code>method = "tau_leap", tau = ...</code>) — with optional case-control output, the full 41-stat endogenous catalogue wired into the inner loop, time-varying global covariates via a boundary-aware scheme (weekday/weekend rate switches, policy regimes, …), and a <code>risk = "remove"</code> rule for one-shot processes such as species invasions or first-citation events. The per-actor family (<code>recency</code>, <code>sender_outdegree</code>, <code>receiver_indegree</code>) works in bipartite / two-mode settings; the closure families (reciprocity, transitivity, cyclic, sending / receiving balance) currently require one-mode networks.</li>
 <li>
 <strong>Non-event sampling.</strong> <code><a href="reference/sample_non_events.html">sample_non_events()</a></code> constructs nested case-control tables with appearance, citation, and remove risk-set rules.</li>
 <li>
-<strong>Inference-ready design matrices.</strong> Simulations or sampled logs can be fed to conditional logistic models or GAMs, as illustrated later in the README.</li>
+<strong>Model comparison.</strong> <code><a href="reference/compare_models.html">compare_models()</a></code> runs a one-call AIC ranking across an arbitrary list of candidate endogenous specifications, sharing a single case-control sample so the AIC values are directly comparable.</li>
 <li>
-<strong>Documentation + tests.</strong> pkgdown reference site, vignettes, and an expanded unit-test suite (79 tests) keep the above pieces stable.</li>
+<strong>Bundled real-world datasets.</strong> Four of the five datasets analysed in Juozaitienė &amp; Wit (2024) ship under <code>data/</code> and <code>inst/extdata/</code> (<code>classroom_events</code>, <code>social_evolution_calls</code>, <code>radoslaw_email</code>, with their actor-covariate tables) so the package’s documented workflows run on real REM data out of the box.</li>
+<li>
+<strong>Cross-implementation parity.</strong> Every shared statistic between the simulator and <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> is guarded by a dedicated parity test (<code>test-sim-vs-posthoc-parity.R</code>) that runs the simulator on synthetic events and verifies the post-hoc engine reproduces every output column row-for-row.</li>
+<li>
+<strong>Documentation + tests.</strong> pkgdown reference site, six vignettes, and a 2,282-assertion test suite that runs on every commit.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -224,7 +228,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Reciprocity</strong> — history of the reverse dyad (receiver → sender)</p>
+<p><strong>Reciprocity</strong> — history of the reverse dyad (receiver → sender). Continuous variants persist after a closure event; <em>interrupted</em> variants reset to zero (or <code>NA</code> for time-* slots) each time the same-direction dyad (sender → receiver) fires.</p>
 <table class="table">
 <colgroup>
 <col width="45%">
@@ -256,6 +260,26 @@
 <tr>
 <td><code>reciprocity_time_first</code></td>
 <td>Elapsed time since the first reverse-dyad event; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>reciprocity_binary_interrupted</code></td>
+<td>Interrupted variant of <code>reciprocity_binary</code> (paper r^(1i)).</td>
+</tr>
+<tr>
+<td><code>reciprocity_count_interrupted</code></td>
+<td>Interrupted variant of <code>reciprocity_count</code> (paper r^(2i)).</td>
+</tr>
+<tr>
+<td><code>reciprocity_exp_decay_interrupted</code></td>
+<td>Interrupted variant of <code>reciprocity_exp_decay</code> (paper r^(3i)).</td>
+</tr>
+<tr>
+<td><code>reciprocity_time_recent_interrupted</code></td>
+<td>Interrupted variant of <code>reciprocity_time_recent</code> (paper r^(4ai)).</td>
+</tr>
+<tr>
+<td><code>reciprocity_time_first_interrupted</code></td>
+<td>Interrupted variant of <code>reciprocity_time_first</code> (paper r^(4bi)).</td>
 </tr>
 </tbody>
 </table>
@@ -296,11 +320,11 @@
 </tr>
 <tr>
 <td><code>transitivity_time_recent</code></td>
-<td>Time since the most recently completed two-path; <code>NA</code> if none.</td>
+<td>Time since the most recently formed two-path; <code>NA</code> if none.</td>
 </tr>
 <tr>
 <td><code>transitivity_time_first</code></td>
-<td>Time since the earliest two-path; <code>NA</code> if none.</td>
+<td>Time since the first-ever two-path; <code>NA</code> if none.</td>
 </tr>
 <tr>
 <td><code>transitivity_time_recent_ordered</code></td>
@@ -308,7 +332,15 @@
 </tr>
 <tr>
 <td><code>transitivity_time_first_ordered</code></td>
-<td>Time since the earliest ordered two-path; <code>NA</code> if none.</td>
+<td>Time since the first-ever ordered two-path; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>transitivity_time_recent_interrupted</code></td>
+<td>Interrupted variant (paper t^(7ai)): time since the most recent two-path since the most recent closure event s → r.</td>
+</tr>
+<tr>
+<td><code>transitivity_time_first_interrupted</code></td>
+<td>Interrupted variant (paper t^(7bi)): time since the first two-path since the most recent closure event s → r.</td>
 </tr>
 </tbody>
 </table>
@@ -332,8 +364,24 @@
 <td>Number of cyclic intermediaries.</td>
 </tr>
 <tr>
+<td><code>cyclic_exp_decay</code></td>
+<td>Exp-decay weighted sum over cyclic two-paths (paper c^(5c)).</td>
+</tr>
+<tr>
 <td><code>cyclic_time_recent</code></td>
-<td>Time since the most recent cyclic two-path; <code>NA</code> if none.</td>
+<td>Time since the most recent cyclic two-path formation; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>cyclic_time_first</code></td>
+<td>Time since the first-ever cyclic two-path; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>cyclic_time_recent_interrupted</code></td>
+<td>Interrupted variant of <code>cyclic_time_recent</code>.</td>
+</tr>
+<tr>
+<td><code>cyclic_time_first_interrupted</code></td>
+<td>Interrupted variant of <code>cyclic_time_first</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -357,8 +405,24 @@
 <td>Number of shared targets.</td>
 </tr>
 <tr>
+<td><code>sending_balance_exp_decay</code></td>
+<td>Exp-decay weighted sum over shared-target two-paths (paper sb^(5c)).</td>
+</tr>
+<tr>
 <td><code>sending_balance_time_recent</code></td>
-<td>Time since the most recent shared-target two-path; <code>NA</code> if none.</td>
+<td>Time since the most recent shared-target two-path formation; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>sending_balance_time_first</code></td>
+<td>Time since the first-ever shared-target two-path; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>sending_balance_time_recent_interrupted</code></td>
+<td>Interrupted variant (paper sb^(7ai)).</td>
+</tr>
+<tr>
+<td><code>sending_balance_time_first_interrupted</code></td>
+<td>Interrupted variant (paper sb^(7bi)).</td>
 </tr>
 </tbody>
 </table>
@@ -382,8 +446,24 @@
 <td>Number of shared sources.</td>
 </tr>
 <tr>
+<td><code>receiving_balance_exp_decay</code></td>
+<td>Exp-decay weighted sum over shared-source two-paths (paper rb^(5c)).</td>
+</tr>
+<tr>
 <td><code>receiving_balance_time_recent</code></td>
-<td>Time since the most recent shared-source two-path; <code>NA</code> if none.</td>
+<td>Time since the most recent shared-source two-path formation; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>receiving_balance_time_first</code></td>
+<td>Time since the first-ever shared-source two-path; <code>NA</code> if none.</td>
+</tr>
+<tr>
+<td><code>receiving_balance_time_recent_interrupted</code></td>
+<td>Interrupted variant (paper rb^(7ai)).</td>
+</tr>
+<tr>
+<td><code>receiving_balance_time_first_interrupted</code></td>
+<td>Interrupted variant (paper rb^(7bi)).</td>
 </tr>
 </tbody>
 </table>
@@ -556,7 +636,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stratum"</span>, <span class="st">"event"</span>, <span class="st">"sender"</span>, <span class="st">"receiver"</span>, <span class="st">"reciprocity_count"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<p>The output gains one column per stat carrying the value each row’s dyad had at its event time, so the coefficient is directly recoverable by conditional logistic / GAM regression on the case–control table (see <code>tests/testthat/test-endogenous-simulation.R</code>). Supported stats in this first cut are <code>reciprocity_count</code> and <code>reciprocity_binary</code>; additional endogenous mechanisms (transitivity, recency, decay-weighted variants) are tracked in the issue queue.</p>
+<p>The output gains one column per stat carrying the value each row’s dyad had at its event time, so the coefficient is directly recoverable by conditional logistic / GAM regression on the case–control table (see <code>tests/testthat/test-endogenous-simulation.R</code>). The simulator’s <code>endogenous_stats</code> argument accepts the full 41-stat catalogue documented under <em>Endogenous network statistics</em> above; each stat is also computable post-hoc by <code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code>, with every shared name cross-validated by <code>test-sim-vs-posthoc-parity.R</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="time-varying-global-covariates">Time-varying global covariates<a class="anchor" aria-label="anchor" href="#time-varying-global-covariates"></a>
@@ -598,6 +678,73 @@
 <p>Instead of drawing one waiting time at a time (Gillespie), the tau-leap algorithm advances the clock by a fixed <code>tau</code> and Poisson-samples the number of events on each dyad in <code>[t, t+tau)</code> using the rates at the start of the step. As <code>tau</code> → 0 the distribution converges to exact Gillespie. Tau-leap is most useful when the per-event recomputation in the Gillespie path dominates wall-clock — for example, in high-rate regimes or with a large endogenous state space. Choose <code>tau</code> small enough that (a) <code>lambda * tau &lt;&lt; 1</code> on every active dyad and (b) <code>tau</code> is smaller than the shortest interval in <code>global_covariates</code>; within-step global-boundary crossings are not resolved.</p>
 <p>All features (case-control sampling, endogenous mechanisms, global covariates, output columns) compose with both algorithms.</p>
 </div>
+<div class="section level3">
+<h3 id="bundled-real-world-rem-datasets">Bundled real-world REM datasets<a class="anchor" aria-label="anchor" href="#bundled-real-world-rem-datasets"></a>
+</h3>
+<p>Four of the five empirical datasets analysed in <a href="https://doi.org/10.1093/jrsssa/qnae132" class="external-link">Juozaitienė &amp; Wit (2024)</a> ship directly with the package, both as tidy event tables in <code>data/</code> (loadable via <code>data(...)</code>) and as their original raw sources under <code>inst/extdata/</code>:</p>
+<table class="table">
+<colgroup>
+<col width="20%">
+<col width="28%">
+<col width="17%">
+<col width="15%">
+<col width="17%">
+</colgroup>
+<thead><tr>
+<th>Dataset</th>
+<th>Event table</th>
+<th align="right">Events</th>
+<th align="right">Actors</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Classroom session</td>
+<td><code>classroom_events</code></td>
+<td align="right">691</td>
+<td align="right">20</td>
+<td>McFarland (2001) via <code>networkDynamic</code>
+</td>
+</tr>
+<tr>
+<td>Social Evolution phone calls</td>
+<td><code>social_evolution_calls</code></td>
+<td align="right">439</td>
+<td align="right">54</td>
+<td>Madan et al. (2011) via <code>goldfish</code>
+</td>
+</tr>
+<tr>
+<td>Manufacturing emails</td>
+<td><code>radoslaw_email</code></td>
+<td align="right">82,927</td>
+<td align="right">167</td>
+<td>Michalski et al. (2014) via Network Repository</td>
+</tr>
+</tbody>
+</table>
+<p>Each dataset comes with a companion actor-covariate table where appropriate (<code>classroom_actors</code>, <code>social_evolution_actors</code>). Times are normalised to minutes (Classroom) or days since the first event; original Unix epochs are preserved as a <code>unix_origin</code> attribute. The Enron email dataset of the original paper is intentionally not bundled because the only publicly archived version is an aggregated daily edge-weight table, not the event-level slice the paper analyses.</p>
+</div>
+<div class="section level3">
+<h3 id="comparing-candidate-specifications-by-aic">Comparing candidate specifications by AIC<a class="anchor" aria-label="anchor" href="#comparing-candidate-specifications-by-aic"></a>
+</h3>
+<p><code><a href="reference/compare_models.html">compare_models()</a></code> runs the full case-control + binomial-GLM pipeline across a list of candidate specifications and returns a tidy AIC table. The single case-control sample is shared across every spec so AIC values are directly comparable:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/compare_models.html">compare_models</a></span><span class="op">(</span></span>
+<span>  <span class="va">classroom_events</span>,</span>
+<span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    count       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span>
+<span>    continuous  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_time_recent"</span>, <span class="st">"transitivity_time_recent"</span><span class="op">)</span>,</span>
+<span>    interrupted <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_time_recent_interrupted"</span>,</span>
+<span>                    <span class="st">"transitivity_time_recent_interrupted"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         model n_terms n_obs   log_lik     AIC delta_AIC</span></span>
+<span><span class="co">#&gt; 1       count       2   691 -305.5234 615.047    0.0000</span></span>
+<span><span class="co">#&gt; 2  continuous       2   691 -421.1244 846.249  231.2017</span></span>
+<span><span class="co">#&gt; 3 interrupted       2   691 -439.6917 883.383  268.3367</span></span></code></pre></div>
+<p>The vignette <code><a href="articles/model-comparison.html">vignette("model-comparison")</a></code> walks through the full workflow, including how to inspect coefficients of a chosen specification and a simulator → inference round-trip that recovers the true generative spec.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -609,7 +756,7 @@
 </li>
 </ul>
 <p>For function usage:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">simulate_relational_events</span></span>
 <span><span class="op">?</span><span class="va">simulate_actor_covariates</span></span></code></pre></div>
 </div>
@@ -619,7 +766,7 @@
 <ul>
 <li>
 <p>During development, work from the package root and let R load the in-tree code with:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 <li><p>Document + namespace: <code>devtools::document()</code></p></li>

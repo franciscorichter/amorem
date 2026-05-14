@@ -37,40 +37,52 @@ exploratory and simulation-based REM studies:
   generates static or AR(1) dynamic traits, while
   [`attach_static_covariates()`](https://franciscorichter.github.io/amore/reference/attach_static_covariates.md)
   merges user data.
-- **Endogenous covariates.**
+- **Endogenous covariates.** Both the simulator and the post-hoc
   [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
-  now implements 28 endogenous effects (recency, multiple reciprocity
-  forms, transitivity, cyclic closure, sending/receiving balance)
-  following Juozaitienė & Wit (2025).
+  engine expose the same **41-stat** catalogue covering every paper
+  definition from [Juozaitienė & Wit (2024, *JRSS-A*
+  188(4))](https://doi.org/10.1093/jrsssa/qnae132) that Table 3 of that
+  paper selects on real-world data: reciprocity (continuous +
+  interrupted; count, binary, exp-decay, time-recent, time-first),
+  transitivity (continuous, ordered, exp-decay, interrupted-time; same
+  five variants where applicable), cyclic / sending balance / receiving
+  balance (continuous, exp-decay, interrupted timing). See *Endogenous
+  network statistics* below for the full per-family tables.
 - **Relational event simulation.**
   [`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
   runs two simulation algorithms — the default exact Gillespie
   (`method = "gillespie"`) and an approximate time-driven tau-leap
-  (`method = "tau_leap", tau = ...`) — with optional controls for
-  partial likelihood, a growing endogenous catalog (reciprocity:
-  `reciprocity_count`, `reciprocity_binary`, half-life-decayed
-  `reciprocity_exp_decay`, `reciprocity_time_recent`,
-  `reciprocity_time_first`; per-actor degree: `sender_outdegree`,
-  `receiver_indegree`; per-dyad `recency`; two-path:
-  `transitivity_count`/`_binary`, `cyclic_count`/`_binary`;
-  shared-target / shared-source: `sending_balance_count`/`_binary`,
-  `receiving_balance_count`/`_binary`) whose state updates between
-  events, time-varying global covariates via a boundary-aware scheme
+  (`method = "tau_leap", tau = ...`) — with optional case-control
+  output, the full 41-stat endogenous catalogue wired into the inner
+  loop, time-varying global covariates via a boundary-aware scheme
   (weekday/weekend rate switches, policy regimes, …), and a
   `risk = "remove"` rule for one-shot processes such as species
-  invasions or first-citation events. `recency`, `sender_outdegree`, and
-  `receiver_indegree` work in bipartite / two-mode settings; the
-  reciprocity and network (transitivity / cyclic / balance) families
-  currently require one-mode networks.
+  invasions or first-citation events. The per-actor family (`recency`,
+  `sender_outdegree`, `receiver_indegree`) works in bipartite / two-mode
+  settings; the closure families (reciprocity, transitivity, cyclic,
+  sending / receiving balance) currently require one-mode networks.
 - **Non-event sampling.**
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   constructs nested case-control tables with appearance, citation, and
   remove risk-set rules.
-- **Inference-ready design matrices.** Simulations or sampled logs can
-  be fed to conditional logistic models or GAMs, as illustrated later in
-  the README.
-- **Documentation + tests.** pkgdown reference site, vignettes, and an
-  expanded unit-test suite (79 tests) keep the above pieces stable.
+- **Model comparison.**
+  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+  runs a one-call AIC ranking across an arbitrary list of candidate
+  endogenous specifications, sharing a single case-control sample so the
+  AIC values are directly comparable.
+- **Bundled real-world datasets.** Four of the five datasets analysed in
+  Juozaitienė & Wit (2024) ship under `data/` and `inst/extdata/`
+  (`classroom_events`, `social_evolution_calls`, `radoslaw_email`, with
+  their actor-covariate tables) so the package’s documented workflows
+  run on real REM data out of the box.
+- **Cross-implementation parity.** Every shared statistic between the
+  simulator and
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+  is guarded by a dedicated parity test (`test-sim-vs-posthoc-parity.R`)
+  that runs the simulator on synthetic events and verifies the post-hoc
+  engine reproduces every output column row-for-row.
+- **Documentation + tests.** pkgdown reference site, six vignettes, and
+  a 2,282-assertion test suite that runs on every commit.
 
 ## Installation
 
@@ -225,7 +237,10 @@ Pass one or more stat names to
 | `receiver_indegree` | Number of events the receiver has received so far. |
 | `recency` | Elapsed time since the last event on the same ordered pair; `NA` when the dyad is brand new. |
 
-**Reciprocity** — history of the reverse dyad (receiver → sender)
+**Reciprocity** — history of the reverse dyad (receiver → sender).
+Continuous variants persist after a closure event; *interrupted*
+variants reset to zero (or `NA` for time-\* slots) each time the
+same-direction dyad (sender → receiver) fires.
 
 | Stat name | Description |
 |----|----|
@@ -234,6 +249,11 @@ Pass one or more stat names to
 | `reciprocity_exp_decay` | Exponentially weighted sum of past reverse-dyad events; older events contribute less according to `half_life`. |
 | `reciprocity_time_recent` | Elapsed time since the most recent reverse-dyad event; `NA` if none. |
 | `reciprocity_time_first` | Elapsed time since the first reverse-dyad event; `NA` if none. |
+| `reciprocity_binary_interrupted` | Interrupted variant of `reciprocity_binary` (paper r^(1i)). |
+| `reciprocity_count_interrupted` | Interrupted variant of `reciprocity_count` (paper r^(2i)). |
+| `reciprocity_exp_decay_interrupted` | Interrupted variant of `reciprocity_exp_decay` (paper r^(3i)). |
+| `reciprocity_time_recent_interrupted` | Interrupted variant of `reciprocity_time_recent` (paper r^(4ai)). |
+| `reciprocity_time_first_interrupted` | Interrupted variant of `reciprocity_time_first` (paper r^(4bi)). |
 
 **Transitivity** — two-path s → k → r (the sender previously contacted
 some intermediary k who in turn contacted the receiver)
@@ -246,10 +266,12 @@ some intermediary k who in turn contacted the receiver)
 | `transitivity_count_ordered` | Count with order restriction. |
 | `transitivity_exp_decay` | Exp-decay weighted sum over two-paths (requires `half_life`). |
 | `transitivity_exp_decay_ordered` | Exp-decay with order restriction. |
-| `transitivity_time_recent` | Time since the most recently completed two-path; `NA` if none. |
-| `transitivity_time_first` | Time since the earliest two-path; `NA` if none. |
+| `transitivity_time_recent` | Time since the most recently formed two-path; `NA` if none. |
+| `transitivity_time_first` | Time since the first-ever two-path; `NA` if none. |
 | `transitivity_time_recent_ordered` | Time since the most recent ordered two-path; `NA` if none. |
-| `transitivity_time_first_ordered` | Time since the earliest ordered two-path; `NA` if none. |
+| `transitivity_time_first_ordered` | Time since the first-ever ordered two-path; `NA` if none. |
+| `transitivity_time_recent_interrupted` | Interrupted variant (paper t^(7ai)): time since the most recent two-path since the most recent closure event s → r. |
+| `transitivity_time_first_interrupted` | Interrupted variant (paper t^(7bi)): time since the first two-path since the most recent closure event s → r. |
 
 **Cyclic closure** — two-path r → k → s, closed by event s → r (the
 receiver previously contacted k, and k previously contacted the sender)
@@ -258,7 +280,11 @@ receiver previously contacted k, and k previously contacted the sender)
 |----|----|
 | `cyclic_binary` | 1 if any cyclic two-path exists, 0 otherwise. |
 | `cyclic_count` | Number of cyclic intermediaries. |
-| `cyclic_time_recent` | Time since the most recent cyclic two-path; `NA` if none. |
+| `cyclic_exp_decay` | Exp-decay weighted sum over cyclic two-paths (paper c^(5c)). |
+| `cyclic_time_recent` | Time since the most recent cyclic two-path formation; `NA` if none. |
+| `cyclic_time_first` | Time since the first-ever cyclic two-path; `NA` if none. |
+| `cyclic_time_recent_interrupted` | Interrupted variant of `cyclic_time_recent`. |
+| `cyclic_time_first_interrupted` | Interrupted variant of `cyclic_time_first`. |
 
 **Sending balance** — shared target: both s → k and r → k exist (the
 sender and receiver have both contacted the same third actor k)
@@ -267,7 +293,11 @@ sender and receiver have both contacted the same third actor k)
 |----|----|
 | `sending_balance_binary` | 1 if any shared target exists, 0 otherwise. |
 | `sending_balance_count` | Number of shared targets. |
-| `sending_balance_time_recent` | Time since the most recent shared-target two-path; `NA` if none. |
+| `sending_balance_exp_decay` | Exp-decay weighted sum over shared-target two-paths (paper sb^(5c)). |
+| `sending_balance_time_recent` | Time since the most recent shared-target two-path formation; `NA` if none. |
+| `sending_balance_time_first` | Time since the first-ever shared-target two-path; `NA` if none. |
+| `sending_balance_time_recent_interrupted` | Interrupted variant (paper sb^(7ai)). |
+| `sending_balance_time_first_interrupted` | Interrupted variant (paper sb^(7bi)). |
 
 **Receiving balance** — shared source: both k → s and k → r exist (the
 sender and receiver have both been contacted by the same third actor k)
@@ -276,7 +306,11 @@ sender and receiver have both been contacted by the same third actor k)
 |----|----|
 | `receiving_balance_binary` | 1 if any shared source exists, 0 otherwise. |
 | `receiving_balance_count` | Number of shared sources. |
-| `receiving_balance_time_recent` | Time since the most recent shared-source two-path; `NA` if none. |
+| `receiving_balance_exp_decay` | Exp-decay weighted sum over shared-source two-paths (paper rb^(5c)). |
+| `receiving_balance_time_recent` | Time since the most recent shared-source two-path formation; `NA` if none. |
+| `receiving_balance_time_first` | Time since the first-ever shared-source two-path; `NA` if none. |
+| `receiving_balance_time_recent_interrupted` | Interrupted variant (paper rb^(7ai)). |
+| `receiving_balance_time_first_interrupted` | Interrupted variant (paper rb^(7bi)). |
 
 All `*_exp_decay` statistics require a `half_life` argument that
 controls how quickly the influence of past events diminishes.
@@ -443,10 +477,13 @@ head(cc[, c("stratum", "event", "sender", "receiver", "reciprocity_count")])
 The output gains one column per stat carrying the value each row’s dyad
 had at its event time, so the coefficient is directly recoverable by
 conditional logistic / GAM regression on the case–control table (see
-`tests/testthat/test-endogenous-simulation.R`). Supported stats in this
-first cut are `reciprocity_count` and `reciprocity_binary`; additional
-endogenous mechanisms (transitivity, recency, decay-weighted variants)
-are tracked in the issue queue.
+`tests/testthat/test-endogenous-simulation.R`). The simulator’s
+`endogenous_stats` argument accepts the full 41-stat catalogue
+documented under *Endogenous network statistics* above; each stat is
+also computable post-hoc by
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md),
+with every shared name cross-validated by
+`test-sim-vs-posthoc-parity.R`.
 
 ### Time-varying global covariates
 
@@ -516,6 +553,58 @@ within-step global-boundary crossings are not resolved.
 
 All features (case-control sampling, endogenous mechanisms, global
 covariates, output columns) compose with both algorithms.
+
+### Bundled real-world REM datasets
+
+Four of the five empirical datasets analysed in [Juozaitienė & Wit
+(2024)](https://doi.org/10.1093/jrsssa/qnae132) ship directly with the
+package, both as tidy event tables in `data/` (loadable via `data(...)`)
+and as their original raw sources under `inst/extdata/`:
+
+| Dataset | Event table | Events | Actors | Source |
+|----|----|---:|---:|----|
+| Classroom session | `classroom_events` | 691 | 20 | McFarland (2001) via `networkDynamic` |
+| Social Evolution phone calls | `social_evolution_calls` | 439 | 54 | Madan et al. (2011) via `goldfish` |
+| Manufacturing emails | `radoslaw_email` | 82,927 | 167 | Michalski et al. (2014) via Network Repository |
+
+Each dataset comes with a companion actor-covariate table where
+appropriate (`classroom_actors`, `social_evolution_actors`). Times are
+normalised to minutes (Classroom) or days since the first event;
+original Unix epochs are preserved as a `unix_origin` attribute. The
+Enron email dataset of the original paper is intentionally not bundled
+because the only publicly archived version is an aggregated daily
+edge-weight table, not the event-level slice the paper analyses.
+
+### Comparing candidate specifications by AIC
+
+[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+runs the full case-control + binomial-GLM pipeline across a list of
+candidate specifications and returns a tidy AIC table. The single
+case-control sample is shared across every spec so AIC values are
+directly comparable:
+
+``` r
+
+data(classroom_events)
+compare_models(
+  classroom_events,
+  models = list(
+    count       = c("reciprocity_count", "transitivity_count"),
+    continuous  = c("reciprocity_time_recent", "transitivity_time_recent"),
+    interrupted = c("reciprocity_time_recent_interrupted",
+                    "transitivity_time_recent_interrupted")),
+  seed = 11)
+#>         model n_terms n_obs   log_lik     AIC delta_AIC
+#> 1       count       2   691 -305.5234 615.047    0.0000
+#> 2  continuous       2   691 -421.1244 846.249  231.2017
+#> 3 interrupted       2   691 -439.6917 883.383  268.3367
+```
+
+The vignette
+[`vignette("model-comparison")`](https://franciscorichter.github.io/amore/articles/model-comparison.md)
+walks through the full workflow, including how to inspect coefficients
+of a chosen specification and a simulator → inference round-trip that
+recovers the true generative spec.
 
 ## Documentation
 
