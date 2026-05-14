@@ -251,8 +251,10 @@ attach_static_covariates <- function(
 #'   \describe{
 #'     \item{`cyclic_binary`}{1 if any cyclic two-path exists.}
 #'     \item{`cyclic_count`}{Number of cyclic intermediaries.}
-#'     \item{`cyclic_time_recent`}{Time since the most recent cyclic two-path;
-#'       `NA` if none.}
+#'     \item{`cyclic_time_recent`}{Time since the most recent cyclic two-path
+#'       formation; `NA` if none.}
+#'     \item{`cyclic_time_first`}{Time since the first cyclic two-path
+#'       formation; `NA` if none.}
 #'   }
 #'
 #'   **Sending balance** — shared target: both \eqn{s \to k} and \eqn{r \to k}
@@ -261,7 +263,9 @@ attach_static_covariates <- function(
 #'     \item{`sending_balance_binary`}{1 if any shared target exists.}
 #'     \item{`sending_balance_count`}{Number of shared targets.}
 #'     \item{`sending_balance_time_recent`}{Time since the most recent
-#'       shared-target two-path; `NA` if none.}
+#'       shared-target two-path formation; `NA` if none.}
+#'     \item{`sending_balance_time_first`}{Time since the first
+#'       shared-target two-path formation; `NA` if none.}
 #'   }
 #'
 #'   **Receiving balance** — shared source: both \eqn{k \to s} and
@@ -270,7 +274,9 @@ attach_static_covariates <- function(
 #'     \item{`receiving_balance_binary`}{1 if any shared source exists.}
 #'     \item{`receiving_balance_count`}{Number of shared sources.}
 #'     \item{`receiving_balance_time_recent`}{Time since the most recent
-#'       shared-source two-path; `NA` if none.}
+#'       shared-source two-path formation; `NA` if none.}
+#'     \item{`receiving_balance_time_first`}{Time since the first
+#'       shared-source two-path formation; `NA` if none.}
 #'   }
 #'
 #' @return The event log with added columns, one per requested statistic.
@@ -300,11 +306,11 @@ compute_endogenous_features <- function(
     "transitivity_exp_decay", "transitivity_exp_decay_ordered",
     "transitivity_time_recent", "transitivity_time_first",
     "transitivity_time_recent_ordered", "transitivity_time_first_ordered",
-    "cyclic_binary", "cyclic_count", "cyclic_time_recent",
+    "cyclic_binary", "cyclic_count", "cyclic_time_recent", "cyclic_time_first",
     "sending_balance_binary", "sending_balance_count",
-    "sending_balance_time_recent",
+    "sending_balance_time_recent", "sending_balance_time_first",
     "receiving_balance_binary", "receiving_balance_count",
-    "receiving_balance_time_recent"
+    "receiving_balance_time_recent", "receiving_balance_time_first"
   )
   bad <- setdiff(stats, allowed)
   if (length(bad)) {
@@ -341,11 +347,12 @@ compute_endogenous_features <- function(
                    "transitivity_time_recent", "transitivity_time_first",
                    "transitivity_time_recent_ordered",
                    "transitivity_time_first_ordered")
-  cyc_names   <- c("cyclic_binary", "cyclic_count", "cyclic_time_recent")
+  cyc_names   <- c("cyclic_binary", "cyclic_count",
+                   "cyclic_time_recent", "cyclic_time_first")
   sb_names    <- c("sending_balance_binary", "sending_balance_count",
-                   "sending_balance_time_recent")
+                   "sending_balance_time_recent", "sending_balance_time_first")
   rb_names    <- c("receiving_balance_binary", "receiving_balance_count",
-                   "receiving_balance_time_recent")
+                   "receiving_balance_time_recent", "receiving_balance_time_first")
   need_triadic <- any(c(trans_names, cyc_names, sb_names, rb_names) %in% stats)
 
   # --- Tracking data structures ---
@@ -432,30 +439,34 @@ compute_endogenous_features <- function(
       e1 <- get_e1_times(k)
       e2 <- get_e2_times(k)
 
-      last_e1  <- max(e1)
-      last_e2  <- max(e2)
-      completion <- max(last_e1, last_e2)
+      # Per-k formation time = the time the two-path s -> k -> r first
+      # exists, i.e., the time the second of its two legs is first
+      # observed (paper t^(7) family; matches the simulator's
+      # apply_time_writes contract). Re-firings of either leg do not
+      # change the formation time.
+      formation <- max(min(e1), min(e2))
 
       if (need_time) {
-        if (completion > form_recent) form_recent <- completion
-        first_completion <- max(min(e1), min(e2))
-        if (first_completion < form_first) form_first <- first_completion
+        if (formation > form_recent) form_recent <- formation
+        if (formation < form_first)  form_first  <- formation
       }
       if (need_exp && !is.null(half_life)) {
         exp_sum <- exp_sum +
-          exp(-(t_now - completion) * log(2) / half_life)
+          exp(-(t_now - formation) * log(2) / half_life)
       }
       if (need_ord) {
+        # First leg-2 event strictly after the first leg-1 event is the
+        # ordered chain's formation time. Across k, take max for
+        # form_ord_recent and min for form_ord_first.
         valid_e2 <- e2[e2 > min(e1)]
         if (length(valid_e2)) {
           n_ordered <- n_ordered + 1L
-          latest_v   <- max(valid_e2)
-          earliest_v <- min(valid_e2)
-          if (latest_v > form_ord_recent) form_ord_recent <- latest_v
-          if (earliest_v < form_ord_first) form_ord_first <- earliest_v
+          formation_ord <- min(valid_e2)
+          if (formation_ord > form_ord_recent) form_ord_recent <- formation_ord
+          if (formation_ord < form_ord_first)  form_ord_first  <- formation_ord
           if (need_exp && !is.null(half_life)) {
             exp_ord_sum <- exp_ord_sum +
-              exp(-(t_now - latest_v) * log(2) / half_life)
+              exp(-(t_now - formation_ord) * log(2) / half_life)
           }
         }
       }
