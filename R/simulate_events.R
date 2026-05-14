@@ -49,6 +49,15 @@
 #'       \code{"transitivity_exp_decay"} but only counts \emph{ordered}
 #'       two-paths (s → k strictly before k → r), definition
 #'       \eqn{t^{(6c)}}.  Requires \code{half_life}.
+#'     \item \code{"cyclic_exp_decay"} — exp-decayed sum over cyclic
+#'       two-paths \eqn{r \to k \to s} (paper \eqn{c^{(5c)}}).  Requires
+#'       \code{half_life}.
+#'     \item \code{"sending_balance_exp_decay"} — exp-decayed sum over
+#'       shared-target two-paths \eqn{s \to k,\ r \to k} (paper
+#'       \eqn{sb^{(5c)}}).  Requires \code{half_life}.
+#'     \item \code{"receiving_balance_exp_decay"} — exp-decayed sum over
+#'       shared-source two-paths \eqn{k \to s,\ k \to r} (paper
+#'       \eqn{rb^{(5c)}}).  Requires \code{half_life}.
 #'     \item \code{"reciprocity_time_recent"} — elapsed time since the most
 #'       recent reverse-dyad event \eqn{t - t_{\text{recent}}(r,s)}; reports
 #'       \code{0} for dyads whose reverse has never fired (rather than the
@@ -349,7 +358,10 @@ simulate_relational_events <- function(
                      "transitivity_time_recent_ordered",
                      "transitivity_time_first_ordered",
                      "transitivity_exp_decay",
-                     "transitivity_exp_decay_ordered")
+                     "transitivity_exp_decay_ordered",
+                     "cyclic_exp_decay",
+                     "sending_balance_exp_decay",
+                     "receiving_balance_exp_decay")
   ordered_stats <- c("transitivity_count_ordered",
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
@@ -357,7 +369,10 @@ simulate_relational_events <- function(
                      "transitivity_exp_decay_ordered")
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
                        "transitivity_exp_decay_ordered",
-                       "reciprocity_exp_decay_interrupted")
+                       "reciprocity_exp_decay_interrupted",
+                       "cyclic_exp_decay",
+                       "sending_balance_exp_decay",
+                       "receiving_balance_exp_decay")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -575,6 +590,13 @@ simulate_relational_events <- function(
   # Map each generative "two-path timing" stat to (family, is_first) so the
   # state-update sweep can be derived in a single helper instead of branching
   # per stat name in two places (Gillespie + tau-leap inner loops).
+  exp_decay_family_lookup <- list(
+    transitivity_exp_decay      = "transitivity",
+    cyclic_exp_decay            = "cyclic",
+    sending_balance_exp_decay   = "sending_balance",
+    receiving_balance_exp_decay = "receiving_balance"
+  )
+
   two_path_time_lookup <- list(
     transitivity_time_recent      = list(family = "transitivity",      first = FALSE),
     transitivity_time_first       = list(family = "transitivity",      first = TRUE),
@@ -770,6 +792,9 @@ simulate_relational_events <- function(
         "transitivity_time_first_ordered" = time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_exp_decay"          = endo_state[[st]],
         "transitivity_exp_decay_ordered"  = endo_state[[st]],
+        "cyclic_exp_decay"                = endo_state[[st]],
+        "sending_balance_exp_decay"       = endo_state[[st]],
+        "receiving_balance_exp_decay"     = endo_state[[st]],
         "reciprocity_count_interrupted"        = endo_state[[st]],
         "reciprocity_binary_interrupted"       = endo_state[[st]],
         "reciprocity_exp_decay_interrupted"    = endo_state[[st]],
@@ -1059,9 +1084,10 @@ simulate_relational_events <- function(
                     endo_state[[st]] <- apply_time_writes(
                       endo_state[[st]], writes, ev_times[k], info$first)
                   }
-                } else if (st == "transitivity_exp_decay") {
+                } else if (!is.null(exp_decay_family_lookup[[st]])) {
                   if (adj_state[s_k, r_k] == 0) {
-                    writes <- two_path_writes("transitivity", s_k, r_k, adj_state)
+                    fam <- exp_decay_family_lookup[[st]]
+                    writes <- two_path_writes(fam, s_k, r_k, adj_state)
                     if (nrow(writes)) {
                       endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
                     }
@@ -1270,13 +1296,14 @@ simulate_relational_events <- function(
             endo_state[[st]] <- apply_time_writes(
               endo_state[[st]], writes, current_time, info$first)
           }
-        } else if (st == "transitivity_exp_decay") {
-          # Unordered exp-decay: each newly-formed two-path contributes
-          # +1 (decay state was just attenuated to current_time, so a
-          # fresh contribution of weight exp(0) = 1 is correct). Same
-          # first-fire gate as the timing stats.
+        } else if (!is.null(exp_decay_family_lookup[[st]])) {
+          # Unordered exp-decay for any closure family: each newly-formed
+          # two-path contributes +1 (decay state was just attenuated to
+          # current_time, so a fresh contribution of weight exp(0) = 1 is
+          # correct). Same first-fire gate as the timing stats.
           if (adj_state[s_idx, r_idx] == 0) {
-            writes <- two_path_writes("transitivity", s_idx, r_idx, adj_state)
+            fam <- exp_decay_family_lookup[[st]]
+            writes <- two_path_writes(fam, s_idx, r_idx, adj_state)
             if (nrow(writes)) {
               endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
             }

@@ -82,22 +82,25 @@ test_that("simulator and post-hoc agree on transitivity ordered stats", {
 
 test_that("simulator and post-hoc agree on cyclic stats", {
   stats <- c("cyclic_binary", "cyclic_count",
-             "cyclic_time_recent", "cyclic_time_first")
-  out <- sim_vs_posthoc(stats, seed = 104)
+             "cyclic_time_recent", "cyclic_time_first",
+             "cyclic_exp_decay")
+  out <- sim_vs_posthoc(stats, seed = 104, half_life = 1)
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
 
 test_that("simulator and post-hoc agree on sending_balance stats", {
   stats <- c("sending_balance_binary", "sending_balance_count",
-             "sending_balance_time_recent", "sending_balance_time_first")
-  out <- sim_vs_posthoc(stats, seed = 105)
+             "sending_balance_time_recent", "sending_balance_time_first",
+             "sending_balance_exp_decay")
+  out <- sim_vs_posthoc(stats, seed = 105, half_life = 1)
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
 
 test_that("simulator and post-hoc agree on receiving_balance stats", {
   stats <- c("receiving_balance_binary", "receiving_balance_count",
-             "receiving_balance_time_recent", "receiving_balance_time_first")
-  out <- sim_vs_posthoc(stats, seed = 106)
+             "receiving_balance_time_recent", "receiving_balance_time_first",
+             "receiving_balance_exp_decay")
+  out <- sim_vs_posthoc(stats, seed = 106, half_life = 1)
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
 
