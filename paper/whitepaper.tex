@@ -680,33 +680,79 @@ accumulates, making the rate strongly time-inhomogeneous \emph{within}
 weekday=1 intervals; the simple analytic share does not apply when
 endogenous state is active.
 
-\subsection{Experiment 5: performance microbenchmark}\label{sec:bench}
-Wall-clock times for the four simulator modes at two problem sizes,
-median over three runs:
+\subsection{Experiment 5: scaling benchmark}\label{sec:bench}
+
+A full wall-clock scaling sweep was run on a Mac Studio
+(M1 Max, 64\,GB) over a $5 \times 6 \times 2$ grid:
+$n_\text{actors} \in \{10, 20, 40, 75, 100\}$,
+$n_\text{events} \in \{500, 1000, 2500, 5000, 10000, 20000\}$,
+algorithm $\in \{\text{gillespie}, \text{tau\_leap}\}$. The
+driver script
+\texttt{paper/experiments/benchmark.R} reproduces these numbers
+($\texttt{Rscript benchmark.R FULL}$). Headline numbers:
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{llrrrr}
+\begin{tabular}{rrrr}
 \toprule
-Size & Mode & Events & Actors & Median (s) & Range (s) \\
+$n_\text{actors}$ & $n_\text{events}$ & Gillespie (s) & $\tau$-leap (s) \\
 \midrule
-small & plain      &  500 & 10 & 0.004 & 0.002 -- 0.102 \\
-small & endogenous &  500 & 10 & 0.007 & 0.006 -- 0.010 \\
-small & global     &  500 & 10 & 0.010 & 0.009 -- 0.011 \\
-small & both       &  500 & 10 & 0.013 & 0.012 -- 0.023 \\
-large & plain      & 3000 & 30 & 0.031 & 0.027 -- 0.033 \\
-large & endogenous & 3000 & 30 & 0.144 & 0.140 -- 0.151 \\
-large & global     & 3000 & 30 & 0.060 & 0.057 -- 0.060 \\
-large & both       & 3000 & 30 & 0.178 & 0.175 -- 0.180 \\
+ 10 &     500 & 0.007 & 0.301$^{\dagger}$ \\
+ 10 &  20{,}000 & 0.090 & 0.188 \\
+ 40 &     500 & 0.007 & 0.001 \\
+ 40 &  20{,}000 & 0.198 & 0.048 \\
+ 100 &    500 & 0.030 & 0.002 \\
+ 100 &  5{,}000 & 0.304 & 0.012 \\
+ 100 & 20{,}000 & 1.206 & 0.039 \\
 \bottomrule
 \end{tabular}
-\caption{Wall-clock (R + base + \texttt{stats}) for the four
-simulator modes.  The endogenous-active path is dominated by the
-per-step recomputation of the $S \times R$ rate matrix; the global
-path adds the boundary-aware redraws.}
+\caption{Simulator wall-clock at representative grid corners.
+The dagger marks a one-off JIT cold start; tau-leap stabilises at
+30$\times$ faster than Gillespie by $n_\text{actors} = 100$, where
+the per-event $S \times S$ rate recomputation dominates the
+Gillespie cost. The full grid is in
+\texttt{paper/figures/benchmark\_A\_size.csv}; the scaling curves
+in Figure~\ref{fig:bench-sim}.}
 \label{tab:bench}
 \end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/benchmark_simulator_scaling.pdf}
+\caption{Simulator wall-clock vs $n_\text{events}$ on log-log
+axes, for each $n_\text{actors}$. The Gillespie path (left) is
+near-linear in $n_\text{events}$ with a multiplicative
+$n_\text{actors}$ factor; the $\tau$-leap path (right) is also
+near-linear in $n_\text{events}$ but \emph{decreases} with
+$n_\text{actors}$ (the per-step Poisson-sampling cost is
+amortised over many dyads).}
+\label{fig:bench-sim}
+\end{figure}
+
+\paragraph{Active stat-set scaling.}
+At fixed $n_\text{events} = 1500$, $n_\text{actors} = 20$,
+wall-clock grows roughly linearly with the number of active
+endogenous statistics: 0.04\,s for one stat, 0.78\,s for all 41
+(Figure~\ref{fig:bench-stats}). Each additional stat adds
+one $S \times R$ state-matrix update and one per-event read.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\linewidth]{figures/benchmark_stats_scaling.pdf}
+\caption{Simulator wall-clock scales near-linearly with the
+number of active endogenous statistics.}
+\label{fig:bench-stats}
+\end{figure}
+
+\paragraph{Post-hoc feature engine.}
+\texttt{compute\_endogenous\_features()} on the FULL Radoslaw
+manufacturing dataset (82{,}876 events, 167 actors) takes 9.6\,s
+for two statistics, 28\,s for five, and 89\,s for ten on the
+same Mac Studio. The cost is dominated by the per-event
+recomputation of the intermediaries set across the triadic
+families; reducing it via either a C++ inner loop or smarter
+incremental updates is on the roadmap.
 
 \section{Real-data demonstrations}\label{sec:realdata}
 
@@ -1061,10 +1107,18 @@ four real-world REM datasets bundled directly under
       The global covariate API is piecewise constant in time and
       shared across dyads.  Dyad-time grids (e.g.\ dyad-specific
       seasonality) would require an extended API.
-\item \textbf{R-only inner loop.}  Acceptable up to a few thousand
-      actors at a few thousand events; very large logs
-      ($\ge 10^5$ events with $\ge 10^3$ actors) need either careful
-      slicing, the $\tau$-leap path, or eventually a C++ backend.
+\item \textbf{R-only inner loop.}  The scaling benchmark of
+      Section~\ref{sec:bench} shows the Gillespie simulator
+      handling $2 \times 10^4$ events at 100 actors in 1.2\,s and
+      the $\tau$-leap variant in 0.04\,s on a Mac Studio M1 Max,
+      so practically all current bundled-dataset use cases are
+      cheap. The cost that does scale uncomfortably is the
+      post-hoc feature engine: \texttt{compute\_endogenous\_features()}
+      on the full Manufacturing dataset (82{,}876 events, 167
+      actors) takes 89\,s with ten statistics active. Workloads
+      that need many feature columns on $\ge 10^5$-event logs are
+      better served by careful slicing today, or by an eventual
+      C++ inner loop on the roadmap.
 \end{itemize}
 
 \paragraph{Near-term roadmap.}  (i) Bipartite support for the closure
