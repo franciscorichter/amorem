@@ -11,16 +11,22 @@
 
 # Helper: run the simulator with the given stats list, then strip the
 # endogenous columns and re-compute them post-hoc. Returns a list with
-# the two data frames keyed by stat name.
+# the two data frames keyed by stat name. By default uses a one-mode
+# network of `n_actors` LETTERS, but the senders / receivers vectors
+# can be overridden directly to exercise bipartite or two-mode
+# configurations.
 sim_vs_posthoc <- function(stats, seed = 11, n_events = 25,
                             n_actors = 5, half_life = NULL,
-                            baseline_rate = 3) {
+                            baseline_rate = 3,
+                            senders = NULL, receivers = NULL) {
   set.seed(seed)
   effs <- setNames(rep(0, length(stats)), stats)
+  if (is.null(senders))   senders   <- LETTERS[1:n_actors]
+  if (is.null(receivers)) receivers <- LETTERS[1:n_actors]
   args <- list(
     n_events = n_events,
-    senders = LETTERS[1:n_actors],
-    receivers = LETTERS[1:n_actors],
+    senders = senders,
+    receivers = receivers,
     baseline_rate = baseline_rate,
     endogenous_stats = stats,
     endogenous_effects = effs
@@ -146,5 +152,86 @@ test_that("simulator and post-hoc agree on a mixed cross-family stat bundle", {
              "sending_balance_count", "sending_balance_time_recent",
              "sender_outdegree", "receiver_indegree")
   out <- sim_vs_posthoc(stats, seed = 108)
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+# ---- Bipartite parity --------------------------------------------------
+#
+# The simulator's closure-family state machinery is sized |U| x |U|
+# over the unified actor universe; the post-hoc engine keys its
+# event history by literal string identifiers so it is naturally
+# universe-agnostic. The blocks below pin both paths together on
+# bipartite / two-mode inputs by checking that the two produce
+# identical columns on event logs that the simulator generates with
+# disjoint or overlapping sender / receiver sets.
+
+test_that("disjoint sender/receiver: counts agree across all closure families", {
+  stats <- c("reciprocity_count", "transitivity_count",
+             "cyclic_count", "sending_balance_count",
+             "receiving_balance_count")
+  out <- sim_vs_posthoc(stats, seed = 201,
+                        senders   = letters[1:4],
+                        receivers = LETTERS[1:5])
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("disjoint sender/receiver: timing stats agree across all closure families", {
+  stats <- c("transitivity_time_recent", "transitivity_time_first",
+             "cyclic_time_recent", "cyclic_time_first",
+             "sending_balance_time_recent", "sending_balance_time_first",
+             "receiving_balance_time_recent", "receiving_balance_time_first")
+  out <- sim_vs_posthoc(stats, seed = 202,
+                        senders   = letters[1:4],
+                        receivers = LETTERS[1:5])
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("disjoint sender/receiver: exp_decay stats agree across all closure families", {
+  stats <- c("transitivity_exp_decay", "cyclic_exp_decay",
+             "sending_balance_exp_decay", "receiving_balance_exp_decay")
+  out <- sim_vs_posthoc(stats, seed = 203,
+                        senders   = letters[1:4],
+                        receivers = LETTERS[1:5],
+                        half_life = 1)
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("disjoint sender/receiver: interrupted variants agree", {
+  stats <- c("reciprocity_count_interrupted",
+             "reciprocity_time_recent_interrupted",
+             "transitivity_time_recent_interrupted",
+             "cyclic_time_recent_interrupted",
+             "sending_balance_time_recent_interrupted",
+             "receiving_balance_time_recent_interrupted")
+  out <- sim_vs_posthoc(stats, seed = 204,
+                        senders   = letters[1:4],
+                        receivers = LETTERS[1:5])
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("overlapping sender/receiver: reciprocity-family stats agree", {
+  # Partial overlap: senders = {a, b, c, d}, receivers = {b, c, d, e}.
+  # The overlap is {b, c, d}; reciprocity at dyads inside the overlap
+  # is non-trivial, and reciprocity at dyads that touch only the
+  # non-overlapping actors (a, e) is identically zero.
+  stats <- c("reciprocity_binary", "reciprocity_count",
+             "reciprocity_exp_decay",
+             "reciprocity_time_recent", "reciprocity_time_first")
+  out <- sim_vs_posthoc(stats, seed = 205,
+                        senders   = c("a", "b", "c", "d"),
+                        receivers = c("b", "c", "d", "e"),
+                        half_life = 1)
+  for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("overlapping sender/receiver: ordered transitivity stats agree", {
+  stats <- c("transitivity_binary_ordered", "transitivity_count_ordered",
+             "transitivity_time_recent_ordered",
+             "transitivity_time_first_ordered",
+             "transitivity_exp_decay_ordered")
+  out <- sim_vs_posthoc(stats, seed = 206,
+                        senders   = c("a", "b", "c", "d"),
+                        receivers = c("b", "c", "d", "e"),
+                        half_life = 1)
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
 })
