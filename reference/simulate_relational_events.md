@@ -113,6 +113,17 @@ simulate_relational_events(
   - `"reciprocity_exp_decay"` — sum of past reverse-dyad events with
     exponential half-life decay (requires `half_life`).
 
+  - `"transitivity_exp_decay"` — \\\sum\_{k} e^{-(t -
+    t^{(s,k,r)}\_{\text{form}}) \log 2 / T}\\ where
+    \\t^{(s,k,r)}\_{\text{form}}\\ is the formation time of two-path \\s
+    \to k \to r\\ (definition \\t^{(5c)}\\ of Juozaitienė & Wit, 2024).
+    Requires `half_life`.
+
+  - `"transitivity_exp_decay_ordered"` — same as
+    `"transitivity_exp_decay"` but only counts *ordered* two-paths (s →
+    k strictly before k → r), definition \\t^{(6c)}\\. Requires
+    `half_life`.
+
   - `"reciprocity_time_recent"` — elapsed time since the most recent
     reverse-dyad event \\t - t\_{\text{recent}}(r,s)\\; reports `0` for
     dyads whose reverse has never fired (rather than the post-hoc `NA`,
@@ -224,11 +235,13 @@ simulate_relational_events(
 
 - half_life:
 
-  Positive scalar; the half-life \\T\\ (in time units) used by the
-  `"reciprocity_exp_decay"` stat. A past reverse-dyad event at time
-  \\t_k\\ contributes \\\exp(-(t - t_k)\\\log 2/T)\\ to the stat value
-  at time \\t\\. Required when `"reciprocity_exp_decay"` is in
-  `endogenous_stats`.
+  Positive scalar; the half-life \\T\\ (in time units) used by every
+  `*_exp_decay` stat. A past contribution at time \\t_k\\ carries weight
+  \\\exp(-(t - t_k)\\\log 2/T)\\ into the stat value at time \\t\\. The
+  same \\T\\ is shared across all decay stats, matching the convention
+  in Juozaitienė & Wit (2024). Required when any of
+  `"reciprocity_exp_decay"`, `"transitivity_exp_decay"`,
+  `"transitivity_exp_decay_ordered"` is in `endogenous_stats`.
 
 - risk:
 
