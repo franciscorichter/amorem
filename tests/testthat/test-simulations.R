@@ -1,13 +1,13 @@
 test_that("simulate_relational_events generates valid sequences", {
   set.seed(123)
   actors <- letters[1:3]
-  baseline <- matrix(0.25, nrow = length(actors), ncol = length(actors))
+  contribution <- matrix(0.25, nrow = length(actors), ncol = length(actors))
   events <- simulate_relational_events(
     n_events = 30,
     senders = actors,
     receivers = actors,
     baseline_rate = 3,
-    baseline_logits = baseline,
+    contribution_logits = contribution,
     allow_loops = FALSE
   )
 

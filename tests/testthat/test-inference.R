@@ -18,13 +18,13 @@ test_that("simulated events with controls can be fitted by GAM correctly", {
     # Run a basic loop over simulations
     gam_coefs <- sapply(1:n_sims, function(i) {
         x <- matrix(rnorm(p^2), ncol = p, nrow = p)
-        baseline <- b1 * x
+        contribution <- b1 * x
 
         events <- simulate_relational_events(
             n_events = n,
             senders = actors,
             receivers = actors,
-            baseline_logits = baseline,
+            contribution_logits = contribution,
             allow_loops = FALSE,
             n_controls = 1
         )

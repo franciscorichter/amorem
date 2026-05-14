@@ -11,7 +11,7 @@ simulate_relational_events(
   baseline_rate = 1,
   start_time = 0,
   horizon = Inf,
-  baseline_logits = NULL,
+  contribution_logits = NULL,
   sender_covariates = NULL,
   sender_effects = NULL,
   receiver_covariates = NULL,
@@ -39,8 +39,10 @@ applied to all dyads. Defaults to 1.}
 \item{horizon}{Optional maximum horizon; simulation stops once the cumulative
 time would exceed this value.}
 
-\item{baseline_logits}{Optional \code{length(senders) x length(receivers)}
-matrix of baseline log-intensities. Defaults to zeros.}
+\item{contribution_logits}{Optional \code{length(senders) x length(receivers)}
+matrix of dyad-level contributions to the log-rate (i.e. the dyad-specific
+part of the linear predictor, distinct from the baseline hazard). Defaults
+to zeros.}
 
 \item{sender_covariates}{Optional numeric data.frame/matrix with one row per
 sender.}
