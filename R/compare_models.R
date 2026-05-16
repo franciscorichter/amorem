@@ -31,6 +31,19 @@
 #'   [sample_non_events()]. `1` uses a binomial GLM on differences;
 #'   `> 1` uses `survival::clogit()` on the stratified case-control
 #'   table.
+#' @param random_effects Optional character: either `"sender"` or
+#'   `"receiver"` (a length-1 vector). When supplied (requires
+#'   `n_controls > 1`), the stratified `coxph` fit adds a Gamma
+#'   `survival::frailty()` term on the requested actor axis. This
+#'   is the actor-heterogeneity correction used by Juozaitienė &
+#'   Wit (2024) and changes which specification AIC selects on
+#'   real-world data (timing variants typically win over count
+#'   baselines once actor effects are absorbed). Two-axis frailty
+#'   (`c("sender", "receiver")`) is not yet supported:
+#'   `survival::coxph` allows at most one sparse frailty term and
+#'   the dense-penalty path segfaults on small data; a future
+#'   release may dispatch to `coxme::coxme` for that case.
+#'   Defaults to `NULL` (no random effects).
 #' @param scope,mode Passed through to [sample_non_events()]; see that
 #'   help page for semantics.
 #' @param half_life Required when any specification contains an
@@ -65,6 +78,7 @@ compare_models <- function(event_log,
                             n_controls = 1,
                             scope = c("all", "appearance", "citation"),
                             mode = c("one", "two"),
+                            random_effects = NULL,
                             half_life = NULL,
                             seed = NULL) {
   if (!is.data.frame(event_log)) stop("`event_log` must be a data.frame.")
@@ -82,6 +96,25 @@ compare_models <- function(event_log,
     stop("`n_controls` must be a positive integer.")
   }
   n_controls <- as.integer(n_controls)
+  if (!is.null(random_effects)) {
+    bad <- setdiff(random_effects, c("sender", "receiver"))
+    if (length(bad)) {
+      stop("`random_effects` must be a subset of c(\"sender\", \"receiver\"). ",
+           "Got: ", paste(bad, collapse = ", "))
+    }
+    if (length(random_effects) > 1L) {
+      stop("`random_effects` currently supports exactly one of c(\"sender\", \"receiver\"). ",
+           "survival::coxph caps frailty() at one sparse term per fit and ",
+           "the dense-penalty path is numerically unstable on small data. ",
+           "Pick one axis or wait for a future coxme/mgcv-backed dispatch.")
+    }
+    if (n_controls == 1L) {
+      stop("`random_effects` requires `n_controls > 1`. The n_controls = 1 ",
+           "path fits a binomial GLM on case-minus-control differences ",
+           "and does not support frailty terms; bump n_controls to use ",
+           "actor random effects.")
+    }
+  }
   if (n_controls > 1L && !requireNamespace("survival", quietly = TRUE)) {
     stop("The `survival` package is required when `n_controls > 1`. ",
          "Install it with install.packages(\"survival\").")
@@ -156,24 +189,58 @@ compare_models <- function(event_log,
     surv_resp <- survival::Surv(rep(1, nrow(cc_feat_sorted)),
                                  cc_feat_sorted$event)
     cc_feat_sorted$.surv <- surv_resp
+    # Random-effects terms (frailty) and the corresponding factor
+    # columns. Each requested actor axis becomes a Gamma frailty by
+    # default, matching the convention in Juozaitiene & Wit (2024).
+    # The argument validator above caps length(random_effects) at 1.
+    frailty_terms <- character(0)
+    if ("sender" %in% random_effects) {
+      cc_feat_sorted$.sender_factor <- factor(cc_feat_sorted$sender)
+      frailty_terms <- c(frailty_terms,
+                         "survival::frailty(.sender_factor)")
+    } else if ("receiver" %in% random_effects) {
+      cc_feat_sorted$.receiver_factor <- factor(cc_feat_sorted$receiver)
+      frailty_terms <- c(frailty_terms,
+                         "survival::frailty(.receiver_factor)")
+    }
     rows <- vector("list", length(models))
     for (i in seq_along(models)) {
       stat_set <- models[[i]]
+      rhs_terms <- c(stat_set, "survival::strata(stratum)", frailty_terms)
       fm <- stats::as.formula(paste(".surv ~",
-        paste(stat_set, collapse = " + "),
-        "+ survival::strata(stratum)"))
-      fit <- survival::coxph(fm, data = cc_feat_sorted, method = "breslow")
-      rows[[i]] <- data.frame(
-        model   = names(models)[i],
-        n_terms = length(stat_set),
-        n_obs   = length(unique(cc_feat_sorted$stratum)),
-        log_lik = as.numeric(stats::logLik(fit)),
-        AIC     = stats::AIC(fit),
-        stringsAsFactors = FALSE)
+        paste(rhs_terms, collapse = " + ")))
+      # frailty() inside coxph can fail to converge on small data or
+      # highly correlated actor effects; report NA rather than letting
+      # the whole compare_models call bomb out.
+      fit <- tryCatch(
+        survival::coxph(fm, data = cc_feat_sorted, method = "breslow"),
+        error = function(e) {
+          warning(sprintf("compare_models: spec '%s' failed to fit (%s)",
+                          names(models)[i], conditionMessage(e)),
+                  call. = FALSE)
+          NULL
+        })
+      rows[[i]] <- if (is.null(fit)) {
+        data.frame(
+          model   = names(models)[i],
+          n_terms = length(stat_set),
+          n_obs   = length(unique(cc_feat_sorted$stratum)),
+          log_lik = NA_real_,
+          AIC     = NA_real_,
+          stringsAsFactors = FALSE)
+      } else {
+        data.frame(
+          model   = names(models)[i],
+          n_terms = length(stat_set),
+          n_obs   = length(unique(cc_feat_sorted$stratum)),
+          log_lik = as.numeric(stats::logLik(fit)),
+          AIC     = stats::AIC(fit),
+          stringsAsFactors = FALSE)
+      }
     }
   }
   out <- do.call(rbind, rows)
-  out$delta_AIC <- out$AIC - min(out$AIC)
+  out$delta_AIC <- out$AIC - min(out$AIC, na.rm = TRUE)
   out <- out[order(out$AIC), , drop = FALSE]
   rownames(out) <- NULL
   out

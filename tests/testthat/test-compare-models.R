@@ -141,3 +141,48 @@ test_that("output is reproducible given a fixed seed", {
   b <- compare_models(classroom_events, specs_small, seed = 99)
   expect_identical(a, b)
 })
+
+# ---- Random-effects (frailty) tests ----------------------------------
+
+test_that("random_effects validation", {
+  data(classroom_events)
+  expect_error(
+    compare_models(classroom_events, specs_small,
+                   n_controls = 3, random_effects = "neither"),
+    'subset of c\\("sender", "receiver"\\)')
+  expect_error(
+    compare_models(classroom_events, specs_small,
+                   n_controls = 3,
+                   random_effects = c("sender", "receiver")),
+    "exactly one")
+  expect_error(
+    compare_models(classroom_events, specs_small,
+                   n_controls = 1, random_effects = "sender"),
+    "n_controls > 1")
+})
+
+test_that("random_effects = 'sender' produces an AIC table on a one-mode log", {
+  skip_if_not_installed("survival")
+  data(classroom_events)
+  out <- compare_models(classroom_events, specs_small,
+                        n_controls = 3, seed = 11,
+                        random_effects = "sender")
+  expect_s3_class(out, "data.frame")
+  expect_named(out, c("model", "n_terms", "n_obs",
+                      "log_lik", "AIC", "delta_AIC"))
+  # At least one spec must fit cleanly (frailty may fail on a few
+  # specs at small n; that's tolerated and reported as NA).
+  expect_true(any(is.finite(out$AIC)))
+  # Successful rows: their AIC > 0 and finite.
+  ok <- is.finite(out$AIC)
+  expect_true(all(out$AIC[ok] > 0))
+})
+
+test_that("random_effects = 'receiver' is accepted and produces output", {
+  skip_if_not_installed("survival")
+  data(classroom_events)
+  out <- compare_models(classroom_events, specs_small,
+                        n_controls = 3, seed = 12,
+                        random_effects = "receiver")
+  expect_equal(nrow(out), length(specs_small))
+})

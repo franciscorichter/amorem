@@ -10,6 +10,7 @@ compare_models(
   n_controls = 1,
   scope = c("all", "appearance", "citation"),
   mode = c("one", "two"),
+  random_effects = NULL,
   half_life = NULL,
   seed = NULL
 )
@@ -30,6 +31,20 @@ table.}
 
 \item{scope, mode}{Passed through to \code{\link[=sample_non_events]{sample_non_events()}}; see that
 help page for semantics.}
+
+\item{random_effects}{Optional character: either \code{"sender"} or
+\code{"receiver"} (a length-1 vector). When supplied (requires
+\code{n_controls > 1}), the stratified \code{coxph} fit adds a Gamma
+\code{survival::frailty()} term on the requested actor axis. This
+is the actor-heterogeneity correction used by Juozaitienė &
+Wit (2024) and changes which specification AIC selects on
+real-world data (timing variants typically win over count
+baselines once actor effects are absorbed). Two-axis frailty
+(\code{c("sender", "receiver")}) is not yet supported:
+\code{survival::coxph} allows at most one sparse frailty term and
+the dense-penalty path segfaults on small data; a future
+release may dispatch to \code{coxme::coxme} for that case.
+Defaults to \code{NULL} (no random effects).}
 
 \item{half_life}{Required when any specification contains an
 exp-decay stat. Shared across all specs that use one.}
