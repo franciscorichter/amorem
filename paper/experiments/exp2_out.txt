@@ -1,6 +1,0 @@
-Warning message:
-package ‘testthat’ was built under R version 4.4.3 
-nrow(cc) = 8000 
-events: 2000   controls: 6000 
-RMSE (centered) = 0.1213,  cor(true, pred) = 0.9831
-Figure written to paper/figures/exp2_distance.pdf

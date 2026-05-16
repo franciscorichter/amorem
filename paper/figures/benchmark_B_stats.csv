@@ -1,8 +1,0 @@
-"sweep","n_events","n_actors","method","n_stats","seconds"
-"B_stat_scaling",1500,20,"gillespie",1,0.0413520336151123
-"B_stat_scaling",1500,20,"gillespie",3,0.058272123336792
-"B_stat_scaling",1500,20,"gillespie",5,0.0831329822540283
-"B_stat_scaling",1500,20,"gillespie",10,0.160692930221558
-"B_stat_scaling",1500,20,"gillespie",20,0.311845064163208
-"B_stat_scaling",1500,20,"gillespie",30,0.510845899581909
-"B_stat_scaling",1500,20,"gillespie",43,0.776434898376465

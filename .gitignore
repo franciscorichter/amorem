@@ -1,6 +1,7 @@
 /doc/
 /Meta/
 /docs/
+/paper/
 *.Rcheck/
 *.tar.gz
 .Rhistory
