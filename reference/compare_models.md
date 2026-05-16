@@ -15,6 +15,7 @@ compare_models(
   n_controls = 1,
   scope = c("all", "appearance", "citation"),
   mode = c("one", "two"),
+  random_effects = NULL,
   half_life = NULL,
   seed = NULL
 )
@@ -46,6 +47,22 @@ compare_models(
   Passed through to
   [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md);
   see that help page for semantics.
+
+- random_effects:
+
+  Optional character: either `"sender"` or `"receiver"` (a length-1
+  vector). When supplied (requires `n_controls > 1`), the stratified
+  `coxph` fit adds a Gamma
+  [`survival::frailty()`](https://rdrr.io/pkg/survival/man/frailty.html)
+  term on the requested actor axis. This is the actor-heterogeneity
+  correction used by Juozaitienė & Wit (2024) and changes which
+  specification AIC selects on real-world data (timing variants
+  typically win over count baselines once actor effects are absorbed).
+  Two-axis frailty (`c("sender", "receiver")`) is not yet supported:
+  [`survival::coxph`](https://rdrr.io/pkg/survival/man/coxph.html)
+  allows at most one sparse frailty term and the dense-penalty path
+  segfaults on small data; a future release may dispatch to
+  `coxme::coxme` for that case. Defaults to `NULL` (no random effects).
 
 - half_life:
 

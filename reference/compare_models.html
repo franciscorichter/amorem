@@ -54,6 +54,7 @@ values are directly comparable.</p>
 <span>  n_controls <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  scope <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"appearance"</span>, <span class="st">"citation"</span><span class="op">)</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"one"</span>, <span class="st">"two"</span><span class="op">)</span>,</span>
+<span>  random_effects <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -85,6 +86,22 @@ table.</p></dd>
 <dt id="arg-scope-mode">scope, mode<a class="anchor" aria-label="anchor" href="#arg-scope-mode"></a></dt>
 <dd><p>Passed through to <code><a href="sample_non_events.html">sample_non_events()</a></code>; see that
 help page for semantics.</p></dd>
+
+
+<dt id="arg-random-effects">random_effects<a class="anchor" aria-label="anchor" href="#arg-random-effects"></a></dt>
+<dd><p>Optional character: either <code>"sender"</code> or
+<code>"receiver"</code> (a length-1 vector). When supplied (requires
+<code>n_controls &gt; 1</code>), the stratified <code>coxph</code> fit adds a Gamma
+<code><a href="https://rdrr.io/pkg/survival/man/frailty.html" class="external-link">survival::frailty()</a></code> term on the requested actor axis. This
+is the actor-heterogeneity correction used by Juozaitienė &amp;
+Wit (2024) and changes which specification AIC selects on
+real-world data (timing variants typically win over count
+baselines once actor effects are absorbed). Two-axis frailty
+(<code>c("sender", "receiver")</code>) is not yet supported:
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> allows at most one sparse frailty term and
+the dense-penalty path segfaults on small data; a future
+release may dispatch to <code>coxme::coxme</code> for that case.
+Defaults to <code>NULL</code> (no random effects).</p></dd>
 
 
 <dt id="arg-half-life">half_life<a class="anchor" aria-label="anchor" href="#arg-half-life"></a></dt>
