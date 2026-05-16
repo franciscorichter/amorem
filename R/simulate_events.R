@@ -396,11 +396,25 @@ simulate_relational_events <- function(
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
                      "transitivity_time_first_ordered",
+                     "cyclic_count_ordered",
+                     "cyclic_binary_ordered",
+                     "cyclic_time_recent_ordered",
+                     "cyclic_time_first_ordered",
+                     "sending_balance_count_ordered",
+                     "sending_balance_binary_ordered",
+                     "sending_balance_time_recent_ordered",
+                     "sending_balance_time_first_ordered",
+                     "receiving_balance_count_ordered",
+                     "receiving_balance_binary_ordered",
+                     "receiving_balance_time_recent_ordered",
+                     "receiving_balance_time_first_ordered",
                      "transitivity_exp_decay",
                      "transitivity_exp_decay_ordered",
-                     "cyclic_exp_decay",
+                     "cyclic_exp_decay", "cyclic_exp_decay_ordered",
                      "sending_balance_exp_decay",
+                     "sending_balance_exp_decay_ordered",
                      "receiving_balance_exp_decay",
+                     "receiving_balance_exp_decay_ordered",
                      "transitivity_time_recent_interrupted",
                      "transitivity_time_first_interrupted",
                      "cyclic_time_recent_interrupted",
@@ -413,13 +427,51 @@ simulate_relational_events <- function(
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
                      "transitivity_time_first_ordered",
-                     "transitivity_exp_decay_ordered")
+                     "transitivity_exp_decay_ordered",
+                     "cyclic_count_ordered", "cyclic_binary_ordered",
+                     "cyclic_time_recent_ordered",
+                     "cyclic_time_first_ordered",
+                     "cyclic_exp_decay_ordered",
+                     "sending_balance_count_ordered",
+                     "sending_balance_binary_ordered",
+                     "sending_balance_time_recent_ordered",
+                     "sending_balance_time_first_ordered",
+                     "sending_balance_exp_decay_ordered",
+                     "receiving_balance_count_ordered",
+                     "receiving_balance_binary_ordered",
+                     "receiving_balance_time_recent_ordered",
+                     "receiving_balance_time_first_ordered",
+                     "receiving_balance_exp_decay_ordered")
+  # Family map for ordered-state validation: for each ordered family,
+  # specify which slice of `first_dyad_time` to read (i.e. the "leg1"
+  # direction) given the firing event (i, j) -- which is the chain's
+  # leg2 -- and which (row, col) cell of the family's state matrix is
+  # bumped. Driven by the leg pairing already documented in
+  # R/preprocess.R::compute_triadic:
+  #   transitivity      leg1 s->k=i, leg2 k=i->r=j; cell (s, j)
+  #   cyclic            leg1 r->k=i, leg2 k=i->s=j; cell (s=j, r)
+  #   sending_balance   leg1 s->k=j, leg2 r=i->k=j; cell (s, r=i)
+  #   receiving_balance leg1 k=i->s, leg2 k=i->r=j; cell (s, r=j)
+  ordered_families <- c("transitivity", "cyclic",
+                        "sending_balance", "receiving_balance")
+  ordered_validation_spec <- list(
+    transitivity      = list(leg1_axis = "col", leg1_index = "i",
+                              cell_row = "candidate", cell_col = "j"),
+    cyclic            = list(leg1_axis = "col", leg1_index = "i",
+                              cell_row = "j",         cell_col = "candidate"),
+    sending_balance   = list(leg1_axis = "col", leg1_index = "j",
+                              cell_row = "candidate", cell_col = "i"),
+    receiving_balance = list(leg1_axis = "row", leg1_index = "i",
+                              cell_row = "candidate", cell_col = "j"))
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
                        "transitivity_exp_decay_ordered",
                        "reciprocity_exp_decay_interrupted",
                        "cyclic_exp_decay",
+                       "cyclic_exp_decay_ordered",
                        "sending_balance_exp_decay",
-                       "receiving_balance_exp_decay")
+                       "sending_balance_exp_decay_ordered",
+                       "receiving_balance_exp_decay",
+                       "receiving_balance_exp_decay_ordered")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
                             degree_stats, network_stats)
@@ -578,6 +630,12 @@ simulate_relational_events <- function(
                                   "receiving_balance_time_first",
                                   "transitivity_time_recent_ordered",
                                   "transitivity_time_first_ordered",
+                                  "cyclic_time_recent_ordered",
+                                  "cyclic_time_first_ordered",
+                                  "sending_balance_time_recent_ordered",
+                                  "sending_balance_time_first_ordered",
+                                  "receiving_balance_time_recent_ordered",
+                                  "receiving_balance_time_first_ordered",
                                   "reciprocity_time_recent_interrupted",
                                   "reciprocity_time_first_interrupted",
                                   "transitivity_time_recent_interrupted",
@@ -622,24 +680,43 @@ simulate_relational_events <- function(
     matrix(0, nrow = U_size, ncol = U_size)
   } else NULL
 
-  # Ordered transitivity needs per-dyad first / last event timestamps so we
-  # can detect when an event (i, j) is the first (i, j) AFTER a previously
-  # observed (s, i) -- the only situation in which a chronologically
-  # ordered chain s -> i -> j is newly validated.
+  # Ordered closure stats need per-dyad first / last event timestamps so
+  # we can detect when an event (i, j) is the first (i, j) AFTER a
+  # previously observed leg-1 dyad -- the only situation in which a
+  # chronologically ordered chain is newly validated. Each closure
+  # family gets its own |U|x|U| count matrix; the validation logic is
+  # parameterised by the family map `ordered_validation_spec`.
   has_ordered_stats <- endogenous_active &&
     any(endogenous_stats %in% ordered_stats)
+  # Per-family active flags for the cheaper dispatch inside the inner
+  # loop. A family is active if any of its ordered stats is requested.
+  family_ordered_active <- setNames(
+    vapply(ordered_families, function(fam) {
+      if (!endogenous_active) return(FALSE)
+      any(startsWith(endogenous_stats, paste0(fam, "_")) &
+          endogenous_stats %in% ordered_stats)
+    }, logical(1)), ordered_families)
   if (has_ordered_stats) {
     first_dyad_time <- matrix(NA_real_, nrow = U_size, ncol = U_size)
     last_dyad_time  <- matrix(NA_real_, nrow = U_size, ncol = U_size)
-    # Shared count state, fed by every ordered stat (count, binary,
-    # time_recent, time_first) so that the binary version can be
-    # derived from the count even when the count itself isn't
-    # requested by the caller.
-    ord_count_state <- matrix(0L, nrow = U_size, ncol = U_size)
+    # One count-state matrix per active ordered family. Each is fed by
+    # the family's count / binary / time / exp-decay stats so the
+    # binary variant can be derived from the count even when the
+    # count is not requested.
+    ord_count_state_by_family <- list()
+    for (fam in ordered_families) {
+      if (family_ordered_active[[fam]]) {
+        ord_count_state_by_family[[fam]] <- matrix(0L, nrow = U_size, ncol = U_size)
+      }
+    }
+    # Back-compat alias for the transitivity-only code paths that
+    # haven't been generalised yet (snapshot / table writers).
+    ord_count_state <- ord_count_state_by_family[["transitivity"]]
   } else {
     first_dyad_time <- NULL
     last_dyad_time  <- NULL
     ord_count_state <- NULL
+    ord_count_state_by_family <- list()
   }
 
   # Per-actor accumulators for the degree_* stats. Length-S sender count
@@ -750,57 +827,82 @@ simulate_relational_events <- function(
     M
   }
 
-  # Detects every chronologically ordered chain s -> i -> j that is *newly
-  # validated* by the event (i, j) firing at time `t_now`. A chain
-  # (s, i, j) is newly validated iff
-  #   (a) first_dyad_time[s, i] is set (s -> i happened earlier in the run),
-  #   (b) this (i, j) event is the first (i, j) AFTER first_dyad_time[s, i].
-  # Condition (b) holds when there is no prior (i, j) event, or when the
-  # most recent (i, j) event was earlier than the first (s, i) event.
-  # Returns the integer index vector of senders s whose chain was newly
-  # validated by this event. Callers update ord_count_state and the
-  # time_*_ordered state matrices using this vector.
-  ordered_validation_mask <- function(i, j) {
-    if (!has_ordered_stats) return(integer(0))
-    col_first_si <- first_dyad_time[, i]
-    last_ij_prev <- last_dyad_time[i, j]
-    mask <- !is.na(col_first_si) &
-            (is.na(last_ij_prev) | col_first_si > last_ij_prev)
+  # Family-aware validation: for an event (i, j) at time t_now, returns
+  # the integer vector of "candidate" indices whose ordered chain is
+  # newly validated by this event under the given family's leg pairing.
+  # Driven by `ordered_validation_spec`.
+  ordered_validated_candidates <- function(fam, i, j) {
+    spec <- ordered_validation_spec[[fam]]
+    leg1_idx <- if (spec$leg1_index == "i") i else j
+    leg1_first <- if (spec$leg1_axis == "col") {
+      first_dyad_time[, leg1_idx]
+    } else {
+      first_dyad_time[leg1_idx, ]
+    }
+    last_leg2_prev <- last_dyad_time[i, j]
+    mask <- !is.na(leg1_first) &
+            (is.na(last_leg2_prev) | leg1_first > last_leg2_prev)
     which(mask)
   }
 
+  # Build the (row, col) integer matrix of state-matrix cells that the
+  # family bumps when `candidates` are validated by event (i, j).
+  ordered_cells <- function(fam, candidates, i, j) {
+    spec <- ordered_validation_spec[[fam]]
+    n <- length(candidates)
+    rows <- switch(spec$cell_row,
+                   "candidate" = candidates,
+                   "i" = rep.int(i, n),
+                   "j" = rep.int(j, n))
+    cols <- switch(spec$cell_col,
+                   "candidate" = candidates,
+                   "i" = rep.int(i, n),
+                   "j" = rep.int(j, n))
+    cbind(rows, cols)
+  }
+
   # Single helper that performs the full ordered-stat update for an event
-  # (i, j) at time t_now: validates new ordered chains, increments
-  # ord_count_state, refreshes the time_*_ordered state matrices, and
-  # bumps first_dyad_time / last_dyad_time. Called from both the Gillespie
-  # and tau-leap inner loops.
+  # (i, j) at time t_now: walks every active family, validates new
+  # ordered chains for it, increments that family's count matrix,
+  # refreshes the family's time_*_ordered / exp_decay_ordered state
+  # matrices, and bumps the shared first_dyad_time / last_dyad_time.
+  # Called from both the Gillespie and tau-leap inner loops.
   apply_ordered_update <- function(i, j, t_now) {
     if (has_ordered_stats) {
-      validated <- ordered_validation_mask(i, j)
-      if (length(validated)) {
-        idx <- cbind(validated, rep(j, length(validated)))
-        ord_count_state[idx] <<- ord_count_state[idx] + 1L
-        if (!is.null(endo_state[["transitivity_time_recent_ordered"]])) {
-          endo_state[["transitivity_time_recent_ordered"]][idx] <<- t_now
+      for (fam in ordered_families) {
+        if (!family_ordered_active[[fam]]) next
+        cand <- ordered_validated_candidates(fam, i, j)
+        if (!length(cand)) next
+        idx <- ordered_cells(fam, cand, i, j)
+        M <- ord_count_state_by_family[[fam]]
+        M[idx] <- M[idx] + 1L
+        ord_count_state_by_family[[fam]] <<- M
+        recent_nm <- paste0(fam, "_time_recent_ordered")
+        first_nm  <- paste0(fam, "_time_first_ordered")
+        exp_nm    <- paste0(fam, "_exp_decay_ordered")
+        if (!is.null(endo_state[[recent_nm]])) {
+          endo_state[[recent_nm]][idx] <<- t_now
         }
-        if (!is.null(endo_state[["transitivity_time_first_ordered"]])) {
-          M <- endo_state[["transitivity_time_first_ordered"]]
-          fresh <- is.na(M[idx])
-          if (any(fresh)) M[idx[fresh, , drop = FALSE]] <- t_now
-          endo_state[["transitivity_time_first_ordered"]] <<- M
+        if (!is.null(endo_state[[first_nm]])) {
+          Mt <- endo_state[[first_nm]]
+          fresh <- is.na(Mt[idx])
+          if (any(fresh)) Mt[idx[fresh, , drop = FALSE]] <- t_now
+          endo_state[[first_nm]] <<- Mt
         }
-        if (!is.null(endo_state[["transitivity_exp_decay_ordered"]])) {
-          # Decay state is current as of t_now (apply_exp_decay was called
-          # at the start of this event). Each newly validated chain adds a
-          # fresh contribution of weight 1, which then decays from t_now.
-          endo_state[["transitivity_exp_decay_ordered"]][idx] <<-
-            endo_state[["transitivity_exp_decay_ordered"]][idx] + 1
+        if (!is.null(endo_state[[exp_nm]])) {
+          endo_state[[exp_nm]][idx] <<-
+            endo_state[[exp_nm]][idx] + 1
         }
       }
       # Per-dyad bookkeeping after the validation sweep so the *current*
       # event doesn't pollute its own predecessor view.
       if (is.na(first_dyad_time[i, j])) first_dyad_time[i, j] <<- t_now
       last_dyad_time[i, j] <<- t_now
+      # Back-compat alias for downstream readers that haven't migrated
+      # to ord_count_state_by_family.
+      if (!is.null(ord_count_state_by_family[["transitivity"]])) {
+        ord_count_state <<- ord_count_state_by_family[["transitivity"]]
+      }
     }
     invisible()
   }
@@ -872,15 +974,30 @@ simulate_relational_events <- function(
         "sending_balance_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_recent" = time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_first"  = time_elapsed_or_zero(endo_state[[st]]),
-        "transitivity_count_ordered"      = ord_count_state * 1.0,
-        "transitivity_binary_ordered"     = (ord_count_state > 0) * 1.0,
+        "transitivity_count_ordered"      = ord_count_state_by_family[["transitivity"]] * 1.0,
+        "transitivity_binary_ordered"     = (ord_count_state_by_family[["transitivity"]] > 0) * 1.0,
         "transitivity_time_recent_ordered"= time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_time_first_ordered" = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_count_ordered"            = ord_count_state_by_family[["cyclic"]] * 1.0,
+        "cyclic_binary_ordered"           = (ord_count_state_by_family[["cyclic"]] > 0) * 1.0,
+        "cyclic_time_recent_ordered"      = time_elapsed_or_zero(endo_state[[st]]),
+        "cyclic_time_first_ordered"       = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_count_ordered"   = ord_count_state_by_family[["sending_balance"]] * 1.0,
+        "sending_balance_binary_ordered"  = (ord_count_state_by_family[["sending_balance"]] > 0) * 1.0,
+        "sending_balance_time_recent_ordered" = time_elapsed_or_zero(endo_state[[st]]),
+        "sending_balance_time_first_ordered"  = time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_count_ordered" = ord_count_state_by_family[["receiving_balance"]] * 1.0,
+        "receiving_balance_binary_ordered"= (ord_count_state_by_family[["receiving_balance"]] > 0) * 1.0,
+        "receiving_balance_time_recent_ordered" = time_elapsed_or_zero(endo_state[[st]]),
+        "receiving_balance_time_first_ordered"  = time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_exp_decay"          = endo_state[[st]],
         "transitivity_exp_decay_ordered"  = endo_state[[st]],
         "cyclic_exp_decay"                = endo_state[[st]],
+        "cyclic_exp_decay_ordered"        = endo_state[[st]],
         "sending_balance_exp_decay"       = endo_state[[st]],
+        "sending_balance_exp_decay_ordered" = endo_state[[st]],
         "receiving_balance_exp_decay"     = endo_state[[st]],
+        "receiving_balance_exp_decay_ordered" = endo_state[[st]],
         "reciprocity_count_interrupted"        = endo_state[[st]],
         "reciprocity_binary_interrupted"       = endo_state[[st]],
         "reciprocity_exp_decay_interrupted"    = endo_state[[st]],
