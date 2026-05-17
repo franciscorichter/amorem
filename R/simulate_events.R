@@ -417,12 +417,24 @@ simulate_relational_events <- function(
                      "receiving_balance_exp_decay_ordered",
                      "transitivity_time_recent_interrupted",
                      "transitivity_time_first_interrupted",
+                     "transitivity_count_interrupted",
+                     "transitivity_binary_interrupted",
+                     "transitivity_exp_decay_interrupted",
                      "cyclic_time_recent_interrupted",
                      "cyclic_time_first_interrupted",
+                     "cyclic_count_interrupted",
+                     "cyclic_binary_interrupted",
+                     "cyclic_exp_decay_interrupted",
                      "sending_balance_time_recent_interrupted",
                      "sending_balance_time_first_interrupted",
+                     "sending_balance_count_interrupted",
+                     "sending_balance_binary_interrupted",
+                     "sending_balance_exp_decay_interrupted",
                      "receiving_balance_time_recent_interrupted",
-                     "receiving_balance_time_first_interrupted")
+                     "receiving_balance_time_first_interrupted",
+                     "receiving_balance_count_interrupted",
+                     "receiving_balance_binary_interrupted",
+                     "receiving_balance_exp_decay_interrupted")
   ordered_stats <- c("transitivity_count_ordered",
                      "transitivity_binary_ordered",
                      "transitivity_time_recent_ordered",
@@ -466,11 +478,15 @@ simulate_relational_events <- function(
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
                        "transitivity_exp_decay_ordered",
                        "reciprocity_exp_decay_interrupted",
+                       "transitivity_exp_decay_interrupted",
                        "cyclic_exp_decay",
                        "cyclic_exp_decay_ordered",
+                       "cyclic_exp_decay_interrupted",
                        "sending_balance_exp_decay",
                        "sending_balance_exp_decay_ordered",
+                       "sending_balance_exp_decay_interrupted",
                        "receiving_balance_exp_decay",
+                       "receiving_balance_exp_decay_interrupted",
                        "receiving_balance_exp_decay_ordered")
   degree_stats <- c("sender_outdegree", "receiver_indegree")
   supported_endogenous <- c(reciprocity_stats, "recency",
@@ -765,6 +781,29 @@ simulate_relational_events <- function(
     receiving_balance_time_first  = list(family = "receiving_balance", first = TRUE)
   )
 
+  # Count / binary / exp_decay variants of the *_interrupted family for
+  # each closure family. Same chain-creation semantics as the time-
+  # interrupted variants: when a fired event (i, j) closes a new
+  # two-path for some intermediary k, bump the focal-pair count cell;
+  # when (i, j) itself fires it resets its own focal cell to 0 because
+  # the (s, r) closure starts a fresh interrupted window. Mirrors
+  # compute_triadic's n_int / exp_int_sum accumulators on the post-hoc
+  # side (R/preprocess.R).
+  two_path_interrupted_count_lookup <- list(
+    transitivity_count_interrupted        = list(family = "transitivity",      kind = "count"),
+    transitivity_binary_interrupted       = list(family = "transitivity",      kind = "binary"),
+    transitivity_exp_decay_interrupted    = list(family = "transitivity",      kind = "exp_decay"),
+    cyclic_count_interrupted              = list(family = "cyclic",            kind = "count"),
+    cyclic_binary_interrupted             = list(family = "cyclic",            kind = "binary"),
+    cyclic_exp_decay_interrupted          = list(family = "cyclic",            kind = "exp_decay"),
+    sending_balance_count_interrupted     = list(family = "sending_balance",   kind = "count"),
+    sending_balance_binary_interrupted    = list(family = "sending_balance",   kind = "binary"),
+    sending_balance_exp_decay_interrupted = list(family = "sending_balance",   kind = "exp_decay"),
+    receiving_balance_count_interrupted     = list(family = "receiving_balance", kind = "count"),
+    receiving_balance_binary_interrupted    = list(family = "receiving_balance", kind = "binary"),
+    receiving_balance_exp_decay_interrupted = list(family = "receiving_balance", kind = "exp_decay")
+  )
+
   # Returns the (row, col) integer matrix of state-matrix cells that are
   # newly "two-path-formed" by event (i, j), given `adj` = current binary
   # adjacency *before* (i, j) is added. The four families correspond to the
@@ -1011,6 +1050,18 @@ simulate_relational_events <- function(
         "sending_balance_time_first_interrupted"   = time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_recent_interrupted"= time_elapsed_or_zero(endo_state[[st]]),
         "receiving_balance_time_first_interrupted" = time_elapsed_or_zero(endo_state[[st]]),
+        "transitivity_count_interrupted"      = endo_state[[st]] * 1.0,
+        "transitivity_binary_interrupted"     = (endo_state[[st]] > 0) * 1.0,
+        "transitivity_exp_decay_interrupted"  = endo_state[[st]],
+        "cyclic_count_interrupted"            = endo_state[[st]] * 1.0,
+        "cyclic_binary_interrupted"           = (endo_state[[st]] > 0) * 1.0,
+        "cyclic_exp_decay_interrupted"        = endo_state[[st]],
+        "sending_balance_count_interrupted"   = endo_state[[st]] * 1.0,
+        "sending_balance_binary_interrupted"  = (endo_state[[st]] > 0) * 1.0,
+        "sending_balance_exp_decay_interrupted" = endo_state[[st]],
+        "receiving_balance_count_interrupted"   = endo_state[[st]] * 1.0,
+        "receiving_balance_binary_interrupted"  = (endo_state[[st]] > 0) * 1.0,
+        "receiving_balance_exp_decay_interrupted" = endo_state[[st]],
         "sender_outdegree"          = matrix(sender_out_count, nrow = S, ncol = R),
         "receiver_indegree"         = matrix(receiver_in_count, nrow = S, ncol = R,
                                               byrow = TRUE),
@@ -1331,6 +1382,20 @@ simulate_relational_events <- function(
                       endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
                     }
                   }
+                } else if (!is.null(two_path_interrupted_count_lookup[[st]])) {
+                  info <- two_path_interrupted_count_lookup[[st]]
+                  if (adj_state[u_s, u_r] == 0) {
+                    writes <- two_path_writes(info$family, u_s, u_r, adj_state)
+                    if (nrow(writes)) {
+                      if (info$kind == "binary") {
+                        endo_state[[st]][writes] <- 1L
+                      } else {
+                        endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
+                      }
+                    }
+                  }
+                  reset_val <- if (info$kind == "binary") 0L else 0
+                  endo_state[[st]][u_s, u_r] <- reset_val
                 }
               }
               if (has_network_stats) {
@@ -1540,6 +1605,20 @@ simulate_relational_events <- function(
               endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
             }
           }
+        } else if (!is.null(two_path_interrupted_count_lookup[[st]])) {
+          info <- two_path_interrupted_count_lookup[[st]]
+          if (adj_state[u_s, u_r] == 0) {
+            writes <- two_path_writes(info$family, u_s, u_r, adj_state)
+            if (nrow(writes)) {
+              if (info$kind == "binary") {
+                endo_state[[st]][writes] <- 1L
+              } else {
+                endo_state[[st]][writes] <- endo_state[[st]][writes] + 1
+              }
+            }
+          }
+          reset_val <- if (info$kind == "binary") 0L else 0
+          endo_state[[st]][u_s, u_r] <- reset_val
         }
       }
       if (has_network_stats) {
