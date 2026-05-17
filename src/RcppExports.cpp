@@ -11,15 +11,16 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // compute_features_cpp
-List compute_features_cpp(CharacterVector senders, CharacterVector receivers, NumericVector times, CharacterVector stat_names);
-RcppExport SEXP _amore_compute_features_cpp(SEXP sendersSEXP, SEXP receiversSEXP, SEXP timesSEXP, SEXP stat_namesSEXP) {
+List compute_features_cpp(CharacterVector senders, CharacterVector receivers, NumericVector times, CharacterVector stat_names, double half_life);
+RcppExport SEXP _amore_compute_features_cpp(SEXP sendersSEXP, SEXP receiversSEXP, SEXP timesSEXP, SEXP stat_namesSEXP, SEXP half_lifeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type senders(sendersSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type receivers(receiversSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type times(timesSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type stat_names(stat_namesSEXP);
-    rcpp_result_gen = Rcpp::wrap(compute_features_cpp(senders, receivers, times, stat_names));
+    Rcpp::traits::input_parameter< double >::type half_life(half_lifeSEXP);
+    rcpp_result_gen = Rcpp::wrap(compute_features_cpp(senders, receivers, times, stat_names, half_life));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -34,7 +35,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_amore_compute_features_cpp", (DL_FUNC) &_amore_compute_features_cpp, 4},
+    {"_amore_compute_features_cpp", (DL_FUNC) &_amore_compute_features_cpp, 5},
     {"_amore_cpp_supported_stats", (DL_FUNC) &_amore_cpp_supported_stats, 0},
     {NULL, NULL, 0}
 };
