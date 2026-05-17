@@ -29,39 +29,63 @@
 #include <unordered_map>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 using namespace Rcpp;
 
 // Bit flags identifying which stats the caller wants. Avoids
 // per-event string comparisons in the inner loop.
-enum StatFlag : unsigned int {
-  F_RECIPROCITY        = 1u << 0,
-  F_RECIPROCITY_BINARY = 1u << 1,
-  F_RECIPROCITY_COUNT  = 1u << 2,
-  F_TRANSITIVITY_BINARY = 1u << 3,
-  F_TRANSITIVITY_COUNT  = 1u << 4,
-  F_CYCLIC_BINARY       = 1u << 5,
-  F_CYCLIC_COUNT        = 1u << 6,
-  F_SENDING_BALANCE_BINARY = 1u << 7,
-  F_SENDING_BALANCE_COUNT  = 1u << 8,
-  F_RECEIVING_BALANCE_BINARY = 1u << 9,
-  F_RECEIVING_BALANCE_COUNT  = 1u << 10,
-  F_SENDER_OUTDEGREE  = 1u << 11,
-  F_RECEIVER_INDEGREE = 1u << 12,
-  F_RECENCY           = 1u << 13,
-  F_TRANSITIVITY_TIME_RECENT      = 1u << 14,
-  F_TRANSITIVITY_TIME_FIRST       = 1u << 15,
-  F_CYCLIC_TIME_RECENT            = 1u << 16,
-  F_CYCLIC_TIME_FIRST             = 1u << 17,
-  F_SENDING_BALANCE_TIME_RECENT   = 1u << 18,
-  F_SENDING_BALANCE_TIME_FIRST    = 1u << 19,
-  F_RECEIVING_BALANCE_TIME_RECENT = 1u << 20,
-  F_RECEIVING_BALANCE_TIME_FIRST  = 1u << 21,
-  F_TRANSITIVITY_EXP_DECAY        = 1u << 22,
-  F_CYCLIC_EXP_DECAY              = 1u << 23,
-  F_SENDING_BALANCE_EXP_DECAY     = 1u << 24,
-  F_RECEIVING_BALANCE_EXP_DECAY   = 1u << 25
+enum StatFlag : uint64_t {
+  F_RECIPROCITY        = UINT64_C(1) << 0,
+  F_RECIPROCITY_BINARY = UINT64_C(1) << 1,
+  F_RECIPROCITY_COUNT  = UINT64_C(1) << 2,
+  F_TRANSITIVITY_BINARY = UINT64_C(1) << 3,
+  F_TRANSITIVITY_COUNT  = UINT64_C(1) << 4,
+  F_CYCLIC_BINARY       = UINT64_C(1) << 5,
+  F_CYCLIC_COUNT        = UINT64_C(1) << 6,
+  F_SENDING_BALANCE_BINARY = UINT64_C(1) << 7,
+  F_SENDING_BALANCE_COUNT  = UINT64_C(1) << 8,
+  F_RECEIVING_BALANCE_BINARY = UINT64_C(1) << 9,
+  F_RECEIVING_BALANCE_COUNT  = UINT64_C(1) << 10,
+  F_SENDER_OUTDEGREE  = UINT64_C(1) << 11,
+  F_RECEIVER_INDEGREE = UINT64_C(1) << 12,
+  F_RECENCY           = UINT64_C(1) << 13,
+  F_TRANSITIVITY_TIME_RECENT      = UINT64_C(1) << 14,
+  F_TRANSITIVITY_TIME_FIRST       = UINT64_C(1) << 15,
+  F_CYCLIC_TIME_RECENT            = UINT64_C(1) << 16,
+  F_CYCLIC_TIME_FIRST             = UINT64_C(1) << 17,
+  F_SENDING_BALANCE_TIME_RECENT   = UINT64_C(1) << 18,
+  F_SENDING_BALANCE_TIME_FIRST    = UINT64_C(1) << 19,
+  F_RECEIVING_BALANCE_TIME_RECENT = UINT64_C(1) << 20,
+  F_RECEIVING_BALANCE_TIME_FIRST  = UINT64_C(1) << 21,
+  F_TRANSITIVITY_EXP_DECAY        = UINT64_C(1) << 22,
+  F_CYCLIC_EXP_DECAY              = UINT64_C(1) << 23,
+  F_SENDING_BALANCE_EXP_DECAY     = UINT64_C(1) << 24,
+  F_RECEIVING_BALANCE_EXP_DECAY   = UINT64_C(1) << 25,
+  // *_interrupted: same chain accumulators as the non-interrupted
+  // variants, gated by formation_k > t_closure(s, r) where
+  // t_closure = last time the focal dyad (s, r) fired (or -inf).
+  F_TRANSITIVITY_COUNT_INTERRUPTED       = UINT64_C(1) << 26,
+  F_TRANSITIVITY_BINARY_INTERRUPTED      = UINT64_C(1) << 27,
+  F_TRANSITIVITY_EXP_DECAY_INTERRUPTED   = UINT64_C(1) << 28,
+  F_TRANSITIVITY_TIME_RECENT_INTERRUPTED = UINT64_C(1) << 29,
+  F_TRANSITIVITY_TIME_FIRST_INTERRUPTED  = UINT64_C(1) << 30,
+  F_CYCLIC_COUNT_INTERRUPTED             = UINT64_C(1) << 31,
+  F_CYCLIC_BINARY_INTERRUPTED            = UINT64_C(1) << 32,
+  F_CYCLIC_EXP_DECAY_INTERRUPTED         = UINT64_C(1) << 33,
+  F_CYCLIC_TIME_RECENT_INTERRUPTED       = UINT64_C(1) << 34,
+  F_CYCLIC_TIME_FIRST_INTERRUPTED        = UINT64_C(1) << 35,
+  F_SENDING_BALANCE_COUNT_INTERRUPTED       = UINT64_C(1) << 36,
+  F_SENDING_BALANCE_BINARY_INTERRUPTED      = UINT64_C(1) << 37,
+  F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED   = UINT64_C(1) << 38,
+  F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED = UINT64_C(1) << 39,
+  F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED  = UINT64_C(1) << 40,
+  F_RECEIVING_BALANCE_COUNT_INTERRUPTED       = UINT64_C(1) << 41,
+  F_RECEIVING_BALANCE_BINARY_INTERRUPTED      = UINT64_C(1) << 42,
+  F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED   = UINT64_C(1) << 43,
+  F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED = UINT64_C(1) << 44,
+  F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED  = UINT64_C(1) << 45
 };
 
 static const std::vector<std::string> SUPPORTED_STATS = {
@@ -76,10 +100,27 @@ static const std::vector<std::string> SUPPORTED_STATS = {
   "sending_balance_time_recent", "sending_balance_time_first",
   "receiving_balance_time_recent", "receiving_balance_time_first",
   "transitivity_exp_decay", "cyclic_exp_decay",
-  "sending_balance_exp_decay", "receiving_balance_exp_decay"
+  "sending_balance_exp_decay", "receiving_balance_exp_decay",
+  "transitivity_count_interrupted", "transitivity_binary_interrupted",
+  "transitivity_exp_decay_interrupted",
+  "transitivity_time_recent_interrupted",
+  "transitivity_time_first_interrupted",
+  "cyclic_count_interrupted", "cyclic_binary_interrupted",
+  "cyclic_exp_decay_interrupted",
+  "cyclic_time_recent_interrupted", "cyclic_time_first_interrupted",
+  "sending_balance_count_interrupted",
+  "sending_balance_binary_interrupted",
+  "sending_balance_exp_decay_interrupted",
+  "sending_balance_time_recent_interrupted",
+  "sending_balance_time_first_interrupted",
+  "receiving_balance_count_interrupted",
+  "receiving_balance_binary_interrupted",
+  "receiving_balance_exp_decay_interrupted",
+  "receiving_balance_time_recent_interrupted",
+  "receiving_balance_time_first_interrupted"
 };
 
-static unsigned int flag_for(const std::string& s) {
+static uint64_t flag_for(const std::string& s) {
   if (s == "reciprocity")              return F_RECIPROCITY;
   if (s == "reciprocity_binary")       return F_RECIPROCITY_BINARY;
   if (s == "reciprocity_count")        return F_RECIPROCITY_COUNT;
@@ -106,12 +147,36 @@ static unsigned int flag_for(const std::string& s) {
   if (s == "cyclic_exp_decay")              return F_CYCLIC_EXP_DECAY;
   if (s == "sending_balance_exp_decay")     return F_SENDING_BALANCE_EXP_DECAY;
   if (s == "receiving_balance_exp_decay")   return F_RECEIVING_BALANCE_EXP_DECAY;
-  return 0u;
+  if (s == "transitivity_count_interrupted")        return F_TRANSITIVITY_COUNT_INTERRUPTED;
+  if (s == "transitivity_binary_interrupted")       return F_TRANSITIVITY_BINARY_INTERRUPTED;
+  if (s == "transitivity_exp_decay_interrupted")    return F_TRANSITIVITY_EXP_DECAY_INTERRUPTED;
+  if (s == "transitivity_time_recent_interrupted")  return F_TRANSITIVITY_TIME_RECENT_INTERRUPTED;
+  if (s == "transitivity_time_first_interrupted")   return F_TRANSITIVITY_TIME_FIRST_INTERRUPTED;
+  if (s == "cyclic_count_interrupted")              return F_CYCLIC_COUNT_INTERRUPTED;
+  if (s == "cyclic_binary_interrupted")             return F_CYCLIC_BINARY_INTERRUPTED;
+  if (s == "cyclic_exp_decay_interrupted")          return F_CYCLIC_EXP_DECAY_INTERRUPTED;
+  if (s == "cyclic_time_recent_interrupted")        return F_CYCLIC_TIME_RECENT_INTERRUPTED;
+  if (s == "cyclic_time_first_interrupted")         return F_CYCLIC_TIME_FIRST_INTERRUPTED;
+  if (s == "sending_balance_count_interrupted")       return F_SENDING_BALANCE_COUNT_INTERRUPTED;
+  if (s == "sending_balance_binary_interrupted")      return F_SENDING_BALANCE_BINARY_INTERRUPTED;
+  if (s == "sending_balance_exp_decay_interrupted")   return F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED;
+  if (s == "sending_balance_time_recent_interrupted") return F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED;
+  if (s == "sending_balance_time_first_interrupted")  return F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED;
+  if (s == "receiving_balance_count_interrupted")       return F_RECEIVING_BALANCE_COUNT_INTERRUPTED;
+  if (s == "receiving_balance_binary_interrupted")      return F_RECEIVING_BALANCE_BINARY_INTERRUPTED;
+  if (s == "receiving_balance_exp_decay_interrupted")   return F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED;
+  if (s == "receiving_balance_time_recent_interrupted") return F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED;
+  if (s == "receiving_balance_time_first_interrupted")  return F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED;
+  return UINT64_C(0);
 }
 
-static constexpr unsigned int F_ANY_EXP_DECAY =
+static constexpr uint64_t F_ANY_EXP_DECAY =
   F_TRANSITIVITY_EXP_DECAY | F_CYCLIC_EXP_DECAY |
-  F_SENDING_BALANCE_EXP_DECAY | F_RECEIVING_BALANCE_EXP_DECAY;
+  F_SENDING_BALANCE_EXP_DECAY | F_RECEIVING_BALANCE_EXP_DECAY |
+  F_TRANSITIVITY_EXP_DECAY_INTERRUPTED |
+  F_CYCLIC_EXP_DECAY_INTERRUPTED |
+  F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED |
+  F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED;
 
 // Sorted-set intersection of two ascending integer vectors a, b.
 // Returns the integer count of elements that appear in both AND
@@ -135,32 +200,45 @@ static int sorted_intersect_count(const std::vector<int>& a,
   return count;
 }
 
-// Walk the intersection of two sorted ascending integer vectors,
-// returning min/max of `formation_k = max(first[leg1_key(k)], first[leg2_key(k)])`
-// over k in (a ∩ b) \ {excl_s, excl_r}. `n_found` counts validated k's.
-// `leg1_key` / `leg2_key` build the dyad-key for the per-k formation lookup;
-// they are family-specific (see callers below).
-//
-// When `need_exp` is true, also accumulates `exp_sum = sum over k of
-// exp(-(t_now - formation_k) * decay_rate)` -- the per-event
-// exp_decay statistic. Per the post-hoc reference in
-// R/preprocess.R::compute_triadic.
+// Per-family accumulators collected during a single walk through the
+// intersection of two sorted ascending integer vectors. Mirrors
+// compute_triadic's accumulators on the post-hoc side
+// (R/preprocess.R): regular bucket covers every validated k; the
+// interrupted bucket additionally requires `formation > t_closure`
+// (the most recent prior firing of the focal (s, r) dyad).
+struct FamilyAccumulator {
+  int    n      = 0;
+  double f_min  =  std::numeric_limits<double>::infinity();
+  double f_max  = -std::numeric_limits<double>::infinity();
+  double e_sum  = 0.0;
+  int    n_int     = 0;
+  double f_int_min =  std::numeric_limits<double>::infinity();
+  double f_int_max = -std::numeric_limits<double>::infinity();
+  double e_int_sum = 0.0;
+};
+
+// Walk the intersection of two sorted ascending integer vectors and
+// fill `acc` with per-k formation aggregates. For each
+// `k ∈ (a ∩ b) \ {excl_s, excl_r}`, formation_k =
+// max(first[leg1_key(k)], first[leg2_key(k)]). `t_closure` is the
+// most recent prior firing of the focal (s, r) dyad (or -∞ if none);
+// the interrupted-bucket gate is `formation > t_closure`. The
+// per-k exp_decay contribution is `exp(-(t_now - formation_k) *
+// decay_rate)`; exp() is only called when its respective
+// `need_exp{_int}` flag is on.
 template <typename L1, typename L2>
 static void walk_intersect_formation(const std::vector<int>& a,
                                      const std::vector<int>& b,
                                      int excl_s, int excl_r,
                                      const std::unordered_map<long long, double>& first_map,
                                      L1 leg1_key, L2 leg2_key,
-                                     int& n_found,
-                                     double& form_min, double& form_max,
-                                     bool need_exp,
                                      double t_now, double decay_rate,
-                                     double& exp_sum) {
+                                     double t_closure,
+                                     bool need_exp, bool need_int_exp,
+                                     bool need_int_any,
+                                     FamilyAccumulator& acc) {
+  acc = FamilyAccumulator();
   int i = 0, j = 0;
-  n_found = 0;
-  form_min = std::numeric_limits<double>::infinity();
-  form_max = -std::numeric_limits<double>::infinity();
-  exp_sum = 0.0;
   while (i < (int)a.size() && j < (int)b.size()) {
     if (a[i] < b[j]) {
       ++i;
@@ -178,12 +256,20 @@ static void walk_intersect_formation(const std::vector<int>& a,
         // once), so the lookups must succeed.
         if (it1 != first_map.end() && it2 != first_map.end()) {
           double form = std::max(it1->second, it2->second);
-          if (form > form_max) form_max = form;
-          if (form < form_min) form_min = form;
-          if (need_exp) {
-            exp_sum += std::exp(-(t_now - form) * decay_rate);
+          if (form > acc.f_max) acc.f_max = form;
+          if (form < acc.f_min) acc.f_min = form;
+          double decay_contrib = 0.0;
+          if (need_exp || need_int_exp) {
+            decay_contrib = std::exp(-(t_now - form) * decay_rate);
           }
-          ++n_found;
+          if (need_exp) acc.e_sum += decay_contrib;
+          ++acc.n;
+          if (need_int_any && form > t_closure) {
+            if (form > acc.f_int_max) acc.f_int_max = form;
+            if (form < acc.f_int_min) acc.f_int_min = form;
+            if (need_int_exp) acc.e_int_sum += decay_contrib;
+            ++acc.n_int;
+          }
         }
       }
       ++i; ++j;
@@ -209,9 +295,9 @@ List compute_features_cpp(CharacterVector senders,
     stop("senders, receivers, times must have the same length.");
   }
 
-  unsigned int active = 0u;
+  uint64_t active = 0u;
   for (R_xlen_t i = 0; i < stat_names.size(); ++i) {
-    unsigned int f = flag_for(as<std::string>(stat_names[i]));
+    uint64_t f = flag_for(as<std::string>(stat_names[i]));
     if (f == 0u) {
       stop("Stat not supported by the C++ inner loop: " +
            as<std::string>(stat_names[i]));
@@ -281,19 +367,39 @@ List compute_features_cpp(CharacterVector senders,
   const bool need_cyclic_exp= active & F_CYCLIC_EXP_DECAY;
   const bool need_sb_exp    = active & F_SENDING_BALANCE_EXP_DECAY;
   const bool need_rb_exp    = active & F_RECEIVING_BALANCE_EXP_DECAY;
+  // Interrupted variants: per-family flags by output kind.
+  const bool need_trans_int_cnt  = active & (F_TRANSITIVITY_COUNT_INTERRUPTED | F_TRANSITIVITY_BINARY_INTERRUPTED);
+  const bool need_trans_int_exp  = active & F_TRANSITIVITY_EXP_DECAY_INTERRUPTED;
+  const bool need_trans_int_time = active & (F_TRANSITIVITY_TIME_RECENT_INTERRUPTED | F_TRANSITIVITY_TIME_FIRST_INTERRUPTED);
+  const bool need_cyclic_int_cnt = active & (F_CYCLIC_COUNT_INTERRUPTED | F_CYCLIC_BINARY_INTERRUPTED);
+  const bool need_cyclic_int_exp = active & F_CYCLIC_EXP_DECAY_INTERRUPTED;
+  const bool need_cyclic_int_time= active & (F_CYCLIC_TIME_RECENT_INTERRUPTED | F_CYCLIC_TIME_FIRST_INTERRUPTED);
+  const bool need_sb_int_cnt     = active & (F_SENDING_BALANCE_COUNT_INTERRUPTED | F_SENDING_BALANCE_BINARY_INTERRUPTED);
+  const bool need_sb_int_exp     = active & F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED;
+  const bool need_sb_int_time    = active & (F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED | F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED);
+  const bool need_rb_int_cnt     = active & (F_RECEIVING_BALANCE_COUNT_INTERRUPTED | F_RECEIVING_BALANCE_BINARY_INTERRUPTED);
+  const bool need_rb_int_exp     = active & F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED;
+  const bool need_rb_int_time    = active & (F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED | F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED);
+  const bool need_trans_int_any  = need_trans_int_cnt  || need_trans_int_exp  || need_trans_int_time;
+  const bool need_cyclic_int_any = need_cyclic_int_cnt || need_cyclic_int_exp || need_cyclic_int_time;
+  const bool need_sb_int_any     = need_sb_int_cnt     || need_sb_int_exp     || need_sb_int_time;
+  const bool need_rb_int_any     = need_rb_int_cnt     || need_rb_int_exp     || need_rb_int_time;
   const bool need_outdeg    = active & F_SENDER_OUTDEGREE;
   const bool need_indeg     = active & F_RECEIVER_INDEGREE;
   const bool need_recency   = active & F_RECENCY;
   const bool need_triadic_cnt  = need_trans_cnt || need_cyclic_cnt || need_sb_cnt || need_rb_cnt;
   const bool need_triadic_time = need_trans_time || need_cyclic_time || need_sb_time || need_rb_time;
   const bool need_triadic_exp  = need_trans_exp || need_cyclic_exp || need_sb_exp || need_rb_exp;
-  const bool need_triadic   = need_triadic_cnt || need_triadic_time || need_triadic_exp;
-  // need_X for the joint family walk: we share the intersection between
-  // timing and exp_decay readers since both use first_dyad_time.
-  const bool need_trans_form  = need_trans_time || need_trans_exp;
-  const bool need_cyclic_form = need_cyclic_time || need_cyclic_exp;
-  const bool need_sb_form     = need_sb_time     || need_sb_exp;
-  const bool need_rb_form     = need_rb_time     || need_rb_exp;
+  const bool need_triadic_int  = need_trans_int_any || need_cyclic_int_any ||
+                                  need_sb_int_any    || need_rb_int_any;
+  const bool need_triadic   = need_triadic_cnt || need_triadic_time ||
+                              need_triadic_exp || need_triadic_int;
+  // need_X for the joint family walk: timing, exp_decay, AND interrupted
+  // readers all use the intersection + first_dyad_time pair.
+  const bool need_trans_form  = need_trans_time  || need_trans_exp  || need_trans_int_any;
+  const bool need_cyclic_form = need_cyclic_time || need_cyclic_exp || need_cyclic_int_any;
+  const bool need_sb_form     = need_sb_time     || need_sb_exp     || need_sb_int_any;
+  const bool need_rb_form     = need_rb_time     || need_rb_exp     || need_rb_int_any;
 
   IntegerVector reciprocity(need_rec_bin ? n : 0);
   IntegerVector reciprocity_binary(need_rec_bin ? n : 0);
@@ -332,6 +438,29 @@ List compute_features_cpp(CharacterVector senders,
   NumericVector cyclic_exp_decay           (need_cyclic_exp ? n : 0);
   NumericVector sending_balance_exp_decay  (need_sb_exp ? n : 0);
   NumericVector receiving_balance_exp_decay(need_rb_exp ? n : 0);
+  // Interrupted count / binary / exp_decay columns: default 0; timing
+  // variants follow the same NA-when-empty convention as the
+  // non-interrupted timing columns.
+  NumericVector transitivity_count_interrupted     (active & F_TRANSITIVITY_COUNT_INTERRUPTED ? n : 0);
+  IntegerVector transitivity_binary_interrupted    (active & F_TRANSITIVITY_BINARY_INTERRUPTED ? n : 0);
+  NumericVector transitivity_exp_decay_interrupted (active & F_TRANSITIVITY_EXP_DECAY_INTERRUPTED ? n : 0);
+  NumericVector cyclic_count_interrupted     (active & F_CYCLIC_COUNT_INTERRUPTED ? n : 0);
+  IntegerVector cyclic_binary_interrupted    (active & F_CYCLIC_BINARY_INTERRUPTED ? n : 0);
+  NumericVector cyclic_exp_decay_interrupted (active & F_CYCLIC_EXP_DECAY_INTERRUPTED ? n : 0);
+  NumericVector sending_balance_count_interrupted     (active & F_SENDING_BALANCE_COUNT_INTERRUPTED ? n : 0);
+  IntegerVector sending_balance_binary_interrupted    (active & F_SENDING_BALANCE_BINARY_INTERRUPTED ? n : 0);
+  NumericVector sending_balance_exp_decay_interrupted (active & F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED ? n : 0);
+  NumericVector receiving_balance_count_interrupted     (active & F_RECEIVING_BALANCE_COUNT_INTERRUPTED ? n : 0);
+  IntegerVector receiving_balance_binary_interrupted    (active & F_RECEIVING_BALANCE_BINARY_INTERRUPTED ? n : 0);
+  NumericVector receiving_balance_exp_decay_interrupted (active & F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED ? n : 0);
+  NumericVector transitivity_time_recent_interrupted = alloc_na(active & F_TRANSITIVITY_TIME_RECENT_INTERRUPTED);
+  NumericVector transitivity_time_first_interrupted  = alloc_na(active & F_TRANSITIVITY_TIME_FIRST_INTERRUPTED);
+  NumericVector cyclic_time_recent_interrupted       = alloc_na(active & F_CYCLIC_TIME_RECENT_INTERRUPTED);
+  NumericVector cyclic_time_first_interrupted        = alloc_na(active & F_CYCLIC_TIME_FIRST_INTERRUPTED);
+  NumericVector sending_balance_time_recent_interrupted   = alloc_na(active & F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED);
+  NumericVector sending_balance_time_first_interrupted    = alloc_na(active & F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED);
+  NumericVector receiving_balance_time_recent_interrupted = alloc_na(active & F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED);
+  NumericVector receiving_balance_time_first_interrupted  = alloc_na(active & F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED);
 
   // 4. Main loop.
   for (R_xlen_t i = 0; i < n; ++i) {
@@ -394,57 +523,99 @@ List compute_features_cpp(CharacterVector senders,
         if (active & F_RECEIVING_BALANCE_COUNT)  receiving_balance_count[i]  = (double)c;
         if (active & F_RECEIVING_BALANCE_BINARY) receiving_balance_binary[i] = c > 0;
       }
+      // For each family with any formation-based stat active, walk the
+      // intersection once and emit timing / exp_decay / interrupted
+      // outputs from the same accumulator.
+      double t_closure;
+      {
+        auto it = dyad_last_time.find(key_sr);
+        t_closure = (it == dyad_last_time.end())
+                      ? -std::numeric_limits<double>::infinity()
+                      : it->second;
+      }
       if (need_trans_form) {
-        int nk; double fmin, fmax, esum;
+        FamilyAccumulator acc;
         walk_intersect_formation(s_out, r_in, s, r, dyad_first_time,
           [s, A](int k) { return (long long)s * A + k; },
           [r, A](int k) { return (long long)k * A + r; },
-          nk, fmin, fmax,
-          need_trans_exp, ti, decay_rate, esum);
-        if (nk > 0) {
-          if (active & F_TRANSITIVITY_TIME_RECENT) transitivity_time_recent[i] = ti - fmax;
-          if (active & F_TRANSITIVITY_TIME_FIRST)  transitivity_time_first[i]  = ti - fmin;
+          ti, decay_rate, t_closure,
+          need_trans_exp, need_trans_int_exp, need_trans_int_any,
+          acc);
+        if (acc.n > 0) {
+          if (active & F_TRANSITIVITY_TIME_RECENT) transitivity_time_recent[i] = ti - acc.f_max;
+          if (active & F_TRANSITIVITY_TIME_FIRST)  transitivity_time_first[i]  = ti - acc.f_min;
         }
-        if (need_trans_exp) transitivity_exp_decay[i] = esum;
+        if (need_trans_exp) transitivity_exp_decay[i] = acc.e_sum;
+        if (active & F_TRANSITIVITY_COUNT_INTERRUPTED)   transitivity_count_interrupted[i]    = (double)acc.n_int;
+        if (active & F_TRANSITIVITY_BINARY_INTERRUPTED)  transitivity_binary_interrupted[i]   = acc.n_int > 0;
+        if (need_trans_int_exp)                          transitivity_exp_decay_interrupted[i] = acc.e_int_sum;
+        if (acc.n_int > 0) {
+          if (active & F_TRANSITIVITY_TIME_RECENT_INTERRUPTED) transitivity_time_recent_interrupted[i] = ti - acc.f_int_max;
+          if (active & F_TRANSITIVITY_TIME_FIRST_INTERRUPTED)  transitivity_time_first_interrupted[i]  = ti - acc.f_int_min;
+        }
       }
       if (need_cyclic_form) {
-        int nk; double fmin, fmax, esum;
+        FamilyAccumulator acc;
         walk_intersect_formation(r_out, s_in, s, r, dyad_first_time,
           [r, A](int k) { return (long long)r * A + k; },
           [s, A](int k) { return (long long)k * A + s; },
-          nk, fmin, fmax,
-          need_cyclic_exp, ti, decay_rate, esum);
-        if (nk > 0) {
-          if (active & F_CYCLIC_TIME_RECENT) cyclic_time_recent[i] = ti - fmax;
-          if (active & F_CYCLIC_TIME_FIRST)  cyclic_time_first[i]  = ti - fmin;
+          ti, decay_rate, t_closure,
+          need_cyclic_exp, need_cyclic_int_exp, need_cyclic_int_any,
+          acc);
+        if (acc.n > 0) {
+          if (active & F_CYCLIC_TIME_RECENT) cyclic_time_recent[i] = ti - acc.f_max;
+          if (active & F_CYCLIC_TIME_FIRST)  cyclic_time_first[i]  = ti - acc.f_min;
         }
-        if (need_cyclic_exp) cyclic_exp_decay[i] = esum;
+        if (need_cyclic_exp) cyclic_exp_decay[i] = acc.e_sum;
+        if (active & F_CYCLIC_COUNT_INTERRUPTED)   cyclic_count_interrupted[i]    = (double)acc.n_int;
+        if (active & F_CYCLIC_BINARY_INTERRUPTED)  cyclic_binary_interrupted[i]   = acc.n_int > 0;
+        if (need_cyclic_int_exp)                   cyclic_exp_decay_interrupted[i] = acc.e_int_sum;
+        if (acc.n_int > 0) {
+          if (active & F_CYCLIC_TIME_RECENT_INTERRUPTED) cyclic_time_recent_interrupted[i] = ti - acc.f_int_max;
+          if (active & F_CYCLIC_TIME_FIRST_INTERRUPTED)  cyclic_time_first_interrupted[i]  = ti - acc.f_int_min;
+        }
       }
       if (need_sb_form) {
-        int nk; double fmin, fmax, esum;
+        FamilyAccumulator acc;
         walk_intersect_formation(s_out, r_out, s, r, dyad_first_time,
           [s, A](int k) { return (long long)s * A + k; },
           [r, A](int k) { return (long long)r * A + k; },
-          nk, fmin, fmax,
-          need_sb_exp, ti, decay_rate, esum);
-        if (nk > 0) {
-          if (active & F_SENDING_BALANCE_TIME_RECENT) sending_balance_time_recent[i] = ti - fmax;
-          if (active & F_SENDING_BALANCE_TIME_FIRST)  sending_balance_time_first[i]  = ti - fmin;
+          ti, decay_rate, t_closure,
+          need_sb_exp, need_sb_int_exp, need_sb_int_any,
+          acc);
+        if (acc.n > 0) {
+          if (active & F_SENDING_BALANCE_TIME_RECENT) sending_balance_time_recent[i] = ti - acc.f_max;
+          if (active & F_SENDING_BALANCE_TIME_FIRST)  sending_balance_time_first[i]  = ti - acc.f_min;
         }
-        if (need_sb_exp) sending_balance_exp_decay[i] = esum;
+        if (need_sb_exp) sending_balance_exp_decay[i] = acc.e_sum;
+        if (active & F_SENDING_BALANCE_COUNT_INTERRUPTED)   sending_balance_count_interrupted[i]    = (double)acc.n_int;
+        if (active & F_SENDING_BALANCE_BINARY_INTERRUPTED)  sending_balance_binary_interrupted[i]   = acc.n_int > 0;
+        if (need_sb_int_exp)                                sending_balance_exp_decay_interrupted[i] = acc.e_int_sum;
+        if (acc.n_int > 0) {
+          if (active & F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED) sending_balance_time_recent_interrupted[i] = ti - acc.f_int_max;
+          if (active & F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED)  sending_balance_time_first_interrupted[i]  = ti - acc.f_int_min;
+        }
       }
       if (need_rb_form) {
-        int nk; double fmin, fmax, esum;
+        FamilyAccumulator acc;
         walk_intersect_formation(s_in, r_in, s, r, dyad_first_time,
           [s, A](int k) { return (long long)k * A + s; },
           [r, A](int k) { return (long long)k * A + r; },
-          nk, fmin, fmax,
-          need_rb_exp, ti, decay_rate, esum);
-        if (nk > 0) {
-          if (active & F_RECEIVING_BALANCE_TIME_RECENT) receiving_balance_time_recent[i] = ti - fmax;
-          if (active & F_RECEIVING_BALANCE_TIME_FIRST)  receiving_balance_time_first[i]  = ti - fmin;
+          ti, decay_rate, t_closure,
+          need_rb_exp, need_rb_int_exp, need_rb_int_any,
+          acc);
+        if (acc.n > 0) {
+          if (active & F_RECEIVING_BALANCE_TIME_RECENT) receiving_balance_time_recent[i] = ti - acc.f_max;
+          if (active & F_RECEIVING_BALANCE_TIME_FIRST)  receiving_balance_time_first[i]  = ti - acc.f_min;
         }
-        if (need_rb_exp) receiving_balance_exp_decay[i] = esum;
+        if (need_rb_exp) receiving_balance_exp_decay[i] = acc.e_sum;
+        if (active & F_RECEIVING_BALANCE_COUNT_INTERRUPTED)   receiving_balance_count_interrupted[i]    = (double)acc.n_int;
+        if (active & F_RECEIVING_BALANCE_BINARY_INTERRUPTED)  receiving_balance_binary_interrupted[i]   = acc.n_int > 0;
+        if (need_rb_int_exp)                                  receiving_balance_exp_decay_interrupted[i] = acc.e_int_sum;
+        if (acc.n_int > 0) {
+          if (active & F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED) receiving_balance_time_recent_interrupted[i] = ti - acc.f_int_max;
+          if (active & F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED)  receiving_balance_time_first_interrupted[i]  = ti - acc.f_int_min;
+        }
       }
     }
 
@@ -493,6 +664,26 @@ List compute_features_cpp(CharacterVector senders,
   if (active & F_CYCLIC_EXP_DECAY)              out["cyclic_exp_decay"]              = cyclic_exp_decay;
   if (active & F_SENDING_BALANCE_EXP_DECAY)     out["sending_balance_exp_decay"]     = sending_balance_exp_decay;
   if (active & F_RECEIVING_BALANCE_EXP_DECAY)   out["receiving_balance_exp_decay"]   = receiving_balance_exp_decay;
+  if (active & F_TRANSITIVITY_COUNT_INTERRUPTED)       out["transitivity_count_interrupted"]       = transitivity_count_interrupted;
+  if (active & F_TRANSITIVITY_BINARY_INTERRUPTED)      out["transitivity_binary_interrupted"]      = transitivity_binary_interrupted;
+  if (active & F_TRANSITIVITY_EXP_DECAY_INTERRUPTED)   out["transitivity_exp_decay_interrupted"]   = transitivity_exp_decay_interrupted;
+  if (active & F_TRANSITIVITY_TIME_RECENT_INTERRUPTED) out["transitivity_time_recent_interrupted"] = transitivity_time_recent_interrupted;
+  if (active & F_TRANSITIVITY_TIME_FIRST_INTERRUPTED)  out["transitivity_time_first_interrupted"]  = transitivity_time_first_interrupted;
+  if (active & F_CYCLIC_COUNT_INTERRUPTED)             out["cyclic_count_interrupted"]             = cyclic_count_interrupted;
+  if (active & F_CYCLIC_BINARY_INTERRUPTED)            out["cyclic_binary_interrupted"]            = cyclic_binary_interrupted;
+  if (active & F_CYCLIC_EXP_DECAY_INTERRUPTED)         out["cyclic_exp_decay_interrupted"]         = cyclic_exp_decay_interrupted;
+  if (active & F_CYCLIC_TIME_RECENT_INTERRUPTED)       out["cyclic_time_recent_interrupted"]       = cyclic_time_recent_interrupted;
+  if (active & F_CYCLIC_TIME_FIRST_INTERRUPTED)        out["cyclic_time_first_interrupted"]        = cyclic_time_first_interrupted;
+  if (active & F_SENDING_BALANCE_COUNT_INTERRUPTED)       out["sending_balance_count_interrupted"]       = sending_balance_count_interrupted;
+  if (active & F_SENDING_BALANCE_BINARY_INTERRUPTED)      out["sending_balance_binary_interrupted"]      = sending_balance_binary_interrupted;
+  if (active & F_SENDING_BALANCE_EXP_DECAY_INTERRUPTED)   out["sending_balance_exp_decay_interrupted"]   = sending_balance_exp_decay_interrupted;
+  if (active & F_SENDING_BALANCE_TIME_RECENT_INTERRUPTED) out["sending_balance_time_recent_interrupted"] = sending_balance_time_recent_interrupted;
+  if (active & F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED)  out["sending_balance_time_first_interrupted"]  = sending_balance_time_first_interrupted;
+  if (active & F_RECEIVING_BALANCE_COUNT_INTERRUPTED)       out["receiving_balance_count_interrupted"]       = receiving_balance_count_interrupted;
+  if (active & F_RECEIVING_BALANCE_BINARY_INTERRUPTED)      out["receiving_balance_binary_interrupted"]      = receiving_balance_binary_interrupted;
+  if (active & F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED)   out["receiving_balance_exp_decay_interrupted"]   = receiving_balance_exp_decay_interrupted;
+  if (active & F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED) out["receiving_balance_time_recent_interrupted"] = receiving_balance_time_recent_interrupted;
+  if (active & F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED)  out["receiving_balance_time_first_interrupted"]  = receiving_balance_time_first_interrupted;
   return out;
 }
 
