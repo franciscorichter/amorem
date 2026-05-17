@@ -312,12 +312,16 @@ compute_endogenous_features <- function(
     "transitivity_time_recent_ordered", "transitivity_time_first_ordered",
     "transitivity_time_recent_interrupted",
     "transitivity_time_first_interrupted",
+    "transitivity_count_interrupted", "transitivity_binary_interrupted",
+    "transitivity_exp_decay_interrupted",
     "cyclic_binary", "cyclic_count", "cyclic_time_recent", "cyclic_time_first",
     "cyclic_exp_decay",
     "cyclic_binary_ordered", "cyclic_count_ordered",
     "cyclic_exp_decay_ordered",
     "cyclic_time_recent_ordered", "cyclic_time_first_ordered",
     "cyclic_time_recent_interrupted", "cyclic_time_first_interrupted",
+    "cyclic_count_interrupted", "cyclic_binary_interrupted",
+    "cyclic_exp_decay_interrupted",
     "sending_balance_binary", "sending_balance_count",
     "sending_balance_time_recent", "sending_balance_time_first",
     "sending_balance_exp_decay",
@@ -327,6 +331,9 @@ compute_endogenous_features <- function(
     "sending_balance_time_first_ordered",
     "sending_balance_time_recent_interrupted",
     "sending_balance_time_first_interrupted",
+    "sending_balance_count_interrupted",
+    "sending_balance_binary_interrupted",
+    "sending_balance_exp_decay_interrupted",
     "receiving_balance_binary", "receiving_balance_count",
     "receiving_balance_time_recent", "receiving_balance_time_first",
     "receiving_balance_exp_decay",
@@ -335,7 +342,10 @@ compute_endogenous_features <- function(
     "receiving_balance_time_recent_ordered",
     "receiving_balance_time_first_ordered",
     "receiving_balance_time_recent_interrupted",
-    "receiving_balance_time_first_interrupted"
+    "receiving_balance_time_first_interrupted",
+    "receiving_balance_count_interrupted",
+    "receiving_balance_binary_interrupted",
+    "receiving_balance_exp_decay_interrupted"
   )
   bad <- setdiff(stats, allowed)
   if (length(bad)) {
@@ -348,11 +358,15 @@ compute_endogenous_features <- function(
   exp_decay_stats <- c("reciprocity_exp_decay", "transitivity_exp_decay",
                        "transitivity_exp_decay_ordered",
                        "reciprocity_exp_decay_interrupted",
+                       "transitivity_exp_decay_interrupted",
                        "cyclic_exp_decay", "cyclic_exp_decay_ordered",
+                       "cyclic_exp_decay_interrupted",
                        "sending_balance_exp_decay",
                        "sending_balance_exp_decay_ordered",
+                       "sending_balance_exp_decay_interrupted",
                        "receiving_balance_exp_decay",
-                       "receiving_balance_exp_decay_ordered")
+                       "receiving_balance_exp_decay_ordered",
+                       "receiving_balance_exp_decay_interrupted")
   if (any(exp_decay_stats %in% stats) &&
       (is.null(half_life) || !is.numeric(half_life) || half_life <= 0)) {
     stop("`half_life` must be a positive number when ",
@@ -397,14 +411,20 @@ compute_endogenous_features <- function(
                    "transitivity_time_recent_ordered",
                    "transitivity_time_first_ordered",
                    "transitivity_time_recent_interrupted",
-                   "transitivity_time_first_interrupted")
+                   "transitivity_time_first_interrupted",
+                   "transitivity_count_interrupted",
+                   "transitivity_binary_interrupted",
+                   "transitivity_exp_decay_interrupted")
   cyc_names   <- c("cyclic_binary", "cyclic_count",
                    "cyclic_binary_ordered", "cyclic_count_ordered",
                    "cyclic_time_recent", "cyclic_time_first",
                    "cyclic_time_recent_ordered", "cyclic_time_first_ordered",
                    "cyclic_exp_decay", "cyclic_exp_decay_ordered",
                    "cyclic_time_recent_interrupted",
-                   "cyclic_time_first_interrupted")
+                   "cyclic_time_first_interrupted",
+                   "cyclic_count_interrupted",
+                   "cyclic_binary_interrupted",
+                   "cyclic_exp_decay_interrupted")
   sb_names    <- c("sending_balance_binary", "sending_balance_count",
                    "sending_balance_binary_ordered",
                    "sending_balance_count_ordered",
@@ -414,7 +434,10 @@ compute_endogenous_features <- function(
                    "sending_balance_exp_decay",
                    "sending_balance_exp_decay_ordered",
                    "sending_balance_time_recent_interrupted",
-                   "sending_balance_time_first_interrupted")
+                   "sending_balance_time_first_interrupted",
+                   "sending_balance_count_interrupted",
+                   "sending_balance_binary_interrupted",
+                   "sending_balance_exp_decay_interrupted")
   rb_names    <- c("receiving_balance_binary", "receiving_balance_count",
                    "receiving_balance_binary_ordered",
                    "receiving_balance_count_ordered",
@@ -424,7 +447,10 @@ compute_endogenous_features <- function(
                    "receiving_balance_exp_decay",
                    "receiving_balance_exp_decay_ordered",
                    "receiving_balance_time_recent_interrupted",
-                   "receiving_balance_time_first_interrupted")
+                   "receiving_balance_time_first_interrupted",
+                   "receiving_balance_count_interrupted",
+                   "receiving_balance_binary_interrupted",
+                   "receiving_balance_exp_decay_interrupted")
   need_triadic <- any(c(trans_names, cyc_names, sb_names, rb_names) %in% stats)
 
   # --- Tracking data structures ---
@@ -470,23 +496,35 @@ compute_endogenous_features <- function(
   binary_set <- c("reciprocity", "reciprocity_binary",
                   "reciprocity_binary_interrupted",
                   "transitivity_binary", "transitivity_binary_ordered",
+                  "transitivity_binary_interrupted",
                   "cyclic_binary", "cyclic_binary_ordered",
+                  "cyclic_binary_interrupted",
                   "sending_balance_binary",
                   "sending_balance_binary_ordered",
+                  "sending_balance_binary_interrupted",
                   "receiving_balance_binary",
+                  "receiving_balance_binary_interrupted",
                   "receiving_balance_binary_ordered")
   count_set <- c("sender_outdegree", "receiver_indegree",
                  "reciprocity_count", "reciprocity_exp_decay",
                  "transitivity_count", "transitivity_count_ordered",
                  "transitivity_exp_decay", "transitivity_exp_decay_ordered",
+                 "transitivity_count_interrupted",
+                 "transitivity_exp_decay_interrupted",
                  "cyclic_count", "cyclic_count_ordered",
                  "cyclic_exp_decay", "cyclic_exp_decay_ordered",
+                 "cyclic_count_interrupted",
+                 "cyclic_exp_decay_interrupted",
                  "sending_balance_count", "sending_balance_count_ordered",
                  "sending_balance_exp_decay",
                  "sending_balance_exp_decay_ordered",
+                 "sending_balance_count_interrupted",
+                 "sending_balance_exp_decay_interrupted",
                  "receiving_balance_count", "receiving_balance_count_ordered",
                  "receiving_balance_exp_decay",
                  "receiving_balance_exp_decay_ordered",
+                 "receiving_balance_count_interrupted",
+                 "receiving_balance_exp_decay_interrupted",
                  "reciprocity_count_interrupted",
                  "reciprocity_exp_decay_interrupted")
   for (stat in stats) {
@@ -527,18 +565,23 @@ compute_endogenous_features <- function(
       return(res)
     }
 
-    need_ord  <- any(grepl("ordered", req))
-    need_exp  <- any(grepl("exp_decay", req))
-    need_time <- any(grepl("time_", req))
-    need_int  <- any(grepl("_time_[a-z]+_interrupted$", req))
+    need_ord       <- any(grepl("ordered", req))
+    need_exp       <- any(grepl("exp_decay", req))
+    need_time      <- any(grepl("time_", req))
+    need_int_time  <- any(grepl("_time_[a-z]+_interrupted$", req))
+    need_int_count <- any(grepl("_(count|binary)_interrupted$", req))
+    need_int_exp   <- any(grepl("_exp_decay_interrupted$", req))
+    need_int       <- need_int_time || need_int_count || need_int_exp
 
     form_recent     <- -Inf
     form_first      <- Inf
     n_ordered       <- 0L
+    n_int           <- 0L
     form_ord_recent <- -Inf
     form_ord_first  <- Inf
     exp_sum         <- 0
     exp_ord_sum     <- 0
+    exp_int_sum     <- 0
     # Interrupted-window aggregates: only per-k formation times that
     # occurred strictly after the most recent (s, r) closure.
     form_int_recent <- -Inf
@@ -561,8 +604,13 @@ compute_endogenous_features <- function(
         if (formation < form_first)  form_first  <- formation
       }
       if (need_int && formation > t_closure) {
+        n_int <- n_int + 1L
         if (formation > form_int_recent) form_int_recent <- formation
         if (formation < form_int_first)  form_int_first  <- formation
+        if (need_int_exp && !is.null(half_life)) {
+          exp_int_sum <- exp_int_sum +
+            exp(-(t_now - formation) * log(2) / half_life)
+        }
       }
       if (need_exp && !is.null(half_life)) {
         exp_sum <- exp_sum +
@@ -611,9 +659,10 @@ compute_endogenous_features <- function(
       if (eo_nm  %in% req) res[[eo_nm]]  <- 0
     }
 
-    # Interrupted timing outputs (no count / binary / exp_decay variants
-    # in this batch -- only the *_time_recent_interrupted / _time_first_
-    # interrupted slots are populated).
+    # Interrupted-window outputs: every formation strictly after the most
+    # recent (s, r) closure event contributes a fresh "k that closed
+    # since the last (s, r)". `n_int` counts such k's; the timing /
+    # exp-decay aggregates above hold the per-window summaries.
     tri_nm <- paste0(prefix, "_time_recent_interrupted")
     tfi_nm <- paste0(prefix, "_time_first_interrupted")
     if (tri_nm %in% req) {
@@ -622,6 +671,12 @@ compute_endogenous_features <- function(
     if (tfi_nm %in% req) {
       res[[tfi_nm]] <- if (form_int_first  <  Inf) t_now - form_int_first  else NA_real_
     }
+    ci_nm  <- paste0(prefix, "_count_interrupted")
+    bi_nm  <- paste0(prefix, "_binary_interrupted")
+    ei_nm  <- paste0(prefix, "_exp_decay_interrupted")
+    if (ci_nm %in% req) res[[ci_nm]] <- n_int
+    if (bi_nm %in% req) res[[bi_nm]] <- as.integer(n_int > 0L)
+    if (ei_nm %in% req) res[[ei_nm]] <- exp_int_sum
 
     res
   }
