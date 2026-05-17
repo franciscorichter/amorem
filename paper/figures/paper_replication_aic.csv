@@ -1,7 +1,0 @@
-"dataset","spec","AIC","n_terms","delta_AIC"
-"Classroom","A: count baseline",1464.77437920408,2,0
-"Classroom","B: paper, linear",1861.90511877927,5,397.130739575192
-"Classroom","B: paper, smooth",1856.46044606349,5,391.68606685941
-"Radoslaw 30 d","A: count baseline",16706.2068689545,2,0
-"Radoslaw 30 d","B: paper, linear",27484.6777920824,5,10778.4709231279
-"Radoslaw 30 d","B: paper, smooth",26105.7008638501,5,9399.49399489564
