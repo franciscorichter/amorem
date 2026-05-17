@@ -1,7 +1,8 @@
 // compute_features_cpp.cpp
 //
 // C++ inner loop for compute_endogenous_features(), covering the
-// count / binary / per-actor stat families:
+// count / binary / per-actor stat families plus the four closure
+// families' time_recent / time_first variants:
 //
 //   reciprocity_binary, reciprocity_count, reciprocity (alias),
 //   transitivity_binary, transitivity_count,
@@ -9,16 +10,18 @@
 //   sending_balance_binary, sending_balance_count,
 //   receiving_balance_binary, receiving_balance_count,
 //   sender_outdegree, receiver_indegree,
-//   recency.
+//   recency,
+//   {transitivity, cyclic, sending_balance,
+//    receiving_balance}_{time_recent, time_first}.
 //
-// State is held in integer-indexed std::vector containers, eliminating
-// the env-based string lookups that the R profile identified as 80%
-// of the per-event cost.
+// State is held in integer-indexed std::vector / unordered_map
+// containers, eliminating the env-based string lookups that the R
+// profile identified as 80% of the per-event cost.
 //
-// The timing / exp_decay / ordered / interrupted variants are NOT
-// covered here; the R caller dispatches to this C++ entry point only
-// when every requested stat is in the supported subset, and falls
-// back to the existing R implementation otherwise.
+// The exp_decay / ordered / interrupted variants are NOT yet
+// covered here; the R caller dispatches to this C++ entry point
+// only when every requested stat is in the supported subset, and
+// falls back to the existing R implementation otherwise.
 
 #include <Rcpp.h>
 #include <vector>
@@ -45,7 +48,15 @@ enum StatFlag : unsigned int {
   F_RECEIVING_BALANCE_COUNT  = 1u << 10,
   F_SENDER_OUTDEGREE  = 1u << 11,
   F_RECEIVER_INDEGREE = 1u << 12,
-  F_RECENCY           = 1u << 13
+  F_RECENCY           = 1u << 13,
+  F_TRANSITIVITY_TIME_RECENT      = 1u << 14,
+  F_TRANSITIVITY_TIME_FIRST       = 1u << 15,
+  F_CYCLIC_TIME_RECENT            = 1u << 16,
+  F_CYCLIC_TIME_FIRST             = 1u << 17,
+  F_SENDING_BALANCE_TIME_RECENT   = 1u << 18,
+  F_SENDING_BALANCE_TIME_FIRST    = 1u << 19,
+  F_RECEIVING_BALANCE_TIME_RECENT = 1u << 20,
+  F_RECEIVING_BALANCE_TIME_FIRST  = 1u << 21
 };
 
 static const std::vector<std::string> SUPPORTED_STATS = {
@@ -54,7 +65,11 @@ static const std::vector<std::string> SUPPORTED_STATS = {
   "cyclic_binary", "cyclic_count",
   "sending_balance_binary", "sending_balance_count",
   "receiving_balance_binary", "receiving_balance_count",
-  "sender_outdegree", "receiver_indegree", "recency"
+  "sender_outdegree", "receiver_indegree", "recency",
+  "transitivity_time_recent", "transitivity_time_first",
+  "cyclic_time_recent", "cyclic_time_first",
+  "sending_balance_time_recent", "sending_balance_time_first",
+  "receiving_balance_time_recent", "receiving_balance_time_first"
 };
 
 static unsigned int flag_for(const std::string& s) {
@@ -72,6 +87,14 @@ static unsigned int flag_for(const std::string& s) {
   if (s == "sender_outdegree")         return F_SENDER_OUTDEGREE;
   if (s == "receiver_indegree")        return F_RECEIVER_INDEGREE;
   if (s == "recency")                  return F_RECENCY;
+  if (s == "transitivity_time_recent")      return F_TRANSITIVITY_TIME_RECENT;
+  if (s == "transitivity_time_first")       return F_TRANSITIVITY_TIME_FIRST;
+  if (s == "cyclic_time_recent")            return F_CYCLIC_TIME_RECENT;
+  if (s == "cyclic_time_first")             return F_CYCLIC_TIME_FIRST;
+  if (s == "sending_balance_time_recent")   return F_SENDING_BALANCE_TIME_RECENT;
+  if (s == "sending_balance_time_first")    return F_SENDING_BALANCE_TIME_FIRST;
+  if (s == "receiving_balance_time_recent") return F_RECEIVING_BALANCE_TIME_RECENT;
+  if (s == "receiving_balance_time_first")  return F_RECEIVING_BALANCE_TIME_FIRST;
   return 0u;
 }
 
@@ -95,6 +118,50 @@ static int sorted_intersect_count(const std::vector<int>& a,
     }
   }
   return count;
+}
+
+// Walk the intersection of two sorted ascending integer vectors,
+// returning min/max of `formation_k = max(first[leg1_key(k)], first[leg2_key(k)])`
+// over k in (a ∩ b) \ {excl_s, excl_r}. `n_found` counts validated k's.
+// `leg1_key` / `leg2_key` build the dyad-key for the per-k formation lookup;
+// they are family-specific (see callers below).
+template <typename L1, typename L2>
+static void walk_intersect_formation(const std::vector<int>& a,
+                                     const std::vector<int>& b,
+                                     int excl_s, int excl_r,
+                                     const std::unordered_map<long long, double>& first_map,
+                                     L1 leg1_key, L2 leg2_key,
+                                     int& n_found,
+                                     double& form_min, double& form_max) {
+  int i = 0, j = 0;
+  n_found = 0;
+  form_min = std::numeric_limits<double>::infinity();
+  form_max = -std::numeric_limits<double>::infinity();
+  while (i < (int)a.size() && j < (int)b.size()) {
+    if (a[i] < b[j]) {
+      ++i;
+    } else if (a[i] > b[j]) {
+      ++j;
+    } else {
+      int k = a[i];
+      if (k != excl_s && k != excl_r) {
+        long long k1 = leg1_key(k);
+        long long k2 = leg2_key(k);
+        auto it1 = first_map.find(k1);
+        auto it2 = first_map.find(k2);
+        // By construction both legs exist (k is in out_targets/in_sources
+        // intersection, so both directed edges have been seen at least
+        // once), so the lookups must succeed.
+        if (it1 != first_map.end() && it2 != first_map.end()) {
+          double form = std::max(it1->second, it2->second);
+          if (form > form_max) form_max = form;
+          if (form < form_min) form_min = form;
+          ++n_found;
+        }
+      }
+      ++i; ++j;
+    }
+  }
 }
 
 // Insert `v` into the sorted vector `vec` if not already present.
@@ -150,11 +217,12 @@ List compute_features_cpp(CharacterVector senders,
   // 2. State containers.
   std::vector<long> sender_count(A, 0);
   std::vector<long> receiver_count(A, 0);
-  // Dyad event count, keyed by (s, r) -> long. Using std::unordered_map<long long, long>.
-  // A dyad key = (long long)s * A + r is unique for s, r in [0, A).
+  // Dyad event count, keyed by (s, r) -> long. dyad_key = (long long)s * A + r
+  // is unique for s, r in [0, A).
   std::unordered_map<long long, long> dyad_event_count;
   // Last and first event time per ordered dyad.
   std::unordered_map<long long, double> dyad_last_time;
+  std::unordered_map<long long, double> dyad_first_time;
   // Per-actor outgoing / incoming target sets (sorted ascending).
   std::vector<std::vector<int>> out_targets(A);
   std::vector<std::vector<int>> in_sources(A);
@@ -162,14 +230,20 @@ List compute_features_cpp(CharacterVector senders,
   // 3. Allocate output columns.
   const bool need_rec_bin   = (active & F_RECIPROCITY) || (active & F_RECIPROCITY_BINARY);
   const bool need_rec_cnt   = active & F_RECIPROCITY_COUNT;
-  const bool need_trans     = active & (F_TRANSITIVITY_BINARY | F_TRANSITIVITY_COUNT);
-  const bool need_cyclic    = active & (F_CYCLIC_BINARY | F_CYCLIC_COUNT);
-  const bool need_sb        = active & (F_SENDING_BALANCE_BINARY | F_SENDING_BALANCE_COUNT);
-  const bool need_rb        = active & (F_RECEIVING_BALANCE_BINARY | F_RECEIVING_BALANCE_COUNT);
+  const bool need_trans_cnt = active & (F_TRANSITIVITY_BINARY | F_TRANSITIVITY_COUNT);
+  const bool need_cyclic_cnt= active & (F_CYCLIC_BINARY | F_CYCLIC_COUNT);
+  const bool need_sb_cnt    = active & (F_SENDING_BALANCE_BINARY | F_SENDING_BALANCE_COUNT);
+  const bool need_rb_cnt    = active & (F_RECEIVING_BALANCE_BINARY | F_RECEIVING_BALANCE_COUNT);
+  const bool need_trans_time= active & (F_TRANSITIVITY_TIME_RECENT | F_TRANSITIVITY_TIME_FIRST);
+  const bool need_cyclic_time= active & (F_CYCLIC_TIME_RECENT | F_CYCLIC_TIME_FIRST);
+  const bool need_sb_time   = active & (F_SENDING_BALANCE_TIME_RECENT | F_SENDING_BALANCE_TIME_FIRST);
+  const bool need_rb_time   = active & (F_RECEIVING_BALANCE_TIME_RECENT | F_RECEIVING_BALANCE_TIME_FIRST);
   const bool need_outdeg    = active & F_SENDER_OUTDEGREE;
   const bool need_indeg     = active & F_RECEIVER_INDEGREE;
   const bool need_recency   = active & F_RECENCY;
-  const bool need_triadic   = need_trans || need_cyclic || need_sb || need_rb;
+  const bool need_triadic_cnt  = need_trans_cnt || need_cyclic_cnt || need_sb_cnt || need_rb_cnt;
+  const bool need_triadic_time = need_trans_time || need_cyclic_time || need_sb_time || need_rb_time;
+  const bool need_triadic   = need_triadic_cnt || need_triadic_time;
 
   IntegerVector reciprocity(need_rec_bin ? n : 0);
   IntegerVector reciprocity_binary(need_rec_bin ? n : 0);
@@ -188,6 +262,20 @@ List compute_features_cpp(CharacterVector senders,
   if (need_recency) {
     for (R_xlen_t i = 0; i < n; ++i) recency[i] = NA_REAL;
   }
+  // Timing columns: NA when no validated intermediary is in scope.
+  auto alloc_na = [&](bool needed) {
+    NumericVector v(needed ? n : 0);
+    if (needed) for (R_xlen_t i = 0; i < n; ++i) v[i] = NA_REAL;
+    return v;
+  };
+  NumericVector transitivity_time_recent      = alloc_na(active & F_TRANSITIVITY_TIME_RECENT);
+  NumericVector transitivity_time_first       = alloc_na(active & F_TRANSITIVITY_TIME_FIRST);
+  NumericVector cyclic_time_recent            = alloc_na(active & F_CYCLIC_TIME_RECENT);
+  NumericVector cyclic_time_first             = alloc_na(active & F_CYCLIC_TIME_FIRST);
+  NumericVector sending_balance_time_recent   = alloc_na(active & F_SENDING_BALANCE_TIME_RECENT);
+  NumericVector sending_balance_time_first    = alloc_na(active & F_SENDING_BALANCE_TIME_FIRST);
+  NumericVector receiving_balance_time_recent = alloc_na(active & F_RECEIVING_BALANCE_TIME_RECENT);
+  NumericVector receiving_balance_time_first  = alloc_na(active & F_RECEIVING_BALANCE_TIME_FIRST);
 
   // 4. Main loop.
   for (R_xlen_t i = 0; i < n; ++i) {
@@ -222,29 +310,77 @@ List compute_features_cpp(CharacterVector senders,
       const std::vector<int>& s_in  = in_sources[s];
       const std::vector<int>& r_in  = in_sources[r];
 
-      // transitivity: k such that s -> k AND k -> r
-      // sending_balance: k such that s -> k AND r -> k
-      // cyclic: k such that r -> k AND k -> s
+      // transitivity:      k such that s -> k AND k -> r
+      //   leg1 = (s, k);   leg2 = (k, r)
+      // cyclic:            k such that r -> k AND k -> s
+      //   leg1 = (r, k);   leg2 = (k, s)
+      // sending_balance:   k such that s -> k AND r -> k
+      //   leg1 = (s, k);   leg2 = (r, k)
       // receiving_balance: k such that k -> s AND k -> r
-      if (need_trans) {
+      //   leg1 = (k, s);   leg2 = (k, r)
+      if (need_trans_cnt) {
         int c = sorted_intersect_count(s_out, r_in, s, r);
         if (active & F_TRANSITIVITY_COUNT)  transitivity_count[i]  = (double)c;
         if (active & F_TRANSITIVITY_BINARY) transitivity_binary[i] = c > 0;
       }
-      if (need_cyclic) {
+      if (need_cyclic_cnt) {
         int c = sorted_intersect_count(r_out, s_in, s, r);
         if (active & F_CYCLIC_COUNT)  cyclic_count[i]  = (double)c;
         if (active & F_CYCLIC_BINARY) cyclic_binary[i] = c > 0;
       }
-      if (need_sb) {
+      if (need_sb_cnt) {
         int c = sorted_intersect_count(s_out, r_out, s, r);
         if (active & F_SENDING_BALANCE_COUNT)  sending_balance_count[i]  = (double)c;
         if (active & F_SENDING_BALANCE_BINARY) sending_balance_binary[i] = c > 0;
       }
-      if (need_rb) {
+      if (need_rb_cnt) {
         int c = sorted_intersect_count(s_in, r_in, s, r);
         if (active & F_RECEIVING_BALANCE_COUNT)  receiving_balance_count[i]  = (double)c;
         if (active & F_RECEIVING_BALANCE_BINARY) receiving_balance_binary[i] = c > 0;
+      }
+      if (need_trans_time) {
+        int nk; double fmin, fmax;
+        walk_intersect_formation(s_out, r_in, s, r, dyad_first_time,
+          [s, A](int k) { return (long long)s * A + k; },
+          [r, A](int k) { return (long long)k * A + r; },
+          nk, fmin, fmax);
+        if (nk > 0) {
+          if (active & F_TRANSITIVITY_TIME_RECENT) transitivity_time_recent[i] = ti - fmax;
+          if (active & F_TRANSITIVITY_TIME_FIRST)  transitivity_time_first[i]  = ti - fmin;
+        }
+      }
+      if (need_cyclic_time) {
+        int nk; double fmin, fmax;
+        walk_intersect_formation(r_out, s_in, s, r, dyad_first_time,
+          [r, A](int k) { return (long long)r * A + k; },
+          [s, A](int k) { return (long long)k * A + s; },
+          nk, fmin, fmax);
+        if (nk > 0) {
+          if (active & F_CYCLIC_TIME_RECENT) cyclic_time_recent[i] = ti - fmax;
+          if (active & F_CYCLIC_TIME_FIRST)  cyclic_time_first[i]  = ti - fmin;
+        }
+      }
+      if (need_sb_time) {
+        int nk; double fmin, fmax;
+        walk_intersect_formation(s_out, r_out, s, r, dyad_first_time,
+          [s, A](int k) { return (long long)s * A + k; },
+          [r, A](int k) { return (long long)r * A + k; },
+          nk, fmin, fmax);
+        if (nk > 0) {
+          if (active & F_SENDING_BALANCE_TIME_RECENT) sending_balance_time_recent[i] = ti - fmax;
+          if (active & F_SENDING_BALANCE_TIME_FIRST)  sending_balance_time_first[i]  = ti - fmin;
+        }
+      }
+      if (need_rb_time) {
+        int nk; double fmin, fmax;
+        walk_intersect_formation(s_in, r_in, s, r, dyad_first_time,
+          [s, A](int k) { return (long long)k * A + s; },
+          [r, A](int k) { return (long long)k * A + r; },
+          nk, fmin, fmax);
+        if (nk > 0) {
+          if (active & F_RECEIVING_BALANCE_TIME_RECENT) receiving_balance_time_recent[i] = ti - fmax;
+          if (active & F_RECEIVING_BALANCE_TIME_FIRST)  receiving_balance_time_first[i]  = ti - fmin;
+        }
       }
     }
 
@@ -253,6 +389,10 @@ List compute_features_cpp(CharacterVector senders,
     receiver_count[r] += 1;
     dyad_event_count[key_sr] += 1;
     dyad_last_time[key_sr] = ti;
+    {
+      auto it = dyad_first_time.find(key_sr);
+      if (it == dyad_first_time.end()) dyad_first_time.emplace(key_sr, ti);
+    }
     if (need_triadic) {
       sorted_insert_unique(out_targets[s], r);
       sorted_insert_unique(in_sources[r], s);
@@ -277,6 +417,14 @@ List compute_features_cpp(CharacterVector senders,
   if (active & F_SENDER_OUTDEGREE)  out["sender_outdegree"]  = sender_outdegree;
   if (active & F_RECEIVER_INDEGREE) out["receiver_indegree"] = receiver_indegree;
   if (active & F_RECENCY)           out["recency"]           = recency;
+  if (active & F_TRANSITIVITY_TIME_RECENT) out["transitivity_time_recent"] = transitivity_time_recent;
+  if (active & F_TRANSITIVITY_TIME_FIRST)  out["transitivity_time_first"]  = transitivity_time_first;
+  if (active & F_CYCLIC_TIME_RECENT)       out["cyclic_time_recent"]       = cyclic_time_recent;
+  if (active & F_CYCLIC_TIME_FIRST)        out["cyclic_time_first"]        = cyclic_time_first;
+  if (active & F_SENDING_BALANCE_TIME_RECENT) out["sending_balance_time_recent"] = sending_balance_time_recent;
+  if (active & F_SENDING_BALANCE_TIME_FIRST)  out["sending_balance_time_first"]  = sending_balance_time_first;
+  if (active & F_RECEIVING_BALANCE_TIME_RECENT) out["receiving_balance_time_recent"] = receiving_balance_time_recent;
+  if (active & F_RECEIVING_BALANCE_TIME_FIRST)  out["receiving_balance_time_first"]  = receiving_balance_time_first;
   return out;
 }
 
