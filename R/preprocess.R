@@ -386,11 +386,15 @@ compute_endogenous_features <- function(
   # on dense logs (paper/figures/benchmark_C_posthoc.csv).
   cpp_ok_stats <- cpp_supported_stats()
   if (nrow(log_df) > 0L && all(stats %in% cpp_ok_stats)) {
+    # `half_life` is forwarded so the C++ path can compute the
+    # exp_decay variants. It is unused (NA_real_) on the C++ side
+    # when no exp_decay stat is requested.
     cpp_cols <- compute_features_cpp(
       as.character(log_df$sender),
       as.character(log_df$receiver),
       as.numeric(log_df$time),
-      stats)
+      stats,
+      if (is.null(half_life)) NA_real_ else as.numeric(half_life))
     for (st in stats) {
       log_df[[st]] <- cpp_cols[[st]]
     }
