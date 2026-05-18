@@ -39,6 +39,7 @@ reference:
     contents:
       - compare_models
       - compare_models_smooth
+      - compare_models_global
   - title: "Hyperedge data model"
     contents:
       - hyperedge_log
