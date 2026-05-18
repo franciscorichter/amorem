@@ -39,7 +39,15 @@ cpp_supported_subset <- c("reciprocity_binary", "reciprocity_count",
                            "receiving_balance_binary_interrupted",
                            "receiving_balance_exp_decay_interrupted",
                            "receiving_balance_time_recent_interrupted",
-                           "receiving_balance_time_first_interrupted")
+                           "receiving_balance_time_first_interrupted",
+                           "transitivity_count_ordered",
+                           "transitivity_binary_ordered",
+                           "cyclic_count_ordered",
+                           "cyclic_binary_ordered",
+                           "sending_balance_count_ordered",
+                           "sending_balance_binary_ordered",
+                           "receiving_balance_count_ordered",
+                           "receiving_balance_binary_ordered")
 
 # Stats whose unset cells are NA rather than 0. Both engines emit NA
 # on rows where no qualifying past event exists; row-for-row

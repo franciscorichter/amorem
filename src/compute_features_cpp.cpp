@@ -85,7 +85,18 @@ enum StatFlag : uint64_t {
   F_RECEIVING_BALANCE_BINARY_INTERRUPTED      = UINT64_C(1) << 42,
   F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED   = UINT64_C(1) << 43,
   F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED = UINT64_C(1) << 44,
-  F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED  = UINT64_C(1) << 45
+  F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED  = UINT64_C(1) << 45,
+  // *_count_ordered / *_binary_ordered: ordered-validation state
+  // matrix maintained event-by-event, mirroring the R simulator's
+  // apply_ordered_update logic.
+  F_TRANSITIVITY_COUNT_ORDERED        = UINT64_C(1) << 46,
+  F_TRANSITIVITY_BINARY_ORDERED       = UINT64_C(1) << 47,
+  F_CYCLIC_COUNT_ORDERED              = UINT64_C(1) << 48,
+  F_CYCLIC_BINARY_ORDERED             = UINT64_C(1) << 49,
+  F_SENDING_BALANCE_COUNT_ORDERED     = UINT64_C(1) << 50,
+  F_SENDING_BALANCE_BINARY_ORDERED    = UINT64_C(1) << 51,
+  F_RECEIVING_BALANCE_COUNT_ORDERED   = UINT64_C(1) << 52,
+  F_RECEIVING_BALANCE_BINARY_ORDERED  = UINT64_C(1) << 53
 };
 
 static const std::vector<std::string> SUPPORTED_STATS = {
@@ -117,7 +128,11 @@ static const std::vector<std::string> SUPPORTED_STATS = {
   "receiving_balance_binary_interrupted",
   "receiving_balance_exp_decay_interrupted",
   "receiving_balance_time_recent_interrupted",
-  "receiving_balance_time_first_interrupted"
+  "receiving_balance_time_first_interrupted",
+  "transitivity_count_ordered", "transitivity_binary_ordered",
+  "cyclic_count_ordered", "cyclic_binary_ordered",
+  "sending_balance_count_ordered", "sending_balance_binary_ordered",
+  "receiving_balance_count_ordered", "receiving_balance_binary_ordered"
 };
 
 static uint64_t flag_for(const std::string& s) {
@@ -167,8 +182,24 @@ static uint64_t flag_for(const std::string& s) {
   if (s == "receiving_balance_exp_decay_interrupted")   return F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED;
   if (s == "receiving_balance_time_recent_interrupted") return F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED;
   if (s == "receiving_balance_time_first_interrupted")  return F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED;
+  if (s == "transitivity_count_ordered")       return F_TRANSITIVITY_COUNT_ORDERED;
+  if (s == "transitivity_binary_ordered")      return F_TRANSITIVITY_BINARY_ORDERED;
+  if (s == "cyclic_count_ordered")             return F_CYCLIC_COUNT_ORDERED;
+  if (s == "cyclic_binary_ordered")            return F_CYCLIC_BINARY_ORDERED;
+  if (s == "sending_balance_count_ordered")    return F_SENDING_BALANCE_COUNT_ORDERED;
+  if (s == "sending_balance_binary_ordered")   return F_SENDING_BALANCE_BINARY_ORDERED;
+  if (s == "receiving_balance_count_ordered")  return F_RECEIVING_BALANCE_COUNT_ORDERED;
+  if (s == "receiving_balance_binary_ordered") return F_RECEIVING_BALANCE_BINARY_ORDERED;
   return UINT64_C(0);
 }
+
+// Ordered-family bitmasks: which flags belong to each family on the
+// ordered-validation path. The validation sweep runs once per family
+// per event when any of the family's flags are active.
+static constexpr uint64_t F_TRANSITIVITY_ORDERED_ANY      = F_TRANSITIVITY_COUNT_ORDERED      | F_TRANSITIVITY_BINARY_ORDERED;
+static constexpr uint64_t F_CYCLIC_ORDERED_ANY            = F_CYCLIC_COUNT_ORDERED            | F_CYCLIC_BINARY_ORDERED;
+static constexpr uint64_t F_SENDING_BALANCE_ORDERED_ANY   = F_SENDING_BALANCE_COUNT_ORDERED   | F_SENDING_BALANCE_BINARY_ORDERED;
+static constexpr uint64_t F_RECEIVING_BALANCE_ORDERED_ANY = F_RECEIVING_BALANCE_COUNT_ORDERED | F_RECEIVING_BALANCE_BINARY_ORDERED;
 
 static constexpr uint64_t F_ANY_EXP_DECAY =
   F_TRANSITIVITY_EXP_DECAY | F_CYCLIC_EXP_DECAY |
@@ -348,6 +379,15 @@ List compute_features_cpp(CharacterVector senders,
   // Last and first event time per ordered dyad.
   std::unordered_map<long long, double> dyad_last_time;
   std::unordered_map<long long, double> dyad_first_time;
+  // No per-family ordered state is maintained -- the count is
+  // recomputed at every focal event via a direct walk of the
+  // family's intersection, mirroring compute_triadic in
+  // R/preprocess.R. The check per intermediary k is
+  //   last_dyad_time[leg2_dyad(k)] > first_dyad_time[leg1_dyad(k)]
+  // which is equivalent to compute_triadic's
+  //   any(e2 > min(e1))
+  // and avoids the tied-timestamp bug that the simulator's
+  // incremental apply_ordered_update path has.
   // Per-actor outgoing / incoming target sets (sorted ascending).
   std::vector<std::vector<int>> out_targets(A);
   std::vector<std::vector<int>> in_sources(A);
@@ -392,8 +432,17 @@ List compute_features_cpp(CharacterVector senders,
   const bool need_triadic_exp  = need_trans_exp || need_cyclic_exp || need_sb_exp || need_rb_exp;
   const bool need_triadic_int  = need_trans_int_any || need_cyclic_int_any ||
                                   need_sb_int_any    || need_rb_int_any;
+  // Ordered: per-family active flag. The validation sweep runs whenever
+  // any of a family's *_count_ordered or *_binary_ordered flags is on.
+  const bool need_trans_ord = active & F_TRANSITIVITY_ORDERED_ANY;
+  const bool need_cyc_ord   = active & F_CYCLIC_ORDERED_ANY;
+  const bool need_sb_ord    = active & F_SENDING_BALANCE_ORDERED_ANY;
+  const bool need_rb_ord    = active & F_RECEIVING_BALANCE_ORDERED_ANY;
+  const bool need_triadic_ord = need_trans_ord || need_cyc_ord ||
+                                 need_sb_ord    || need_rb_ord;
   const bool need_triadic   = need_triadic_cnt || need_triadic_time ||
-                              need_triadic_exp || need_triadic_int;
+                              need_triadic_exp || need_triadic_int ||
+                              need_triadic_ord;
   // need_X for the joint family walk: timing, exp_decay, AND interrupted
   // readers all use the intersection + first_dyad_time pair.
   const bool need_trans_form  = need_trans_time  || need_trans_exp  || need_trans_int_any;
@@ -461,6 +510,15 @@ List compute_features_cpp(CharacterVector senders,
   NumericVector sending_balance_time_first_interrupted    = alloc_na(active & F_SENDING_BALANCE_TIME_FIRST_INTERRUPTED);
   NumericVector receiving_balance_time_recent_interrupted = alloc_na(active & F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED);
   NumericVector receiving_balance_time_first_interrupted  = alloc_na(active & F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED);
+  // Ordered count / binary: default 0 (state is initialised empty).
+  NumericVector transitivity_count_ordered      (active & F_TRANSITIVITY_COUNT_ORDERED ? n : 0);
+  IntegerVector transitivity_binary_ordered     (active & F_TRANSITIVITY_BINARY_ORDERED ? n : 0);
+  NumericVector cyclic_count_ordered            (active & F_CYCLIC_COUNT_ORDERED ? n : 0);
+  IntegerVector cyclic_binary_ordered           (active & F_CYCLIC_BINARY_ORDERED ? n : 0);
+  NumericVector sending_balance_count_ordered   (active & F_SENDING_BALANCE_COUNT_ORDERED ? n : 0);
+  IntegerVector sending_balance_binary_ordered  (active & F_SENDING_BALANCE_BINARY_ORDERED ? n : 0);
+  NumericVector receiving_balance_count_ordered (active & F_RECEIVING_BALANCE_COUNT_ORDERED ? n : 0);
+  IntegerVector receiving_balance_binary_ordered(active & F_RECEIVING_BALANCE_BINARY_ORDERED ? n : 0);
 
   // 4. Main loop.
   for (R_xlen_t i = 0; i < n; ++i) {
@@ -474,6 +532,70 @@ List compute_features_cpp(CharacterVector senders,
     if (need_recency) {
       auto it = dyad_last_time.find(key_sr);
       if (it != dyad_last_time.end()) recency[i] = ti - it->second;
+    }
+    // Ordered count/binary: per-focal-event walk of the family's
+    // intersection k-set, counting k where the last leg2 time
+    // strictly exceeds the first leg1 time. Mirrors compute_triadic
+    // in R/preprocess.R (the post-hoc reference), and is robust to
+    // tied timestamps.
+    auto count_ordered_k = [&](const std::vector<int>& a,
+                                const std::vector<int>& b,
+                                auto leg1_key_fn, auto leg2_key_fn) -> int {
+      int ii = 0, jj = 0, cnt = 0;
+      while (ii < (int)a.size() && jj < (int)b.size()) {
+        if (a[ii] < b[jj]) { ++ii; }
+        else if (a[ii] > b[jj]) { ++jj; }
+        else {
+          int k = a[ii];
+          if (k != s && k != r) {
+            auto it1 = dyad_first_time.find(leg1_key_fn(k));
+            auto it2 = dyad_last_time.find(leg2_key_fn(k));
+            if (it1 != dyad_first_time.end() &&
+                it2 != dyad_last_time.end() &&
+                it2->second > it1->second) {
+              ++cnt;
+            }
+          }
+          ++ii; ++jj;
+        }
+      }
+      return cnt;
+    };
+    if (need_trans_ord) {
+      const std::vector<int>& s_out = out_targets[s];
+      const std::vector<int>& r_in  = in_sources[r];
+      int v = count_ordered_k(s_out, r_in,
+        [s, A](int k){ return (long long)s * A + k; },   // leg1 = s->k
+        [r, A](int k){ return (long long)k * A + r; });  // leg2 = k->r
+      if (active & F_TRANSITIVITY_COUNT_ORDERED)  transitivity_count_ordered[i]  = (double)v;
+      if (active & F_TRANSITIVITY_BINARY_ORDERED) transitivity_binary_ordered[i] = v > 0;
+    }
+    if (need_cyc_ord) {
+      const std::vector<int>& r_out = out_targets[r];
+      const std::vector<int>& s_in  = in_sources[s];
+      int v = count_ordered_k(r_out, s_in,
+        [r, A](int k){ return (long long)r * A + k; },   // leg1 = r->k
+        [s, A](int k){ return (long long)k * A + s; });  // leg2 = k->s
+      if (active & F_CYCLIC_COUNT_ORDERED)  cyclic_count_ordered[i]  = (double)v;
+      if (active & F_CYCLIC_BINARY_ORDERED) cyclic_binary_ordered[i] = v > 0;
+    }
+    if (need_sb_ord) {
+      const std::vector<int>& s_out = out_targets[s];
+      const std::vector<int>& r_out = out_targets[r];
+      int v = count_ordered_k(s_out, r_out,
+        [s, A](int k){ return (long long)s * A + k; },   // leg1 = s->k
+        [r, A](int k){ return (long long)r * A + k; });  // leg2 = r->k
+      if (active & F_SENDING_BALANCE_COUNT_ORDERED)  sending_balance_count_ordered[i]  = (double)v;
+      if (active & F_SENDING_BALANCE_BINARY_ORDERED) sending_balance_binary_ordered[i] = v > 0;
+    }
+    if (need_rb_ord) {
+      const std::vector<int>& s_in = in_sources[s];
+      const std::vector<int>& r_in = in_sources[r];
+      int v = count_ordered_k(s_in, r_in,
+        [s, A](int k){ return (long long)k * A + s; },   // leg1 = k->s
+        [r, A](int k){ return (long long)k * A + r; });  // leg2 = k->r
+      if (active & F_RECEIVING_BALANCE_COUNT_ORDERED)  receiving_balance_count_ordered[i]  = (double)v;
+      if (active & F_RECEIVING_BALANCE_BINARY_ORDERED) receiving_balance_binary_ordered[i] = v > 0;
     }
 
     // Reciprocity (count of past events on the REVERSE dyad).
@@ -684,6 +806,14 @@ List compute_features_cpp(CharacterVector senders,
   if (active & F_RECEIVING_BALANCE_EXP_DECAY_INTERRUPTED)   out["receiving_balance_exp_decay_interrupted"]   = receiving_balance_exp_decay_interrupted;
   if (active & F_RECEIVING_BALANCE_TIME_RECENT_INTERRUPTED) out["receiving_balance_time_recent_interrupted"] = receiving_balance_time_recent_interrupted;
   if (active & F_RECEIVING_BALANCE_TIME_FIRST_INTERRUPTED)  out["receiving_balance_time_first_interrupted"]  = receiving_balance_time_first_interrupted;
+  if (active & F_TRANSITIVITY_COUNT_ORDERED)      out["transitivity_count_ordered"]      = transitivity_count_ordered;
+  if (active & F_TRANSITIVITY_BINARY_ORDERED)     out["transitivity_binary_ordered"]     = transitivity_binary_ordered;
+  if (active & F_CYCLIC_COUNT_ORDERED)            out["cyclic_count_ordered"]            = cyclic_count_ordered;
+  if (active & F_CYCLIC_BINARY_ORDERED)           out["cyclic_binary_ordered"]           = cyclic_binary_ordered;
+  if (active & F_SENDING_BALANCE_COUNT_ORDERED)   out["sending_balance_count_ordered"]   = sending_balance_count_ordered;
+  if (active & F_SENDING_BALANCE_BINARY_ORDERED)  out["sending_balance_binary_ordered"]  = sending_balance_binary_ordered;
+  if (active & F_RECEIVING_BALANCE_COUNT_ORDERED) out["receiving_balance_count_ordered"] = receiving_balance_count_ordered;
+  if (active & F_RECEIVING_BALANCE_BINARY_ORDERED) out["receiving_balance_binary_ordered"] = receiving_balance_binary_ordered;
   return out;
 }
 
