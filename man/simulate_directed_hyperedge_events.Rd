@@ -74,8 +74,7 @@ is exponential with rate equal to the total intensity.
 
 Candidate-space size is exponential in
 \eqn{|V^I|}{|V^I|} and \eqn{|V^J|}{|V^J|}, so practical use is
-limited to small actor / item universes (see \emph{Computational cost}
-in \href{https://github.com/franciscorichter/amore/wiki/Limitations-and-roadmap}{Limitations and roadmap}).
+limited to small actor / item universes.
 }
 \examples{
 \dontrun{
