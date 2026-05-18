@@ -35,6 +35,7 @@ reference:
       - attach_static_covariates
       - compute_endogenous_features
       - sample_non_events
+      - transform_recency
   - title: "Model comparison"
     contents:
       - compare_models
