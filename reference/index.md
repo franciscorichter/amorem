@@ -6,6 +6,8 @@
   : Simulate relational event sequences
 - [`simulate_actor_covariates()`](https://franciscorichter.github.io/amore/reference/simulate_actor_covariates.md)
   : Simulate exogenous actor covariates
+- [`simulate_hyperedge_events()`](https://franciscorichter.github.io/amore/reference/simulate_hyperedge_events.md)
+  : Simulate undirected hyperedge events (multi-actor meetings)
 
 ## Preprocess module
 
