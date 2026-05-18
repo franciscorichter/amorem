@@ -43,6 +43,7 @@ reference:
       - hyperedge_sizes
       - hyperedge_activity
       - hyperedge_subrep
+      - compute_hyperedge_features
   - title: "Data"
     contents:
       - dist_matrix
