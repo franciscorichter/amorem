@@ -8,6 +8,8 @@
   : Simulate exogenous actor covariates
 - [`simulate_hyperedge_events()`](https://franciscorichter.github.io/amore/reference/simulate_hyperedge_events.md)
   : Simulate undirected hyperedge events (multi-actor meetings)
+- [`simulate_directed_hyperedge_events()`](https://franciscorichter.github.io/amore/reference/simulate_directed_hyperedge_events.md)
+  : Simulate directed two-mode hyperedge events
 
 ## Preprocess module
 
