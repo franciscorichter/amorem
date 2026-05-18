@@ -21,6 +21,8 @@
   : Compute endogenous event-network statistics
 - [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   : Sample non-events for inference
+- [`transform_recency()`](https://franciscorichter.github.io/amore/reference/transform_recency.md)
+  : Recency transform of inter-event time gaps
 
 ## Model comparison
 
