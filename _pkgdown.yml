@@ -36,6 +36,12 @@ reference:
   - title: "Model comparison"
     contents:
       - compare_models
+  - title: "Hyperedge data model"
+    contents:
+      - hyperedge_log
+      - hyperedge_sizes
+      - hyperedge_activity
+      - hyperedge_subrep
   - title: "Data"
     contents:
       - dist_matrix
