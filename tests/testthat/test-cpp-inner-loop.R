@@ -19,7 +19,27 @@ cpp_supported_subset <- c("reciprocity_binary", "reciprocity_count",
                            "transitivity_exp_decay",
                            "cyclic_exp_decay",
                            "sending_balance_exp_decay",
-                           "receiving_balance_exp_decay")
+                           "receiving_balance_exp_decay",
+                           "transitivity_count_interrupted",
+                           "transitivity_binary_interrupted",
+                           "transitivity_exp_decay_interrupted",
+                           "transitivity_time_recent_interrupted",
+                           "transitivity_time_first_interrupted",
+                           "cyclic_count_interrupted",
+                           "cyclic_binary_interrupted",
+                           "cyclic_exp_decay_interrupted",
+                           "cyclic_time_recent_interrupted",
+                           "cyclic_time_first_interrupted",
+                           "sending_balance_count_interrupted",
+                           "sending_balance_binary_interrupted",
+                           "sending_balance_exp_decay_interrupted",
+                           "sending_balance_time_recent_interrupted",
+                           "sending_balance_time_first_interrupted",
+                           "receiving_balance_count_interrupted",
+                           "receiving_balance_binary_interrupted",
+                           "receiving_balance_exp_decay_interrupted",
+                           "receiving_balance_time_recent_interrupted",
+                           "receiving_balance_time_first_interrupted")
 
 # Stats whose unset cells are NA rather than 0. Both engines emit NA
 # on rows where no qualifying past event exists; row-for-row
@@ -28,7 +48,15 @@ cpp_na_capable <- c("recency",
                     "transitivity_time_recent", "transitivity_time_first",
                     "cyclic_time_recent", "cyclic_time_first",
                     "sending_balance_time_recent", "sending_balance_time_first",
-                    "receiving_balance_time_recent", "receiving_balance_time_first")
+                    "receiving_balance_time_recent", "receiving_balance_time_first",
+                    "transitivity_time_recent_interrupted",
+                    "transitivity_time_first_interrupted",
+                    "cyclic_time_recent_interrupted",
+                    "cyclic_time_first_interrupted",
+                    "sending_balance_time_recent_interrupted",
+                    "sending_balance_time_first_interrupted",
+                    "receiving_balance_time_recent_interrupted",
+                    "receiving_balance_time_first_interrupted")
 
 call_cpp <- function(ev, stats, half_life = NA_real_) {
   compute_features_cpp(as.character(ev$sender),
