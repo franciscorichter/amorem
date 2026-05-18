@@ -18,8 +18,9 @@
 #'     \itemize{
 #'       \item linear -> a single coefficient on `case - control` (column `d_stat`).
 #'       \item tve    -> `s(time, by = d_stat)` — smooth in time, multiplied by `d_stat`.
-#'       \item nle    -> `s(stat_mat, by = I_mat)` where stat_mat is a
-#'         two-column matrix [case | control] and I_mat is [1 | -1].
+#'       \item nle    -> `s(stat_mat, by = I_mat)` where `stat_mat` is a
+#'         two-column matrix `cbind(case, control)` and `I_mat` is
+#'         `cbind(1, -1)`.
 #'       \item tvnle  -> `te(time_mat, stat_mat, by = I_mat)` tensor product
 #'         smooth, with time_mat both columns equal to the event time vector.
 #'     }

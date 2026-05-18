@@ -63,8 +63,9 @@ control (non-event) features are computed via
 \itemize{
 \item linear -> a single coefficient on \code{case - control} (column \code{d_stat}).
 \item tve    -> \code{s(time, by = d_stat)} — smooth in time, multiplied by \code{d_stat}.
-\item nle    -> \code{s(stat_mat, by = I_mat)} where stat_mat is a
-two-column matrix \link{case | control} and I_mat is \link{1 | -1}.
+\item nle    -> \code{s(stat_mat, by = I_mat)} where \code{stat_mat} is a
+two-column matrix \code{cbind(case, control)} and \code{I_mat} is
+\code{cbind(1, -1)}.
 \item tvnle  -> \code{te(time_mat, stat_mat, by = I_mat)} tensor product
 smooth, with time_mat both columns equal to the event time vector.
 }
