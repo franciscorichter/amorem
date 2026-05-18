@@ -99,6 +99,23 @@ enum StatFlag : uint64_t {
   F_RECEIVING_BALANCE_BINARY_ORDERED  = UINT64_C(1) << 53
 };
 
+// Second mask word -- bits 0..63 of `active` are full above. The
+// ordered timing / exp_decay variants live here.
+enum StatFlagExtra : uint64_t {
+  FE_TRANSITIVITY_TIME_RECENT_ORDERED      = UINT64_C(1) << 0,
+  FE_TRANSITIVITY_TIME_FIRST_ORDERED       = UINT64_C(1) << 1,
+  FE_TRANSITIVITY_EXP_DECAY_ORDERED        = UINT64_C(1) << 2,
+  FE_CYCLIC_TIME_RECENT_ORDERED            = UINT64_C(1) << 3,
+  FE_CYCLIC_TIME_FIRST_ORDERED             = UINT64_C(1) << 4,
+  FE_CYCLIC_EXP_DECAY_ORDERED              = UINT64_C(1) << 5,
+  FE_SENDING_BALANCE_TIME_RECENT_ORDERED   = UINT64_C(1) << 6,
+  FE_SENDING_BALANCE_TIME_FIRST_ORDERED    = UINT64_C(1) << 7,
+  FE_SENDING_BALANCE_EXP_DECAY_ORDERED     = UINT64_C(1) << 8,
+  FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED = UINT64_C(1) << 9,
+  FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED  = UINT64_C(1) << 10,
+  FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED   = UINT64_C(1) << 11
+};
+
 static const std::vector<std::string> SUPPORTED_STATS = {
   "reciprocity", "reciprocity_binary", "reciprocity_count",
   "transitivity_binary", "transitivity_count",
@@ -132,7 +149,15 @@ static const std::vector<std::string> SUPPORTED_STATS = {
   "transitivity_count_ordered", "transitivity_binary_ordered",
   "cyclic_count_ordered", "cyclic_binary_ordered",
   "sending_balance_count_ordered", "sending_balance_binary_ordered",
-  "receiving_balance_count_ordered", "receiving_balance_binary_ordered"
+  "receiving_balance_count_ordered", "receiving_balance_binary_ordered",
+  "transitivity_time_recent_ordered", "transitivity_time_first_ordered",
+  "transitivity_exp_decay_ordered",
+  "cyclic_time_recent_ordered", "cyclic_time_first_ordered",
+  "cyclic_exp_decay_ordered",
+  "sending_balance_time_recent_ordered", "sending_balance_time_first_ordered",
+  "sending_balance_exp_decay_ordered",
+  "receiving_balance_time_recent_ordered", "receiving_balance_time_first_ordered",
+  "receiving_balance_exp_decay_ordered"
 };
 
 static uint64_t flag_for(const std::string& s) {
@@ -190,6 +215,24 @@ static uint64_t flag_for(const std::string& s) {
   if (s == "sending_balance_binary_ordered")   return F_SENDING_BALANCE_BINARY_ORDERED;
   if (s == "receiving_balance_count_ordered")  return F_RECEIVING_BALANCE_COUNT_ORDERED;
   if (s == "receiving_balance_binary_ordered") return F_RECEIVING_BALANCE_BINARY_ORDERED;
+  return UINT64_C(0);
+}
+
+// Companion lookup for the StatFlagExtra mask (bits 0..11 carry the
+// ordered timing / exp_decay variants that no longer fit in `active`).
+static uint64_t flag_for_extra(const std::string& s) {
+  if (s == "transitivity_time_recent_ordered")      return FE_TRANSITIVITY_TIME_RECENT_ORDERED;
+  if (s == "transitivity_time_first_ordered")       return FE_TRANSITIVITY_TIME_FIRST_ORDERED;
+  if (s == "transitivity_exp_decay_ordered")        return FE_TRANSITIVITY_EXP_DECAY_ORDERED;
+  if (s == "cyclic_time_recent_ordered")            return FE_CYCLIC_TIME_RECENT_ORDERED;
+  if (s == "cyclic_time_first_ordered")             return FE_CYCLIC_TIME_FIRST_ORDERED;
+  if (s == "cyclic_exp_decay_ordered")              return FE_CYCLIC_EXP_DECAY_ORDERED;
+  if (s == "sending_balance_time_recent_ordered")   return FE_SENDING_BALANCE_TIME_RECENT_ORDERED;
+  if (s == "sending_balance_time_first_ordered")    return FE_SENDING_BALANCE_TIME_FIRST_ORDERED;
+  if (s == "sending_balance_exp_decay_ordered")     return FE_SENDING_BALANCE_EXP_DECAY_ORDERED;
+  if (s == "receiving_balance_time_recent_ordered") return FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED;
+  if (s == "receiving_balance_time_first_ordered")  return FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED;
+  if (s == "receiving_balance_exp_decay_ordered")   return FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED;
   return UINT64_C(0);
 }
 
@@ -327,19 +370,27 @@ List compute_features_cpp(CharacterVector senders,
   }
 
   uint64_t active = 0u;
+  uint64_t active_extra = 0u;
   for (R_xlen_t i = 0; i < stat_names.size(); ++i) {
-    uint64_t f = flag_for(as<std::string>(stat_names[i]));
-    if (f == 0u) {
-      stop("Stat not supported by the C++ inner loop: " +
-           as<std::string>(stat_names[i]));
+    const std::string s = as<std::string>(stat_names[i]);
+    uint64_t f  = flag_for(s);
+    uint64_t fe = flag_for_extra(s);
+    if (f == 0u && fe == 0u) {
+      stop("Stat not supported by the C++ inner loop: " + s);
     }
-    active |= f;
+    active       |= f;
+    active_extra |= fe;
   }
 
   // exp_decay stats require a positive finite half-life. Mirrors the
   // pure-R caller's validation so the dispatch is transparent.
   double decay_rate = 0.0;
-  if (active & F_ANY_EXP_DECAY) {
+  bool any_extra_exp_decay =
+       (active_extra & FE_TRANSITIVITY_EXP_DECAY_ORDERED) ||
+       (active_extra & FE_CYCLIC_EXP_DECAY_ORDERED) ||
+       (active_extra & FE_SENDING_BALANCE_EXP_DECAY_ORDERED) ||
+       (active_extra & FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED);
+  if ((active & F_ANY_EXP_DECAY) || any_extra_exp_decay) {
     if (!R_finite(half_life) || half_life <= 0.0) {
       stop("`half_life` must be a positive finite number when an "
            "exp_decay statistic is requested.");
@@ -388,6 +439,13 @@ List compute_features_cpp(CharacterVector senders,
   //   any(e2 > min(e1))
   // and avoids the tied-timestamp bug that the simulator's
   // incremental apply_ordered_update path has.
+  //
+  // For the ORDERED TIMING / EXP_DECAY variants we additionally
+  // need the *time of validation*, formation_ord(k) =
+  // min(e2 > min(e1)). That requires the per-dyad full event-time
+  // vector for leg2. We append on each event; the vector stays
+  // sorted because events arrive in chronological order.
+  std::unordered_map<long long, std::vector<double>> dyad_times;
   // Per-actor outgoing / incoming target sets (sorted ascending).
   std::vector<std::vector<int>> out_targets(A);
   std::vector<std::vector<int>> in_sources(A);
@@ -438,11 +496,28 @@ List compute_features_cpp(CharacterVector senders,
   const bool need_cyc_ord   = active & F_CYCLIC_ORDERED_ANY;
   const bool need_sb_ord    = active & F_SENDING_BALANCE_ORDERED_ANY;
   const bool need_rb_ord    = active & F_RECEIVING_BALANCE_ORDERED_ANY;
+  // Per-family ordered timing / exp_decay (extra-mask):
+  const bool need_trans_time_ord = active_extra & (FE_TRANSITIVITY_TIME_RECENT_ORDERED | FE_TRANSITIVITY_TIME_FIRST_ORDERED);
+  const bool need_trans_exp_ord  = active_extra & FE_TRANSITIVITY_EXP_DECAY_ORDERED;
+  const bool need_cyc_time_ord   = active_extra & (FE_CYCLIC_TIME_RECENT_ORDERED | FE_CYCLIC_TIME_FIRST_ORDERED);
+  const bool need_cyc_exp_ord    = active_extra & FE_CYCLIC_EXP_DECAY_ORDERED;
+  const bool need_sb_time_ord    = active_extra & (FE_SENDING_BALANCE_TIME_RECENT_ORDERED | FE_SENDING_BALANCE_TIME_FIRST_ORDERED);
+  const bool need_sb_exp_ord     = active_extra & FE_SENDING_BALANCE_EXP_DECAY_ORDERED;
+  const bool need_rb_time_ord    = active_extra & (FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED | FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED);
+  const bool need_rb_exp_ord     = active_extra & FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED;
+  // Per-family "any formation-time-based ordered read needed"
+  // -- triggers the per-event vector walk + upper_bound lookup.
+  const bool need_trans_form_ord = need_trans_time_ord || need_trans_exp_ord;
+  const bool need_cyc_form_ord   = need_cyc_time_ord   || need_cyc_exp_ord;
+  const bool need_sb_form_ord    = need_sb_time_ord    || need_sb_exp_ord;
+  const bool need_rb_form_ord    = need_rb_time_ord    || need_rb_exp_ord;
+  const bool need_any_form_ord   = need_trans_form_ord || need_cyc_form_ord ||
+                                    need_sb_form_ord    || need_rb_form_ord;
   const bool need_triadic_ord = need_trans_ord || need_cyc_ord ||
                                  need_sb_ord    || need_rb_ord;
   const bool need_triadic   = need_triadic_cnt || need_triadic_time ||
                               need_triadic_exp || need_triadic_int ||
-                              need_triadic_ord;
+                              need_triadic_ord || need_any_form_ord;
   // need_X for the joint family walk: timing, exp_decay, AND interrupted
   // readers all use the intersection + first_dyad_time pair.
   const bool need_trans_form  = need_trans_time  || need_trans_exp  || need_trans_int_any;
@@ -519,6 +594,20 @@ List compute_features_cpp(CharacterVector senders,
   IntegerVector sending_balance_binary_ordered  (active & F_SENDING_BALANCE_BINARY_ORDERED ? n : 0);
   NumericVector receiving_balance_count_ordered (active & F_RECEIVING_BALANCE_COUNT_ORDERED ? n : 0);
   IntegerVector receiving_balance_binary_ordered(active & F_RECEIVING_BALANCE_BINARY_ORDERED ? n : 0);
+  // Ordered timing: NA when no validated intermediary exists.
+  NumericVector transitivity_time_recent_ordered      = alloc_na(active_extra & FE_TRANSITIVITY_TIME_RECENT_ORDERED);
+  NumericVector transitivity_time_first_ordered       = alloc_na(active_extra & FE_TRANSITIVITY_TIME_FIRST_ORDERED);
+  NumericVector cyclic_time_recent_ordered            = alloc_na(active_extra & FE_CYCLIC_TIME_RECENT_ORDERED);
+  NumericVector cyclic_time_first_ordered             = alloc_na(active_extra & FE_CYCLIC_TIME_FIRST_ORDERED);
+  NumericVector sending_balance_time_recent_ordered   = alloc_na(active_extra & FE_SENDING_BALANCE_TIME_RECENT_ORDERED);
+  NumericVector sending_balance_time_first_ordered    = alloc_na(active_extra & FE_SENDING_BALANCE_TIME_FIRST_ORDERED);
+  NumericVector receiving_balance_time_recent_ordered = alloc_na(active_extra & FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED);
+  NumericVector receiving_balance_time_first_ordered  = alloc_na(active_extra & FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED);
+  // Ordered exp_decay: default 0.
+  NumericVector transitivity_exp_decay_ordered      (active_extra & FE_TRANSITIVITY_EXP_DECAY_ORDERED ? n : 0);
+  NumericVector cyclic_exp_decay_ordered            (active_extra & FE_CYCLIC_EXP_DECAY_ORDERED ? n : 0);
+  NumericVector sending_balance_exp_decay_ordered   (active_extra & FE_SENDING_BALANCE_EXP_DECAY_ORDERED ? n : 0);
+  NumericVector receiving_balance_exp_decay_ordered (active_extra & FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED ? n : 0);
 
   // 4. Main loop.
   for (R_xlen_t i = 0; i < n; ++i) {
@@ -596,6 +685,106 @@ List compute_features_cpp(CharacterVector senders,
         [r, A](int k){ return (long long)k * A + r; });  // leg2 = k->r
       if (active & F_RECEIVING_BALANCE_COUNT_ORDERED)  receiving_balance_count_ordered[i]  = (double)v;
       if (active & F_RECEIVING_BALANCE_BINARY_ORDERED) receiving_balance_binary_ordered[i] = v > 0;
+    }
+    // Ordered timing / exp_decay: per-intermediary
+    //   formation_ord(k) = first leg2 event time > min(leg1)
+    // computed via upper_bound on the per-dyad sorted event-time
+    // vector (dyad_times). Walker reduces to compute_triadic's
+    // ordered branch in R/preprocess.R but per-event (no state).
+    auto walk_ord_formation = [&](const std::vector<int>& a,
+                                   const std::vector<int>& b,
+                                   auto leg1_key_fn, auto leg2_key_fn,
+                                   bool need_exp_local,
+                                   int& nk, double& fmin, double& fmax,
+                                   double& esum) {
+      nk = 0;
+      fmin = std::numeric_limits<double>::infinity();
+      fmax = -std::numeric_limits<double>::infinity();
+      esum = 0.0;
+      int ii = 0, jj = 0;
+      while (ii < (int)a.size() && jj < (int)b.size()) {
+        if (a[ii] < b[jj]) { ++ii; }
+        else if (a[ii] > b[jj]) { ++jj; }
+        else {
+          int k = a[ii];
+          if (k != s && k != r) {
+            auto it1 = dyad_first_time.find(leg1_key_fn(k));
+            auto it2 = dyad_times.find(leg2_key_fn(k));
+            if (it1 != dyad_first_time.end() &&
+                it2 != dyad_times.end()) {
+              double thr = it1->second;
+              const auto& vec = it2->second;
+              auto pos = std::upper_bound(vec.begin(), vec.end(), thr);
+              if (pos != vec.end()) {
+                double form = *pos;
+                if (form > fmax) fmax = form;
+                if (form < fmin) fmin = form;
+                if (need_exp_local) {
+                  esum += std::exp(-(ti - form) * decay_rate);
+                }
+                ++nk;
+              }
+            }
+          }
+          ++ii; ++jj;
+        }
+      }
+    };
+    if (need_trans_form_ord) {
+      int nk; double fmin, fmax, esum;
+      const std::vector<int>& s_out = out_targets[s];
+      const std::vector<int>& r_in  = in_sources[r];
+      walk_ord_formation(s_out, r_in,
+        [s, A](int k){ return (long long)s * A + k; },
+        [r, A](int k){ return (long long)k * A + r; },
+        need_trans_exp_ord, nk, fmin, fmax, esum);
+      if (nk > 0) {
+        if (active_extra & FE_TRANSITIVITY_TIME_RECENT_ORDERED) transitivity_time_recent_ordered[i] = ti - fmax;
+        if (active_extra & FE_TRANSITIVITY_TIME_FIRST_ORDERED)  transitivity_time_first_ordered[i]  = ti - fmin;
+      }
+      if (need_trans_exp_ord) transitivity_exp_decay_ordered[i] = esum;
+    }
+    if (need_cyc_form_ord) {
+      int nk; double fmin, fmax, esum;
+      const std::vector<int>& r_out = out_targets[r];
+      const std::vector<int>& s_in  = in_sources[s];
+      walk_ord_formation(r_out, s_in,
+        [r, A](int k){ return (long long)r * A + k; },
+        [s, A](int k){ return (long long)k * A + s; },
+        need_cyc_exp_ord, nk, fmin, fmax, esum);
+      if (nk > 0) {
+        if (active_extra & FE_CYCLIC_TIME_RECENT_ORDERED) cyclic_time_recent_ordered[i] = ti - fmax;
+        if (active_extra & FE_CYCLIC_TIME_FIRST_ORDERED)  cyclic_time_first_ordered[i]  = ti - fmin;
+      }
+      if (need_cyc_exp_ord) cyclic_exp_decay_ordered[i] = esum;
+    }
+    if (need_sb_form_ord) {
+      int nk; double fmin, fmax, esum;
+      const std::vector<int>& s_out = out_targets[s];
+      const std::vector<int>& r_out = out_targets[r];
+      walk_ord_formation(s_out, r_out,
+        [s, A](int k){ return (long long)s * A + k; },
+        [r, A](int k){ return (long long)r * A + k; },
+        need_sb_exp_ord, nk, fmin, fmax, esum);
+      if (nk > 0) {
+        if (active_extra & FE_SENDING_BALANCE_TIME_RECENT_ORDERED) sending_balance_time_recent_ordered[i] = ti - fmax;
+        if (active_extra & FE_SENDING_BALANCE_TIME_FIRST_ORDERED)  sending_balance_time_first_ordered[i]  = ti - fmin;
+      }
+      if (need_sb_exp_ord) sending_balance_exp_decay_ordered[i] = esum;
+    }
+    if (need_rb_form_ord) {
+      int nk; double fmin, fmax, esum;
+      const std::vector<int>& s_in = in_sources[s];
+      const std::vector<int>& r_in = in_sources[r];
+      walk_ord_formation(s_in, r_in,
+        [s, A](int k){ return (long long)k * A + s; },
+        [r, A](int k){ return (long long)k * A + r; },
+        need_rb_exp_ord, nk, fmin, fmax, esum);
+      if (nk > 0) {
+        if (active_extra & FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED) receiving_balance_time_recent_ordered[i] = ti - fmax;
+        if (active_extra & FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED)  receiving_balance_time_first_ordered[i]  = ti - fmin;
+      }
+      if (need_rb_exp_ord) receiving_balance_exp_decay_ordered[i] = esum;
     }
 
     // Reciprocity (count of past events on the REVERSE dyad).
@@ -750,6 +939,12 @@ List compute_features_cpp(CharacterVector senders,
       auto it = dyad_first_time.find(key_sr);
       if (it == dyad_first_time.end()) dyad_first_time.emplace(key_sr, ti);
     }
+    // Per-dyad event-time vector (only when any ordered-form stat
+    // needs it). Events arrive in chronological order, so the
+    // vector stays sorted by simple push_back.
+    if (need_any_form_ord) {
+      dyad_times[key_sr].push_back(ti);
+    }
     if (need_triadic) {
       sorted_insert_unique(out_targets[s], r);
       sorted_insert_unique(in_sources[r], s);
@@ -814,6 +1009,18 @@ List compute_features_cpp(CharacterVector senders,
   if (active & F_SENDING_BALANCE_BINARY_ORDERED)  out["sending_balance_binary_ordered"]  = sending_balance_binary_ordered;
   if (active & F_RECEIVING_BALANCE_COUNT_ORDERED) out["receiving_balance_count_ordered"] = receiving_balance_count_ordered;
   if (active & F_RECEIVING_BALANCE_BINARY_ORDERED) out["receiving_balance_binary_ordered"] = receiving_balance_binary_ordered;
+  if (active_extra & FE_TRANSITIVITY_TIME_RECENT_ORDERED)      out["transitivity_time_recent_ordered"]      = transitivity_time_recent_ordered;
+  if (active_extra & FE_TRANSITIVITY_TIME_FIRST_ORDERED)       out["transitivity_time_first_ordered"]       = transitivity_time_first_ordered;
+  if (active_extra & FE_TRANSITIVITY_EXP_DECAY_ORDERED)        out["transitivity_exp_decay_ordered"]        = transitivity_exp_decay_ordered;
+  if (active_extra & FE_CYCLIC_TIME_RECENT_ORDERED)            out["cyclic_time_recent_ordered"]            = cyclic_time_recent_ordered;
+  if (active_extra & FE_CYCLIC_TIME_FIRST_ORDERED)             out["cyclic_time_first_ordered"]             = cyclic_time_first_ordered;
+  if (active_extra & FE_CYCLIC_EXP_DECAY_ORDERED)              out["cyclic_exp_decay_ordered"]              = cyclic_exp_decay_ordered;
+  if (active_extra & FE_SENDING_BALANCE_TIME_RECENT_ORDERED)   out["sending_balance_time_recent_ordered"]   = sending_balance_time_recent_ordered;
+  if (active_extra & FE_SENDING_BALANCE_TIME_FIRST_ORDERED)    out["sending_balance_time_first_ordered"]    = sending_balance_time_first_ordered;
+  if (active_extra & FE_SENDING_BALANCE_EXP_DECAY_ORDERED)     out["sending_balance_exp_decay_ordered"]     = sending_balance_exp_decay_ordered;
+  if (active_extra & FE_RECEIVING_BALANCE_TIME_RECENT_ORDERED) out["receiving_balance_time_recent_ordered"] = receiving_balance_time_recent_ordered;
+  if (active_extra & FE_RECEIVING_BALANCE_TIME_FIRST_ORDERED)  out["receiving_balance_time_first_ordered"]  = receiving_balance_time_first_ordered;
+  if (active_extra & FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED)   out["receiving_balance_exp_decay_ordered"]   = receiving_balance_exp_decay_ordered;
   return out;
 }
 
