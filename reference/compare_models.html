@@ -89,19 +89,21 @@ help page for semantics.</p></dd>
 
 
 <dt id="arg-random-effects">random_effects<a class="anchor" aria-label="anchor" href="#arg-random-effects"></a></dt>
-<dd><p>Optional character: either <code>"sender"</code> or
-<code>"receiver"</code> (a length-1 vector). When supplied (requires
-<code>n_controls &gt; 1</code>), the stratified <code>coxph</code> fit adds a Gamma
-<code><a href="https://rdrr.io/pkg/survival/man/frailty.html" class="external-link">survival::frailty()</a></code> term on the requested actor axis. This
-is the actor-heterogeneity correction used by Juozaitienė &amp;
-Wit (2024) and changes which specification AIC selects on
+<dd><p>Optional character vector. May be any of
+<code>NULL</code> (no random effects), <code>"sender"</code>, <code>"receiver"</code>, or
+<code>c("sender", "receiver")</code>. When supplied, requires
+<code>n_controls &gt; 1</code>. With one axis, the stratified <code>coxph</code> fit
+adds a Gamma <code><a href="https://rdrr.io/pkg/survival/man/frailty.html" class="external-link">survival::frailty()</a></code> term on the requested actor.
+With both axes, the fit dispatches to <code><a href="https://rdrr.io/pkg/coxme/man/coxme.html" class="external-link">coxme::coxme()</a></code> with two
+normal <code>~ 1 | actor</code> random effects, which avoids
+<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code>'s one-sparse-term cap and the dense-penalty
+segfault on stratified case-control designs. The two-axis
+path requires the <code>coxme</code> package (Suggests).
+This is the actor-heterogeneity correction used by Juozaitienė
+&amp; Wit (2024) and changes which specification AIC selects on
 real-world data (timing variants typically win over count
-baselines once actor effects are absorbed). Two-axis frailty
-(<code>c("sender", "receiver")</code>) is not yet supported:
-<code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> allows at most one sparse frailty term and
-the dense-penalty path segfaults on small data; a future
-release may dispatch to <code>coxme::coxme</code> for that case.
-Defaults to <code>NULL</code> (no random effects).</p></dd>
+baselines once actor effects are absorbed). Defaults to <code>NULL</code>
+(no random effects).</p></dd>
 
 
 <dt id="arg-half-life">half_life<a class="anchor" aria-label="anchor" href="#arg-half-life"></a></dt>
