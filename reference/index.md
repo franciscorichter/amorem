@@ -26,6 +26,20 @@
   : Compare candidate specifications with smooth (TVE / NLE / TVNLE)
   effects
 
+## Hyperedge data model
+
+- [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+  [`is_hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+  [`as_hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+  [`as_dyadic_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+  : Build / detect / convert hyperedge event logs
+- [`hyperedge_sizes()`](https://franciscorichter.github.io/amore/reference/hyperedge_sizes.md)
+  : Cardinality columns for a hyperedge event log
+- [`hyperedge_activity()`](https://franciscorichter.github.io/amore/reference/hyperedge_activity.md)
+  : Activity counter for hyperedge subsets
+- [`hyperedge_subrep()`](https://franciscorichter.github.io/amore/reference/hyperedge_subrep.md)
+  : Subset repetition statistic for a hyperedge event log
+
 ## Data
 
 - [`dist_matrix`](https://franciscorichter.github.io/amore/reference/dist_matrix.md)
