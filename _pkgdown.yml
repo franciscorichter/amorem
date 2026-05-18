@@ -41,6 +41,9 @@ reference:
       - compare_models
       - compare_models_smooth
       - compare_models_global
+  - title: "Diagnostics"
+    contents:
+      - martingale_residuals
   - title: "Hyperedge data model"
     contents:
       - hyperedge_log
