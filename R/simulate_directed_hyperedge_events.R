@@ -24,8 +24,7 @@
 #'
 #' Candidate-space size is exponential in
 #' \eqn{|V^I|}{|V^I|} and \eqn{|V^J|}{|V^J|}, so practical use is
-#' limited to small actor / item universes (see *Computational cost*
-#' in [Limitations and roadmap](https://github.com/franciscorichter/amore/wiki/Limitations-and-roadmap)).
+#' limited to small actor / item universes.
 #'
 #' @param n_events Number of events to simulate.
 #' @param senders Character vector of sender names \eqn{V^I}{V^I}.
