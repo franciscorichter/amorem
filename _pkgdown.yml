@@ -28,6 +28,7 @@ reference:
       - simulate_relational_events
       - simulate_actor_covariates
       - simulate_hyperedge_events
+      - simulate_directed_hyperedge_events
   - title: "Preprocess module"
     contents:
       - standardize_event_log
