@@ -39,6 +39,12 @@ reference:
     contents:
       - compare_models
       - compare_models_smooth
+  - title: "Goodness-of-fit"
+    contents:
+      - gof_univariate
+      - gof_multivariate
+      - gof_global
+      - gof_auxiliary
   - title: "Hyperedge data model"
     contents:
       - hyperedge_log
