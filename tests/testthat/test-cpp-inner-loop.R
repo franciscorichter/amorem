@@ -47,7 +47,19 @@ cpp_supported_subset <- c("reciprocity_binary", "reciprocity_count",
                            "sending_balance_count_ordered",
                            "sending_balance_binary_ordered",
                            "receiving_balance_count_ordered",
-                           "receiving_balance_binary_ordered")
+                           "receiving_balance_binary_ordered",
+                           "transitivity_time_recent_ordered",
+                           "transitivity_time_first_ordered",
+                           "transitivity_exp_decay_ordered",
+                           "cyclic_time_recent_ordered",
+                           "cyclic_time_first_ordered",
+                           "cyclic_exp_decay_ordered",
+                           "sending_balance_time_recent_ordered",
+                           "sending_balance_time_first_ordered",
+                           "sending_balance_exp_decay_ordered",
+                           "receiving_balance_time_recent_ordered",
+                           "receiving_balance_time_first_ordered",
+                           "receiving_balance_exp_decay_ordered")
 
 # Stats whose unset cells are NA rather than 0. Both engines emit NA
 # on rows where no qualifying past event exists; row-for-row
@@ -64,7 +76,15 @@ cpp_na_capable <- c("recency",
                     "sending_balance_time_recent_interrupted",
                     "sending_balance_time_first_interrupted",
                     "receiving_balance_time_recent_interrupted",
-                    "receiving_balance_time_first_interrupted")
+                    "receiving_balance_time_first_interrupted",
+                    "transitivity_time_recent_ordered",
+                    "transitivity_time_first_ordered",
+                    "cyclic_time_recent_ordered",
+                    "cyclic_time_first_ordered",
+                    "sending_balance_time_recent_ordered",
+                    "sending_balance_time_first_ordered",
+                    "receiving_balance_time_recent_ordered",
+                    "receiving_balance_time_first_ordered")
 
 call_cpp <- function(ev, stats, half_life = NA_real_) {
   compute_features_cpp(as.character(ev$sender),
