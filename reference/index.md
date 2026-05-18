@@ -22,6 +22,9 @@
 
 - [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
   : Compare candidate endogenous specifications by AIC
+- [`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+  : Compare candidate specifications with smooth (TVE / NLE / TVNLE)
+  effects
 
 ## Data
 
