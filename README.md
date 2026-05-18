@@ -13,7 +13,12 @@
   <img src="https://img.shields.io/badge/status-prototype-blue" alt="status prototype" />
 </p>
 
-**amore** (Advanced Modelling of Relational Events) is an R package for **simulation and inference** in relational event models (REMs). It targets dynamic network data in continuous time, with a focus on reproducible workflows: event logs, covariates, model fitting, and diagnostics.
+**amore** (Advanced Modelling of Relational Events) is an R package for **simulation and inference** in relational event models (REMs) and relational *hyper* event models (RHEMs). It targets dynamic network data in continuous time, with a focus on reproducible workflows: event logs, covariates, model fitting, and diagnostics.
+
+Two complementary lines are supported under one case-control inference machinery:
+
+- **Dyadic REMs** with timing / closure variants and actor-heterogeneity corrections, following [Juozaitienė & Wit (2024, *JRSS-A* 188(4))](https://doi.org/10.1093/jrsssa/qnae132).
+- **Relational hyper event models** (set-valued senders × receivers) with subset-repetition covariates and smooth (linear / TVE / NLE / TVNLE) effects, following [Boschi, Lerner & Wit (2025, arXiv:2509.05289)](https://arxiv.org/abs/2509.05289).
 
 ## What it aims to provide
 
@@ -31,21 +36,30 @@ simulation-based REM studies:
 - **Exogenous actor covariates.** `simulate_actor_covariates()` generates static
   or AR(1) dynamic traits, while `attach_static_covariates()` merges user data.
 - **Endogenous covariates.** Both the simulator and the post-hoc
-  `compute_endogenous_features()` engine expose the same **41-stat**
-  catalogue covering every paper definition from
-  [Juozaitienė & Wit (2024, *JRSS-A* 188(4))](https://doi.org/10.1093/jrsssa/qnae132)
-  that Table 3 of that paper selects on real-world data:
-  reciprocity (continuous + interrupted; count, binary, exp-decay,
-  time-recent, time-first), transitivity (continuous, ordered, exp-decay,
-  interrupted-time; same five variants where applicable), cyclic /
-  sending balance / receiving balance (continuous, exp-decay,
-  interrupted timing). See *Endogenous network statistics* below for
-  the full per-family tables.
+  `compute_endogenous_features()` engine expose the full **68-stat**
+  catalogue covering every paper definition from Juozaitienė & Wit
+  (2024): reciprocity / transitivity / cyclic / sending balance /
+  receiving balance, each across seven variant axes (count, binary,
+  exp-decay, time-recent, time-first, ordered, interrupted). The
+  C++ inner loop accelerates 46 of 68 stats on the post-hoc side
+  (timing, exp-decay, interrupted families); the remaining 22
+  ordered variants take the pure-R path. See *Endogenous network
+  statistics* below for the full per-family tables.
+- **Hyperedge data model.** `hyperedge_log()` accepts `(I, J, time)`
+  events with set-valued senders and receivers. Functions
+  `hyperedge_activity()` and `hyperedge_subrep()` implement the
+  subset-repetition family of Boschi et al. (2025); the feature
+  engine `compute_hyperedge_features()` exposes them as named
+  stats (`activity`, `subrep_<rho>_<l>`, `subrep_<rho>`) and
+  delegates dyadic-catalogue names to `compute_endogenous_features()`
+  via `as_dyadic_log()`. The hyperedge simulator
+  `simulate_hyperedge_events()` generates undirected multi-actor
+  meetings.
 - **Relational event simulation.** `simulate_relational_events()` runs
   two simulation algorithms — the default exact Gillespie
   (`method = "gillespie"`) and an approximate time-driven tau-leap
   (`method = "tau_leap", tau = ...`) — with optional case-control
-  output, the full 41-stat endogenous catalogue wired into the inner
+  output, the full 68-stat endogenous catalogue wired into the inner
   loop, time-varying global covariates via a boundary-aware scheme
   (weekday/weekend rate switches, policy regimes, …), and a
   `risk = "remove"` rule for one-shot processes such as species
@@ -57,10 +71,13 @@ simulation-based REM studies:
 - **Non-event sampling.** `sample_non_events()` constructs nested
   case-control tables with appearance, citation, and remove risk-set
   rules.
-- **Model comparison.** `compare_models()` runs a one-call AIC
-  ranking across an arbitrary list of candidate endogenous
-  specifications, sharing a single case-control sample so the AIC
-  values are directly comparable.
+- **Model comparison.** Two helpers share one case-control sample so
+  AIC values are directly comparable across specifications:
+  `compare_models()` for linear AIC tables with optional one-axis
+  (`survival::frailty`) or two-axis (`coxme::coxme`) actor random
+  effects; `compare_models_smooth()` for `linear` / `tve` / `nle` /
+  `tvnle` effect choices per stat via `mgcv::gam`, following the
+  Boschi et al. (2025) Section 3.3 design.
 - **Bundled real-world datasets.** Four of the five datasets analysed
   in Juozaitienė & Wit (2024) ship under `data/` and `inst/extdata/`
   (`classroom_events`, `social_evolution_calls`, `radoslaw_email`,
@@ -72,7 +89,8 @@ simulation-based REM studies:
   the simulator on synthetic events and verifies the post-hoc engine
   reproduces every output column row-for-row.
 - **Documentation + tests.** pkgdown reference site, six vignettes,
-  and a 2,282-assertion test suite that runs on every commit.
+  a wiki ([franciscorichter/amore/wiki](https://github.com/franciscorichter/amore/wiki)),
+  and a ~2,975-assertion test suite that runs on every commit.
 
 ## Installation
 
