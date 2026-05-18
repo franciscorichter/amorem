@@ -2,6 +2,7 @@
 
 export(attach_static_covariates)
 export(compare_models)
+export(compare_models_smooth)
 export(compute_endogenous_features)
 export(sample_non_events)
 export(simulate_actor_covariates)
