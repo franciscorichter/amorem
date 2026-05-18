@@ -39,6 +39,8 @@
   : Activity counter for hyperedge subsets
 - [`hyperedge_subrep()`](https://franciscorichter.github.io/amore/reference/hyperedge_subrep.md)
   : Subset repetition statistic for a hyperedge event log
+- [`compute_hyperedge_features()`](https://franciscorichter.github.io/amore/reference/compute_hyperedge_features.md)
+  : Endogenous features for a hyperedge event log
 
 ## Data
 
