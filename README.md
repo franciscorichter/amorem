@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/status-prototype-blue" alt="status prototype" />
 </p>
 
-**amore** (Advanced Modelling of Relational Events) is an R package for **simulation and inference** in relational event models (REMs) and relational *hyper* event models (RHEMs). It targets dynamic network data in continuous time, with a focus on reproducible workflows: event logs, covariates, model fitting, and diagnostics.
+**amore** (Augmented Modelling of Relational Events) is an R package for **simulation and inference** in relational event models (REMs) and relational *hyper* event models (RHEMs). It targets dynamic network data in continuous time, with a focus on reproducible workflows: event logs, covariates, model fitting, and diagnostics.
 
 Two complementary lines are supported under one case-control inference machinery:
 
@@ -88,9 +88,10 @@ simulation-based REM studies:
   dedicated parity test (`test-sim-vs-posthoc-parity.R`) that runs
   the simulator on synthetic events and verifies the post-hoc engine
   reproduces every output column row-for-row.
-- **Documentation + tests.** pkgdown reference site, six vignettes,
-  a wiki ([franciscorichter/amore/wiki](https://github.com/franciscorichter/amore/wiki)),
-  and a ~2,975-assertion test suite that runs on every commit.
+- **Documentation + tests.** A nine-page wiki
+  ([franciscorichter/amore/wiki](https://github.com/franciscorichter/amore/wiki))
+  with verified, plot-rich coverage of every workflow, plus a
+  ~3,000-assertion test suite that runs on every commit.
 
 ## Installation
 
@@ -428,8 +429,9 @@ events <- simulate_relational_events(
 )
 ```
 
-See `vignette("exogenous-covariates")` for the full workflow including GAM
-recovery of the non-linear distance effect.
+See the [Simulation](https://github.com/franciscorichter/amore/wiki/Simulation)
+wiki page for the full workflow including GAM recovery of the non-linear
+distance effect.
 
 ### Endogenous mechanisms during simulation
 
@@ -575,22 +577,39 @@ compare_models(
 #> 3 interrupted       2   691 -439.6917 883.383  268.3367
 ```
 
-The vignette `vignette("model-comparison")` walks through the full
-workflow, including how to inspect coefficients of a chosen
-specification and a simulator → inference round-trip that recovers
-the true generative spec.
+The [Estimation](https://github.com/franciscorichter/amore/wiki/Estimation)
+and [Real-data analysis](https://github.com/franciscorichter/amore/wiki/Real-data-analysis)
+wiki pages walk through the full workflow, including how to inspect
+coefficients of a chosen specification, how sender frailty flips the
+AIC ranking on Classroom, and a simulator → inference round-trip that
+recovers the true generative spec.
 
 ## Documentation
 
-- Reference site + vignette: <https://franciscorichter.github.io/amore/>
+The **wiki** is the canonical reference and is re-run on every release:
+<https://github.com/franciscorichter/amore/wiki>
+
+| Page | What you'll find |
+|---|---|
+| [Quick start](https://github.com/franciscorichter/amore/wiki/Quick-start) | install + a 10-line simulate-and-recover example |
+| [Simulation](https://github.com/franciscorichter/amore/wiki/Simulation) | the five dyadic mechanisms, Gillespie vs τ-leap |
+| [Endogenous catalogue](https://github.com/franciscorichter/amore/wiki/Endogenous-catalogue) | the 68-stat catalogue, six variant axes side-by-side |
+| [Hyperedge models](https://github.com/franciscorichter/amore/wiki/Hyperedge-models) | `(I, J, time)` data model, subset repetition, two simulators |
+| [Estimation](https://github.com/franciscorichter/amore/wiki/Estimation) | case-control sampling, `compare_models*()`, GOF tests |
+| [Datasets](https://github.com/franciscorichter/amore/wiki/Datasets) | five bundled REM datasets with descriptive plots |
+| [Real-data analysis](https://github.com/franciscorichter/amore/wiki/Real-data-analysis) | sender-frailty flip, smooth effect curves |
+| [Validation experiments](https://github.com/franciscorichter/amore/wiki/Validation-experiments) | recovery, smooth, scaling, parity |
+
+Other entry points:
+
 - Issue tracker: <https://github.com/franciscorichter/amore/issues>
+- Per-function help inside R:
 
-For function usage:
-
-```r
-?simulate_relational_events
-?simulate_actor_covariates
-```
+  ```r
+  ?simulate_relational_events
+  ?compare_models
+  ?gof_univariate
+  ```
 
 ## Development
 
