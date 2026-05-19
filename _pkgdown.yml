@@ -44,6 +44,10 @@ reference:
   - title: "Diagnostics"
     contents:
       - martingale_residuals
+      - gof_univariate
+      - gof_multivariate
+      - gof_global
+      - gof_auxiliary
   - title: "Hyperedge data model"
     contents:
       - hyperedge_log
