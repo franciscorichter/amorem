@@ -34,6 +34,11 @@
 - [`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md)
   : Compare REM specifications with global covariate effects
 
+## Diagnostics
+
+- [`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md)
+  : Martingale residuals from a case-control partial-likelihood fit
+
 ## Hyperedge data model
 
 - [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)

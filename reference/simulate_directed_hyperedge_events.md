@@ -84,9 +84,7 @@ draws one event proportional to its rate. The waiting time is
 exponential with rate equal to the total intensity.
 
 Candidate-space size is exponential in \\\|V^I\|\\ and \\\|V^J\|\\, so
-practical use is limited to small actor / item universes (see
-*Computational cost* in [Limitations and
-roadmap](https://github.com/franciscorichter/amore/wiki/Limitations-and-roadmap)).
+practical use is limited to small actor / item universes.
 
 ## References
 
