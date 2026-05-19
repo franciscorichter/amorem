@@ -129,3 +129,43 @@
 #'   \doi{10.1007/s00354-014-0402-9}. Distributed via
 #'   <https://networkrepository.com/ia-radoslaw-email.php>.
 "radoslaw_email"
+
+#' CollegeMsg: private messages on a university online community
+#'
+#' Directed time-stamped instant messages between students of the
+#' University of California, Irvine over 193 days in 2004. Each row
+#' is one message. Sourced from the SNAP repository.
+#'
+#' @format A data frame with 59,835 rows and 3 columns:
+#' \describe{
+#'   \item{time}{Days since the first message.
+#'     `attr(., "unix_origin")` holds the Unix epoch of `time = 0`.}
+#'   \item{sender}{Character user id.}
+#'   \item{receiver}{Character user id.}
+#' }
+#' @source Panzarasa, P., Opsahl, T., Carley, K. (2009). Patterns and
+#'   dynamics of users' behavior and interaction: Network analysis of
+#'   an online community. *Journal of the American Society for
+#'   Information Science and Technology* 60(5), 911–932.
+#'   Distributed via SNAP:
+#'   <https://snap.stanford.edu/data/CollegeMsg.html>.
+"college_msg"
+
+#' Email-Eu-Core temporal (Department 3 subset)
+#'
+#' Internal emails between members of a single department of a large
+#' European research institution over ~803 days. The dataset has been
+#' filtered to remove self-loops. Sourced from the SNAP repository as
+#' the Department 3 slice of the email-Eu-core-temporal dataset.
+#'
+#' @format A data frame with 12,216 rows and 3 columns:
+#' \describe{
+#'   \item{time}{Days since the first email in the recording window.}
+#'   \item{sender}{Character employee id (anonymised).}
+#'   \item{receiver}{Character employee id (anonymised).}
+#' }
+#' @source Paranjape, A., Benson, A.R., Leskovec, J. (2017). Motifs in
+#'   temporal networks. *WSDM '17*, 601–610.
+#'   \doi{10.1145/3018661.3018731}. Distributed via SNAP:
+#'   <https://snap.stanford.edu/data/email-Eu-core-temporal.html>.
+"email_eu_core"
