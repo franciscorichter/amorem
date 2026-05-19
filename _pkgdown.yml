@@ -60,6 +60,8 @@ reference:
       - social_evolution_actors
       - social_evolution_friendship
       - radoslaw_email
+      - college_msg
+      - email_eu_core
 
 articles:
   - title: "Get started"
