@@ -34,6 +34,19 @@
 - [`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md)
   : Compare REM specifications with global covariate effects
 
+## Diagnostics
+
+- [`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md)
+  : Martingale residuals from a case-control partial-likelihood fit
+- [`gof_univariate()`](https://franciscorichter.github.io/amore/reference/gof_univariate.md)
+  : Goodness-of-fit test for a single FLE covariate
+- [`gof_multivariate()`](https://franciscorichter.github.io/amore/reference/gof_multivariate.md)
+  : Multivariate GOF test for smooth or random-effect covariates
+- [`gof_global()`](https://franciscorichter.github.io/amore/reference/gof_global.md)
+  : Omnibus GOF test via Cauchy combination
+- [`gof_auxiliary()`](https://franciscorichter.github.io/amore/reference/gof_auxiliary.md)
+  : GOF test for an auxiliary (unmodelled) statistic
+
 ## Hyperedge data model
 
 - [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
