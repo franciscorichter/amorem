@@ -79,3 +79,7 @@
   : Friendship-survey events for the Social Evolution study
 - [`radoslaw_email`](https://franciscorichter.github.io/amore/reference/radoslaw_email.md)
   : Manufacturing-company email events (Michalski et al. 2014)
+- [`college_msg`](https://franciscorichter.github.io/amore/reference/college_msg.md)
+  : CollegeMsg: private messages on a university online community
+- [`email_eu_core`](https://franciscorichter.github.io/amore/reference/email_eu_core.md)
+  : Email-Eu-Core temporal (Department 3 subset)
