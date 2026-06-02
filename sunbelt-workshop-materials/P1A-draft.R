@@ -60,9 +60,39 @@ fit_glm <- glm(one ~ d_reciprocity_count - 1,
                family = "binomial", data = ncc_data)
 tab3 <- ncc_data[ncc_data$stratum<=8,]
 kable(tab3, format = "latex", booktabs = TRUE)
+AIC(fit_glm)
+
+cc <- sample_non_events(
+  raw_data_m1[raw_data_m1$event == 1L, c("sender", "receiver", "time")],
+  n_controls = 1,
+  scope      = "all",
+  mode       = "one",
+  seed=1
+)
+cc_feat <- compute_endogenous_features(cc, stats = "reciprocity_count")
+
+cases_r <- cc_feat[cc_feat$event == 1L, ]
+ctrls_r <- cc_feat[cc_feat$event == 0L, ]
+cases_r <- cases_r[order(cases_r$stratum), ]
+ctrls_r <- ctrls_r[order(ctrls_r$stratum), ]
+
+ncc_resampled <- data.frame(
+  d_reciprocity_count = cases_r$reciprocity_count - ctrls_r$reciprocity_count,
+  one = 1L
+)
+fit_glm_r <- glm(one ~ d_reciprocity_count - 1,
+                 family = binomial, data = ncc_resampled)
+AIC(fit_glm_r)
+
+compare_models(
+  raw_data_m1[raw_data_m1$event == 1L, c("sender", "receiver", "time")],
+  models = list(
+    count       = c("reciprocity_count")),
+  n_controls = 1, seed = 1)
 
 # P1.3: Replicate the simulation study 100 times ####
 
+# parameters
 N_SIM        <- 100
 N_EVENTS     <- 1000
 TRUE_BETA    <- 0.6          
