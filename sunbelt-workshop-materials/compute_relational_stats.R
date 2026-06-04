@@ -3,7 +3,8 @@ compute_relational_stats <- function(event_log,
                                                                   "reciprocity", "recency"),
                                      half_life                = NULL,
                                      sort                     = TRUE,
-                                     additional_previous_events = NULL)
+                                     additional_previous_events = NULL,
+                                     history_log              = NULL)
 {
   if (!is.data.frame(event_log)) {
     stop("`event_log` must be a data.frame.")
@@ -23,6 +24,17 @@ compute_relational_stats <- function(event_log,
     if (length(ape_missing)) {
       stop("`additional_previous_events` is missing required column(s): ",
            paste(ape_missing, collapse = ", "))
+    }
+  }
+  # validate history_log
+  if (!is.null(history_log)) {
+    if (!is.data.frame(history_log)) {
+      stop("`history_log` must be a data.frame or NULL.")
+    }
+    hl_missing <- setdiff(c("sender", "receiver", "time"), names(history_log))
+    if (length(hl_missing)) {
+      stop("`history_log` is missing required column(s): ",
+           paste(hl_missing, collapse = ", "))
     }
   }
   allowed <- c("sender_outdegree", "receiver_indegree", "recency",
@@ -86,10 +98,23 @@ compute_relational_stats <- function(event_log,
     ord <- order(log_df$time, seq_len(nrow(log_df)))
     log_df <- log_df[ord, , drop = FALSE]
   }
+  
+  # Build a lookup set of history rows (sender, receiver, time) for fast membership
+  # testing in do_write(). When history_log is NULL, all rows update the state
+  # (original behaviour). When history_log is supplied, only rows whose
+  # (sender, receiver, time) triple appears in history_log update the state.
+  if (!is.null(history_log)) {
+    history_keys <- paste(as.character(history_log$sender),
+                          as.character(history_log$receiver),
+                          as.numeric(history_log$time),
+                          sep = "\r")
+  } else {
+    history_keys <- NULL
+  }
+  
   # out_sender cannot be handled by the C++ path (returns list column),
   # so fall through to the R loop whenever it is requested.
-  # Also fall through when additional_previous_events is supplied, since
-  # the C++ path has no way to pre-seed its internal state.
+  # Also fall through when additional_previous_events or history_log is supplied.
   cpp_ok_stats <- if (exists("cpp_supported_stats", mode = "function")) {
     cpp_supported_stats()
   } else {
@@ -99,7 +124,8 @@ compute_relational_stats <- function(event_log,
   use_cpp <- nrow(log_df) > 0L &&
     length(stats_for_cpp) > 0L &&
     all(stats_for_cpp %in% cpp_ok_stats) &&
-    is.null(additional_previous_events)
+    is.null(additional_previous_events) &&
+    is.null(history_log)
   if (use_cpp) {
     cpp_cols <- compute_features_cpp(
       as.character(log_df$sender),
@@ -115,13 +141,23 @@ compute_relational_stats <- function(event_log,
       out_sender_col     <- vector("list", nrow(log_df))
       s_vec <- as.character(log_df$sender)
       r_vec <- as.character(log_df$receiver)
-      for (i in seq_len(nrow(log_df))) {
-        s   <- s_vec[i]
-        r   <- r_vec[i]
-        cur <- out_sender_targets[[s]]
-        out_sender_col[[i]] <- if (is.null(cur)) character(0) else cur
-        if (is.null(cur) || !r %in% cur)
-          out_sender_targets[[s]] <- c(cur, r)
+      # Group by time to ensure strict < t semantics
+      time_groups <- split(seq_len(nrow(log_df)), log_df$time)
+      for (grp in time_groups) {
+        # READ phase
+        for (i in grp) {
+          s   <- s_vec[i]
+          cur <- out_sender_targets[[s]]
+          out_sender_col[[i]] <- if (is.null(cur)) character(0) else cur
+        }
+        # WRITE phase: all rows update state when no history_log
+        for (i in grp) {
+          s <- s_vec[i]
+          r <- r_vec[i]
+          cur <- out_sender_targets[[s]]
+          if (is.null(cur) || !r %in% cur)
+            out_sender_targets[[s]] <- c(cur, r)
+        }
       }
       log_df[["out_sender"]] <- out_sender_col
     }
@@ -355,69 +391,70 @@ compute_relational_stats <- function(event_log,
     if (ei_nm %in% req) res[[ei_nm]] <- exp_int_sum
     res
   }
-  for (i in seq_len(n)) {
+  
+  # Helper: READ phase for a single row i
+  do_read <- function(i) {
     s  <- as.character(log_df$sender[i])
     r  <- as.character(log_df$receiver[i])
     ti <- log_df$time[i]
     key_sr <- dyad_key(s, r)
     key_rs <- dyad_key(r, s)
+    
     if ("sender_outdegree" %in% stats)
-      log_df$sender_outdegree[i] <- get_count(sender_counts, s)
+      log_df$sender_outdegree[i] <<- get_count(sender_counts, s)
     if ("receiver_indegree" %in% stats)
-      log_df$receiver_indegree[i] <- get_count(receiver_counts, r)
+      log_df$receiver_indegree[i] <<- get_count(receiver_counts, r)
     if ("recency" %in% stats) {
       lt <- dyad_last_time[[key_sr]]
-      if (!is.null(lt)) log_df$recency[i] <- ti - lt
+      if (!is.null(lt)) log_df$recency[i] <<- ti - lt
     }
-    # out_sender: distinct receivers previously contacted by sender
-    # (includes any pre-seeded receivers from additional_previous_events)
     if (need_out_sender) {
       s_out <- out_targets[[s]]
-      log_df[["out_sender"]][[i]] <- if (is.null(s_out)) character(0) else s_out
+      log_df[["out_sender"]][[i]] <<- if (is.null(s_out)) character(0) else s_out
     }
     has_reverse <- !is.null(dyad_event_count[[key_rs]])
     if ("reciprocity" %in% stats)
-      log_df$reciprocity[i] <- as.integer(has_reverse)
+      log_df$reciprocity[i] <<- as.integer(has_reverse)
     if ("reciprocity_binary" %in% stats)
-      log_df$reciprocity_binary[i] <- as.integer(has_reverse)
+      log_df$reciprocity_binary[i] <<- as.integer(has_reverse)
     if ("reciprocity_count" %in% stats) {
       rc <- dyad_event_count[[key_rs]]
-      log_df$reciprocity_count[i] <- if (is.null(rc)) 0 else rc
+      log_df$reciprocity_count[i] <<- if (is.null(rc)) 0 else rc
     }
     if ("reciprocity_exp_decay" %in% stats) {
       rs_t <- dyad_times[[key_rs]]
-      log_df$reciprocity_exp_decay[i] <- if (is.null(rs_t)) 0
+      log_df$reciprocity_exp_decay[i] <<- if (is.null(rs_t)) 0
       else sum(exp(-(ti - rs_t) * log(2) / half_life))
     }
     if ("reciprocity_time_recent" %in% stats) {
       lt_rs <- dyad_last_time[[key_rs]]
-      if (!is.null(lt_rs)) log_df$reciprocity_time_recent[i] <- ti - lt_rs
+      if (!is.null(lt_rs)) log_df$reciprocity_time_recent[i] <<- ti - lt_rs
     }
     if ("reciprocity_time_first" %in% stats) {
       ft_rs <- dyad_first_time[[key_rs]]
-      if (!is.null(ft_rs)) log_df$reciprocity_time_first[i] <- ti - ft_rs
+      if (!is.null(ft_rs)) log_df$reciprocity_time_first[i] <<- ti - ft_rs
     }
     if (need_interrupted) {
       if ("reciprocity_count_interrupted" %in% stats) {
         v <- dyad_int_count[[key_sr]]
-        log_df$reciprocity_count_interrupted[i] <- if (is.null(v)) 0 else v
+        log_df$reciprocity_count_interrupted[i] <<- if (is.null(v)) 0 else v
       }
       if ("reciprocity_binary_interrupted" %in% stats) {
         v <- dyad_int_count[[key_sr]]
-        log_df$reciprocity_binary_interrupted[i] <- if (is.null(v) || v == 0) 0L else 1L
+        log_df$reciprocity_binary_interrupted[i] <<- if (is.null(v) || v == 0) 0L else 1L
       }
       if ("reciprocity_exp_decay_interrupted" %in% stats) {
         ts <- dyad_int_times[[key_sr]]
-        log_df$reciprocity_exp_decay_interrupted[i] <- if (is.null(ts)) 0
+        log_df$reciprocity_exp_decay_interrupted[i] <<- if (is.null(ts)) 0
         else sum(exp(-(ti - ts) * log(2) / half_life))
       }
       if ("reciprocity_time_recent_interrupted" %in% stats) {
         lt <- dyad_int_last[[key_sr]]
-        if (!is.null(lt)) log_df$reciprocity_time_recent_interrupted[i] <- ti - lt
+        if (!is.null(lt)) log_df$reciprocity_time_recent_interrupted[i] <<- ti - lt
       }
       if ("reciprocity_time_first_interrupted" %in% stats) {
         ft <- dyad_int_first[[key_sr]]
-        if (!is.null(ft)) log_df$reciprocity_time_first_interrupted[i] <- ti - ft
+        if (!is.null(ft)) log_df$reciprocity_time_first_interrupted[i] <<- ti - ft
       }
     }
     if (need_triadic) {
@@ -437,7 +474,7 @@ compute_relational_stats <- function(event_log,
                                function(k) dyad_times[[dyad_key(s, k)]],
                                function(k) dyad_times[[dyad_key(k, r)]],
                                t_closure = t_closure)
-        for (nm in names(tri)) log_df[[nm]][i] <- tri[[nm]]
+        for (nm in names(tri)) log_df[[nm]][i] <<- tri[[nm]]
       }
       if (any(cyc_names %in% stats)) {
         ks  <- setdiff(intersect(r_out, s_in), c(s, r))
@@ -445,7 +482,7 @@ compute_relational_stats <- function(event_log,
                                function(k) dyad_times[[dyad_key(r, k)]],
                                function(k) dyad_times[[dyad_key(k, s)]],
                                t_closure = t_closure)
-        for (nm in names(cyc)) log_df[[nm]][i] <- cyc[[nm]]
+        for (nm in names(cyc)) log_df[[nm]][i] <<- cyc[[nm]]
       }
       if (any(sb_names %in% stats)) {
         ks <- setdiff(intersect(s_out, r_out), c(s, r))
@@ -453,7 +490,7 @@ compute_relational_stats <- function(event_log,
                               function(k) dyad_times[[dyad_key(s, k)]],
                               function(k) dyad_times[[dyad_key(r, k)]],
                               t_closure = t_closure)
-        for (nm in names(sb)) log_df[[nm]][i] <- sb[[nm]]
+        for (nm in names(sb)) log_df[[nm]][i] <<- sb[[nm]]
       }
       if (any(rb_names %in% stats)) {
         ks <- setdiff(intersect(s_in, r_in), c(s, r))
@@ -461,37 +498,68 @@ compute_relational_stats <- function(event_log,
                               function(k) dyad_times[[dyad_key(k, s)]],
                               function(k) dyad_times[[dyad_key(k, r)]],
                               t_closure = t_closure)
-        for (nm in names(rb)) log_df[[nm]][i] <- rb[[nm]]
+        for (nm in names(rb)) log_df[[nm]][i] <<- rb[[nm]]
       }
     }
-    # --- state updates ---
-    sender_counts[s]   <- get_count(sender_counts, s) + 1
-    receiver_counts[r] <- get_count(receiver_counts, r) + 1
-    dyad_last_time[[key_sr]] <- ti
-    if (is.null(dyad_first_time[[key_sr]])) dyad_first_time[[key_sr]] <- ti
+  }
+  
+  # Helper: WRITE phase for a single row i.
+  # When history_log is supplied, only rows whose (sender, receiver, time)
+  # triple appears in history_log update the state; all other rows are
+  # read-only (their covariates are computed but they never enter the history).
+  do_write <- function(i) {
+    s  <- as.character(log_df$sender[i])
+    r  <- as.character(log_df$receiver[i])
+    ti <- log_df$time[i]
+    
+    # Skip state update for non-history rows
+    if (!is.null(history_keys)) {
+      row_key <- paste(s, r, ti, sep = "\r")
+      if (!row_key %in% history_keys) return(invisible(NULL))
+    }
+    
+    key_sr <- dyad_key(s, r)
+    key_rs <- dyad_key(r, s)
+    
+    sender_counts[s]   <<- get_count(sender_counts, s) + 1
+    receiver_counts[r] <<- get_count(receiver_counts, r) + 1
+    dyad_last_time[[key_sr]] <<- ti
+    if (is.null(dyad_first_time[[key_sr]])) dyad_first_time[[key_sr]] <<- ti
     prev_c <- dyad_event_count[[key_sr]]
-    dyad_event_count[[key_sr]] <- if (is.null(prev_c)) 1L else prev_c + 1L
-    dyad_times[[key_sr]] <- c(dyad_times[[key_sr]], ti)
+    dyad_event_count[[key_sr]] <<- if (is.null(prev_c)) 1L else prev_c + 1L
+    dyad_times[[key_sr]] <<- c(dyad_times[[key_sr]], ti)
     if (need_interrupted) {
-      dyad_int_count[[key_sr]] <- 0L
+      dyad_int_count[[key_sr]] <<- 0L
       for (env in list(dyad_int_times, dyad_int_last, dyad_int_first)) {
         if (exists(key_sr, envir = env, inherits = FALSE))
           rm(list = key_sr, envir = env)
       }
       prev_int_c <- dyad_int_count[[key_rs]]
-      dyad_int_count[[key_rs]] <- if (is.null(prev_int_c)) 1L else prev_int_c + 1L
-      dyad_int_times[[key_rs]] <- c(dyad_int_times[[key_rs]], ti)
-      dyad_int_last[[key_rs]]  <- ti
-      if (is.null(dyad_int_first[[key_rs]])) dyad_int_first[[key_rs]] <- ti
+      dyad_int_count[[key_rs]] <<- if (is.null(prev_int_c)) 1L else prev_int_c + 1L
+      dyad_int_times[[key_rs]] <<- c(dyad_int_times[[key_rs]], ti)
+      dyad_int_last[[key_rs]]  <<- ti
+      if (is.null(dyad_int_first[[key_rs]])) dyad_int_first[[key_rs]] <<- ti
     }
     if (need_triadic || need_out_sender) {
       cur_out <- out_targets[[s]]
       if (is.null(cur_out) || !r %in% cur_out)
-        out_targets[[s]] <- c(cur_out, r)
+        out_targets[[s]] <<- c(cur_out, r)
       cur_in <- in_sources[[r]]
       if (is.null(cur_in) || !s %in% cur_in)
-        in_sources[[r]] <- c(cur_in, s)
+        in_sources[[r]] <<- c(cur_in, s)
     }
   }
+  
+  # Main loop: process rows grouped by time.
+  # READ all rows in a time group before WRITing any,
+  # so that same-time events see state strictly before their own time (< t).
+  # WRITE only touches rows that are in history_log (or all rows if
+  # history_log is NULL).
+  time_groups <- split(seq_len(n), log_df$time)
+  for (grp in time_groups) {
+    for (i in grp) do_read(i)
+    for (i in grp) do_write(i)
+  }
+  
   log_df
 }
