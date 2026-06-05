@@ -58,7 +58,7 @@ for (i in seq_len(N_SIM)) {
     scope      = "all",
     mode       = "one"
   )
-  source("")
+  source("compute_relational_stats.R")
   cc_feat <- compute_relational_stats(cc, 
                                       stats = "reciprocity_count", 
                                       history_log = raw_data)
