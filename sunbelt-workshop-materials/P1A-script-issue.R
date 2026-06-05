@@ -58,7 +58,10 @@ for (i in seq_len(N_SIM)) {
     scope      = "all",
     mode       = "one"
   )
-  cc_feat <- compute_endogenous_features(cc, stats = "reciprocity_count")
+  source("")
+  cc_feat <- compute_relational_stats(cc, 
+                                      stats = "reciprocity_count", 
+                                      history_log = raw_data)
   
   cases_r <- cc_feat[cc_feat$event == 1L, ]
   ctrls_r <- cc_feat[cc_feat$event == 0L, ]
