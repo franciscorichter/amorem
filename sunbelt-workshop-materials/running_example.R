@@ -208,6 +208,6 @@ plot(gam_fit, select = 2,
      ylab = expression(s(cov[r])),
      main = expression("Covariate with NLE"))
 lines(x_grid,
-      (sapply(x_grid, f_x)+2.5), col = "red", lwd = 2, lty = 2)
+      (sapply(x_grid, f_x)+2.1), col = "red", lwd = 2, lty = 2)
 
 
