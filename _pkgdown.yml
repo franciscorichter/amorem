@@ -29,15 +29,18 @@ reference:
       - simulate_actor_covariates
       - simulate_hyperedge_events
       - simulate_directed_hyperedge_events
+      - simulate_directed_hyperevents_tvnl
   - title: "Preprocess module"
     contents:
       - standardize_event_log
       - attach_static_covariates
       - compute_endogenous_features
       - sample_non_events
+      - widen_case_control
       - transform_recency
-  - title: "Model comparison"
+  - title: "Model fitting and comparison"
     contents:
+      - rem
       - compare_models
       - compare_models_smooth
       - compare_models_global
