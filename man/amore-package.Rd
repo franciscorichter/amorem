@@ -4,7 +4,7 @@
 \name{amore-package}
 \alias{amore}
 \alias{amore-package}
-\title{amore: Advanced Modelling of Relational Events}
+\title{amore: Augmented Modelling of Relational Events}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 

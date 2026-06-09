@@ -1,5 +1,5 @@
 Package: amore
-Title: Advanced Modelling of Relational Events
+Title: Augmented Modelling of Relational Events
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Francisco", family = "Richter", email = "richtf@usi.ch", role = c("aut", "cre"))
