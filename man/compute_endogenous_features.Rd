@@ -37,7 +37,8 @@ Currently supported only for statistics handled by the C++ engine
 (see \code{cpp_supported_stats()}).}
 }
 \value{
-The event log with added columns, one per requested statistic.
+The event log with added columns, one per requested statistic
+(\code{sender_receivers_set} is added as a list-column).
 }
 \description{
 Given a standardized relational event log, this helper derives historical
@@ -128,4 +129,11 @@ shared-source two-path formation; \code{NA} if none.}
 \item{\code{receiving_balance_time_first}}{Time since the first
 shared-source two-path formation; \code{NA} if none.}
 }
+
+The statistic \code{"sender_receivers_set"} is special: it adds a \strong{list-column}
+in which each element is the character vector of receivers the row's sender
+has reached before that row (the building block for set-valued endogenous
+covariates, e.g. an alien species' previously invaded regions). It honours
+\code{history_log}, so it can be computed for sampled non-events without those
+non-events polluting the history.
 }

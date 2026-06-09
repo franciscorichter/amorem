@@ -180,6 +180,37 @@ attach_static_covariates <- function(
   out
 }
 
+# Internal: list-column giving, for each row, the set of receivers the row's
+# sender has reached *before* that row. With an event mask, only masked-in
+# rows update the set, so sampled non-events read the true history without
+# polluting it. Processed in time groups (input assumed time-sorted) so rows
+# sharing a timestamp all read the pre-t set. Backs the `sender_receivers_set`
+# statistic of compute_endogenous_features().
+.sender_receivers_set_col <- function(senders, receivers, times,
+                                      is_event_mask = logical(0)) {
+  n <- length(senders)
+  out <- vector("list", n)
+  if (!n) return(out)
+  reached <- new.env(parent = emptyenv())
+  use_mask <- length(is_event_mask) > 0L
+  grp <- match(times, unique(times))
+  for (g in unique(grp)) {
+    idx <- which(grp == g)
+    for (i in idx) {
+      cur <- reached[[senders[i]]]
+      out[[i]] <- if (is.null(cur)) character(0) else cur
+    }
+    for (i in idx) {
+      if (use_mask && !isTRUE(is_event_mask[i])) next
+      cur <- reached[[senders[i]]]
+      if (is.null(cur) || !(receivers[i] %in% cur)) {
+        reached[[senders[i]]] <- c(cur, receivers[i])
+      }
+    }
+  }
+  out
+}
+
 #' Compute endogenous event-network statistics
 #'
 #' Given a standardized relational event log, this helper derives historical
@@ -289,7 +320,15 @@ attach_static_covariates <- function(
 #'       shared-source two-path formation; `NA` if none.}
 #'   }
 #'
-#' @return The event log with added columns, one per requested statistic.
+#'   The statistic `"sender_receivers_set"` is special: it adds a **list-column**
+#'   in which each element is the character vector of receivers the row's sender
+#'   has reached before that row (the building block for set-valued endogenous
+#'   covariates, e.g. an alien species' previously invaded regions). It honours
+#'   `history_log`, so it can be computed for sampled non-events without those
+#'   non-events polluting the history.
+#'
+#' @return The event log with added columns, one per requested statistic
+#'   (`sender_receivers_set` is added as a list-column).
 #' @export
 compute_endogenous_features <- function(
     event_log,
@@ -326,6 +365,7 @@ compute_endogenous_features <- function(
 
   allowed <- c(
     "sender_outdegree", "receiver_indegree", "recency",
+    "sender_receivers_set",
     "reciprocity", "reciprocity_binary", "reciprocity_count",
     "reciprocity_exp_decay", "reciprocity_time_recent", "reciprocity_time_first",
     "reciprocity_binary_interrupted", "reciprocity_count_interrupted",
@@ -420,6 +460,22 @@ compute_endogenous_features <- function(
     is_event_mask <- row_keys %in% history_keys
   }
 
+  # G2/G3: `sender_receivers_set` is a list-column -- the set of receivers each
+  # sender has reached *before* each row. It is computed separately from the
+  # numeric-stat machinery and honours `history_log` (only event rows update
+  # the set, so sampled non-events read the true history without polluting it).
+  srs_requested <- "sender_receivers_set" %in% stats
+  srs_col <- if (srs_requested) {
+    .sender_receivers_set_col(as.character(log_df$sender),
+                              as.character(log_df$receiver),
+                              log_df$time, is_event_mask)
+  } else NULL
+  if (srs_requested) stats <- setdiff(stats, "sender_receivers_set")
+  if (srs_requested && !length(stats)) {
+    log_df[["sender_receivers_set"]] <- srs_col
+    return(log_df)
+  }
+
   # Fast path: when every requested statistic is supported by the
   # C++ inner loop, dispatch there. The C++ implementation uses
   # integer-indexed std::vector state, eliminating the env-based
@@ -442,6 +498,7 @@ compute_endogenous_features <- function(
     for (st in stats) {
       log_df[[st]] <- cpp_cols[[st]]
     }
+    if (srs_requested) log_df[["sender_receivers_set"]] <- srs_col
     return(log_df)
   }
 
@@ -456,6 +513,7 @@ compute_endogenous_features <- function(
   n <- nrow(log_df)
   if (!n) {
     for (stat in stats) log_df[[stat]] <- numeric(0)
+    if (srs_requested) log_df[["sender_receivers_set"]] <- srs_col
     return(log_df)
   }
 
@@ -899,6 +957,7 @@ compute_endogenous_features <- function(
     }
   }
 
+  if (srs_requested) log_df[["sender_receivers_set"]] <- srs_col
   log_df
 }
 
