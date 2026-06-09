@@ -606,6 +606,23 @@ For function usage:
 - Full check: `devtools::check()`
 - Build pkgdown site: `pkgdown::build_site()`
 
+## References
+
+Methodological background for the models implemented in **amore**:
+
+- Bianchi, F., Filippi-Mazzola, E., Lomi, A., & Wit, E. C. (2024). Relational
+  Event Modeling. *Annual Review of Statistics and Its Application*, 11,
+  297–319. <https://doi.org/10.1146/annurev-statistics-040722-060248>
+- Boschi, M., & Wit, E. C. (2026). Introduction to Relational Event Modelling.
+  *arXiv:2604.07063*. <https://arxiv.org/abs/2604.07063>
+- Juozaitienė, R., & Wit, E. C. (2024). Relational event modelling with
+  timing, closure and actor-heterogeneity effects.
+  *Journal of the Royal Statistical Society Series A*, 188(4).
+  <https://doi.org/10.1093/jrsssa/qnae132>
+- Boschi, M., Lerner, J., & Wit, E. C. (2025). Relational hyper event models
+  with time-varying non-linear effects. *arXiv:2509.05289*.
+  <https://arxiv.org/abs/2509.05289>
+
 ## License
 
 MIT, see `LICENSE`.
