@@ -1,4 +1,4 @@
-# amore: Advanced Modelling of Relational Events
+# amore: Augmented Modelling of Relational Events
 
 Utilities for simulating and prototyping relational event models,
 including helpers to generate dynamic event sequences and covariate
