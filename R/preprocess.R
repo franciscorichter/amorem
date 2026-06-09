@@ -921,7 +921,14 @@ compute_endogenous_features <- function(
 #' @param risk Strategy governing the risk set. `"standard"` (default) keeps all
 #'   unrealized dyads available across strata, whereas `"remove"` deletes a dyad
 #'   from the candidate pool after it has occurred (useful for processes such as
-#'   species invasions where a pair cannot reoccur).
+#'   species invasions where a pair cannot reoccur). Under `"remove"`, dyads
+#'   firing at the focal event's own timestamp are also kept out of its control
+#'   pool (concurrent events are not valid non-events at that instant).
+#' @param exclude_pairs Optional two-column data.frame/matrix of
+#'   `(sender, receiver)` pairs that are structurally ineligible as controls and
+#'   must never be sampled (e.g. an alien species' native range, or any dyad
+#'   forbidden in advance). Columns named `sender`/`receiver` are used if
+#'   present, otherwise the first two columns.
 #' @param allow_loops Logical; can sampled non-events have identical sender and
 #'   receiver?
 #' @param seed Optional seed for reproducibility.
@@ -937,6 +944,7 @@ sample_non_events <- function(
     scope = c("all", "appearance", "citation"),
     mode = c("two", "one"),
     risk = c("standard", "remove"),
+    exclude_pairs = NULL,
     allow_loops = FALSE,
     seed = NULL,
     max_attempts = 1000) {
@@ -957,6 +965,30 @@ sample_non_events <- function(
   scope <- match.arg(scope)
   mode <- match.arg(mode)
   risk <- match.arg(risk)
+
+  # G1: structurally ineligible (sender, receiver) pairs that must never be
+  # sampled as controls (e.g. an alien species' native range). Keys match the
+  # internal `dyad_key()` format ("sender->receiver").
+  exclude_pairs_env <- new.env(parent = emptyenv())
+  n_exclude_pairs <- 0L
+  if (!is.null(exclude_pairs)) {
+    if (is.matrix(exclude_pairs)) {
+      exclude_pairs <- as.data.frame(exclude_pairs, stringsAsFactors = FALSE)
+    }
+    if (!is.data.frame(exclude_pairs) || ncol(exclude_pairs) < 2) {
+      stop("`exclude_pairs` must be a two-column data.frame/matrix of ",
+           "(sender, receiver) pairs.")
+    }
+    if (all(c("sender", "receiver") %in% names(exclude_pairs))) {
+      es <- as.character(exclude_pairs$sender)
+      er <- as.character(exclude_pairs$receiver)
+    } else {
+      es <- as.character(exclude_pairs[[1]])
+      er <- as.character(exclude_pairs[[2]])
+    }
+    for (k in paste0(es, "->", er)) exclude_pairs_env[[k]] <- TRUE
+    n_exclude_pairs <- length(es)
+  }
 
   if (!is.null(seed)) {
     old_seed <- get0(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
@@ -1137,11 +1169,24 @@ sample_non_events <- function(
     }
   }
 
+  # G1b: under risk = "remove", a dyad firing at the focal event's own time is
+  # a concurrent event, not a valid non-event at that instant. Precompute, per
+  # event, the set of event-dyad keys firing at the same time (grouped by exact
+  # time so float formatting is irrelevant).
+  if (risk == "remove" && n_events > 0L) {
+    .ev_keys <- dyad_key(events_df$sender, events_df$receiver)
+    .tg <- match(events_df$time, unique(events_df$time))
+    concurrent_keys <- unname(split(.ev_keys, .tg)[as.character(.tg)])
+  } else {
+    concurrent_keys <- vector("list", n_events)
+  }
+
   ctrl_index <- 0L
 
   for (i in seq_len(n_events)) {
     cand_sets <- get_candidates(scope, events_df$time[i], events_df$sender[i], events_df$receiver[i])
     viable <- has_viable_pair(cand_sets, mode, events_df$sender[i], events_df$receiver[i])
+    concurrent_keys_i <- concurrent_keys[[i]]
 
     if (viable) {
       for (j in seq_len(n_controls)) {
@@ -1159,10 +1204,16 @@ sample_non_events <- function(
           if (sampled$sender == events_df$sender[i] && sampled$receiver == events_df$receiver[i]) {
             next
           }
+          cand_key <- dyad_key(sampled$sender, sampled$receiver)
+          if (n_exclude_pairs && !is.null(exclude_pairs_env[[cand_key]])) {
+            next                                   # G1: structural exclusion
+          }
           if (risk == "remove") {
-            key <- dyad_key(sampled$sender, sampled$receiver)
-            if (!is.null(removed_dyads[[key]])) {
-              next
+            if (!is.null(removed_dyads[[cand_key]])) {
+              next                                 # historical: already fired
+            }
+            if (cand_key %in% concurrent_keys_i) {
+              next                                 # G1b: concurrent event
             }
           }
           break
