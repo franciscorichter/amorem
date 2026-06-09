@@ -45,6 +45,7 @@ counterfactual sender–receiver pairs according to predefined strategies.</p>
 <span>  scope <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all"</span>, <span class="st">"appearance"</span>, <span class="st">"citation"</span><span class="op">)</span>,</span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"two"</span>, <span class="st">"one"</span><span class="op">)</span>,</span>
 <span>  risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"remove"</span><span class="op">)</span>,</span>
+<span>  exclude_pairs <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  allow_loops <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_attempts <span class="op">=</span> <span class="fl">1000</span></span>
@@ -82,7 +83,17 @@ pool (single-mode). <code>"two"</code> samples sender and receiver from separate
 <dd><p>Strategy governing the risk set. <code>"standard"</code> (default) keeps all
 unrealized dyads available across strata, whereas <code>"remove"</code> deletes a dyad
 from the candidate pool after it has occurred (useful for processes such as
-species invasions where a pair cannot reoccur).</p></dd>
+species invasions where a pair cannot reoccur). Under <code>"remove"</code>, dyads
+firing at the focal event's own timestamp are also kept out of its control
+pool (concurrent events are not valid non-events at that instant).</p></dd>
+
+
+<dt id="arg-exclude-pairs">exclude_pairs<a class="anchor" aria-label="anchor" href="#arg-exclude-pairs"></a></dt>
+<dd><p>Optional two-column data.frame/matrix of
+<code>(sender, receiver)</code> pairs that are structurally ineligible as controls and
+must never be sampled (e.g. an alien species' native range, or any dyad
+forbidden in advance). Columns named <code>sender</code>/<code>receiver</code> are used if
+present, otherwise the first two columns.</p></dd>
 
 
 <dt id="arg-allow-loops">allow_loops<a class="anchor" aria-label="anchor" href="#arg-allow-loops"></a></dt>

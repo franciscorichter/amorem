@@ -13,6 +13,7 @@ sample_non_events(
   scope = c("all", "appearance", "citation"),
   mode = c("two", "one"),
   risk = c("standard", "remove"),
+  exclude_pairs = NULL,
   allow_loops = FALSE,
   seed = NULL,
   max_attempts = 1000
@@ -49,6 +50,17 @@ sample_non_events(
   unrealized dyads available across strata, whereas `"remove"` deletes a
   dyad from the candidate pool after it has occurred (useful for
   processes such as species invasions where a pair cannot reoccur).
+  Under `"remove"`, dyads firing at the focal event's own timestamp are
+  also kept out of its control pool (concurrent events are not valid
+  non-events at that instant).
+
+- exclude_pairs:
+
+  Optional two-column data.frame/matrix of `(sender, receiver)` pairs
+  that are structurally ineligible as controls and must never be sampled
+  (e.g. an alien species' native range, or any dyad forbidden in
+  advance). Columns named `sender`/`receiver` are used if present,
+  otherwise the first two columns.
 
 - allow_loops:
 
