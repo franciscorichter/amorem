@@ -99,7 +99,8 @@ Currently supported only for statistics handled by the C++ engine
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The event log with added columns, one per requested statistic.</p>
+    <p>The event log with added columns, one per requested statistic
+(<code>sender_receivers_set</code> is added as a list-column).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -225,7 +226,13 @@ shared-source two-path formation; <code>NA</code> if none.</p></dd>
 shared-source two-path formation; <code>NA</code> if none.</p></dd>
 
 
-</dl></div>
+</dl><p>The statistic <code>"sender_receivers_set"</code> is special: it adds a <strong>list-column</strong>
+in which each element is the character vector of receivers the row's sender
+has reached before that row (the building block for set-valued endogenous
+covariates, e.g. an alien species' previously invaded regions). It honours
+<code>history_log</code>, so it can be computed for sampled non-events without those
+non-events polluting the history.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
