@@ -66,7 +66,8 @@ exponential distribution with rate equal to the sum of all dyadic intensities.</
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gillespie"</span>, <span class="st">"tau_leap"</span><span class="op">)</span>,</span>
 <span>  tau <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"remove"</span><span class="op">)</span></span>
+<span>  risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"remove"</span><span class="op">)</span>,</span>
+<span>  wide <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -311,6 +312,17 @@ eligible at every step. <code>"remove"</code> removes a dyad from the risk set
 as soon as it fires, which mimics one-shot processes such as species
 invasions or first-citation events.</p></dd>
 
+
+<dt id="arg-wide">wide<a class="anchor" aria-label="anchor" href="#arg-wide"></a></dt>
+<dd><p>Logical; when <code>TRUE</code> (which requires <code>n_controls = 1</code>),
+the result is returned in a wide case-1-control format with one row per
+event instead of the default long format. Each row carries the event-dyad
+actors (<code>sender_ev</code>, <code>receiver_ev</code>), the matched non-event-dyad
+actors (<code>sender_nv</code>, <code>receiver_nv</code>), and, for every covariate
+column, the event value (<code>&lt;cov&gt;_ev</code>), the control value
+(<code>&lt;cov&gt;_nv</code>), and their difference (<code>d_&lt;cov&gt;</code>, event minus
+control). Defaults to <code>FALSE</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -323,7 +335,12 @@ per stat is appended carrying the value each row's dyad had at its event
 time (immediately before the event fired), so downstream conditional
 logistic / GAM estimators can recover the effects. When
 <code>global_covariates</code> is supplied, one column per covariate is appended
-carrying the value of that covariate at each row's event time.</p>
+carrying the value of that covariate at each row's event time. When
+<code>wide = TRUE</code> (which requires <code>n_controls = 1</code>), this long
+case-control output is reshaped to one row per event with columns
+<code>stratum</code>, <code>time</code>, <code>sender_ev</code>, <code>receiver_ev</code>,
+<code>sender_nv</code>, <code>receiver_nv</code> and, for each covariate,
+<code>&lt;cov&gt;_ev</code>, <code>&lt;cov&gt;_nv</code> and <code>d_&lt;cov&gt;</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -395,6 +412,30 @@ step).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4       2     1      B        C 0.07395278</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5       2     0      C        A 0.07395278</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6       2     0      A        B 0.07395278</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Ready-made case-1-control (wide) dataset for degenerate logistic regression</span></span></span>
+<span class="r-in"><span><span class="va">wide_events</span> <span class="op">&lt;-</span> <span class="fu">simulate_relational_events</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  n_events <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  senders <span class="op">=</span> <span class="va">senders</span>,</span></span>
+<span class="r-in"><span>  receivers <span class="op">=</span> <span class="va">receivers</span>,</span></span>
+<span class="r-in"><span>  n_controls <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>  endogenous_stats <span class="op">=</span> <span class="st">"reciprocity_count"</span>,</span></span>
+<span class="r-in"><span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  wide <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">wide_events</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   stratum      time sender_ev receiver_ev sender_nv receiver_nv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1 0.2230408         C           B         A           C</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       2 0.2317535         C           B         C           A</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       3 0.3727746         C           A         B           A</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       4 0.4539515         B           C         C           A</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       5 0.5864707         B           A         A           B</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   reciprocity_count_ev reciprocity_count_nv d_reciprocity_count</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                    0                    0                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    0                    0                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    0                    0                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                    2                    0                   2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                    0                    0                   0</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

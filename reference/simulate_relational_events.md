@@ -30,7 +30,8 @@ simulate_relational_events(
   method = c("gillespie", "tau_leap"),
   tau = NULL,
   half_life = NULL,
-  risk = c("standard", "remove")
+  risk = c("standard", "remove"),
+  wide = FALSE
 )
 ```
 
@@ -293,6 +294,16 @@ simulate_relational_events(
   fires, which mimics one-shot processes such as species invasions or
   first-citation events.
 
+- wide:
+
+  Logical; when `TRUE` (which requires `n_controls = 1`), the result is
+  returned in a wide case-1-control format with one row per event
+  instead of the default long format. Each row carries the event-dyad
+  actors (`sender_ev`, `receiver_ev`), the matched non-event-dyad actors
+  (`sender_nv`, `receiver_nv`), and, for every covariate column, the
+  event value (`<cov>_ev`), the control value (`<cov>_nv`), and their
+  difference (`d_<cov>`, event minus control). Defaults to `FALSE`.
+
 ## Value
 
 If `n_controls = 0`, a data.frame with columns `sender`, `receiver` and
@@ -304,7 +315,11 @@ carrying the value each row's dyad had at its event time (immediately
 before the event fired), so downstream conditional logistic / GAM
 estimators can recover the effects. When `global_covariates` is
 supplied, one column per covariate is appended carrying the value of
-that covariate at each row's event time.
+that covariate at each row's event time. When `wide = TRUE` (which
+requires `n_controls = 1`), this long case-control output is reshaped to
+one row per event with columns `stratum`, `time`, `sender_ev`,
+`receiver_ev`, `sender_nv`, `receiver_nv` and, for each covariate,
+`<cov>_ev`, `<cov>_nv` and `d_<cov>`.
 
 ## Details
 
@@ -377,4 +392,28 @@ head(cc_events)
 #> 4       2     1      B        C 0.07395278
 #> 5       2     0      C        A 0.07395278
 #> 6       2     0      A        B 0.07395278
+
+# Ready-made case-1-control (wide) dataset for degenerate logistic regression
+wide_events <- simulate_relational_events(
+  n_events = 5,
+  senders = senders,
+  receivers = receivers,
+  n_controls = 1,
+  endogenous_stats = "reciprocity_count",
+  endogenous_effects = c(reciprocity_count = 0.6),
+  wide = TRUE
+)
+head(wide_events)
+#>   stratum      time sender_ev receiver_ev sender_nv receiver_nv
+#> 1       1 0.2230408         C           B         A           C
+#> 2       2 0.2317535         C           B         C           A
+#> 3       3 0.3727746         C           A         B           A
+#> 4       4 0.4539515         B           C         C           A
+#> 5       5 0.5864707         B           A         A           B
+#>   reciprocity_count_ev reciprocity_count_nv d_reciprocity_count
+#> 1                    0                    0                   0
+#> 2                    0                    0                   0
+#> 3                    0                    0                   0
+#> 4                    2                    0                   2
+#> 5                    0                    0                   0
 ```
