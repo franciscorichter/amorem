@@ -1,5 +1,10 @@
 # Compare candidate specifications with smooth (TVE / NLE / TVNLE) effects
 
+**Superseded** by
+[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+which fits the same smooth (TVE / NLE / TVNLE) effects on preprocessed
+case-control data. `compare_models_smooth()` remains fully supported.
+
 Mirrors
 [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
 but lets each statistic in a specification take one of four effect types
@@ -7,6 +12,40 @@ instead of a single linear coefficient: linear, time-varying (TVE),
 non-linear (NLE), or jointly time-varying non-linear (TVNLE). The smooth
 machinery follows Boschi, Lerner & Wit (2025); the
 matrix-of-event-vs-non-event trick is documented in their Section 3.3.
+
+For each specification:
+
+- One case-control sample is drawn from `event_log` with
+  `n_controls = 1` (paired event / non-event design).
+
+- For every requested statistic, both the case (event) and the control
+  (non-event) features are computed via
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+
+- The mgcv design uses the case-vs-control matrix trick:
+
+  - linear -\> a single coefficient on `case - control` (column
+    `d_stat`).
+
+  - tve -\> `s(time, by = d_stat)` — smooth in time, multiplied by
+    `d_stat`.
+
+  - nle -\> `s(stat_mat, by = I_mat)` where `stat_mat` is a two-column
+    matrix `cbind(case, control)` and `I_mat` is `cbind(1, -1)`.
+
+  - tvnle -\> `te(time_mat, stat_mat, by = I_mat)` tensor product
+    smooth, with time_mat both columns equal to the event time vector.
+
+- The model is fitted with
+  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and a degenerate
+  logistic likelihood: response = `rep(1, n)`, formula =
+  `one ~ -1 + ...`, `family = binomial`. This matches Boschi et al.
+  equation 8.
+
+AIC values are directly comparable across specifications because every
+fit uses the same case-control sample. Returns the same tidy
+`data.frame` as
+[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
 
 ## Usage
 
@@ -66,42 +105,6 @@ compare_models_smooth(
 
 Data frame with one row per specification and columns `model`,
 `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`.
-
-## Details
-
-For each specification:
-
-- One case-control sample is drawn from `event_log` with
-  `n_controls = 1` (paired event / non-event design).
-
-- For every requested statistic, both the case (event) and the control
-  (non-event) features are computed via
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
-
-- The mgcv design uses the case-vs-control matrix trick:
-
-  - linear -\> a single coefficient on `case - control` (column
-    `d_stat`).
-
-  - tve -\> `s(time, by = d_stat)` — smooth in time, multiplied by
-    `d_stat`.
-
-  - nle -\> `s(stat_mat, by = I_mat)` where `stat_mat` is a two-column
-    matrix `cbind(case, control)` and `I_mat` is `cbind(1, -1)`.
-
-  - tvnle -\> `te(time_mat, stat_mat, by = I_mat)` tensor product
-    smooth, with time_mat both columns equal to the event time vector.
-
-- The model is fitted with
-  [`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html) and a degenerate
-  logistic likelihood: response = `rep(1, n)`, formula =
-  `one ~ -1 + ...`, `family = binomial`. This matches Boschi et al.
-  equation 8.
-
-AIC values are directly comparable across specifications because every
-fit uses the same case-control sample. Returns the same tidy
-`data.frame` as
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
 
 ## References
 

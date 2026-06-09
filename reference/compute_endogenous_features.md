@@ -14,7 +14,8 @@ compute_endogenous_features(
   event_log,
   stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
   half_life = NULL,
-  sort = TRUE
+  sort = TRUE,
+  history_log = NULL
 )
 ```
 
@@ -39,6 +40,19 @@ compute_endogenous_features(
 
   Logical; when `TRUE`, events are ordered by time prior to computing
   summaries (ties preserve input order).
+
+- history_log:
+
+  Optional data.frame giving the authoritative event history (columns
+  `sender`, `receiver`, `time`). When supplied, only rows of `event_log`
+  whose `(sender, receiver, time)` triple appears in `history_log`
+  update the running network state; all other rows (e.g. sampled
+  non-events / controls) have their statistics computed against that
+  history but never enter it. This makes it possible to evaluate
+  endogenous statistics for non-events without those non-events
+  polluting the history. Defaults to `NULL` (every row is treated as an
+  event). Currently supported only for statistics handled by the C++
+  engine (see `cpp_supported_stats()`).
 
 ## Value
 

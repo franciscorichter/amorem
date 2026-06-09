@@ -1,10 +1,31 @@
 # Compare candidate endogenous specifications by AIC
 
+**Superseded** by
+[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+the unified front-end for fitting relational event models on
+preprocessed case-control data. `compare_models()` remains fully
+supported.
+
 Convenience wrapper that runs the canonical case-control / no-intercept
 binomial-GLM recipe on every specification in `models` and returns a
 tidy AIC comparison table. One case-control sample is drawn from
 `event_log` and shared across every specification so that the AIC values
 are directly comparable.
+
+Each specification is a character vector of stat names accepted by
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+The function computes the union of all stats once, builds
+case-minus-control differences, and fits one binomial GLM per
+specification with the appropriate subset of columns. The fitted models
+are equivalent to the partial-likelihood parametrisation used in
+case-control REM inference (Vu et al. 2017; Juozaitienė & Wit 2024).
+
+For `n_controls = 1` the helper fits a no-intercept binomial GLM on
+case-minus-control differences. For `n_controls > 1` it falls back to
+[`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html) — a
+true conditional-logistic fit that correctly handles multiple controls
+per stratum. The `survival` package is in Suggests and is required only
+when `n_controls > 1`.
 
 ## Usage
 
@@ -81,23 +102,6 @@ compare_models(
 A data frame with one row per specification and columns `model`,
 `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`. Sorted ascending by
 `AIC`. The model with the lowest AIC has `delta_AIC = 0`.
-
-## Details
-
-Each specification is a character vector of stat names accepted by
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
-The function computes the union of all stats once, builds
-case-minus-control differences, and fits one binomial GLM per
-specification with the appropriate subset of columns. The fitted models
-are equivalent to the partial-likelihood parametrisation used in
-case-control REM inference (Vu et al. 2017; Juozaitienė & Wit 2024).
-
-For `n_controls = 1` the helper fits a no-intercept binomial GLM on
-case-minus-control differences. For `n_controls > 1` it falls back to
-[`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html) — a
-true conditional-logistic fit that correctly handles multiple controls
-per stratum. The `survival` package is in Suggests and is required only
-when `n_controls > 1`.
 
 ## References
 

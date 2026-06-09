@@ -131,6 +131,9 @@ and triadicity in relational event analysis. *JRSS-A* 188(4), 1246–1262.
   : Simulate undirected hyperedge events (multi-actor meetings)
 - [`simulate_directed_hyperedge_events()`](https://franciscorichter.github.io/amore/reference/simulate_directed_hyperedge_events.md)
   : Simulate directed two-mode hyperedge events
+- [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amore/reference/simulate_directed_hyperevents_tvnl.md)
+  : Simulate directed hyper-events with time-varying and non-linear
+  effects
 
 ## Preprocess module
 
@@ -142,11 +145,15 @@ and triadicity in relational event analysis. *JRSS-A* 188(4), 1246–1262.
   : Compute endogenous event-network statistics
 - [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)
   : Sample non-events for inference
+- [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+  : Convert a long case-control event log to wide case-1-control format
 - [`transform_recency()`](https://franciscorichter.github.io/amore/reference/transform_recency.md)
   : Recency transform of inter-event time gaps
 
-## Model comparison
+## Model fitting and comparison
 
+- [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md) :
+  Fit a relational (hyper)event model on preprocessed case-control data
 - [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
   : Compare candidate endogenous specifications by AIC
 - [`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)

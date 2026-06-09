@@ -55,7 +55,8 @@ even after a closure event).</p>
 <span>  <span class="va">event_log</span>,</span>
 <span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sender_outdegree"</span>, <span class="st">"receiver_indegree"</span>, <span class="st">"reciprocity"</span>, <span class="st">"recency"</span><span class="op">)</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  sort <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  sort <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  history_log <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -81,6 +82,19 @@ exponential-decay statistics (<code>*_exp_decay*</code>).</p></dd>
 <dt id="arg-sort">sort<a class="anchor" aria-label="anchor" href="#arg-sort"></a></dt>
 <dd><p>Logical; when <code>TRUE</code>, events are ordered by time prior to
 computing summaries (ties preserve input order).</p></dd>
+
+
+<dt id="arg-history-log">history_log<a class="anchor" aria-label="anchor" href="#arg-history-log"></a></dt>
+<dd><p>Optional data.frame giving the authoritative event
+history (columns <code>sender</code>, <code>receiver</code>, <code>time</code>). When supplied, only rows
+of <code>event_log</code> whose <code>(sender, receiver, time)</code> triple appears in
+<code>history_log</code> update the running network state; all other rows (e.g.
+sampled non-events / controls) have their statistics computed against
+that history but never enter it. This makes it possible to evaluate
+endogenous statistics for non-events without those non-events polluting
+the history. Defaults to <code>NULL</code> (every row is treated as an event).
+Currently supported only for statistics handled by the C++ engine
+(see <code>cpp_supported_stats()</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
