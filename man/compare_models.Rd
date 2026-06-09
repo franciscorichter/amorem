@@ -60,13 +60,16 @@ ascending by \code{AIC}. The model with the lowest AIC has
 \code{delta_AIC = 0}.
 }
 \description{
+\strong{Superseded} by \code{\link[=rem]{rem()}}, the unified front-end for fitting relational
+event models on preprocessed case-control data. \code{compare_models()} remains
+fully supported.
+
 Convenience wrapper that runs the canonical case-control / no-intercept
 binomial-GLM recipe on every specification in \code{models} and returns a
 tidy AIC comparison table. One case-control sample is drawn from
 \code{event_log} and shared across every specification so that the AIC
 values are directly comparable.
-}
-\details{
+
 Each specification is a character vector of stat names accepted by
 \code{\link[=compute_endogenous_features]{compute_endogenous_features()}}. The function computes the union of
 all stats once, builds case-minus-control differences, and fits one

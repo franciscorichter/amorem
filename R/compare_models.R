@@ -1,5 +1,10 @@
 #' Compare candidate endogenous specifications by AIC
 #'
+#' @description
+#' **Superseded** by [rem()], the unified front-end for fitting relational
+#' event models on preprocessed case-control data. `compare_models()` remains
+#' fully supported.
+#'
 #' Convenience wrapper that runs the canonical case-control / no-intercept
 #' binomial-GLM recipe on every specification in `models` and returns a
 #' tidy AIC comparison table. One case-control sample is drawn from

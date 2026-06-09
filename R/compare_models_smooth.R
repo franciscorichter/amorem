@@ -1,5 +1,10 @@
 #' Compare candidate specifications with smooth (TVE / NLE / TVNLE) effects
 #'
+#' @description
+#' **Superseded** by [rem()], which fits the same smooth (TVE / NLE / TVNLE)
+#' effects on preprocessed case-control data. `compare_models_smooth()` remains
+#' fully supported.
+#'
 #' Mirrors [compare_models()] but lets each statistic in a specification
 #' take one of four effect types instead of a single linear coefficient:
 #' linear, time-varying (TVE), non-linear (NLE), or jointly time-varying

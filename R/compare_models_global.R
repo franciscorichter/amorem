@@ -1,5 +1,10 @@
 #' Compare REM specifications with global covariate effects
 #'
+#' @description
+#' **Superseded** by [rem()], the unified front-end for fitting relational
+#' event models on preprocessed case-control data. `compare_models_global()`
+#' remains fully supported.
+#'
 #' Implements the time-shifted partial likelihood of Lembo,
 #' Juozaitienė, Vinciotti & Wit (2025) for fitting relational event
 #' models with **global covariate effects** — covariates that are

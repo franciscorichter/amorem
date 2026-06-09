@@ -51,6 +51,10 @@ Data frame with one row per specification and columns
 \code{model}, \code{n_terms}, \code{n_obs}, \code{log_lik}, \code{AIC}, \code{delta_AIC}.
 }
 \description{
+\strong{Superseded} by \code{\link[=rem]{rem()}}, the unified front-end for fitting relational
+event models on preprocessed case-control data. \code{compare_models_global()}
+remains fully supported.
+
 Implements the time-shifted partial likelihood of Lembo,
 Juozaitienė, Vinciotti & Wit (2025) for fitting relational event
 models with \strong{global covariate effects} — covariates that are
@@ -62,8 +66,7 @@ paper's Section 4 recipe: a random per-dyad time shift breaks the
 cancellation, and with one non-event per event the partial
 likelihood reduces to a degenerate logistic additive model fit by
 \code{\link[mgcv:gam]{mgcv::gam()}}.
-}
-\details{
+
 Per the paper's equations 11-13:
 \deqn{
   \mathcal{L}^{PS}(f, g) = \prod_{k=1}^n
