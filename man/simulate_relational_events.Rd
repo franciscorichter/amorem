@@ -25,7 +25,8 @@ simulate_relational_events(
   method = c("gillespie", "tau_leap"),
   tau = NULL,
   half_life = NULL,
-  risk = c("standard", "remove")
+  risk = c("standard", "remove"),
+  wide = FALSE
 )
 }
 \arguments{
@@ -227,6 +228,15 @@ the convention in Juozaitienė & Wit (2024). Required when any of
 eligible at every step. \code{"remove"} removes a dyad from the risk set
 as soon as it fires, which mimics one-shot processes such as species
 invasions or first-citation events.}
+
+\item{wide}{Logical; when \code{TRUE} (which requires \code{n_controls = 1}),
+the result is returned in a wide case-1-control format with one row per
+event instead of the default long format. Each row carries the event-dyad
+actors (\code{sender_ev}, \code{receiver_ev}), the matched non-event-dyad
+actors (\code{sender_nv}, \code{receiver_nv}), and, for every covariate
+column, the event value (\code{<cov>_ev}), the control value
+(\code{<cov>_nv}), and their difference (\code{d_<cov>}, event minus
+control). Defaults to \code{FALSE}.}
 }
 \value{
 If \code{n_controls = 0}, a data.frame with columns \code{sender},
@@ -238,7 +248,12 @@ per stat is appended carrying the value each row's dyad had at its event
 time (immediately before the event fired), so downstream conditional
 logistic / GAM estimators can recover the effects. When
 \code{global_covariates} is supplied, one column per covariate is appended
-carrying the value of that covariate at each row's event time.
+carrying the value of that covariate at each row's event time. When
+\code{wide = TRUE} (which requires \code{n_controls = 1}), this long
+case-control output is reshaped to one row per event with columns
+\code{stratum}, \code{time}, \code{sender_ev}, \code{receiver_ev},
+\code{sender_nv}, \code{receiver_nv} and, for each covariate,
+\code{<cov>_ev}, \code{<cov>_nv} and \code{d_<cov>}.
 }
 \description{
 Generate a simple relational event log for a sender set and receiver set
@@ -301,4 +316,16 @@ cc_events <- simulate_relational_events(
   n_controls = 2
 )
 head(cc_events)
+
+# Ready-made case-1-control (wide) dataset for degenerate logistic regression
+wide_events <- simulate_relational_events(
+  n_events = 5,
+  senders = senders,
+  receivers = receivers,
+  n_controls = 1,
+  endogenous_stats = "reciprocity_count",
+  endogenous_effects = c(reciprocity_count = 0.6),
+  wide = TRUE
+)
+head(wide_events)
 }
