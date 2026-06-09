@@ -27,11 +27,13 @@
 #'   \item `tve(x)`   — time-varying linear effect: `s(time, by = d_x)`.
 #'   \item `nle(x)`   — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
 #'   \item `tvnle(x)` — time-varying non-linear effect (tensor product).
-#'   \item `re(x)`    — random intercept for a grouping factor `x` (one value
-#'     per row, e.g. the sender): `s(x, bs = "re")`. Note: in a matched
-#'     case-control design a random effect shared by a case and its control
-#'     (e.g. a sender that is identical within the matched pair) is only weakly
-#'     identified; review the parameterization for your design.
+#'   \item `re(x)`    — random effect of a grouping factor `x` (e.g. the
+#'     sender), built from the matched `x_ev` / `x_nv` levels as
+#'     `s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")`, contributing
+#'     `f(event_level) - f(control_level)` (following the REM tutorial's
+#'     species-invasiveness term). Falls back to a single column `x` when
+#'     `x_ev` / `x_nv` are absent. Identified only when the event and control
+#'     differ on `x`.
 #' }
 #' For the degenerate method the left-hand side is ignored (the response is the
 #' constant case indicator); for `clogit` it is the 0/1 event indicator.
@@ -191,15 +193,25 @@ rem <- function(formula, data,
       rhs <- c(rhs, sprintf("te(%s, %s, by = %s%s)",
                             bt(".T"), bt(xc), bt(".I"), k_arg))
     } else if (ti$type == "re") {
-      # actor (or other grouping) random effect: s(factor, by = case/control
-      # sign, bs = "re"). The grouping column is taken as-is (one value per row,
-      # e.g. the sender), coerced to a factor.
-      fv <- data[[v]]
-      if (is.null(fv)) {
-        stop("Cannot find column '", v, "' for the re() random-effect term.")
+      # Actor (or other grouping) random effect, matching the matched
+      # case-control construction of the REM tutorial (Intro-to-REM, 3.4): an
+      # n x 2 factor matrix holding the grouping level of the event in column 1
+      # and of the matched control in column 2, with by = cbind(1, -1), so the
+      # term contributes f(event_level) - f(control_level) -- identifiable
+      # whenever the event and control differ on this grouping.
+      ev <- data[[paste0(v, "_ev")]]; nv <- data[[paste0(v, "_nv")]]
+      if (is.null(ev) || is.null(nv)) {
+        single <- data[[v]]
+        if (is.null(single)) {
+          stop("Cannot find columns for the re() term '", v, "' (looked for '",
+               v, "_ev'/'", v, "_nv' or '", v, "').")
+        }
+        ev <- single; nv <- single
       }
-      df[[v]] <- factor(as.character(fv))
-      rhs <- c(rhs, sprintf("s(%s, bs = \"re\")", bt(v)))
+      fmat <- factor(c(as.character(ev), as.character(nv)))
+      dim(fmat) <- c(n, 2L)
+      rc <- paste0(".RE_", v); df[[rc]] <- fmat
+      rhs <- c(rhs, sprintf("s(%s, by = %s, bs = \"re\")", bt(rc), bt(".I")))
     }
   }
   if (need_time)   df[[".time"]] <- get_time()

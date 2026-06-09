@@ -9,13 +9,12 @@ test_that("G4: rem() builds an re() random-effect smooth", {
     n_events = 300, senders = paste0("a", 1:8), receivers = paste0("a", 1:8),
     n_controls = 1, endogenous_stats = "reciprocity_count",
     endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
-  # an actor RE in a matched design can be weakly identified (mgcv may warn);
-  # we only check the term is built and the object is well-formed.
-  fit <- suppressWarnings(
-    rem(~ reciprocity_count + re(sender_ev), data = w, method = "degenerate"))
+  # re() builds the matched event/control random-effect smooth
+  # s(cbind(sender_ev, sender_nv), by = c(1,-1), bs = "re").
+  fit <- rem(~ reciprocity_count + re(sender), data = w, method = "degenerate")
   expect_s3_class(fit, "rem")
   expect_gt(length(fit$fit$smooth), 0L)            # the random-effect smooth
-  expect_true(any(grepl("sender_ev", names(coef(fit)))))
+  expect_true(is.finite(logLik(fit)))
 })
 
 test_that("G4: re() on a missing column errors clearly; clogit rejects it", {
