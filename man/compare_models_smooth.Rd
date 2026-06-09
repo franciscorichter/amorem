@@ -11,7 +11,8 @@ compare_models_smooth(
   mode = c("one", "two"),
   half_life = NULL,
   k = NULL,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ effect types: \code{"linear"}, \code{"tve"}, \code{"nle"}, or \code{"tvnle"}. Ex
 Default \code{NULL} lets \code{mgcv} choose (\code{-1}).}
 
 \item{seed}{Integer seed for the case-control sample.}
+
+\item{keep_fits}{Logical; when \code{TRUE}, the returned table carries the fitted
+model objects (one per spec, named by model, \code{NULL} for specs that failed)
+as \code{attr(result, "fits")}, e.g. for plotting estimated effects. Defaults to
+\code{FALSE}.}
 }
 \value{
 Data frame with one row per specification and columns

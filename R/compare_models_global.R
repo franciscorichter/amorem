@@ -75,6 +75,10 @@
 #'   (paper uses 10 for time-of-day).
 #' @param seed Integer seed for the case-control sample and the
 #'   shift draws.
+#' @param keep_fits Logical; when `TRUE`, the returned table carries the fitted
+#'   model objects (one per spec, named by model, `NULL` for specs that failed)
+#'   as `attr(result, "fits")`, e.g. for plotting estimated effects. Defaults to
+#'   `FALSE`.
 #' @return Data frame with one row per specification and columns
 #'   `model`, `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`.
 #' @references
@@ -111,7 +115,8 @@ compare_models_global <- function(event_log,
                                    half_life = NULL,
                                    shift_scale = 1,
                                    k = NULL, k_cyclic = 10,
-                                   seed = NULL) {
+                                   seed = NULL,
+                                   keep_fits = FALSE) {
   if (!requireNamespace("mgcv", quietly = TRUE)) {
     stop("The `mgcv` package is required by compare_models_global(). ",
          "Install it with install.packages(\"mgcv\").")
@@ -214,6 +219,8 @@ compare_models_global <- function(event_log,
 
   # 4. Per-spec design + mgcv::gam fit.
   rows <- vector("list", length(models))
+  fits <- vector("list", length(models))
+  names(fits) <- names(models)
   for (i in seq_along(models)) {
     spec <- models[[i]]
     cov_names <- names(spec); eff_names <- unname(spec)
@@ -287,10 +294,12 @@ compare_models_global <- function(event_log,
                  AIC = stats::AIC(fit),
                  stringsAsFactors = FALSE)
     }
+    fits[[i]] <- fit
   }
   out <- do.call(rbind, rows)
   out$delta_AIC <- out$AIC - min(out$AIC, na.rm = TRUE)
   out <- out[order(out$AIC), , drop = FALSE]
   rownames(out) <- NULL
+  if (keep_fits) attr(out, "fits") <- fits
   out
 }

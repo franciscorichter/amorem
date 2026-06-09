@@ -70,6 +70,11 @@ a name to request a smooth effect (degenerate method only):
 \item \code{tve(x)}   — time-varying linear effect: \code{s(time, by = d_x)}.
 \item \code{nle(x)}   — non-linear effect: \code{s(cbind(x_ev, x_nv), by = c(1, -1))}.
 \item \code{tvnle(x)} — time-varying non-linear effect (tensor product).
+\item \code{re(x)}    — random intercept for a grouping factor \code{x} (one value
+per row, e.g. the sender): \code{s(x, bs = "re")}. Note: in a matched
+case-control design a random effect shared by a case and its control
+(e.g. a sender that is identical within the matched pair) is only weakly
+identified; review the parameterization for your design.
 }
 For the degenerate method the left-hand side is ignored (the response is the
 constant case indicator); for \code{clogit} it is the 0/1 event indicator.

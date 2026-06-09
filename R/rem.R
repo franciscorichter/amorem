@@ -27,6 +27,11 @@
 #'   \item `tve(x)`   — time-varying linear effect: `s(time, by = d_x)`.
 #'   \item `nle(x)`   — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
 #'   \item `tvnle(x)` — time-varying non-linear effect (tensor product).
+#'   \item `re(x)`    — random intercept for a grouping factor `x` (one value
+#'     per row, e.g. the sender): `s(x, bs = "re")`. Note: in a matched
+#'     case-control design a random effect shared by a case and its control
+#'     (e.g. a sender that is identical within the matched pair) is only weakly
+#'     identified; review the parameterization for your design.
 #' }
 #' For the degenerate method the left-hand side is ignored (the response is the
 #' constant case indicator); for `clogit` it is the 0/1 event indicator.
@@ -83,7 +88,7 @@ rem <- function(formula, data,
     stop("`formula` must have at least one term on the right-hand side.")
   }
   parse_term <- function(lbl) {
-    m <- regmatches(lbl, regexec("^(tve|nle|tvnle)\\((.+)\\)$", lbl))[[1]]
+    m <- regmatches(lbl, regexec("^(tve|nle|tvnle|re)\\((.+)\\)$", lbl))[[1]]
     if (length(m) == 3L) list(type = m[2], var = trimws(m[3]))
     else list(type = "linear", var = lbl)
   }
@@ -185,6 +190,16 @@ rem <- function(formula, data,
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v); need_ttrans <- TRUE
       rhs <- c(rhs, sprintf("te(%s, %s, by = %s%s)",
                             bt(".T"), bt(xc), bt(".I"), k_arg))
+    } else if (ti$type == "re") {
+      # actor (or other grouping) random effect: s(factor, by = case/control
+      # sign, bs = "re"). The grouping column is taken as-is (one value per row,
+      # e.g. the sender), coerced to a factor.
+      fv <- data[[v]]
+      if (is.null(fv)) {
+        stop("Cannot find column '", v, "' for the re() random-effect term.")
+      }
+      df[[v]] <- factor(as.character(fv))
+      rhs <- c(rhs, sprintf("s(%s, bs = \"re\")", bt(v)))
     }
   }
   if (need_time)   df[[".time"]] <- get_time()

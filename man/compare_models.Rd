@@ -12,7 +12,8 @@ compare_models(
   mode = c("one", "two"),
   random_effects = NULL,
   half_life = NULL,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 }
 \arguments{
@@ -52,6 +53,11 @@ baselines once actor effects are absorbed). Defaults to \code{NULL}
 exp-decay stat. Shared across all specs that use one.}
 
 \item{seed}{Optional integer seed for the case-control sample.}
+
+\item{keep_fits}{Logical; when \code{TRUE}, the returned table carries the fitted
+model objects (one per spec, named by model, \code{NULL} for specs that failed)
+as \code{attr(result, "fits")}, e.g. for plotting estimated effects. Defaults to
+\code{FALSE}.}
 }
 \value{
 A data frame with one row per specification and columns

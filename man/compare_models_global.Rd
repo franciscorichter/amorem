@@ -14,7 +14,8 @@ compare_models_global(
   shift_scale = 1,
   k = NULL,
   k_cyclic = 10,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,11 @@ for the exponential shift distribution. Defaults to 1.}
 
 \item{seed}{Integer seed for the case-control sample and the
 shift draws.}
+
+\item{keep_fits}{Logical; when \code{TRUE}, the returned table carries the fitted
+model objects (one per spec, named by model, \code{NULL} for specs that failed)
+as \code{attr(result, "fits")}, e.g. for plotting estimated effects. Defaults to
+\code{FALSE}.}
 }
 \value{
 Data frame with one row per specification and columns

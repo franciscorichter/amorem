@@ -56,6 +56,10 @@
 #' @param half_life Required when any specification contains an
 #'   exp-decay stat. Shared across all specs that use one.
 #' @param seed Optional integer seed for the case-control sample.
+#' @param keep_fits Logical; when `TRUE`, the returned table carries the fitted
+#'   model objects (one per spec, named by model, `NULL` for specs that failed)
+#'   as `attr(result, "fits")`, e.g. for plotting estimated effects. Defaults to
+#'   `FALSE`.
 #' @return A data frame with one row per specification and columns
 #'   `model`, `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`. Sorted
 #'   ascending by `AIC`. The model with the lowest AIC has
@@ -87,7 +91,8 @@ compare_models <- function(event_log,
                             mode = c("one", "two"),
                             random_effects = NULL,
                             half_life = NULL,
-                            seed = NULL) {
+                            seed = NULL,
+                            keep_fits = FALSE) {
   if (!is.data.frame(event_log)) stop("`event_log` must be a data.frame.")
   if (!is.list(models) || !length(models)) {
     stop("`models` must be a non-empty named list of character vectors.")
@@ -171,6 +176,8 @@ compare_models <- function(event_log,
     diff_df$one <- 1
 
     rows <- vector("list", length(models))
+    fits <- vector("list", length(models))
+    names(fits) <- names(models)
     for (i in seq_along(models)) {
       stat_set <- models[[i]]
       fm <- stats::as.formula(paste("one ~",
@@ -183,6 +190,7 @@ compare_models <- function(event_log,
         log_lik = as.numeric(stats::logLik(fit)),
         AIC     = stats::AIC(fit),
         stringsAsFactors = FALSE)
+      fits[[i]] <- fit
     }
   } else {
     # Multiple controls per case: fit a true conditional-logistic
@@ -224,6 +232,8 @@ compare_models <- function(event_log,
     }
 
     rows <- vector("list", length(models))
+    fits <- vector("list", length(models))
+    names(fits) <- names(models)
     for (i in seq_along(models)) {
       stat_set <- models[[i]]
       if (two_axis) {
@@ -276,11 +286,13 @@ compare_models <- function(event_log,
           AIC     = stats::AIC(fit),
           stringsAsFactors = FALSE)
       }
+      fits[[i]] <- fit
     }
   }
   out <- do.call(rbind, rows)
   out$delta_AIC <- out$AIC - min(out$AIC, na.rm = TRUE)
   out <- out[order(out$AIC), , drop = FALSE]
   rownames(out) <- NULL
+  if (keep_fits) attr(out, "fits") <- fits
   out
 }
