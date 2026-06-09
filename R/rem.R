@@ -14,7 +14,10 @@
 #'     smooth time-varying (`tve`), non-linear (`nle`) and time-varying
 #'     non-linear (`tvnle`) effects via [mgcv::gam()].}
 #'   \item{`"clogit"`}{Conditional logistic regression on a case-k-control
-#'     design via [survival::clogit()]. *(Added with issue #84.)*}
+#'     design via [survival::clogit()] (linear terms only). The case/control
+#'     strata are taken from `stratum`, or derived as `cumsum(case == 1)` when
+#'     `stratum` is `NULL` (assuming each case is immediately followed by its
+#'     controls, the eventnet blocked layout).}
 #' }
 #'
 #' @section Formula syntax:
@@ -55,6 +58,8 @@
 #'   (whose `wide = TRUE` output is a valid input here),
 #'   [simulate_directed_hyperevents_tvnl()].
 #'
+#' @importFrom survival clogit strata coxph Surv
+#'
 #' @examples
 #' set.seed(1)
 #' w <- simulate_relational_events(
@@ -85,8 +90,33 @@ rem <- function(formula, data,
   terms_info <- lapply(term_labels, parse_term)
 
   if (method == "clogit") {
-    stop("method = \"clogit\" is not implemented yet (it arrives with issue ",
-         "#84); use method = \"degenerate\" for the case-1-control fit.")
+    if (!requireNamespace("survival", quietly = TRUE)) {
+      stop("The `survival` package is required by rem(method = \"clogit\"). ",
+           "Install it with install.packages(\"survival\").")
+    }
+    if (any(vapply(terms_info, function(t) t$type != "linear", logical(1)))) {
+      stop("method = \"clogit\" supports linear terms only; smooth terms ",
+           "(tve/nle/tvnle) require method = \"degenerate\".")
+    }
+    ci <- data[[case]]
+    if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
+    strat <- .derive_stratum(data, case, stratum)
+    vars <- vapply(terms_info, function(t) t$var, character(1))
+    miss <- setdiff(vars, names(data))
+    if (length(miss)) {
+      stop("Covariate column(s) not found in `data`: ", paste(miss, collapse = ", "))
+    }
+    cl <- data.frame(.case = as.integer(ci), .strat = strat,
+                     stringsAsFactors = FALSE)
+    for (v in vars) cl[[v]] <- data[[v]]
+    fm <- stats::as.formula(paste0(
+      ".case ~ ", paste(sprintf("`%s`", vars), collapse = " + "),
+      " + strata(.strat)"))
+    fit <- survival::clogit(fm, data = cl)
+    return(structure(
+      list(fit = fit, method = method, formula = formula,
+           terms = terms_info, n = nrow(data), gam_formula = fm),
+      class = "rem"))
   }
 
   if (!requireNamespace("mgcv", quietly = TRUE)) {
@@ -189,3 +219,32 @@ plot.rem <- function(x, ...) plot(x$fit, ...)
 
 #' @export
 logLik.rem <- function(object, ...) stats::logLik(object$fit)
+
+# Derive the case-control stratum vector aligned to data's rows.
+# If `stratum` names a column, use it (forward-filling blanks, since eventnet
+# leaves the stratum id empty on control rows); otherwise derive it as
+# cumsum(case == 1), which labels each case-then-controls block.
+.derive_stratum <- function(data, case, stratum) {
+  if (!is.null(stratum)) {
+    if (is.null(data[[stratum]])) {
+      stop("stratum column '", stratum, "' not found in `data`.")
+    }
+    s <- as.character(data[[stratum]])
+    blank <- is.na(s) | !nzchar(s)
+    if (any(blank)) {                       # forward-fill from the case rows
+      last <- NA_character_
+      for (i in seq_along(s)) {
+        if (!blank[i]) last <- s[i]
+        s[i] <- last
+      }
+      if (anyNA(s)) {
+        stop("Could not fill stratum for some rows; the first row must be a ",
+             "case, or pass a fully populated `stratum` column.")
+      }
+    }
+    return(s)
+  }
+  ci <- data[[case]]
+  if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
+  cumsum(as.integer(ci) == 1L)
+}

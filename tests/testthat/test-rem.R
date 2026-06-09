@@ -74,6 +74,7 @@ test_that("rem() errors helpfully on bad input", {
                "time")                                  # missing `time`
   expect_error(rem(~ no_such_cov, data = w, method = "degenerate"),
                "Cannot find")
+  # clogit needs a case-indicator column; the wide fixture has none
   expect_error(rem(~ reciprocity_count, data = w, method = "clogit"),
-               "not implemented yet")
+               "case column")
 })

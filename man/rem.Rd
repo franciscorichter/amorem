@@ -56,7 +56,10 @@ linear predictor is built from event-minus-control differences. Supports
 smooth time-varying (\code{tve}), non-linear (\code{nle}) and time-varying
 non-linear (\code{tvnle}) effects via \code{\link[mgcv:gam]{mgcv::gam()}}.}
 \item{\code{"clogit"}}{Conditional logistic regression on a case-k-control
-design via \code{\link[survival:clogit]{survival::clogit()}}. \emph{(Added with issue #84.)}}
+design via \code{\link[survival:clogit]{survival::clogit()}} (linear terms only). The case/control
+strata are taken from \code{stratum}, or derived as \code{cumsum(case == 1)} when
+\code{stratum} is \code{NULL} (assuming each case is immediately followed by its
+controls, the eventnet blocked layout).}
 }
 }
 \section{Formula syntax}{
