@@ -91,6 +91,7 @@ call_cpp <- function(ev, stats, half_life = NA_real_) {
                        as.character(ev$receiver),
                        as.numeric(ev$time),
                        stats,
+                       logical(0),
                        half_life)
 }
 
@@ -220,7 +221,8 @@ test_that("C++ exp_decay errors out when half_life is missing", {
     compute_features_cpp(as.character(classroom_events$sender),
                          as.character(classroom_events$receiver),
                          as.numeric(classroom_events$time),
-                         "transitivity_exp_decay"),
+                         "transitivity_exp_decay",
+                         logical(0)),
     regexp = "half_life")
 })
 
