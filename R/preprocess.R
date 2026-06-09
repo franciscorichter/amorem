@@ -197,6 +197,16 @@ attach_static_covariates <- function(
 #'   exponential-decay statistics (`*_exp_decay*`).
 #' @param sort Logical; when `TRUE`, events are ordered by time prior to
 #'   computing summaries (ties preserve input order).
+#' @param history_log Optional data.frame giving the authoritative event
+#'   history (columns `sender`, `receiver`, `time`). When supplied, only rows
+#'   of `event_log` whose `(sender, receiver, time)` triple appears in
+#'   `history_log` update the running network state; all other rows (e.g.
+#'   sampled non-events / controls) have their statistics computed against
+#'   that history but never enter it. This makes it possible to evaluate
+#'   endogenous statistics for non-events without those non-events polluting
+#'   the history. Defaults to `NULL` (every row is treated as an event).
+#'   Currently supported only for statistics handled by the C++ engine
+#'   (see [cpp_supported_stats()]).
 #'
 #' @details All statistics are evaluated immediately **before** the event is
 #'   logged.  They are grouped into five families.
@@ -285,7 +295,8 @@ compute_endogenous_features <- function(
     event_log,
     stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
     half_life = NULL,
-    sort = TRUE) {
+    sort = TRUE,
+    history_log = NULL) {
 
   if (!is.data.frame(event_log)) {
     stop("`event_log` must be a data.frame.")
@@ -295,6 +306,22 @@ compute_endogenous_features <- function(
   if (length(missing_cols)) {
     stop("Event log is missing required column(s): ",
          paste(missing_cols, collapse = ", "))
+  }
+  # Optional authoritative event history. When supplied, only rows of
+  # `event_log` whose (sender, receiver, time) triple appears in
+  # `history_log` update the running state; all other rows (e.g. sampled
+  # non-events / controls) have their statistics computed but never enter
+  # the history. This lets the statistics for non-events be evaluated
+  # against the true event history without those non-events polluting it.
+  if (!is.null(history_log)) {
+    if (!is.data.frame(history_log)) {
+      stop("`history_log` must be a data.frame or NULL.")
+    }
+    hl_missing <- setdiff(required_cols, names(history_log))
+    if (length(hl_missing)) {
+      stop("`history_log` is missing required column(s): ",
+           paste(hl_missing, collapse = ", "))
+    }
   }
 
   allowed <- c(
@@ -379,11 +406,27 @@ compute_endogenous_features <- function(
     log_df <- log_df[ord, , drop = FALSE]
   }
 
+  # Build the per-row event mask (aligned to log_df's row order). Empty when
+  # no history_log is supplied, which the C++ engine reads as "all rows are
+  # events" (the original, history-free behaviour).
+  is_event_mask <- logical(0)
+  if (!is.null(history_log)) {
+    history_keys <- paste(as.character(history_log$sender),
+                          as.character(history_log$receiver),
+                          as.numeric(history_log$time), sep = "\r")
+    row_keys <- paste(as.character(log_df$sender),
+                      as.character(log_df$receiver),
+                      as.numeric(log_df$time), sep = "\r")
+    is_event_mask <- row_keys %in% history_keys
+  }
+
   # Fast path: when every requested statistic is supported by the
   # C++ inner loop, dispatch there. The C++ implementation uses
   # integer-indexed std::vector state, eliminating the env-based
   # hashmap lookups that account for ~80% of the R loop's runtime
-  # on dense logs (paper/figures/benchmark_C_posthoc.csv).
+  # on dense logs (paper/figures/benchmark_C_posthoc.csv). The C++ engine
+  # honours `is_event_mask` natively, so the history-aware path is just as
+  # fast as the history-free one.
   cpp_ok_stats <- cpp_supported_stats()
   if (nrow(log_df) > 0L && all(stats %in% cpp_ok_stats)) {
     # `half_life` is forwarded so the C++ path can compute the
@@ -394,11 +437,20 @@ compute_endogenous_features <- function(
       as.character(log_df$receiver),
       as.numeric(log_df$time),
       stats,
+      is_event_mask,
       if (is.null(half_life)) NA_real_ else as.numeric(half_life))
     for (st in stats) {
       log_df[[st]] <- cpp_cols[[st]]
     }
     return(log_df)
+  }
+
+  # The pure-R fallback below does not yet honour history_log. It is only
+  # reached for statistics outside the C++ engine; guard the combination
+  # rather than silently ignoring the history.
+  if (!is.null(history_log)) {
+    stop("history_log is currently supported only for statistics handled by ",
+         "the C++ engine (see cpp_supported_stats()).")
   }
 
   n <- nrow(log_df)

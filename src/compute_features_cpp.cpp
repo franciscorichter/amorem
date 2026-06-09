@@ -362,11 +362,21 @@ List compute_features_cpp(CharacterVector senders,
                           CharacterVector receivers,
                           NumericVector times,
                           CharacterVector stat_names,
+                          LogicalVector is_event,
                           double half_life = NA_REAL) {
 
   const R_xlen_t n = senders.size();
   if (n != receivers.size() || n != times.size()) {
     stop("senders, receivers, times must have the same length.");
+  }
+  // `is_event` marks which rows update the running history state. Length 0
+  // means "every row is an event" (the default, history-free behaviour);
+  // otherwise rows with is_event[i] == FALSE are read-only -- their
+  // statistics are computed, but they never enter the history (used so that
+  // sampled non-events / controls do not pollute the event history).
+  const bool mask_active = (is_event.size() > 0);
+  if (mask_active && is_event.size() != n) {
+    stop("is_event must have length 0 (all events) or length n.");
   }
 
   uint64_t active = 0u;
@@ -609,8 +619,13 @@ List compute_features_cpp(CharacterVector senders,
   NumericVector sending_balance_exp_decay_ordered   (active_extra & FE_SENDING_BALANCE_EXP_DECAY_ORDERED ? n : 0);
   NumericVector receiving_balance_exp_decay_ordered (active_extra & FE_RECEIVING_BALANCE_EXP_DECAY_ORDERED ? n : 0);
 
-  // 4. Main loop.
-  for (R_xlen_t i = 0; i < n; ++i) {
+  // 4. Main loop. The per-row READ phase (compute every statistic) and
+  // WRITE phase (update the history state) are factored into lambdas so they
+  // can be driven two ways: history-free in row order (preserving the
+  // documented "ties resolve in row order" semantics and the prior
+  // behaviour), or history-aware in time groups (so non-events read the
+  // pre-t state and never write).
+  auto do_read = [&](R_xlen_t i) {
     const int s = s_idx[i], r = r_idx[i];
     const double ti = times[i];
     const long long key_sr = (long long)s * A + r;
@@ -930,6 +945,13 @@ List compute_features_cpp(CharacterVector senders,
       }
     }
 
+  };  // end do_read
+
+  auto do_write = [&](R_xlen_t i) {
+    const int s = s_idx[i], r = r_idx[i];
+    const double ti = times[i];
+    const long long key_sr = (long long)s * A + r;
+
     // --- state update (after stats are read) ---
     sender_count[s] += 1;
     receiver_count[r] += 1;
@@ -939,15 +961,35 @@ List compute_features_cpp(CharacterVector senders,
       auto it = dyad_first_time.find(key_sr);
       if (it == dyad_first_time.end()) dyad_first_time.emplace(key_sr, ti);
     }
-    // Per-dyad event-time vector (only when any ordered-form stat
-    // needs it). Events arrive in chronological order, so the
-    // vector stays sorted by simple push_back.
+    // Per-dyad event-time vector (only when any ordered-form stat needs
+    // it). Events arrive in chronological order, so the vector stays
+    // sorted by simple push_back.
     if (need_any_form_ord) {
       dyad_times[key_sr].push_back(ti);
     }
     if (need_triadic) {
       sorted_insert_unique(out_targets[s], r);
       sorted_insert_unique(in_sources[r], s);
+    }
+  };  // end do_write
+
+  if (!mask_active) {
+    // History-free behaviour: process rows in row order, reading then
+    // immediately writing, so tied timestamps resolve in row order. This
+    // is identical to the original single-pass loop.
+    for (R_xlen_t i = 0; i < n; ++i) { do_read(i); do_write(i); }
+  } else {
+    // History-aware behaviour: process in time groups. Every row at time t
+    // runs its READ phase before any WRITE, so all rows sharing t see the
+    // state as it stood strictly before t; only actual events
+    // (is_event[i]) update the history, so sampled non-events never
+    // pollute it.
+    for (R_xlen_t g = 0; g < n; ) {
+      R_xlen_t g_end = g;
+      while (g_end < n && times[g_end] == times[g]) ++g_end;
+      for (R_xlen_t i = g; i < g_end; ++i) do_read(i);
+      for (R_xlen_t i = g; i < g_end; ++i) if (is_event[i] == TRUE) do_write(i);
+      g = g_end;
     }
   }
 
