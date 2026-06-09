@@ -67,7 +67,8 @@ compare_models_global(
   shift_scale = 1,
   k = NULL,
   k_cyclic = 10,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 ```
 
@@ -116,6 +117,13 @@ compare_models_global(
 - seed:
 
   Integer seed for the case-control sample and the shift draws.
+
+- keep_fits:
+
+  Logical; when `TRUE`, the returned table carries the fitted model
+  objects (one per spec, named by model, `NULL` for specs that failed)
+  as `attr(result, "fits")`, e.g. for plotting estimated effects.
+  Defaults to `FALSE`.
 
 ## Value
 

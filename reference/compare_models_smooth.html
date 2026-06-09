@@ -132,7 +132,8 @@ fit uses the same case-control sample. Returns the same tidy
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"one"</span>, <span class="st">"two"</span><span class="op">)</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  k <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  keep_fits <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -173,6 +174,13 @@ Default <code>NULL</code> lets <code>mgcv</code> choose (<code>-1</code>).</p></
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Integer seed for the case-control sample.</p></dd>
+
+
+<dt id="arg-keep-fits">keep_fits<a class="anchor" aria-label="anchor" href="#arg-keep-fits"></a></dt>
+<dd><p>Logical; when <code>TRUE</code>, the returned table carries the fitted
+model objects (one per spec, named by model, <code>NULL</code> for specs that failed)
+as <code>attr(result, "fits")</code>, e.g. for plotting estimated effects. Defaults to
+<code>FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

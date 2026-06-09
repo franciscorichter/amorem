@@ -38,7 +38,8 @@ compare_models(
   mode = c("one", "two"),
   random_effects = NULL,
   half_life = NULL,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 ```
 
@@ -96,6 +97,13 @@ compare_models(
 - seed:
 
   Optional integer seed for the case-control sample.
+
+- keep_fits:
+
+  Logical; when `TRUE`, the returned table carries the fitted model
+  objects (one per spec, named by model, `NULL` for specs that failed)
+  as `attr(result, "fits")`, e.g. for plotting estimated effects.
+  Defaults to `FALSE`.
 
 ## Value
 

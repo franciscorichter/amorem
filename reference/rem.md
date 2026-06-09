@@ -105,6 +105,12 @@ effect; wrap a name to request a smooth effect (degenerate method only):
 
 - `tvnle(x)` — time-varying non-linear effect (tensor product).
 
+- `re(x)` — random intercept for a grouping factor `x` (one value per
+  row, e.g. the sender): `s(x, bs = "re")`. Note: in a matched
+  case-control design a random effect shared by a case and its control
+  (e.g. a sender that is identical within the matched pair) is only
+  weakly identified; review the parameterization for your design.
+
 For the degenerate method the left-hand side is ignored (the response is
 the constant case indicator); for `clogit` it is the 0/1 event
 indicator.

@@ -57,7 +57,8 @@ compare_models_smooth(
   mode = c("one", "two"),
   half_life = NULL,
   k = NULL,
-  seed = NULL
+  seed = NULL,
+  keep_fits = FALSE
 )
 ```
 
@@ -100,6 +101,13 @@ compare_models_smooth(
 - seed:
 
   Integer seed for the case-control sample.
+
+- keep_fits:
+
+  Logical; when `TRUE`, the returned table carries the fitted model
+  objects (one per spec, named by model, `NULL` for specs that failed)
+  as `attr(result, "fits")`, e.g. for plotting estimated effects.
+  Defaults to `FALSE`.
 
 ## Value
 
