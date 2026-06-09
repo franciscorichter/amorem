@@ -30,6 +30,14 @@
 #'   uniformly at random for each realized event. If \code{n_controls > 0}, the
 #'   function returns a case-control data frame suitable for conditional logistic
 #'   regression / GAM modeling. Defaults to 0.
+#' @param wide Logical; when \code{TRUE} (which requires \code{n_controls = 1}),
+#'   the result is returned in a wide case-1-control format with one row per
+#'   event instead of the default long format. Each row carries the event-dyad
+#'   actors (\code{sender_ev}, \code{receiver_ev}), the matched non-event-dyad
+#'   actors (\code{sender_nv}, \code{receiver_nv}), and, for every covariate
+#'   column, the event value (\code{<cov>_ev}), the control value
+#'   (\code{<cov>_nv}), and their difference (\code{d_<cov>}, event minus
+#'   control). Defaults to \code{FALSE}.
 #' @param endogenous_stats Optional character vector of endogenous mechanisms to
 #'   include in the rate. Each entry updates a state matrix after every event so
 #'   the intensity of the next event depends on the realized history. Supported
@@ -193,7 +201,12 @@
 #'   time (immediately before the event fired), so downstream conditional
 #'   logistic / GAM estimators can recover the effects. When
 #'   \code{global_covariates} is supplied, one column per covariate is appended
-#'   carrying the value of that covariate at each row's event time.
+#'   carrying the value of that covariate at each row's event time. When
+#'   \code{wide = TRUE} (which requires \code{n_controls = 1}), this long
+#'   case-control output is reshaped to one row per event with columns
+#'   \code{stratum}, \code{time}, \code{sender_ev}, \code{receiver_ev},
+#'   \code{sender_nv}, \code{receiver_nv} and, for each covariate,
+#'   \code{<cov>_ev}, \code{<cov>_nv} and \code{d_<cov>}.
 #'
 #' @details When \code{global_covariates} is supplied, the simulator uses a
 #'   boundary-aware Gillespie scheme: the total event rate is rescaled by
@@ -250,6 +263,18 @@
 #'   n_controls = 2
 #' )
 #' head(cc_events)
+#'
+#' # Ready-made case-1-control (wide) dataset for degenerate logistic regression
+#' wide_events <- simulate_relational_events(
+#'   n_events = 5,
+#'   senders = senders,
+#'   receivers = receivers,
+#'   n_controls = 1,
+#'   endogenous_stats = "reciprocity_count",
+#'   endogenous_effects = c(reciprocity_count = 0.6),
+#'   wide = TRUE
+#' )
+#' head(wide_events)
 simulate_relational_events <- function(
     n_events,
     senders,
@@ -271,10 +296,47 @@ simulate_relational_events <- function(
     method = c("gillespie", "tau_leap"),
     tau = NULL,
     half_life = NULL,
-    risk = c("standard", "remove")) {
+    risk = c("standard", "remove"),
+    wide = FALSE) {
   risk <- match.arg(risk)
   stopifnot(length(n_events) == 1, n_events >= 0)
   n_events <- as.integer(n_events)
+
+  stopifnot(length(wide) == 1L, is.logical(wide), !is.na(wide))
+  if (wide && (length(n_controls) != 1L || n_controls != 1L)) {
+    stop("wide = TRUE requires n_controls = 1 (a case-1-control design).")
+  }
+  # Reshape the long case-control output (one case + one matched control per
+  # stratum) into a wide case-1-control table: one row per event carrying the
+  # event-dyad actors, the matched non-event-dyad actors, and -- for every
+  # covariate column -- the event value (`<cov>_ev`), the control value
+  # (`<cov>_nv`), and their difference (`d_<cov>`, event minus control).
+  # Works on empty inputs too (returns a 0-row frame with the same columns).
+  to_wide_case_control <- function(long) {
+    cov_names <- setdiff(names(long),
+                         c("stratum", "event", "sender", "receiver", "time"))
+    cases <- long[long$event == 1L, , drop = FALSE]
+    ctrls <- long[long$event == 0L, , drop = FALSE]
+    cases <- cases[order(cases$stratum), , drop = FALSE]
+    ctrls <- ctrls[order(ctrls$stratum), , drop = FALSE]
+    w <- data.frame(
+      stratum     = cases$stratum,
+      time        = cases$time,
+      sender_ev   = cases$sender,
+      receiver_ev = cases$receiver,
+      sender_nv   = ctrls$sender,
+      receiver_nv = ctrls$receiver,
+      stringsAsFactors = FALSE
+    )
+    for (cn in cov_names) {
+      w[[paste0(cn, "_ev")]] <- cases[[cn]]
+      w[[paste0(cn, "_nv")]] <- ctrls[[cn]]
+      w[[paste0("d_", cn)]]  <- cases[[cn]] - ctrls[[cn]]
+    }
+    rownames(w) <- NULL
+    w
+  }
+
   if (n_events == 0L) {
     # Degenerate request: nothing to simulate. Return an empty event
     # log so downstream pipelines that conditionally generate data
@@ -294,7 +356,7 @@ simulate_relational_events <- function(
       gc_names <- setdiff(names(global_covariates), "time_start")
       for (cn in gc_names) out[[cn]] <- numeric(0)
     }
-    return(out)
+    return(if (wide) to_wide_case_control(out) else out)
   }
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
@@ -1651,7 +1713,7 @@ simulate_relational_events <- function(
     if (global_active) {
       for (cn in global_cov_names) out[[cn]] <- numeric(0)
     }
-    return(out)
+    return(if (wide) to_wide_case_control(out) else out)
   }
 
   if (n_controls == 0) {
@@ -1708,6 +1770,6 @@ simulate_relational_events <- function(
     out <- rbind(realized_df, control_df)
     out <- out[order(out$time, decreasing = FALSE), ]
     rownames(out) <- NULL
-    return(out)
+    return(if (wide) to_wide_case_control(out) else out)
   }
 }
