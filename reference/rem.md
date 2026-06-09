@@ -105,11 +105,13 @@ effect; wrap a name to request a smooth effect (degenerate method only):
 
 - `tvnle(x)` — time-varying non-linear effect (tensor product).
 
-- `re(x)` — random intercept for a grouping factor `x` (one value per
-  row, e.g. the sender): `s(x, bs = "re")`. Note: in a matched
-  case-control design a random effect shared by a case and its control
-  (e.g. a sender that is identical within the matched pair) is only
-  weakly identified; review the parameterization for your design.
+- `re(x)` — random effect of a grouping factor `x` (e.g. the sender),
+  built from the matched `x_ev` / `x_nv` levels as
+  `s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")`, contributing
+  `f(event_level) - f(control_level)` (following the REM tutorial's
+  species-invasiveness term). Falls back to a single column `x` when
+  `x_ev` / `x_nv` are absent. Identified only when the event and control
+  differ on `x`.
 
 For the degenerate method the left-hand side is ignored (the response is
 the constant case indicator); for `clogit` it is the 0/1 event

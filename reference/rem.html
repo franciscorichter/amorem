@@ -131,11 +131,13 @@ controls, the eventnet blocked layout).</p></dd>
 a name to request a smooth effect (degenerate method only):</p><ul><li><p><code>tve(x)</code>   — time-varying linear effect: <code>s(time, by = d_x)</code>.</p></li>
 <li><p><code>nle(x)</code>   — non-linear effect: <code>s(cbind(x_ev, x_nv), by = c(1, -1))</code>.</p></li>
 <li><p><code>tvnle(x)</code> — time-varying non-linear effect (tensor product).</p></li>
-<li><p><code>re(x)</code>    — random intercept for a grouping factor <code>x</code> (one value
-per row, e.g. the sender): <code>s(x, bs = "re")</code>. Note: in a matched
-case-control design a random effect shared by a case and its control
-(e.g. a sender that is identical within the matched pair) is only weakly
-identified; review the parameterization for your design.</p></li>
+<li><p><code>re(x)</code>    — random effect of a grouping factor <code>x</code> (e.g. the
+sender), built from the matched <code>x_ev</code> / <code>x_nv</code> levels as
+<code>s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")</code>, contributing
+<code>f(event_level) - f(control_level)</code> (following the REM tutorial's
+species-invasiveness term). Falls back to a single column <code>x</code> when
+<code>x_ev</code> / <code>x_nv</code> are absent. Identified only when the event and control
+differ on <code>x</code>.</p></li>
 </ul><p>For the degenerate method the left-hand side is ignored (the response is the
 constant case indicator); for <code>clogit</code> it is the 0/1 event indicator.</p>
     </div>
