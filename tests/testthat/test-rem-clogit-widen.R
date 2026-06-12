@@ -62,6 +62,23 @@ test_that("widen_case_control() produces ev/nv/diff columns, one row per case", 
   expect_true(all(w$d_x == 2))
 })
 
+test_that("widen_case_control() auto-detects the event-indicator column", {
+  # `event` (sample_non_events convention) is found without passing `case`
+  ev <- data.frame(event = rep(c(1, 0, 0), 4),
+                   x = rnorm(12), stringsAsFactors = FALSE)
+  w_ev <- widen_case_control(ev)
+  expect_equal(nrow(w_ev), 4L)
+  expect_true(all(c("x_ev", "x_nv", "d_x") %in% names(w_ev)))
+  # `event` is preferred over `IS_OBSERVED` when both are present
+  both <- data.frame(event = rep(c(1, 0), 3), IS_OBSERVED = rep(c(0, 1), 3),
+                     x = rnorm(6), stringsAsFactors = FALSE)
+  expect_equal(nrow(widen_case_control(both)), 3L)  # 3 cases by `event`
+  # neither convention present -> a clear error
+  expect_error(
+    widen_case_control(data.frame(flag = c(1, 0), x = rnorm(2))),
+    "Could not find a 0/1 event-indicator")
+})
+
 test_that("widen + rem(gam) round-trips on a simulated case-k-control log", {
   skip_if_not_installed("mgcv")
   cc <- make_long_cc(n = 150, n_controls = 5)

@@ -11,7 +11,10 @@
 #' on control rows.
 #'
 #' @param data A long case-control data.frame.
-#' @param case Name of the 0/1 event-indicator column.
+#' @param case Optional name of the 0/1 event-indicator column. If `NULL`
+#'   (default), it is auto-detected from the package's `event` column (as
+#'   produced by [sample_non_events()]) or eventnet's `IS_OBSERVED`, preferring
+#'   `event` when both are present.
 #' @param stratum Optional name of the column grouping each case with its
 #'   controls. When `NULL`, the stratum is derived as `cumsum(case == 1)`
 #'   (assuming each case is immediately followed by its controls).
@@ -36,9 +39,20 @@
 #' widen_case_control(long, control_index = 1)
 #'
 #' @export
-widen_case_control <- function(data, case = "IS_OBSERVED", stratum = NULL,
+widen_case_control <- function(data, case = NULL, stratum = NULL,
                                covariates = NULL, control_index = 1L) {
   if (!is.data.frame(data)) stop("`data` must be a data.frame.")
+  # Resolve the 0/1 indicator column: explicit `case`, else auto-detect the
+  # package (`event`, from sample_non_events()) or eventnet (`IS_OBSERVED`)
+  # convention, preferring `event` when both are present.
+  if (is.null(case)) {
+    cand <- intersect(c("event", "IS_OBSERVED"), names(data))
+    if (!length(cand)) {
+      stop("Could not find a 0/1 event-indicator column (looked for `event` ",
+           "and `IS_OBSERVED`). Pass `case` explicitly.")
+    }
+    case <- cand[1L]
+  }
   ci <- data[[case]]
   if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
   ci <- as.integer(ci)
