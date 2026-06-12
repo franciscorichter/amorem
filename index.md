@@ -85,7 +85,7 @@ summary(fit)
 | [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](articles/datasets.html) | the bundled REM datasets |
 | [Real-data analysis](articles/real-data-analysis.html) | sender-frailty flip, smooth effect curves |
-| [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity |
+| [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 
 Full per-function documentation is under [Reference](reference/index.html).
 

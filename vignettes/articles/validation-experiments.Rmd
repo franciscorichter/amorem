@@ -196,6 +196,49 @@ in downstream fitting**.
 
 ---
 
+## E6 — Neural backend: gradient correctness and interaction recovery
+
+**Property.** The `nn` backend's hand-derived analytic gradients must
+match numerical differentiation, and the fitted network must (a) match a
+linear conditional logit when the truth is linear, and (b) outperform it
+when effects interact in a way an additive model cannot represent.
+
+**Design.**
+
+- *Gradients.* A 3-feature MLP on four strata; compare every analytic
+  gradient entry to a central finite difference.
+- *Recovery.* 600 case-1-control strata, where the event in each stratum
+  is drawn by a softmax over a true score. Two regimes: a **linear** truth
+  $\eta = 1.5\,x_1$ and an **interaction** truth $\eta = 2.5\,x_1 x_2$. Fit
+  `rem(method = "nn")` and `rem(method = "clogit")` on each and compare
+  top-1 concordance (the fraction of strata whose observed event scores
+  highest).
+
+**Driver.** `experiments/exp6_nn.R`
+
+**Result — passes.** Analytic and numerical gradients agree to
+$\max|\cdot| = 1.4 \times 10^{-10}$, confirming the backprop. Under the
+linear truth the neural backend matches the linear conditional logit
+(0.78 vs 0.78 — no overfitting penalty); under the interaction truth, where
+the additive `clogit` is stuck near chance (0.52), the joint MLP recovers
+the structure (0.81).
+
+| Truth | `clogit` (linear) | `nn` (MLP) |
+|---|---:|---:|
+| $\eta = 1.5\,x_1$ (linear) | 0.78 | 0.78 |
+| $\eta = 2.5\,x_1 x_2$ (interaction) | 0.52 | 0.81 |
+
+![nn recovery and learned interaction surface](figures/exp6-nn.png)
+
+The learned score surface (right) reproduces the saddle of
+$2.5\,x_1 x_2$ — high at the matching-sign corners, low at the
+opposite-sign corners. This is exactly the case the neural backend is for:
+when endogenous effects interact, the additive backends cannot represent
+the structure, and the MLP — which scores the full candidate vector
+jointly — does.
+
+---
+
 ## Reproducing the experiments
 
 ```sh
@@ -204,6 +247,7 @@ Rscript paper/wiki/experiments/exp2_smooth.R
 Rscript paper/wiki/experiments/exp3_frailty.R
 Rscript paper/wiki/experiments/exp4_scaling.R
 Rscript paper/wiki/experiments/exp5_parity.R
+Rscript paper/wiki/experiments/exp6_nn.R
 ```
 
 All driver scripts use deterministic seeds (master family
