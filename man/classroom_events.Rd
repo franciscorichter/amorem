@@ -5,7 +5,7 @@
 \alias{classroom_events}
 \title{Classroom interaction events (McFarland 2001)}
 \format{
-A data frame with 692 rows and 5 columns:
+A data frame with 691 rows and 5 columns:
 \describe{
 \item{time}{Minutes since the start of the class period.}
 \item{sender}{Character actor id matching \link{classroom_actors}\verb{$id}.}

@@ -18,7 +18,7 @@
 #' McFarland. The same data appear in the `networkDynamic` R package as
 #' `McFarland_cls33_10_16_96`; this is a tidy event-table form.
 #'
-#' @format A data frame with 692 rows and 5 columns:
+#' @format A data frame with 691 rows and 5 columns:
 #' \describe{
 #'   \item{time}{Minutes since the start of the class period.}
 #'   \item{sender}{Character actor id matching [classroom_actors]`$id`.}
