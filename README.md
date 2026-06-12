@@ -18,7 +18,7 @@
 Two complementary lines are supported under one case-control inference machinery:
 
 - **Dyadic REMs** with timing / closure variants and actor-heterogeneity corrections, following [Juozaitienė & Wit (2024, *JRSS-A* 188(4))](https://doi.org/10.1093/jrsssa/qnae132).
-- **Relational hyper event models** (set-valued senders × receivers) with subset-repetition covariates and smooth (linear / TVE / NLE / TVNLE) effects, following [Boschi, Lerner & Wit (2025, arXiv:2509.05289)](https://arxiv.org/abs/2509.05289).
+- **Relational hyper event models** (set-valued senders × receivers) with subset-repetition covariates and smooth (linear / TV / NL / TVNL) effects, following [Boschi, Lerner & Wit (2025, arXiv:2509.05289)](https://arxiv.org/abs/2509.05289).
 
 ## What it aims to provide
 
@@ -89,7 +89,7 @@ simulation-based REM studies:
   the simulator on synthetic events and verifies the post-hoc engine
   reproduces every output column row-for-row.
 - **Documentation + tests.** A nine-page wiki
-  ([franciscorichter/amore/wiki](https://github.com/franciscorichter/amore/wiki))
+  ([franciscorichter.github.io/amore](https://franciscorichter.github.io/amore/))
   with verified, plot-rich coverage of every workflow, plus a
   ~3,000-assertion test suite that runs on every commit.
 
@@ -429,7 +429,7 @@ events <- simulate_relational_events(
 )
 ```
 
-See the [Simulation](https://github.com/franciscorichter/amore/wiki/Simulation)
+See the [Simulation](https://franciscorichter.github.io/amore/articles/simulation.html)
 wiki page for the full workflow including GAM recovery of the non-linear
 distance effect.
 
@@ -460,7 +460,7 @@ The output gains one column per stat carrying the value each row's dyad had
 at its event time, so the coefficient is directly recoverable by conditional
 logistic / GAM regression on the case–control table (see
 `tests/testthat/test-endogenous-simulation.R`). The simulator's
-`endogenous_stats` argument accepts the full 41-stat catalogue documented
+`endogenous_stats` argument accepts the full endogenous catalogue documented
 under *Endogenous network statistics* above; each stat is also computable
 post-hoc by `compute_endogenous_features()`, with every shared name
 cross-validated by `test-sim-vs-posthoc-parity.R`.
@@ -577,8 +577,8 @@ compare_models(
 #> 3 interrupted       2   691 -439.6917 883.383  268.3367
 ```
 
-The [Estimation](https://github.com/franciscorichter/amore/wiki/Estimation)
-and [Real-data analysis](https://github.com/franciscorichter/amore/wiki/Real-data-analysis)
+The [Estimation](https://franciscorichter.github.io/amore/articles/estimation.html)
+and [Real-data analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.html)
 wiki pages walk through the full workflow, including how to inspect
 coefficients of a chosen specification, how sender frailty flips the
 AIC ranking on Classroom, and a simulator → inference round-trip that
@@ -587,18 +587,18 @@ recovers the true generative spec.
 ## Documentation
 
 The **wiki** is the canonical reference and is re-run on every release:
-<https://github.com/franciscorichter/amore/wiki>
+<https://franciscorichter.github.io/amore/>
 
 | Page | What you'll find |
 |---|---|
-| [Quick start](https://github.com/franciscorichter/amore/wiki/Quick-start) | install + a 10-line simulate-and-recover example |
-| [Simulation](https://github.com/franciscorichter/amore/wiki/Simulation) | the five dyadic mechanisms, Gillespie vs τ-leap |
-| [Endogenous catalogue](https://github.com/franciscorichter/amore/wiki/Endogenous-catalogue) | the 68-stat catalogue, six variant axes side-by-side |
-| [Hyperedge models](https://github.com/franciscorichter/amore/wiki/Hyperedge-models) | `(I, J, time)` data model, subset repetition, two simulators |
-| [Estimation](https://github.com/franciscorichter/amore/wiki/Estimation) | case-control sampling, `compare_models*()`, GOF tests |
-| [Datasets](https://github.com/franciscorichter/amore/wiki/Datasets) | five bundled REM datasets with descriptive plots |
-| [Real-data analysis](https://github.com/franciscorichter/amore/wiki/Real-data-analysis) | sender-frailty flip, smooth effect curves |
-| [Validation experiments](https://github.com/franciscorichter/amore/wiki/Validation-experiments) | recovery, smooth, scaling, parity |
+| [Quick start](https://franciscorichter.github.io/amore/articles/quick-start.html) | install + a 10-line simulate-and-recover example |
+| [Simulation](https://franciscorichter.github.io/amore/articles/simulation.html) | the five dyadic mechanisms, Gillespie vs τ-leap |
+| [Endogenous catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.html) | the 68-stat catalogue, six variant axes side-by-side |
+| [Hyperedge models](https://franciscorichter.github.io/amore/articles/hyperedge-models.html) | `(I, J, time)` data model, subset repetition, two simulators |
+| [Estimation](https://franciscorichter.github.io/amore/articles/estimation.html) | case-control sampling, `compare_models*()`, GOF tests |
+| [Datasets](https://franciscorichter.github.io/amore/articles/datasets.html) | five bundled REM datasets with descriptive plots |
+| [Real-data analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.html) | sender-frailty flip, smooth effect curves |
+| [Validation experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.html) | recovery, smooth, scaling, parity |
 
 Other entry points:
 

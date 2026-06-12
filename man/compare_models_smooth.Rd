@@ -2,7 +2,7 @@
 % Please edit documentation in R/compare_models_smooth.R
 \name{compare_models_smooth}
 \alias{compare_models_smooth}
-\title{Compare candidate specifications with smooth (TVE / NLE / TVNLE) effects}
+\title{Compare candidate specifications with smooth (TV / NL / TVNL) effects}
 \usage{
 compare_models_smooth(
   event_log,
@@ -50,14 +50,14 @@ Data frame with one row per specification and columns
 \code{model}, \code{n_terms}, \code{n_obs}, \code{log_lik}, \code{AIC}, \code{delta_AIC}.
 }
 \description{
-\strong{Superseded} by \code{\link[=rem]{rem()}}, which fits the same smooth (TVE / NLE / TVNLE)
+\strong{Superseded} by \code{\link[=rem]{rem()}}, which fits the same smooth (TV / NL / TVNL)
 effects on preprocessed case-control data. \code{compare_models_smooth()} remains
 fully supported.
 
 Mirrors \code{\link[=compare_models]{compare_models()}} but lets each statistic in a specification
 take one of four effect types instead of a single linear coefficient:
-linear, time-varying (TVE), non-linear (NLE), or jointly time-varying
-non-linear (TVNLE). The smooth machinery follows
+linear, time-varying (TV), non-linear (NL), or jointly time-varying
+non-linear (TVNL). The smooth machinery follows
 Boschi, Lerner & Wit (2025); the matrix-of-event-vs-non-event trick
 is documented in their Section 3.3.
 

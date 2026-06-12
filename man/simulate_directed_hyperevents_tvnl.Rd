@@ -59,7 +59,7 @@ group covariates with a \strong{time-varying} effect on the sender side and a
 \strong{non-linear} effect on the receiver side. It is the packaged, parameterised
 form of the workshop running example (\code{sunbelt-workshop-materials/running_example.R})
 and produces a ready-to-fit case-control dataset for GAM-based estimation of
-smooth (TVE / NLE) effects.
+smooth (TV / NL) effects.
 }
 \details{
 Each sender (resp. receiver) \emph{group} is a non-empty subset of the sender

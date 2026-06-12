@@ -6,7 +6,7 @@
 #' **non-linear** effect on the receiver side. It is the packaged, parameterised
 #' form of the workshop running example (`sunbelt-workshop-materials/running_example.R`)
 #' and produces a ready-to-fit case-control dataset for GAM-based estimation of
-#' smooth (TVE / NLE) effects.
+#' smooth (TV / NL) effects.
 #'
 #' @details
 #' Each sender (resp. receiver) *group* is a non-empty subset of the sender
