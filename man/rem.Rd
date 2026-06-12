@@ -12,6 +12,7 @@ rem(
   stratum = NULL,
   time = NULL,
   k = NULL,
+  gam_method = NULL,
   ...
 )
 }
@@ -31,6 +32,11 @@ degenerate method; long with a case indicator and stratum for \code{clogit}).}
 \item{time}{Name of the time column, required for \code{tve} / \code{tvnle} terms.}
 
 \item{k}{Optional integer basis dimension passed to \code{s()} / \code{te()}.}
+
+\item{gam_method}{Smoothness-selection method for the \code{degenerate} backend,
+passed to \code{\link[mgcv:gam]{mgcv::gam()}}. Defaults to \code{NULL}, which uses mgcv's own default
+(\code{"GCV.Cp"}) and reproduces the Intro-to-REM tutorial parameterization.
+Set to \code{"REML"} for the REML fit used in some papers.}
 
 \item{...}{Reserved for future use.}
 }
