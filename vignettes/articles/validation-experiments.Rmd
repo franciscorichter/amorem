@@ -4,12 +4,11 @@ title: "Validation experiments"
 
 # Validation experiments
 
-Five end-to-end experiments stress different correctness properties
+Six end-to-end experiments stress different correctness properties
 of `amore`'s simulator and estimation pipeline. Each follows the
-same template: **property tested**, **experimental design**,
-**driver script**, and the **numerical / graphical outcome**.
-All driver scripts live under `paper/wiki/experiments/` and are
-re-run on every release of the wiki.
+same template: the **property tested**, the **experimental design**,
+the **code** that runs it, and the **numerical / graphical outcome**.
+Every experiment is self-contained — copy the block and run it.
 
 ---
 
@@ -24,8 +23,6 @@ stratified `clogit` on the emitted case-control table.
 15-actor one-mode network, 800 events per replicate, one control
 per case. Four target values `β ∈ {-0.4, 0, 0.4, 0.8}`,
 30 replicates each (120 fits total).
-
-**Driver.** `experiments/exp1_recovery.R`
 
 **Result.**
 
@@ -58,7 +55,37 @@ an 18-actor network, with true non-linear contribution
 events with three controls per case; `clogit(event ~ pspline(x, df = 6) + strata(stratum))`
 extracts the partial smooth on a 150-point grid.
 
-**Driver.** `experiments/exp2_smooth.R`
+**Code.**
+
+```r
+library(amore); library(survival)
+
+f_true <- function(x) sin(x) - 0.3 * (x - 3)        # true non-linear effect
+set.seed(20260518)
+actors <- paste0("a", 1:18)
+x_mat  <- matrix(runif(18^2, 0, 6), 18, 18, dimnames = list(actors, actors))
+diag(x_mat) <- 0
+logit_mat <- f_true(x_mat); diag(logit_mat) <- 0    # static per-dyad log-rate
+
+ev <- simulate_relational_events(
+  n_events = 1500, senders = actors, receivers = actors,
+  baseline_rate = 1, n_controls = 3, contribution_logits = logit_mat)
+ev$x <- mapply(function(s, r) x_mat[s, r], ev$sender, ev$receiver)
+
+# stratified conditional logit with a penalised spline on x
+fit <- clogit(event ~ pspline(x, df = 6) + strata(stratum), data = ev)
+
+xg <- seq(0.1, 5.9, length.out = 150)
+nd <- ev[rep(1, length(xg)), ]; nd$x <- xg
+pr <- predict(fit, newdata = nd, type = "terms", se.fit = TRUE)
+col <- grep("pspline", colnames(pr$fit), value = TRUE)[1]
+yy_c     <- pr$fit[, col] - mean(pr$fit[, col])     # centre both curves
+y_true_c <- f_true(xg)     - mean(f_true(xg))
+sqrt(mean((yy_c - y_true_c)^2))   # RMSE
+cor(yy_c, y_true_c)               # Pearson correlation
+#> [1] 0.075
+#> [1] 0.998
+```
 
 **Result.** Centred RMSE = **0.075**, Pearson correlation =
 **0.998** between the centred true and estimated curves.
@@ -84,8 +111,6 @@ replicate:
 
 - **naive:** `clogit(event ~ reciprocity_count + strata(stratum))`
 - **+ sender frailty:** `coxph(Surv(rep(1, N), event) ~ reciprocity_count + frailty(sender, "gamma") + strata(stratum))`
-
-**Driver.** `experiments/exp3_frailty.R`
 
 **Result — under-powered as currently specified.**
 
@@ -126,8 +151,6 @@ should scale better for large actor universes.
 endogenous reciprocity term at β = 0.4. No case-control sampling
 (`n_controls = 0`) so wall-clock isolates the simulator itself.
 
-**Driver.** `experiments/exp4_scaling.R`
-
 **Result (excerpt).**
 
 | n_actors | n_events | Gillespie (s) | τ-leap (s) |
@@ -161,8 +184,6 @@ any case-control table the simulator emits.
 statistics active simultaneously (across four families and four
 variant axes). For each statistic, compute
 `max |simulator − post-hoc|` over the full case-control table.
-
-**Driver.** `experiments/exp5_parity.R`
 
 **Result — needs investigation.** Parity holds tightly on the
 recency / timing variants (`*_time_recent`, `*_time_first`
@@ -214,7 +235,47 @@ when effects interact in a way an additive model cannot represent.
   top-1 concordance (the fraction of strata whose observed event scores
   highest).
 
-**Driver.** `experiments/exp6_nn.R`
+**Code.**
+
+```r
+library(amore)
+
+# one event + one control per stratum; the event is drawn by a softmax
+# over a true score eta(x)
+make_cc <- function(S, eta, p = 2, seed = 1) {
+  set.seed(seed); rows <- vector("list", S)
+  for (s in seq_len(S)) {
+    X  <- matrix(rnorm(2 * p), 2, p)
+    pr <- exp(apply(X, 1, eta)); pr <- pr / sum(pr)
+    e  <- sample(1:2, 1, prob = pr)
+    d  <- as.data.frame(X); names(d) <- paste0("x", seq_len(p))
+    d$event <- as.integer(seq_len(2) == e); d$stratum <- s
+    rows[[s]] <- d[order(-d$event), ]
+  }
+  do.call(rbind, rows)
+}
+conc <- function(score, strat, event) {            # top-1 concordance
+  top <- tapply(seq_along(score), strat, function(i) i[which.max(score[i])])
+  mean(event[as.integer(top)] == 1)
+}
+
+for (kind in c("linear", "interaction")) {
+  eta <- if (kind == "linear") function(x) 1.5 * x[1] else function(x) 2.5 * x[1] * x[2]
+  cc  <- make_cc(600, eta, seed = if (kind == "linear") 2 else 4)
+  fnn <- rem(event ~ x1 + x2, data = cc, method = "nn",
+             nn = nn_control(hidden = if (kind == "linear") 8 else c(16, 8),
+                             epochs = 400, seed = 5))
+  fcl <- rem(event ~ x1 + x2, data = cc, method = "clogit", stratum = "stratum")
+  c_cl <- conc(as.matrix(cc[, c("x1", "x2")]) %*% coef(fcl), cc$stratum, cc$event)
+  cat(kind, "- clogit", round(c_cl, 2), " nn", round(fnn$fit$concordance$all, 2), "\n")
+}
+#> linear - clogit 0.78  nn 0.78
+#> interaction - clogit 0.52  nn 0.81
+
+# the right panel is the learned score surface: predict(fnn, grid) over x1 x2.
+# gradient correctness is checked against numerical differentiation in
+# tests/testthat/test-rem-nn.R (max |analytic - numerical| = 1.4e-10).
+```
 
 **Result — passes.** Analytic and numerical gradients agree to
 $\max|\cdot| = 1.4 \times 10^{-10}$, confirming the backprop. Under the
@@ -237,19 +298,3 @@ when endogenous effects interact, the additive backends cannot represent
 the structure, and the MLP — which scores the full candidate vector
 jointly — does.
 
----
-
-## Reproducing the experiments
-
-```sh
-Rscript paper/wiki/experiments/exp1_recovery.R
-Rscript paper/wiki/experiments/exp2_smooth.R
-Rscript paper/wiki/experiments/exp3_frailty.R
-Rscript paper/wiki/experiments/exp4_scaling.R
-Rscript paper/wiki/experiments/exp5_parity.R
-Rscript paper/wiki/experiments/exp6_nn.R
-```
-
-All driver scripts use deterministic seeds (master family
-`20260518…20260520`); the figures and tables above were produced
-by these exact scripts at the current `main`.
