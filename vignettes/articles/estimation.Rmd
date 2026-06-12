@@ -419,46 +419,31 @@ GOF rejection above. Currently linear-effect specs only.
 
 ---
 
-## Coming next · DREAM (Filippi-Mazzola & Wit 2024)
+## The neural backend and related work
 
-`compare_models_smooth(... = "nl")` fits non-linear effects with
-`mgcv::gam` + a B-spline basis. That works well at Classroom /
-Manufacturing scale, but the spline-basis matrix becomes a memory
-bottleneck once both the actor universe and the number of
-non-linear covariates grow.
+`amore` ships a neural estimation backend, `rem(method = "nn")` (described
+above): a single multilayer perceptron scores every candidate in a
+case-control stratum, trained by Adam on the conditional-logistic partial
+likelihood. Because it scores the full covariate vector *jointly*, it can
+capture **interactions** between endogenous statistics that the additive
+`gam` backend cannot — at the cost of a coefficient table (effects are
+recovered post-hoc via partial-dependence plots) and, for now, of
+uncertainty quantification. The implementation is pure R with no extra
+dependencies, so it is reachable directly from `install.packages()`.
 
-[Filippi-Mazzola & Wit (2024, *Social Networks* 79, 25-33)](https://doi.org/10.1016/j.socnet.2024.05.004)
-propose **DREAM** — Deep Relational Event Additive Model. Each
-effect $f_k(x_{srk})$ is fit by an *independent* small feed-forward
-neural network (Neural Additive Model architecture), trained with
-ADAM on the same NCC partial likelihood `amore` already uses (eq. 3
-of the paper = our `n_controls = 1` binomial-GLM path). Uncertainty
-bands come from either a non-parametric bootstrap or a post-hoc
-Gaussian Process regression refit on a small bootstrap sample.
+This complements **DREAM**
+([Filippi-Mazzola & Wit 2024, *Social Networks* 79, 25-33](https://doi.org/10.1016/j.socnet.2024.05.004)),
+the deep relational-event model from the same group, which is best seen as
+related prior work rather than part of `amore`. DREAM is a *Neural Additive
+Model*: each effect $f_k(x_{srk})$ is fit by an **independent** feed-forward
+network — so, like `gam`, it stays additive across effects — trained on the
+same case-1-control partial likelihood, with a `torch` backend and
+bootstrap / Gaussian-process uncertainty bands. DREAM targets very large
+networks where a spline-basis GAM becomes a memory bottleneck. It is not
+implemented in `amore`; `amore`'s `nn` backend takes the complementary,
+interaction-capable (non-additive) route in pure R.
 
-The empirical win:
-
-| Scale | `mgcv::gam` (NL) | DREAM |
-|---|---|---|
-| 100k events × 1k actors, 10 covariates | ~500 s | ~80 s |
-| 500k events × 5k actors, 4 covariates  | ~600 s | ~50 s |
-| 500k events × 5k actors, ≥ 5 covariates | fails to converge | converges |
-| 100 M citations × 8 M actors (US patents) | not feasible | feasible |
-
-Planned `amore` integration:
-
-```r
-compare_models_dream(
-  event_log, models,
-  hidden     = c(64, 64),    # ANN architecture per covariate
-  activation = "gcu",         # Growing Cosine Unit (paper §A.1)
-  dropout    = 0.1,
-  epochs     = 200,
-  uncertainty = "gpr",        # or "bootstrap"
-  device     = c("cpu","mps","cuda"))
-```
-
-Backend: the `torch` R package (`mlverse`, no Python). Suggests-only
-— users without `torch` keep the `mgcv` path. Output contract
-matches `compare_models_smooth()` so the `gof_*` battery plugs in
-unchanged.
+**Future directions.** A DREAM-style additive-NN architecture, an optional
+`torch` engine for depth and GPU, factor embeddings (a neural analogue of
+`re()`), and uncertainty quantification for `method = "nn"` are natural
+extensions.
