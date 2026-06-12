@@ -50,7 +50,9 @@
 <h2 class="pkg-version" data-toc-text="0.1.0" id="amore-010">amore 0.1.0<a class="anchor" aria-label="anchor" href="#amore-010"></a></h2>
 <p>First public release.</p>
 <ul><li>
-<code><a href="../reference/rem.html">rem()</a></code> unified fitter for preprocessed case-control data, with a <code>gam</code> (case-1-control logistic via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>) and a <code>clogit</code> backend.</li>
+<code><a href="../reference/rem.html">rem()</a></code> unified fitter for preprocessed case-control data, with a <code>gam</code> (case-1-control logistic via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>), a <code>clogit</code>, and a neural-network (<code>nn</code>) backend.</li>
+<li>
+<code>rem(method = "nn")</code>: a multilayer perceptron scores every candidate in a case-control stratum and is trained on the conditional-logistic partial likelihood (softmax over each risk set) — a nonlinear, prediction-oriented counterpart of <code>clogit</code>. Pure-R implementation (no extra dependencies), configured via <code><a href="../reference/nn_control.html">nn_control()</a></code>; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports held-out concordance and <code>plot(type = "pdp")</code> shows per-feature partial-dependence curves.</li>
 <li>Smooth-term formula wrappers for the <code>gam</code> backend: <code>tv()</code> (time-varying linear), <code>nl()</code> (non-linear), <code>tvnl()</code> (time-varying non-linear), and <code>re()</code> (grouping random effect).</li>
 <li>
 <code>re()</code> reproduces the Intro-to-REM tutorial parameterization; <code><a href="../reference/rem.html">rem()</a></code> gains a <code>gam_method</code> argument (default uses mgcv’s own smoothness selection, with <code>gam_method = "REML"</code> available).</li>
@@ -60,7 +62,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Francisco Richter.</p>
+  <p>Developed by Francisco Richter, Martina Boschi, Ernst C. Wit, Melania Lembo.</p>
 </div>
 
 <div class="pkgdown-footer-right">
