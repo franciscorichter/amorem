@@ -21,6 +21,7 @@ rem(
   stratum = NULL,
   time = NULL,
   k = NULL,
+  gam_method = NULL,
   ...
 )
 ```
@@ -57,6 +58,14 @@ rem(
 - k:
 
   Optional integer basis dimension passed to `s()` / `te()`.
+
+- gam_method:
+
+  Smoothness-selection method for the `degenerate` backend, passed to
+  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html). Defaults to
+  `NULL`, which uses mgcv's own default (`"GCV.Cp"`) and reproduces the
+  Intro-to-REM tutorial parameterization. Set to `"REML"` for the REML
+  fit used in some papers.
 
 - ...:
 

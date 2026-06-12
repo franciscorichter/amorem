@@ -56,6 +56,7 @@ intended to supersede <code><a href="compare_models.html">compare_models()</a></
 <span>  stratum <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  k <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  gam_method <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -92,6 +93,13 @@ degenerate method; long with a case indicator and stratum for <code>clogit</code
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
 <dd><p>Optional integer basis dimension passed to <code>s()</code> / <code>te()</code>.</p></dd>
+
+
+<dt id="arg-gam-method">gam_method<a class="anchor" aria-label="anchor" href="#arg-gam-method"></a></dt>
+<dd><p>Smoothness-selection method for the <code>degenerate</code> backend,
+passed to <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>. Defaults to <code>NULL</code>, which uses mgcv's own default
+(<code>"GCV.Cp"</code>) and reproduces the Intro-to-REM tutorial parameterization.
+Set to <code>"REML"</code> for the REML fit used in some papers.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
