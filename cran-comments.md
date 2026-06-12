@@ -17,14 +17,16 @@ relational event models.
 * This is a new submission.
 
 The incoming-feasibility check additionally reports a case-insensitive name
-conflict with the package **AMORE**. Please note:
+conflict with the package **AMORE**. We would like to keep the name **amore**,
+for the following reasons:
 
 * **AMORE** ("A MORE flexible neural network package") was **archived** on
-  CRAN and is no longer an active package. It is an unrelated neural-network
-  package; **amore** concerns relational event models for dynamic networks.
-* The names differ in case and the active namespaces do not collide. We
-  believe the lowercase name **amore** is appropriate, but we are happy to
-  rename if the CRAN team prefers a fully distinct name.
+  CRAN and is no longer an active package.
+* It is unrelated in scope: AMORE concerned feed-forward neural networks,
+  whereas **amore** provides relational event models for dynamic network data
+  ("Augmented Modelling Of Relational Events").
+* The names differ in case, and the package namespaces, exported objects, and
+  documentation do not overlap.
 
 ## Notes observed only in our local environment (not package defects)
 
