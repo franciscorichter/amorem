@@ -3,7 +3,7 @@
 #' Hyperedge analogue of [compute_endogenous_features()]. Accepts a
 #' hyperedge log (see [hyperedge_log()]) and computes hyperedge-native
 #' statistics, falling back to the dyadic engine for stat names that
-#' belong to the standard 68-statistic catalogue.
+#' belong to the standard dyadic endogenous catalogue.
 #'
 #' Recognised hyperedge stat names:
 #'
@@ -57,7 +57,7 @@ compute_hyperedge_features <- function(hyperedge_log, stats,
   }
 
   # Classify each stat as hyperedge-native (subrep family / activity) or
-  # forwarded to the dyadic engine (existing 68-stat catalogue).
+  # forwarded to the dyadic engine (the dyadic endogenous catalogue).
   classify <- function(s) {
     if (identical(s, "activity"))                       return("activity")
     if (grepl("^subrep_[0-9]+(_[0-9]+)?$", s))          return("subrep")

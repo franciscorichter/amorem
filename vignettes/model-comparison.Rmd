@@ -130,7 +130,7 @@ fit <- glm(one ~ d_rec + d_trans - 1, family = "binomial", data = df)
 summary(fit)$coefficients
 ```
 
-The same recipe scales to any subset of the 41 statistics in the
+The same recipe scales to any subset of the statistics in the
 catalogue. Use `?compute_endogenous_features` to see the full list.
 
 ## 5. Cross-implementation guarantee

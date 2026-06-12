@@ -241,7 +241,7 @@ attach_static_covariates <- function(
 #'   endogenous statistics for non-events without those non-events polluting
 #'   the history. Defaults to `NULL` (every row is treated as an event).
 #'   Currently supported only for statistics handled by the C++ engine
-#'   (see `cpp_supported_stats()`).
+#'   (see [cpp_supported_stats()]).
 #'
 #' @details All statistics are evaluated immediately **before** the event is
 #'   logged.  They are grouped into five families.
@@ -1318,3 +1318,18 @@ sample_non_events <- function(
   rownames(out) <- NULL
   out
 }
+
+#' Endogenous statistics with a compiled fast path
+#'
+#' Returns the names of the endogenous statistics that
+#' [compute_endogenous_features()] evaluates with the compiled C++ engine.
+#' Statistics outside this set are computed by the (slower) pure-R fallback.
+#'
+#' @return A character vector of statistic names.
+#' @seealso [compute_endogenous_features()]
+#' @examples
+#' length(cpp_supported_stats())
+#' head(cpp_supported_stats())
+#' @export
+#' @name cpp_supported_stats
+NULL

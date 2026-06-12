@@ -3,7 +3,7 @@
 \docType{data}
 \name{email_eu_core}
 \alias{email_eu_core}
-\title{Email-Eu-Core temporal (Department 3 subset)}
+\title{Email-Eu-Core temporal (single-department subset)}
 \format{
 A data frame with 12,216 rows and 3 columns:
 \describe{
@@ -24,7 +24,7 @@ email_eu_core
 \description{
 Internal emails between members of a single department of a large
 European research institution over ~803 days. The dataset has been
-filtered to remove self-loops. Sourced from the SNAP repository as
-the Department 3 slice of the email-Eu-core-temporal dataset.
+filtered to remove self-loops. Sourced from the SNAP repository as a
+single-department slice of the email-Eu-core-temporal dataset.
 }
 \keyword{datasets}

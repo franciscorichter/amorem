@@ -23,7 +23,8 @@
 #'     the loss is the softmax over each risk set — exactly the conditional
 #'     partial likelihood, with a learned nonlinear intensity in place of the
 #'     linear predictor. Prediction-oriented: there is no coefficient table;
-#'     `summary()` reports held-out concordance and `plot(type = "pdp")` shows
+#'     `summary()` reports in-sample (and, with a validation split, held-out)
+#'     concordance and `plot(type = "pdp")` shows
 #'     per-feature partial-dependence curves. Configure with [nn_control()].
 #'     Pure-R implementation, no extra dependencies.}
 #' }

@@ -34,7 +34,7 @@ that history but never enter it. This makes it possible to evaluate
 endogenous statistics for non-events without those non-events polluting
 the history. Defaults to \code{NULL} (every row is treated as an event).
 Currently supported only for statistics handled by the C++ engine
-(see \code{cpp_supported_stats()}).}
+(see \code{\link[=cpp_supported_stats]{cpp_supported_stats()}}).}
 }
 \value{
 The event log with added columns, one per requested statistic

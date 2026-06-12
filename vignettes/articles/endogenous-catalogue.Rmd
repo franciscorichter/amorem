@@ -4,8 +4,9 @@ title: "Endogenous catalogue"
 
 # Endogenous catalogue
 
-`amore` exposes 68 endogenous statistics organised into six
-families × seven variant axes. The same history can be summarised
+`amore` exposes 74 numeric endogenous statistics — 66 with a compiled
+C++ fast path, 8 in pure R — plus the `sender_receivers_set` list-column,
+organised into six families × seven variant axes. The same history can be summarised
 many ways; the variant axis decides which way. The simulator and
 the post-hoc `compute_endogenous_features()` engine cover the
 catalogue together, and every shared statistic is parity-tested

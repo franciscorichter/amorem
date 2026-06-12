@@ -140,7 +140,7 @@ plot(fit1)            # the fitted smooth panel
 fitnn <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
              data = lesmis, method = "nn", stratum = "EVENT_INTERVAL",
              nn = nn_control(hidden = c(16, 8), epochs = 300, seed = 1))
-summary(fitnn)               # architecture, held-out concordance
+summary(fitnn)               # architecture, in-sample & held-out concordance
 plot(fitnn$fit, type = "pdp")  # learned per-feature effect curves
 ```
 

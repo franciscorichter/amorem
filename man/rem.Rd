@@ -77,7 +77,8 @@ design as \code{clogit}: a multilayer perceptron scores every candidate and
 the loss is the softmax over each risk set — exactly the conditional
 partial likelihood, with a learned nonlinear intensity in place of the
 linear predictor. Prediction-oriented: there is no coefficient table;
-\code{summary()} reports held-out concordance and \code{plot(type = "pdp")} shows
+\code{summary()} reports in-sample (and, with a validation split, held-out)
+concordance and \code{plot(type = "pdp")} shows
 per-feature partial-dependence curves. Configure with \code{\link[=nn_control]{nn_control()}}.
 Pure-R implementation, no extra dependencies.}
 }

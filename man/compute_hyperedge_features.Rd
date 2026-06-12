@@ -24,7 +24,7 @@ The hyperedge log with one added column per requested stat.
 Hyperedge analogue of \code{\link[=compute_endogenous_features]{compute_endogenous_features()}}. Accepts a
 hyperedge log (see \code{\link[=hyperedge_log]{hyperedge_log()}}) and computes hyperedge-native
 statistics, falling back to the dyadic engine for stat names that
-belong to the standard 68-statistic catalogue.
+belong to the standard dyadic endogenous catalogue.
 }
 \details{
 Recognised hyperedge stat names:

@@ -151,12 +151,12 @@
 #'   <https://snap.stanford.edu/data/CollegeMsg.html>.
 "college_msg"
 
-#' Email-Eu-Core temporal (Department 3 subset)
+#' Email-Eu-Core temporal (single-department subset)
 #'
 #' Internal emails between members of a single department of a large
 #' European research institution over ~803 days. The dataset has been
-#' filtered to remove self-loops. Sourced from the SNAP repository as
-#' the Department 3 slice of the email-Eu-core-temporal dataset.
+#' filtered to remove self-loops. Sourced from the SNAP repository as a
+#' single-department slice of the email-Eu-core-temporal dataset.
 #'
 #' @format A data frame with 12,216 rows and 3 columns:
 #' \describe{
