@@ -53,6 +53,6 @@ test_that("rejects malformed inputs", {
   expect_error(martingale_residuals(classroom_events, c("linear")),
                "non-empty name")
   expect_error(martingale_residuals(classroom_events,
-                                     c(reciprocity_count = "nle")),
+                                     c(reciprocity_count = "nl")),
                "linear")
 })

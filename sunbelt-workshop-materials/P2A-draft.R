@@ -236,8 +236,8 @@ ncc_data[which(ncc_data$d_ev != dat.gam$d1),"receiver_ev"]
 #   ncc_data,
 #   models = list(
 #     linear_dt = c(d_dt = "linear"),
-#     tve_tr    = c(d_tr = "tve"),
-#     nle_d     = c(d_d  = "nle")
+#     tve_tr    = c(d_tr = "tv"),
+#     nle_d     = c(d_d  = "nl")
 #   ),
 #   seed = 11, 
 #   k = 5)

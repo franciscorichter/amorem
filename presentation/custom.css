@@ -1,0 +1,275 @@
+/* amore — refined reveal.js styling
+   Tuned for content density. Reveal.js scales the whole slide
+   to fit the viewport, so absolute sizes here are relative to a
+   1400 × 900 canvas. Goal: substantive content visible per slide. */
+
+:root {
+  --accent: #1d4e89;
+  --accent-soft: #4a76aa;
+  --accent-2: #d97706;
+  --accent-3: #7c3aed;
+  --ink: #1c1c1c;
+  --muted: #6b6b6b;
+  --rule: #d8d8d8;
+  --bg: #ffffff;
+  --bg-soft: #f8f5f0;
+}
+
+.reveal {
+  font-family: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
+  font-size: 28px;          /* base — reveal.js scales the slide as a whole */
+  color: var(--ink);
+  background: var(--bg);
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+/* === Headings === */
+.reveal h1,
+.reveal h2,
+.reveal h3 {
+  font-family: "Helvetica Neue", Helvetica, "Inter", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--accent);
+  line-height: 1.15;
+  margin: 0 0 0.4em;
+}
+
+.reveal h1 {
+  font-size: 1.7em;
+}
+
+.reveal h2 {
+  font-size: 1.05em;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.12em;
+  margin-bottom: 0.5em;
+  display: inline-block;
+}
+
+.reveal strong {
+  color: var(--accent);
+}
+
+/* === Title slide === */
+.reveal .title-slide {
+  text-align: center;
+}
+
+.reveal .title-slide h1 {
+  font-size: 2.4em;
+  text-align: center;
+  margin-bottom: 0.1em;
+  letter-spacing: -0.015em;
+  border: none;
+}
+
+.reveal .title-slide .subtitle {
+  display: block;
+  font-size: 1.1em;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 400;
+  font-style: italic;
+  margin-bottom: 1em;
+}
+
+.reveal .title-slide .author,
+.reveal .title-slide .institute,
+.reveal .title-slide .date {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78em;
+  margin-bottom: 0.1em;
+}
+
+.reveal .title-slide-extra {
+  text-align: center;
+  margin-top: 0.6em;
+}
+
+.title-logo {
+  width: 150px;
+  height: auto;
+  box-shadow: none !important;
+  display: inline-block;
+  margin: 0.4em auto !important;
+}
+
+/* === Section dividers === */
+.reveal section.section-divider {
+  text-align: center;
+}
+
+.reveal section.section-divider h1 {
+  font-size: 2.6em;
+  text-align: center;
+  color: var(--accent);
+  margin-top: 1.5em;
+  letter-spacing: -0.02em;
+}
+
+.reveal section.section-divider h1::after {
+  display: block;
+  content: "";
+  width: 90px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  margin: 0.4em auto 0;
+  border-radius: 2px;
+}
+
+/* === Body text === */
+.reveal p,
+.reveal li {
+  font-size: 0.72em;
+  line-height: 1.42;
+  color: var(--ink);
+  margin: 0 0 0.45em;
+}
+
+.reveal ul,
+.reveal ol {
+  margin-left: 1em;
+  margin-bottom: 0.4em;
+}
+
+.reveal li + li {
+  margin-top: 0.18em;
+}
+
+/* === Code === */
+.reveal code {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  background: #efeae0;
+  color: #2a1f0a;
+  padding: 0.05em 0.3em;
+  border-radius: 3px;
+}
+
+.reveal pre {
+  font-size: 0.5em;
+  background: var(--bg-soft);
+  border-left: 4px solid var(--accent-soft);
+  padding: 0.7em 1em;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  margin: 0.5em 0;
+}
+
+.reveal pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 1em;
+  line-height: 1.35;
+}
+
+/* === Tables === */
+.reveal table {
+  border-collapse: collapse;
+  margin: 0.35em 0;
+  font-size: 0.68em;
+  width: 100%;
+}
+
+.reveal table th {
+  background: transparent;
+  border-bottom: 2px solid var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+  padding: 0.32em 0.55em;
+  text-align: left;
+}
+
+.reveal table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.27em 0.55em;
+  vertical-align: top;
+}
+
+.reveal table tr:last-child td {
+  border-bottom: none;
+}
+
+.reveal table tr:hover td {
+  background: var(--bg-soft);
+}
+
+/* === Images === */
+.reveal section img {
+  border: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border-radius: 5px;
+  max-height: 64vh;
+  display: block;
+  margin: 0.3em auto;
+}
+
+.reveal section img.fit {
+  max-height: 60vh;
+  max-width: 88%;
+}
+
+.reveal section img.fit-tall {
+  max-height: 56vh;
+  max-width: 84%;
+}
+
+.reveal section img.side-logo,
+.reveal section img.thanks-logo {
+  box-shadow: none;
+  max-width: 220px;
+  margin: 0.5em auto;
+}
+
+/* === Columns === */
+.reveal .columns {
+  display: flex;
+  gap: 1.6em;
+  align-items: flex-start;
+}
+
+.reveal .column ul {
+  margin-left: 1em;
+}
+
+/* === Blockquotes === */
+.reveal blockquote {
+  border-left: 4px solid var(--accent-soft);
+  padding: 0.4em 1em;
+  color: var(--muted);
+  font-style: italic;
+  background: var(--bg-soft);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.78em;
+}
+
+/* === Controls / progress / slide-number === */
+.reveal .slide-number {
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.6em;
+  right: 10px;
+  bottom: 10px;
+}
+
+.reveal .controls { color: var(--accent); }
+.reveal .progress { color: var(--accent); }
+
+/* === Math (MathJax v3 output) — give it sensible size === */
+.reveal .MathJax {
+  font-size: 0.85em !important;
+}
+
+/* === Tight bullet density on intro / take-aways slides === */
+.reveal section .columns ul {
+  margin-left: 1em;
+}
+.reveal section .columns ul li {
+  margin-top: 0.18em;
+}

@@ -29,7 +29,7 @@ degenerate method; long with a case indicator and stratum for \code{clogit}).}
 \item{stratum}{Name of the column grouping each case with its controls
 (required by \code{clogit}).}
 
-\item{time}{Name of the time column, required for \code{tve} / \code{tvnle} terms.}
+\item{time}{Name of the time column, required for \code{tv} / \code{tvnl} terms.}
 
 \item{k}{Optional integer basis dimension passed to \code{s()} / \code{te()}.}
 
@@ -59,8 +59,8 @@ Two estimation backends are provided:
 \item{\code{"degenerate"}}{Degenerate logistic regression on a case-1-control
 design (Boschi, Lerner & Wit 2025): the response is a constant 1 and the
 linear predictor is built from event-minus-control differences. Supports
-smooth time-varying (\code{tve}), non-linear (\code{nle}) and time-varying
-non-linear (\code{tvnle}) effects via \code{\link[mgcv:gam]{mgcv::gam()}}.}
+smooth time-varying (\code{tv}), non-linear (\code{nl}) and time-varying
+non-linear (\code{tvnl}) effects via \code{\link[mgcv:gam]{mgcv::gam()}}.}
 \item{\code{"clogit"}}{Conditional logistic regression on a case-k-control
 design via \code{\link[survival:clogit]{survival::clogit()}} (linear terms only). The case/control
 strata are taken from \code{stratum}, or derived as \code{cumsum(case == 1)} when
@@ -73,9 +73,9 @@ controls, the eventnet blocked layout).}
 The right-hand side lists covariates. A bare name is a \strong{linear} effect; wrap
 a name to request a smooth effect (degenerate method only):
 \itemize{
-\item \code{tve(x)}   — time-varying linear effect: \code{s(time, by = d_x)}.
-\item \code{nle(x)}   — non-linear effect: \code{s(cbind(x_ev, x_nv), by = c(1, -1))}.
-\item \code{tvnle(x)} — time-varying non-linear effect (tensor product).
+\item \code{tv(x)}   — time-varying linear effect: \code{s(time, by = d_x)}.
+\item \code{nl(x)}   — non-linear effect: \code{s(cbind(x_ev, x_nv), by = c(1, -1))}.
+\item \code{tvnl(x)} — time-varying non-linear effect (tensor product).
 \item \code{re(x)}    — random effect of a grouping factor \code{x} (e.g. the
 sender), built from the matched \code{x_ev} / \code{x_nv} levels as
 \code{s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")}, contributing
@@ -93,7 +93,7 @@ constant case indicator); for \code{clogit} it is the 0/1 event indicator.
 For a covariate \code{x}, the event/control difference is taken from column \code{x},
 else \code{d_x}, else \code{x_ev - x_nv}. Non-linear terms use \code{transform_x_ev} /
 \code{transform_x_nv} when present (the eventnet spline-transformed covariate),
-otherwise \code{x_ev} / \code{x_nv}. \code{tvnle} uses \code{transformed_time} when present.
+otherwise \code{x_ev} / \code{x_nv}. \code{tvnl} uses \code{transformed_time} when present.
 Undirected logs (senders only, no receiver/\code{TARGET} column) are supported.
 }
 

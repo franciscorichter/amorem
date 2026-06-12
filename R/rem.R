@@ -11,8 +11,8 @@
 #'   \item{`"degenerate"`}{Degenerate logistic regression on a case-1-control
 #'     design (Boschi, Lerner & Wit 2025): the response is a constant 1 and the
 #'     linear predictor is built from event-minus-control differences. Supports
-#'     smooth time-varying (`tve`), non-linear (`nle`) and time-varying
-#'     non-linear (`tvnle`) effects via [mgcv::gam()].}
+#'     smooth time-varying (`tv`), non-linear (`nl`) and time-varying
+#'     non-linear (`tvnl`) effects via [mgcv::gam()].}
 #'   \item{`"clogit"`}{Conditional logistic regression on a case-k-control
 #'     design via [survival::clogit()] (linear terms only). The case/control
 #'     strata are taken from `stratum`, or derived as `cumsum(case == 1)` when
@@ -24,9 +24,9 @@
 #' The right-hand side lists covariates. A bare name is a **linear** effect; wrap
 #' a name to request a smooth effect (degenerate method only):
 #' \itemize{
-#'   \item `tve(x)`   — time-varying linear effect: `s(time, by = d_x)`.
-#'   \item `nle(x)`   — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
-#'   \item `tvnle(x)` — time-varying non-linear effect (tensor product).
+#'   \item `tv(x)`   — time-varying linear effect: `s(time, by = d_x)`.
+#'   \item `nl(x)`   — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
+#'   \item `tvnl(x)` — time-varying non-linear effect (tensor product).
 #'   \item `re(x)`    — random effect of a grouping factor `x` (e.g. the
 #'     sender), built from the matched `x_ev` / `x_nv` levels as
 #'     `s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")`, contributing
@@ -42,7 +42,7 @@
 #' For a covariate `x`, the event/control difference is taken from column `x`,
 #' else `d_x`, else `x_ev - x_nv`. Non-linear terms use `transform_x_ev` /
 #' `transform_x_nv` when present (the eventnet spline-transformed covariate),
-#' otherwise `x_ev` / `x_nv`. `tvnle` uses `transformed_time` when present.
+#' otherwise `x_ev` / `x_nv`. `tvnl` uses `transformed_time` when present.
 #' Undirected logs (senders only, no receiver/`TARGET` column) are supported.
 #'
 #' @param formula A formula; see *Formula syntax*.
@@ -52,7 +52,7 @@
 #' @param case Name of the 0/1 event-indicator column (used by `clogit`).
 #' @param stratum Name of the column grouping each case with its controls
 #'   (required by `clogit`).
-#' @param time Name of the time column, required for `tve` / `tvnle` terms.
+#' @param time Name of the time column, required for `tv` / `tvnl` terms.
 #' @param k Optional integer basis dimension passed to `s()` / `te()`.
 #' @param gam_method Smoothness-selection method for the `degenerate` backend,
 #'   passed to [mgcv::gam()]. Defaults to `NULL`, which uses mgcv's own default
@@ -94,7 +94,7 @@ rem <- function(formula, data,
     stop("`formula` must have at least one term on the right-hand side.")
   }
   parse_term <- function(lbl) {
-    m <- regmatches(lbl, regexec("^(tve|nle|tvnle|re)\\((.+)\\)$", lbl))[[1]]
+    m <- regmatches(lbl, regexec("^(tvnl|tv|nl|re)\\((.+)\\)$", lbl))[[1]]
     if (length(m) == 3L) list(type = m[2], var = trimws(m[3]))
     else list(type = "linear", var = lbl)
   }
@@ -107,7 +107,7 @@ rem <- function(formula, data,
     }
     if (any(vapply(terms_info, function(t) t$type != "linear", logical(1)))) {
       stop("method = \"clogit\" supports linear terms only; smooth terms ",
-           "(tve/nle/tvnle) require method = \"degenerate\".")
+           "(tv/nl/tvnl) require method = \"degenerate\".")
     }
     ci <- data[[case]]
     if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
@@ -160,7 +160,7 @@ rem <- function(formula, data,
          "(looked for '[transform_]", v, "_ev'/'_nv').")
   }
   get_time <- function() {
-    if (is.null(time)) stop("`time` (a column name) is required for tve/tvnle terms.")
+    if (is.null(time)) stop("`time` (a column name) is required for tv/tvnl terms.")
     if (is.null(data[[time]])) stop("time column '", time, "' not found in `data`.")
     as.numeric(data[[time]])
   }
@@ -186,13 +186,13 @@ rem <- function(formula, data,
     if (ti$type == "linear") {
       df[[v]] <- get_diff(v)
       rhs <- c(rhs, bt(v))
-    } else if (ti$type == "tve") {
+    } else if (ti$type == "tv") {
       df[[v]] <- get_diff(v); need_time <- TRUE
       rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".time"), bt(v), k_arg))
-    } else if (ti$type == "nle") {
+    } else if (ti$type == "nl") {
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v)
       rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(xc), bt(".I"), k_arg))
-    } else if (ti$type == "tvnle") {
+    } else if (ti$type == "tvnl") {
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v); need_ttrans <- TRUE
       rhs <- c(rhs, sprintf("te(%s, %s, by = %s%s)",
                             bt(".T"), bt(xc), bt(".I"), k_arg))

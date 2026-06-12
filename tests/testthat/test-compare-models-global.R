@@ -110,7 +110,7 @@ test_that("a dyadic-only spec returns the same shape as compare_models_smooth", 
     classroom_events,
     models = list(linear = c(reciprocity_count       = "linear",
                               transitivity_count      = "linear"),
-                  nle    = c(reciprocity_time_recent = "nle")),
+                  nl    = c(reciprocity_time_recent = "nl")),
     seed = 14, k = 5)
   expect_equal(nrow(out), 2L)
   expect_true(all(is.finite(out$AIC)))

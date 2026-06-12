@@ -20,15 +20,15 @@ compare_models_smooth(
 
 \item{models}{Named list of specifications. Each entry is itself a
 named character vector (or named list) mapping statistic names to
-effect types: \code{"linear"}, \code{"tve"}, \code{"nle"}, or \code{"tvnle"}. Example:
+effect types: \code{"linear"}, \code{"tv"}, \code{"nl"}, or \code{"tvnl"}. Example:
 \preformatted{
     list(
       linear = c(reciprocity_count   = "linear",
                  transitivity_count  = "linear"),
-      nle    = c(reciprocity_time_recent  = "nle",
-                 transitivity_time_recent = "nle"),
-      tvnle  = c(reciprocity_time_recent  = "tvnle",
-                 transitivity_time_recent = "tvnle"))
+      nl    = c(reciprocity_time_recent  = "nl",
+                 transitivity_time_recent = "nl"),
+      tvnl  = c(reciprocity_time_recent  = "tvnl",
+                 transitivity_time_recent = "tvnl"))
   }}
 
 \item{scope, mode}{Passed through to \code{\link[=sample_non_events]{sample_non_events()}}.}
@@ -71,11 +71,11 @@ control (non-event) features are computed via
 \item The mgcv design uses the case-vs-control matrix trick:
 \itemize{
 \item linear -> a single coefficient on \code{case - control} (column \code{d_stat}).
-\item tve    -> \code{s(time, by = d_stat)} — smooth in time, multiplied by \code{d_stat}.
-\item nle    -> \code{s(stat_mat, by = I_mat)} where \code{stat_mat} is a
+\item tv    -> \code{s(time, by = d_stat)} — smooth in time, multiplied by \code{d_stat}.
+\item nl    -> \code{s(stat_mat, by = I_mat)} where \code{stat_mat} is a
 two-column matrix \code{cbind(case, control)} and \code{I_mat} is
 \code{cbind(1, -1)}.
-\item tvnle  -> \code{te(time_mat, stat_mat, by = I_mat)} tensor product
+\item tvnl  -> \code{te(time_mat, stat_mat, by = I_mat)} tensor product
 smooth, with time_mat both columns equal to the event time vector.
 }
 \item The model is fitted with \code{mgcv::gam} and a degenerate logistic
@@ -95,10 +95,10 @@ compare_models_smooth(
   models = list(
     linear = c(reciprocity_time_recent  = "linear",
                transitivity_time_recent = "linear"),
-    nle    = c(reciprocity_time_recent  = "nle",
-               transitivity_time_recent = "nle"),
-    tvnle  = c(reciprocity_time_recent  = "tvnle",
-               transitivity_time_recent = "tvnle")),
+    nl    = c(reciprocity_time_recent  = "nl",
+               transitivity_time_recent = "nl"),
+    tvnl  = c(reciprocity_time_recent  = "tvnl",
+               transitivity_time_recent = "tvnl")),
   seed = 11)
 }
 }

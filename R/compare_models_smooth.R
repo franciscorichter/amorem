@@ -22,11 +22,11 @@
 #'   \item The mgcv design uses the case-vs-control matrix trick:
 #'     \itemize{
 #'       \item linear -> a single coefficient on `case - control` (column `d_stat`).
-#'       \item tve    -> `s(time, by = d_stat)` — smooth in time, multiplied by `d_stat`.
-#'       \item nle    -> `s(stat_mat, by = I_mat)` where `stat_mat` is a
+#'       \item tv    -> `s(time, by = d_stat)` — smooth in time, multiplied by `d_stat`.
+#'       \item nl    -> `s(stat_mat, by = I_mat)` where `stat_mat` is a
 #'         two-column matrix `cbind(case, control)` and `I_mat` is
 #'         `cbind(1, -1)`.
-#'       \item tvnle  -> `te(time_mat, stat_mat, by = I_mat)` tensor product
+#'       \item tvnl  -> `te(time_mat, stat_mat, by = I_mat)` tensor product
 #'         smooth, with time_mat both columns equal to the event time vector.
 #'     }
 #'   \item The model is fitted with `mgcv::gam` and a degenerate logistic
@@ -41,15 +41,15 @@
 #' @param event_log Data frame with `sender`, `receiver`, `time` columns.
 #' @param models Named list of specifications. Each entry is itself a
 #'   named character vector (or named list) mapping statistic names to
-#'   effect types: `"linear"`, `"tve"`, `"nle"`, or `"tvnle"`. Example:
+#'   effect types: `"linear"`, `"tv"`, `"nl"`, or `"tvnl"`. Example:
 #'   \preformatted{
 #'     list(
 #'       linear = c(reciprocity_count   = "linear",
 #'                  transitivity_count  = "linear"),
-#'       nle    = c(reciprocity_time_recent  = "nle",
-#'                  transitivity_time_recent = "nle"),
-#'       tvnle  = c(reciprocity_time_recent  = "tvnle",
-#'                  transitivity_time_recent = "tvnle"))
+#'       nl    = c(reciprocity_time_recent  = "nl",
+#'                  transitivity_time_recent = "nl"),
+#'       tvnl  = c(reciprocity_time_recent  = "tvnl",
+#'                  transitivity_time_recent = "tvnl"))
 #'   }
 #' @param scope,mode Passed through to [sample_non_events()].
 #' @param half_life Required when an exp-decay statistic is requested.
@@ -76,10 +76,10 @@
 #'   models = list(
 #'     linear = c(reciprocity_time_recent  = "linear",
 #'                transitivity_time_recent = "linear"),
-#'     nle    = c(reciprocity_time_recent  = "nle",
-#'                transitivity_time_recent = "nle"),
-#'     tvnle  = c(reciprocity_time_recent  = "tvnle",
-#'                transitivity_time_recent = "tvnle")),
+#'     nl    = c(reciprocity_time_recent  = "nl",
+#'                transitivity_time_recent = "nl"),
+#'     tvnl  = c(reciprocity_time_recent  = "tvnl",
+#'                transitivity_time_recent = "tvnl")),
 #'   seed = 11)
 #' }
 compare_models_smooth <- function(event_log,
@@ -105,7 +105,7 @@ compare_models_smooth <- function(event_log,
   scope <- match.arg(scope)
   mode  <- match.arg(mode)
 
-  allowed_effects <- c("linear", "tve", "nle", "tvnle")
+  allowed_effects <- c("linear", "tv", "nl", "tvnl")
   for (i in seq_along(models)) {
     spec <- models[[i]]
     if (is.list(spec)) spec <- unlist(spec)
@@ -181,9 +181,9 @@ compare_models_smooth <- function(event_log,
       k_arg <- if (is.null(k)) "" else sprintf(", k = %d", k)
       rhs_terms <- c(rhs_terms, switch(eff,
         linear = d_col,
-        tve    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
-        nle    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
-        tvnle  = sprintf("te(%s, %s, by = %s%s)", T_col, X_col, I_col, k_arg)))
+        tv    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
+        nl    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
+        tvnl  = sprintf("te(%s, %s, by = %s%s)", T_col, X_col, I_col, k_arg)))
     }
 
     fm <- stats::as.formula(paste("one ~ -1 +",

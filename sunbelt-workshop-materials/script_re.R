@@ -53,7 +53,7 @@ data <- dat.gam
 
 term_labels <- attr(stats::terms(formula), "term.labels")
 parse_term <- function(lbl) {
-  m <- regmatches(lbl, regexec("^(tve|nle|tvnle|re)\\((.+)\\)$", 
+  m <- regmatches(lbl, regexec("^(tv|nl|tvnl|re)\\((.+)\\)$", 
                                lbl))[[1]]
   if (length(m) == 3L) 
     list(type = m[2], var = trimws(m[3]))

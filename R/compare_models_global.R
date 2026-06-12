@@ -44,9 +44,9 @@
 #' `global_covariates`) to an effect type:
 #' \itemize{
 #'   \item `"linear"` -- linear `beta * x` term.
-#'   \item `"nle"`     -- smooth `s(x)` (thin-plate, paper's default).
-#'   \item `"tve"`     -- smooth `s(time, by = x)` (time-varying).
-#'   \item `"tvnle"`   -- tensor product `te(time, x)`.
+#'   \item `"nl"`     -- smooth `s(x)` (thin-plate, paper's default).
+#'   \item `"tv"`     -- smooth `s(time, by = x)` (time-varying).
+#'   \item `"tvnl"`   -- tensor product `te(time, x)`.
 #'   \item `"global_smooth"` -- smooth `s(x_global)` evaluated at the
 #'     focal time vs. the non-event's shifted time (the paper's
 #'     `g_b(x^{(b)}(t))` family).
@@ -132,7 +132,7 @@ compare_models_global <- function(event_log,
   scope <- match.arg(scope)
   mode  <- match.arg(mode)
 
-  allowed_effects <- c("linear", "nle", "tve", "tvnle",
+  allowed_effects <- c("linear", "nl", "tv", "tvnl",
                        "global_smooth", "global_cyclic", "global_time")
   global_effects  <- c("global_smooth", "global_cyclic", "global_time")
   for (i in seq_along(models)) {
@@ -263,9 +263,9 @@ compare_models_global <- function(event_log,
         T_col <- paste0("T_", cov);  df[[T_col]] <- T_mat
         rhs_terms <- c(rhs_terms, switch(eff,
           linear = d_col,
-          tve    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
-          nle    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
-          tvnle  = sprintf("te(%s, %s, by = %s%s)",
+          tv    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
+          nl    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
+          tvnl  = sprintf("te(%s, %s, by = %s%s)",
                             T_col, X_col, I_col, k_arg)))
       }
     }

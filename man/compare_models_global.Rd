@@ -100,9 +100,9 @@ vector mapping a covariate name (a statistic in
 \code{global_covariates}) to an effect type:
 \itemize{
 \item \code{"linear"} -- linear \code{beta * x} term.
-\item \code{"nle"}     -- smooth \code{s(x)} (thin-plate, paper's default).
-\item \code{"tve"}     -- smooth \code{s(time, by = x)} (time-varying).
-\item \code{"tvnle"}   -- tensor product \code{te(time, x)}.
+\item \code{"nl"}     -- smooth \code{s(x)} (thin-plate, paper's default).
+\item \code{"tv"}     -- smooth \code{s(time, by = x)} (time-varying).
+\item \code{"tvnl"}   -- tensor product \code{te(time, x)}.
 \item \code{"global_smooth"} -- smooth \code{s(x_global)} evaluated at the
 focal time vs. the non-event's shifted time (the paper's
 \code{g_b(x^{(b)}(t))} family).

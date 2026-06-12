@@ -6,8 +6,8 @@
 specs_basic <- list(
   linear = c(reciprocity_count       = "linear",
              transitivity_count      = "linear"),
-  nle    = c(reciprocity_time_recent  = "nle",
-             transitivity_time_recent = "nle"))
+  nl    = c(reciprocity_time_recent  = "nl",
+             transitivity_time_recent = "nl"))
 
 test_that("returns the expected AIC table on classroom_events", {
   skip_on_cran()
@@ -28,9 +28,9 @@ test_that("all four effect types fit on classroom_events", {
   data(classroom_events)
   specs <- list(
     L  = c(reciprocity_time_recent  = "linear"),
-    TV = c(reciprocity_time_recent  = "tve"),
-    NL = c(reciprocity_time_recent  = "nle"),
-    TN = c(reciprocity_time_recent  = "tvnle"))
+    TV = c(reciprocity_time_recent  = "tv"),
+    NL = c(reciprocity_time_recent  = "nl"),
+    TN = c(reciprocity_time_recent  = "tvnl"))
   out <- compare_models_smooth(classroom_events, specs, seed = 12, k = 5)
   expect_equal(nrow(out), 4L)
   expect_true(all(is.finite(out$AIC)))
@@ -51,8 +51,8 @@ test_that("half_life propagates to exp-decay stats inside smooth specs", {
   data(classroom_events)
   out <- compare_models_smooth(
     classroom_events,
-    models = list(decay = c(reciprocity_exp_decay  = "nle",
-                            transitivity_exp_decay = "nle")),
+    models = list(decay = c(reciprocity_exp_decay  = "nl",
+                            transitivity_exp_decay = "nl")),
     half_life = 5, seed = 14, k = 5)
   expect_equal(nrow(out), 1L)
   expect_true(is.finite(out$AIC))
@@ -80,7 +80,7 @@ test_that("rejects malformed specifications", {
 test_that("a TVNLE spec on a synthetic time-varying covariate is recoverable", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  # Sanity: with TVNLE active, the AIC of a tvnle spec should be no worse
+  # Sanity: with TVNLE active, the AIC of a tvnl spec should be no worse
   # than the linear spec by more than a small penalty (rough numerical
   # check; the empirical recovery story is in the whitepaper).
   data(classroom_events)
@@ -88,7 +88,7 @@ test_that("a TVNLE spec on a synthetic time-varying covariate is recoverable", {
     classroom_events,
     models = list(
       linear = c(transitivity_time_recent = "linear"),
-      tvnle  = c(transitivity_time_recent = "tvnle")),
+      tvnl  = c(transitivity_time_recent = "tvnl")),
     seed = 21, k = 5)
   expect_equal(nrow(out), 2L)
   expect_true(all(is.finite(out$AIC)))

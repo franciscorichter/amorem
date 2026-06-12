@@ -41,7 +41,7 @@ test_that("rem(clogit) rejects smooth terms", {
   skip_if_not_installed("survival")
   cc <- make_long_cc(n = 50)
   expect_error(
-    rem(event ~ tve(reciprocity_count), data = cc, method = "clogit",
+    rem(event ~ tv(reciprocity_count), data = cc, method = "clogit",
         case = "event", stratum = "stratum", time = "time"),
     "linear terms only")
 })

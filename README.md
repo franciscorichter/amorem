@@ -75,8 +75,8 @@ simulation-based REM studies:
   AIC values are directly comparable across specifications:
   `compare_models()` for linear AIC tables with optional one-axis
   (`survival::frailty`) or two-axis (`coxme::coxme`) actor random
-  effects; `compare_models_smooth()` for `linear` / `tve` / `nle` /
-  `tvnle` effect choices per stat via `mgcv::gam`, following the
+  effects; `compare_models_smooth()` for `linear` / `tv` / `nl` /
+  `tvnl` effect choices per stat via `mgcv::gam`, following the
   Boschi et al. (2025) Section 3.3 design.
 - **Bundled real-world datasets.** Four of the five datasets analysed
   in Juozaitienė & Wit (2024) ship under `data/` and `inst/extdata/`
