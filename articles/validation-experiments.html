@@ -85,13 +85,12 @@
 <div class="section level2">
 <h2 id="validation-experiments">Validation experiments<a class="anchor" aria-label="anchor" href="#validation-experiments"></a>
 </h2>
-<p>Five end-to-end experiments stress different correctness properties
-of <code>amore</code>’s simulator and estimation pipeline. Each follows
-the same template: <strong>property tested</strong>,
-<strong>experimental design</strong>, <strong>driver script</strong>,
-and the <strong>numerical / graphical outcome</strong>. All driver
-scripts live under <code>paper/wiki/experiments/</code> and are re-run
-on every release of the wiki.</p>
+<p>Six end-to-end experiments stress different correctness properties of
+<code>amore</code>’s simulator and estimation pipeline. Each follows the
+same template: the <strong>property tested</strong>, the
+<strong>experimental design</strong>, the <strong>code</strong> that
+runs it, and the <strong>numerical / graphical outcome</strong>. Every
+experiment is self-contained — copy the block and run it.</p>
 <hr>
 <div class="section level3">
 <h3 id="e1-recovery-of-a-linear-endogenous-effect">E1 — Recovery of a linear endogenous effect<a class="anchor" aria-label="anchor" href="#e1-recovery-of-a-linear-endogenous-effect"></a>
@@ -106,7 +105,6 @@ emitted case-control table.</p>
 per replicate, one control per case. Four target values
 <code>β ∈ {-0.4, 0, 0.4, 0.8}</code>, 30 replicates each (120 fits
 total).</p>
-<p><strong>Driver.</strong> <code>experiments/exp1_recovery.R</code></p>
 <p><strong>Result.</strong></p>
 <table style="width:100%;" class="table">
 <colgroup>
@@ -182,7 +180,35 @@ non-linear contribution <code>f(x) = sin(x) − 0.3·(x − 3)</code>. The
 simulator runs for 1,500 events with three controls per case;
 <code>clogit(event ~ pspline(x, df = 6) + strata(stratum))</code>
 extracts the partial smooth on a 150-point grid.</p>
-<p><strong>Driver.</strong> <code>experiments/exp2_smooth.R</code></p>
+<p><strong>Code.</strong></p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">f_true</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fl">3</span><span class="op">)</span>        <span class="co"># true non-linear effect</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">20260518</span><span class="op">)</span></span>
+<span><span class="va">actors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">18</span><span class="op">)</span></span>
+<span><span class="va">x_mat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">18</span><span class="op">^</span><span class="fl">2</span>, <span class="fl">0</span>, <span class="fl">6</span><span class="op">)</span>, <span class="fl">18</span>, <span class="fl">18</span>, dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">actors</span>, <span class="va">actors</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">x_mat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
+<span><span class="va">logit_mat</span> <span class="op">&lt;-</span> <span class="fu">f_true</span><span class="op">(</span><span class="va">x_mat</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">logit_mat</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">0</span>    <span class="co"># static per-dyad log-rate</span></span>
+<span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>  n_events <span class="op">=</span> <span class="fl">1500</span>, senders <span class="op">=</span> <span class="va">actors</span>, receivers <span class="op">=</span> <span class="va">actors</span>,</span>
+<span>  baseline_rate <span class="op">=</span> <span class="fl">1</span>, n_controls <span class="op">=</span> <span class="fl">3</span>, contribution_logits <span class="op">=</span> <span class="va">logit_mat</span><span class="op">)</span></span>
+<span><span class="va">ev</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">r</span><span class="op">)</span> <span class="va">x_mat</span><span class="op">[</span><span class="va">s</span>, <span class="va">r</span><span class="op">]</span>, <span class="va">ev</span><span class="op">$</span><span class="va">sender</span>, <span class="va">ev</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># stratified conditional logit with a penalised spline on x</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">clogit</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/pspline.html" class="external-link">pspline</a></span><span class="op">(</span><span class="va">x</span>, df <span class="op">=</span> <span class="fl">6</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">stratum</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">ev</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">xg</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">5.9</span>, length.out <span class="op">=</span> <span class="fl">150</span><span class="op">)</span></span>
+<span><span class="va">nd</span> <span class="op">&lt;-</span> <span class="va">ev</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">xg</span><span class="op">)</span><span class="op">)</span>, <span class="op">]</span>; <span class="va">nd</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">xg</span></span>
+<span><span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, newdata <span class="op">=</span> <span class="va">nd</span>, type <span class="op">=</span> <span class="st">"terms"</span>, se.fit <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"pspline"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">pr</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="va">yy_c</span>     <span class="op">&lt;-</span> <span class="va">pr</span><span class="op">$</span><span class="va">fit</span><span class="op">[</span>, <span class="va">col</span><span class="op">]</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">pr</span><span class="op">$</span><span class="va">fit</span><span class="op">[</span>, <span class="va">col</span><span class="op">]</span><span class="op">)</span>     <span class="co"># centre both curves</span></span>
+<span><span class="va">y_true_c</span> <span class="op">&lt;-</span> <span class="fu">f_true</span><span class="op">(</span><span class="va">xg</span><span class="op">)</span>     <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu">f_true</span><span class="op">(</span><span class="va">xg</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="op">(</span><span class="va">yy_c</span> <span class="op">-</span> <span class="va">y_true_c</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>   <span class="co"># RMSE</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">yy_c</span>, <span class="va">y_true_c</span><span class="op">)</span>               <span class="co"># Pearson correlation</span></span>
+<span><span class="co">#&gt; [1] 0.075</span></span>
+<span><span class="co">#&gt; [1] 0.998</span></span></code></pre></div>
 <p><strong>Result.</strong> Centred RMSE = <strong>0.075</strong>,
 Pearson correlation = <strong>0.998</strong> between the centred true
 and estimated curves.</p>
@@ -215,7 +241,6 @@ compared on each replicate:</p>
 <code>coxph(Surv(rep(1, N), event) ~ reciprocity_count + frailty(sender, "gamma") + strata(stratum))</code>
 </li>
 </ul>
-<p><strong>Driver.</strong> <code>experiments/exp3_frailty.R</code></p>
 <p><strong>Result — under-powered as currently specified.</strong></p>
 <table class="table">
 <thead><tr class="header">
@@ -273,7 +298,6 @@ should scale better for large actor universes.</p>
 <code>tau = 0.05</code>). Single endogenous reciprocity term at β = 0.4.
 No case-control sampling (<code>n_controls = 0</code>) so wall-clock
 isolates the simulator itself.</p>
-<p><strong>Driver.</strong> <code>experiments/exp4_scaling.R</code></p>
 <p><strong>Result (excerpt).</strong></p>
 <table class="table">
 <thead><tr class="header">
@@ -349,7 +373,6 @@ endogenous statistics active simultaneously (across four families and
 four variant axes). For each statistic, compute
 <code>max |simulator − post-hoc|</code> over the full case-control
 table.</p>
-<p><strong>Driver.</strong> <code>experiments/exp5_parity.R</code></p>
 <p><strong>Result — needs investigation.</strong> Parity holds tightly
 on the recency / timing variants (<code>*_time_recent</code>,
 <code>*_time_first</code> &lt; 0.5) but disagrees by O(events) on the
@@ -448,7 +471,45 @@ Fit <code>rem(method = "nn")</code> and
 concordance (the fraction of strata whose observed event scores
 highest).</li>
 </ul>
-<p><strong>Driver.</strong> <code>experiments/exp6_nn.R</code></p>
+<p><strong>Code.</strong></p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># one event + one control per stratum; the event is drawn by a softmax</span></span>
+<span><span class="co"># over a true score eta(x)</span></span>
+<span><span class="va">make_cc</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">S</span>, <span class="va">eta</span>, <span class="va">p</span> <span class="op">=</span> <span class="fl">2</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span>; <span class="va">rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="va">S</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">s</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">S</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">X</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, <span class="fl">2</span>, <span class="va">p</span><span class="op">)</span></span>
+<span>    <span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">eta</span><span class="op">)</span><span class="op">)</span>; <span class="va">pr</span> <span class="op">&lt;-</span> <span class="va">pr</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">pr</span><span class="op">)</span></span>
+<span>    <span class="va">e</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fl">1</span>, prob <span class="op">=</span> <span class="va">pr</span><span class="op">)</span></span>
+<span>    <span class="va">d</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">==</span> <span class="va">e</span><span class="op">)</span>; <span class="va">d</span><span class="op">$</span><span class="va">stratum</span> <span class="op">&lt;-</span> <span class="va">s</span></span>
+<span>    <span class="va">rows</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">d</span><span class="op">$</span><span class="va">event</span><span class="op">)</span>, <span class="op">]</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">rows</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">conc</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">score</span>, <span class="va">strat</span>, <span class="va">event</span><span class="op">)</span> <span class="op">{</span>            <span class="co"># top-1 concordance</span></span>
+<span>  <span class="va">top</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">score</span><span class="op">)</span>, <span class="va">strat</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="va">i</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">score</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">event</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">top</span><span class="op">)</span><span class="op">]</span> <span class="op">==</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">kind</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="st">"interaction"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">eta</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"linear"</span><span class="op">)</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">1.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="kw">else</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">2.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="va">cc</span>  <span class="op">&lt;-</span> <span class="fu">make_cc</span><span class="op">(</span><span class="fl">600</span>, <span class="va">eta</span>, seed <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"linear"</span><span class="op">)</span> <span class="fl">2</span> <span class="kw">else</span> <span class="fl">4</span><span class="op">)</span></span>
+<span>  <span class="va">fnn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">cc</span>, method <span class="op">=</span> <span class="st">"nn"</span>,</span>
+<span>             nn <span class="op">=</span> <span class="fu"><a href="../reference/nn_control.html">nn_control</a></span><span class="op">(</span>hidden <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"linear"</span><span class="op">)</span> <span class="fl">8</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">16</span>, <span class="fl">8</span><span class="op">)</span>,</span>
+<span>                             epochs <span class="op">=</span> <span class="fl">400</span>, seed <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">fcl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span>, data <span class="op">=</span> <span class="va">cc</span>, method <span class="op">=</span> <span class="st">"clogit"</span>, stratum <span class="op">=</span> <span class="st">"stratum"</span><span class="op">)</span></span>
+<span>  <span class="va">c_cl</span> <span class="op">&lt;-</span> <span class="fu">conc</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">cc</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/matmult.html" class="external-link">%*%</a></span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fcl</span><span class="op">)</span>, <span class="va">cc</span><span class="op">$</span><span class="va">stratum</span>, <span class="va">cc</span><span class="op">$</span><span class="va">event</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">kind</span>, <span class="st">"- clogit"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">c_cl</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">" nn"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">fnn</span><span class="op">$</span><span class="va">fit</span><span class="op">$</span><span class="va">concordance</span><span class="op">$</span><span class="va">all</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; linear - clogit 0.78  nn 0.78</span></span>
+<span><span class="co">#&gt; interaction - clogit 0.52  nn 0.81</span></span>
+<span></span>
+<span><span class="co"># the right panel is the learned score surface: predict(fnn, grid) over x1 x2.</span></span>
+<span><span class="co"># gradient correctness is checked against numerical differentiation in</span></span>
+<span><span class="co"># tests/testthat/test-rem-nn.R (max |analytic - numerical| = 1.4e-10).</span></span></code></pre></div>
 <p><strong>Result — passes.</strong> Analytic and numerical gradients
 agree to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">|</mo><mi>⋅</mi><mo stretchy="false" form="prefix">|</mo><mo>=</mo><mn>1.4</mn><mo>×</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>10</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\max|\cdot| = 1.4 \times 10^{-10}</annotation></semantics></math>,
@@ -492,20 +553,6 @@ surface</div>
 This is exactly the case the neural backend is for: when endogenous
 effects interact, the additive backends cannot represent the structure,
 and the MLP — which scores the full candidate vector jointly — does.</p>
-<hr>
-</div>
-<div class="section level3">
-<h3 id="reproducing-the-experiments">Reproducing the experiments<a class="anchor" aria-label="anchor" href="#reproducing-the-experiments"></a>
-</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp1_recovery.R</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp2_smooth.R</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp3_frailty.R</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp4_scaling.R</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp5_parity.R</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp6_nn.R</span></code></pre></div>
-<p>All driver scripts use deterministic seeds (master family
-<code>20260518…20260520</code>); the figures and tables above were
-produced by these exact scripts at the current <code>main</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
