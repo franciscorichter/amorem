@@ -54,6 +54,10 @@
 #'   (required by `clogit`).
 #' @param time Name of the time column, required for `tve` / `tvnle` terms.
 #' @param k Optional integer basis dimension passed to `s()` / `te()`.
+#' @param gam_method Smoothness-selection method for the `degenerate` backend,
+#'   passed to [mgcv::gam()]. Defaults to `NULL`, which uses mgcv's own default
+#'   (`"GCV.Cp"`) and reproduces the Intro-to-REM tutorial parameterization.
+#'   Set to `"REML"` for the REML fit used in some papers.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `"rem"`: a list with the fitted model (`$fit`),
@@ -80,7 +84,7 @@
 rem <- function(formula, data,
                 method = c("degenerate", "clogit"),
                 case = "IS_OBSERVED", stratum = NULL, time = NULL,
-                k = NULL, ...) {
+                k = NULL, gam_method = NULL, ...) {
   method <- match.arg(method)
   if (!inherits(formula, "formula")) stop("`formula` must be a formula.")
   if (!is.data.frame(data)) stop("`data` must be a data.frame.")
@@ -218,7 +222,13 @@ rem <- function(formula, data,
   if (need_ttrans) { tt <- get_time_trans(); df[[".T"]] <- cbind(tt, tt) }
 
   fm <- stats::as.formula(paste("one ~ -1 +", paste(rhs, collapse = " + ")))
-  fit <- mgcv::gam(fm, family = stats::binomial(), data = df, method = "REML")
+  # Smoothness-selection method passed to mgcv::gam(). Default NULL lets mgcv
+  # use its own default ("GCV.Cp"), which reproduces the Intro-to-REM tutorial
+  # parameterization (see issue #88). Set gam_method = "REML" to recover the
+  # REML fit used in some papers.
+  gam_args <- list(formula = fm, family = stats::binomial(), data = df)
+  if (!is.null(gam_method)) gam_args$method <- gam_method
+  fit <- do.call(mgcv::gam, gam_args)
 
   structure(
     list(fit = fit, method = method, formula = formula,

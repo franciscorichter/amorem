@@ -17,6 +17,32 @@ test_that("G4: rem() builds an re() random-effect smooth", {
   expect_true(is.finite(logLik(fit)))
 })
 
+test_that("G4: re() default fit reproduces plain mgcv::gam; REML is opt-in (issue #88)", {
+  skip_if_not_installed("mgcv")
+  set.seed(3)
+  w <- simulate_relational_events(
+    n_events = 300, senders = paste0("a", 1:8), receivers = paste0("a", 1:8),
+    n_controls = 1, endogenous_stats = "reciprocity_count",
+    endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
+
+  fit_default <- rem(~ re(sender), data = w, method = "degenerate")
+  fit_reml    <- rem(~ re(sender), data = w, method = "degenerate",
+                     gam_method = "REML")
+
+  # Tutorial reference: plain mgcv::gam with the matched +-1 factor matrix,
+  # mgcv's own default smoothness selection (no method = "REML").
+  n    <- nrow(w)
+  fmat <- factor(c(as.character(w$sender_ev), as.character(w$sender_nv)))
+  dim(fmat) <- c(n, 2L)
+  df   <- list(one = rep(1, n), .I = cbind(rep(1, n), rep(-1, n)),
+               .RE_sender = fmat)
+  ref  <- mgcv::gam(one ~ -1 + s(.RE_sender, by = .I, bs = "re"),
+                    family = stats::binomial(), data = df)
+
+  expect_equal(unname(coef(fit_default)), unname(coef(ref)))
+  expect_false(isTRUE(all.equal(coef(fit_default), coef(fit_reml))))
+})
+
 test_that("G4: re() on a missing column errors clearly; clogit rejects it", {
   skip_if_not_installed("mgcv")
   set.seed(2)
