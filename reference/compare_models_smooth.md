@@ -1,15 +1,15 @@
-# Compare candidate specifications with smooth (TVE / NLE / TVNLE) effects
+# Compare candidate specifications with smooth (TV / NL / TVNL) effects
 
 **Superseded** by
 [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
-which fits the same smooth (TVE / NLE / TVNLE) effects on preprocessed
+which fits the same smooth (TV / NL / TVNL) effects on preprocessed
 case-control data. `compare_models_smooth()` remains fully supported.
 
 Mirrors
 [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
 but lets each statistic in a specification take one of four effect types
-instead of a single linear coefficient: linear, time-varying (TVE),
-non-linear (NLE), or jointly time-varying non-linear (TVNLE). The smooth
+instead of a single linear coefficient: linear, time-varying (TV),
+non-linear (NL), or jointly time-varying non-linear (TVNL). The smooth
 machinery follows Boschi, Lerner & Wit (2025); the
 matrix-of-event-vs-non-event trick is documented in their Section 3.3.
 

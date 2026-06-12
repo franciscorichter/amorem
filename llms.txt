@@ -170,7 +170,7 @@ has the complete statistical methods and validation experiments.
 - [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
   : Compare candidate endogenous specifications by AIC
 - [`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
-  : Compare candidate specifications with smooth (TVE / NLE / TVNLE)
+  : Compare candidate specifications with smooth (TV / NL / TVNL)
   effects
 - [`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md)
   : Compare REM specifications with global covariate effects
