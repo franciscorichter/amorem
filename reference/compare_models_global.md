@@ -38,11 +38,11 @@ mapping a covariate name (a statistic in
 
 - `"linear"` – linear `beta * x` term.
 
-- `"nle"` – smooth `s(x)` (thin-plate, paper's default).
+- `"nl"` – smooth `s(x)` (thin-plate, paper's default).
 
-- `"tve"` – smooth `s(time, by = x)` (time-varying).
+- `"tv"` – smooth `s(time, by = x)` (time-varying).
 
-- `"tvnle"` – tensor product `te(time, x)`.
+- `"tvnl"` – tensor product `te(time, x)`.
 
 - `"global_smooth"` – smooth `s(x_global)` evaluated at the focal time
   vs. the non-event's shifted time (the paper's `g_b(x^{(b)}(t))`

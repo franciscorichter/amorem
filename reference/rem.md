@@ -53,7 +53,7 @@ rem(
 
 - time:
 
-  Name of the time column, required for `tve` / `tvnle` terms.
+  Name of the time column, required for `tv` / `tvnl` terms.
 
 - k:
 
@@ -90,8 +90,8 @@ Two estimation backends are provided:
   Degenerate logistic regression on a case-1-control design (Boschi,
   Lerner & Wit 2025): the response is a constant 1 and the linear
   predictor is built from event-minus-control differences. Supports
-  smooth time-varying (`tve`), non-linear (`nle`) and time-varying
-  non-linear (`tvnle`) effects via
+  smooth time-varying (`tv`), non-linear (`nl`) and time-varying
+  non-linear (`tvnl`) effects via
   [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html).
 
 - `"clogit"`:
@@ -108,11 +108,11 @@ Two estimation backends are provided:
 The right-hand side lists covariates. A bare name is a **linear**
 effect; wrap a name to request a smooth effect (degenerate method only):
 
-- `tve(x)` — time-varying linear effect: `s(time, by = d_x)`.
+- `tv(x)` — time-varying linear effect: `s(time, by = d_x)`.
 
-- `nle(x)` — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
+- `nl(x)` — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
 
-- `tvnle(x)` — time-varying non-linear effect (tensor product).
+- `tvnl(x)` — time-varying non-linear effect (tensor product).
 
 - `re(x)` — random effect of a grouping factor `x` (e.g. the sender),
   built from the matched `x_ev` / `x_nv` levels as
@@ -131,7 +131,7 @@ indicator.
 For a covariate `x`, the event/control difference is taken from column
 `x`, else `d_x`, else `x_ev - x_nv`. Non-linear terms use
 `transform_x_ev` / `transform_x_nv` when present (the eventnet
-spline-transformed covariate), otherwise `x_ev` / `x_nv`. `tvnle` uses
+spline-transformed covariate), otherwise `x_ev` / `x_nv`. `tvnl` uses
 `transformed_time` when present. Undirected logs (senders only, no
 receiver/`TARGET` column) are supported.
 

@@ -16,11 +16,11 @@ control (non-event) features are computed via
 compute_endogenous_features().
 The mgcv design uses the case-vs-control matrix trick:
 linear -&amp;gt; a single coefficient on case - control (column d_stat).
-tve    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
-nle    -&amp;gt; s(stat_mat, by = I_mat) where stat_mat is a
+tv    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
+nl    -&amp;gt; s(stat_mat, by = I_mat) where stat_mat is a
 two-column matrix cbind(case, control) and I_mat is
 cbind(1, -1).
-tvnle  -&amp;gt; te(time_mat, stat_mat, by = I_mat) tensor product
+tvnl  -&amp;gt; te(time_mat, stat_mat, by = I_mat) tensor product
 smooth, with time_mat both columns equal to the event time vector.
 
 The model is fitted with mgcv::gam and a degenerate logistic
@@ -47,11 +47,11 @@ control (non-event) features are computed via
 compute_endogenous_features().
 The mgcv design uses the case-vs-control matrix trick:
 linear -&amp;gt; a single coefficient on case - control (column d_stat).
-tve    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
-nle    -&amp;gt; s(stat_mat, by = I_mat) where stat_mat is a
+tv    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
+nl    -&amp;gt; s(stat_mat, by = I_mat) where stat_mat is a
 two-column matrix cbind(case, control) and I_mat is
 cbind(1, -1).
-tvnle  -&amp;gt; te(time_mat, stat_mat, by = I_mat) tensor product
+tvnl  -&amp;gt; te(time_mat, stat_mat, by = I_mat) tensor product
 smooth, with time_mat both columns equal to the event time vector.
 
 The model is fitted with mgcv::gam and a degenerate logistic
@@ -108,11 +108,11 @@ is documented in their Section 3.3.</p>
 control (non-event) features are computed via
 <code><a href="compute_endogenous_features.html">compute_endogenous_features()</a></code>.</p></li>
 <li><p>The mgcv design uses the case-vs-control matrix trick:</p><ul><li><p>linear -&gt; a single coefficient on <code>case - control</code> (column <code>d_stat</code>).</p></li>
-<li><p>tve    -&gt; <code>s(time, by = d_stat)</code> — smooth in time, multiplied by <code>d_stat</code>.</p></li>
-<li><p>nle    -&gt; <code>s(stat_mat, by = I_mat)</code> where <code>stat_mat</code> is a
+<li><p>tv    -&gt; <code>s(time, by = d_stat)</code> — smooth in time, multiplied by <code>d_stat</code>.</p></li>
+<li><p>nl    -&gt; <code>s(stat_mat, by = I_mat)</code> where <code>stat_mat</code> is a
 two-column matrix <code>cbind(case, control)</code> and <code>I_mat</code> is
 <code>cbind(1, -1)</code>.</p></li>
-<li><p>tvnle  -&gt; <code>te(time_mat, stat_mat, by = I_mat)</code> tensor product
+<li><p>tvnl  -&gt; <code>te(time_mat, stat_mat, by = I_mat)</code> tensor product
 smooth, with time_mat both columns equal to the event time vector.</p></li>
 </ul></li>
 <li><p>The model is fitted with <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> and a degenerate logistic
@@ -148,14 +148,14 @@ fit uses the same case-control sample. Returns the same tidy
 <dt id="arg-models">models<a class="anchor" aria-label="anchor" href="#arg-models"></a></dt>
 <dd><p>Named list of specifications. Each entry is itself a
 named character vector (or named list) mapping statistic names to
-effect types: <code>"linear"</code>, <code>"tve"</code>, <code>"nle"</code>, or <code>"tvnle"</code>. Example:</p><div class="sourceCode"><pre><code><span></span>
+effect types: <code>"linear"</code>, <code>"tv"</code>, <code>"nl"</code>, or <code>"tvnl"</code>. Example:</p><div class="sourceCode"><pre><code><span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>      linear <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count   <span class="op">=</span> <span class="st">"linear"</span>,</span>
 <span>                 transitivity_count  <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>,</span>
-<span>      nle    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"nle"</span>,</span>
-<span>                 transitivity_time_recent <span class="op">=</span> <span class="st">"nle"</span><span class="op">)</span>,</span>
-<span>      tvnle  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"tvnle"</span>,</span>
-<span>                 transitivity_time_recent <span class="op">=</span> <span class="st">"tvnle"</span><span class="op">)</span><span class="op">)</span></span>
+<span>      nl    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"nl"</span>,</span>
+<span>                 transitivity_time_recent <span class="op">=</span> <span class="st">"nl"</span><span class="op">)</span>,</span>
+<span>      tvnl  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"tvnl"</span>,</span>
+<span>                 transitivity_time_recent <span class="op">=</span> <span class="st">"tvnl"</span><span class="op">)</span><span class="op">)</span></span>
 <span>  </span></code></pre></div></dd>
 
 
@@ -208,10 +208,10 @@ arXiv:2509.05289.</p>
 <span class="r-in"><span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    linear <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"linear"</span>,</span></span>
 <span class="r-in"><span>               transitivity_time_recent <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    nle    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"nle"</span>,</span></span>
-<span class="r-in"><span>               transitivity_time_recent <span class="op">=</span> <span class="st">"nle"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    tvnle  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"tvnle"</span>,</span></span>
-<span class="r-in"><span>               transitivity_time_recent <span class="op">=</span> <span class="st">"tvnle"</span><span class="op">)</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    nl    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"nl"</span>,</span></span>
+<span class="r-in"><span>               transitivity_time_recent <span class="op">=</span> <span class="st">"nl"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    tvnl  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"tvnl"</span>,</span></span>
+<span class="r-in"><span>               transitivity_time_recent <span class="op">=</span> <span class="st">"tvnl"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>

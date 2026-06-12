@@ -88,7 +88,7 @@ degenerate method; long with a case indicator and stratum for <code>clogit</code
 
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
-<dd><p>Name of the time column, required for <code>tve</code> / <code>tvnle</code> terms.</p></dd>
+<dd><p>Name of the time column, required for <code>tv</code> / <code>tvnl</code> terms.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
@@ -119,8 +119,8 @@ methods.</p>
 <dd><p>Degenerate logistic regression on a case-1-control
 design (Boschi, Lerner &amp; Wit 2025): the response is a constant 1 and the
 linear predictor is built from event-minus-control differences. Supports
-smooth time-varying (<code>tve</code>), non-linear (<code>nle</code>) and time-varying
-non-linear (<code>tvnle</code>) effects via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>.</p></dd>
+smooth time-varying (<code>tv</code>), non-linear (<code>nl</code>) and time-varying
+non-linear (<code>tvnl</code>) effects via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>.</p></dd>
 
 <dt><code>"clogit"</code></dt>
 <dd><p>Conditional logistic regression on a case-k-control
@@ -136,9 +136,9 @@ controls, the eventnet blocked layout).</p></dd>
 
 
 <p>The right-hand side lists covariates. A bare name is a <strong>linear</strong> effect; wrap
-a name to request a smooth effect (degenerate method only):</p><ul><li><p><code>tve(x)</code>   — time-varying linear effect: <code>s(time, by = d_x)</code>.</p></li>
-<li><p><code>nle(x)</code>   — non-linear effect: <code>s(cbind(x_ev, x_nv), by = c(1, -1))</code>.</p></li>
-<li><p><code>tvnle(x)</code> — time-varying non-linear effect (tensor product).</p></li>
+a name to request a smooth effect (degenerate method only):</p><ul><li><p><code>tv(x)</code>   — time-varying linear effect: <code>s(time, by = d_x)</code>.</p></li>
+<li><p><code>nl(x)</code>   — non-linear effect: <code>s(cbind(x_ev, x_nv), by = c(1, -1))</code>.</p></li>
+<li><p><code>tvnl(x)</code> — time-varying non-linear effect (tensor product).</p></li>
 <li><p><code>re(x)</code>    — random effect of a grouping factor <code>x</code> (e.g. the
 sender), built from the matched <code>x_ev</code> / <code>x_nv</code> levels as
 <code>s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")</code>, contributing
@@ -156,7 +156,7 @@ constant case indicator); for <code>clogit</code> it is the 0/1 event indicator.
 <p>For a covariate <code>x</code>, the event/control difference is taken from column <code>x</code>,
 else <code>d_x</code>, else <code>x_ev - x_nv</code>. Non-linear terms use <code>transform_x_ev</code> /
 <code>transform_x_nv</code> when present (the eventnet spline-transformed covariate),
-otherwise <code>x_ev</code> / <code>x_nv</code>. <code>tvnle</code> uses <code>transformed_time</code> when present.
+otherwise <code>x_ev</code> / <code>x_nv</code>. <code>tvnl</code> uses <code>transformed_time</code> when present.
 Undirected logs (senders only, no receiver/<code>TARGET</code> column) are supported.</p>
     </div>
     <div class="section level2">
