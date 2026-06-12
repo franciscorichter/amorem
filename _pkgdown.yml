@@ -63,6 +63,7 @@ reference:
       - standardize_event_log
       - attach_static_covariates
       - compute_endogenous_features
+      - cpp_supported_stats
       - sample_non_events
       - widen_case_control
       - transform_recency
