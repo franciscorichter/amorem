@@ -74,7 +74,10 @@ test_that("rem() errors helpfully on bad input", {
                "time")                                  # missing `time`
   expect_error(rem(~ no_such_cov, data = w, method = "gam"),
                "Cannot find")
-  # clogit needs a case-indicator column; the wide fixture has none
+  # clogit needs the 0/1 event indicator: a one-sided formula errors helpfully
   expect_error(rem(~ reciprocity_count, data = w, method = "clogit"),
+               "event indicator")
+  # ... and an indicator named (via the LHS) but absent errors clearly
+  expect_error(rem(nope ~ reciprocity_count, data = w, method = "clogit"),
                "case column")
 })
