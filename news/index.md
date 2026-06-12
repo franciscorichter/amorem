@@ -1,9 +1,9 @@
 # Changelog
 
-## amore 0.2.0
+## amore 0.9.0
 
-New neural backend and a small number of API refinements made before the
-first CRAN release.
+New neural backend and a small number of API refinements; the version
+intended for the first CRAN release.
 
 - **New `rem(method = "nn")` backend:** a multilayer perceptron scores
   every candidate in a case-control stratum and is trained on the
