@@ -25,6 +25,10 @@
 #'
 #' @return A data.frame with columns `sender`, `receiver`, and `time`. The return
 #'   object is tagged with class `"amore_event_log"` for downstream dispatch.
+#' @examples
+#' data(classroom_events)
+#' std <- standardize_event_log(classroom_events)
+#' head(std)
 #' @export
 standardize_event_log <- function(
     event_log,
@@ -329,6 +333,11 @@ attach_static_covariates <- function(
 #'
 #' @return The event log with added columns, one per requested statistic
 #'   (`sender_receivers_set` is added as a list-column).
+#' @examples
+#' data(classroom_events)
+#' feats <- compute_endogenous_features(classroom_events,
+#'                                      stats = c("reciprocity", "recency"))
+#' head(feats)
 #' @export
 compute_endogenous_features <- function(
     event_log,
@@ -996,6 +1005,10 @@ compute_endogenous_features <- function(
 #'
 #' @return A data.frame containing the original events (`event = 1`) and the
 #'   sampled controls (`event = 0`), grouped by `stratum` identifiers.
+#' @examples
+#' data(classroom_events)
+#' cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+#' head(cc)
 #' @export
 sample_non_events <- function(
     event_log,

@@ -137,3 +137,9 @@ covariates, e.g. an alien species' previously invaded regions). It honours
 \code{history_log}, so it can be computed for sampled non-events without those
 non-events polluting the history.
 }
+\examples{
+data(classroom_events)
+feats <- compute_endogenous_features(classroom_events,
+                                     stats = c("reciprocity", "recency"))
+head(feats)
+}

@@ -61,3 +61,8 @@ sampled controls (\code{event = 0}), grouped by \code{stratum} identifiers.
 Given an observed event log, generate nested case-control data by sampling
 counterfactual sender--receiver pairs according to predefined strategies.
 }
+\examples{
+data(classroom_events)
+cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+head(cc)
+}
