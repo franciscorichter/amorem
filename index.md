@@ -81,15 +81,13 @@ summary(fit)
 | [Quick start](articles/quick-start.html) | install + simulate-and-recover in a few lines |
 | [Simulation](articles/simulation.html) | the dyadic mechanisms, Gillespie vs τ-leap |
 | [Endogenous catalogue](articles/endogenous-catalogue.html) | the statistic catalogue and its variant axes |
-| [Estimation](articles/estimation.html) | case-control sampling, `rem()`, model comparison, GOF |
+| [Estimation](articles/estimation.html) | case-control sampling, the three `rem()` backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](articles/datasets.html) | the bundled REM datasets |
 | [Real-data analysis](articles/real-data-analysis.html) | sender-frailty flip, smooth effect curves |
 | [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity |
 
-Full per-function documentation is under [Reference](reference/index.html). The
-[whitepaper](https://github.com/franciscorichter/amore/blob/main/paper/whitepaper.pdf)
-has the complete statistical methods and validation experiments.
+Full per-function documentation is under [Reference](reference/index.html).
 
 ## References
 
