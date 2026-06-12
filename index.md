@@ -1,29 +1,42 @@
-## amore
+<!-- pkgdown home page. Edit here, not on the GitHub wiki. -->
 
-End-to-end **simulation, sampling, feature engineering, model
-selection, and inference** for relational event models (REMs) in R.
+## amore <img src="man/figures/logo.png" align="right" height="118" alt="" />
 
-A Gillespie-style event simulator with three composable layers
-(exogenous, endogenous, time-varying global covariates), a
-parallel post-hoc feature engine that exposes the same
-**41-statistic** endogenous catalogue — covering the full
-continuous / ordered / exp-decay / interrupted family from
-Juozaitienė & Wit (2024, *JRSS-A*) — and a one-call
-[`compare_models()`](reference/compare_models.html) helper that
-fits competing specifications and returns a tidy AIC table.
+**Augmented Modelling of Relational Events** — end-to-end **simulation,
+sampling, feature engineering, model selection, and inference** for relational
+event models (REMs) in R, in one consistent API.
 
-Three real-world REM datasets ship with the package, so the
-documented workflows run on real data out of the box.
+The package consolidates four lines of recent methodological work:
 
-### 30-second tour
+- **Dyadic REMs** with timing / closure variants and one- or two-axis actor
+  frailty, following
+  [Juozaitienė & Wit (2024, *JRSS-A*)](https://doi.org/10.1093/jrsssa/qnae132).
+- **Relational Hyper Event Models** (RHEMs) with set-valued sender/receiver
+  hyperedges, subset-repetition covariates, and smooth effects
+  (linear / `tv` / `nl` / `tvnl`), following
+  [Boschi, Lerner & Wit (2025)](https://arxiv.org/abs/2509.05289).
+- **Global covariate effects** — covariates varying in time but constant across
+  pairs — via the time-shifted partial likelihood of
+  [Lembo, Juozaitienė, Vinciotti & Wit (2025, *JRSS-C*)](https://doi.org/10.1093/jrsssc/qlaf058).
+- **Cumulative martingale-residual GOF tests**, following
+  [Boschi & Wit (2025, *Stat & Comp* 36:4)](https://doi.org/10.1007/s11222-025-10751-2).
+
+## Installation
+
+```r
+# install.packages("remotes")
+remotes::install_github("franciscorichter/amore")
+```
+
+## 30-second tour
 
 ```r
 library(amore)
 
 # 1. Bundled datasets, ready to load
-data(classroom_events)   # 691 events,    20 actors (McFarland 2001)
-data(social_evolution_calls) # 439 events, 54 actors  (Madan et al. 2011)
-data(radoslaw_email)     # 82,927 emails, 167 actors (Michalski et al. 2014)
+data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
+data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
+data(radoslaw_email)          # 82,927 emails, 167 actors (Michalski et al. 2014)
 
 # 2. Compute endogenous features post-hoc
 feat <- compute_endogenous_features(
@@ -31,81 +44,67 @@ feat <- compute_endogenous_features(
   stats = c("reciprocity_count", "reciprocity_time_recent_interrupted",
             "transitivity_count", "transitivity_time_recent_interrupted"))
 
-# 3. Compare candidate specifications by AIC
-compare_models(
-  classroom_events,
-  models = list(
-    count       = c("reciprocity_count", "transitivity_count"),
-    continuous  = c("reciprocity_time_recent", "transitivity_time_recent"),
-    interrupted = c("reciprocity_time_recent_interrupted",
-                    "transitivity_time_recent_interrupted")),
-  seed = 11)
+# 3. Fit a model on preprocessed case-control data
+cc  <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+fit <- rem(~ reciprocity_count + nl(reciprocity_time_recent) + re(sender),
+           data = widen_case_control(cc), method = "degenerate")
+summary(fit)
 
 # 4. Simulate a stream with known endogenous structure
 set.seed(2026)
 sim <- simulate_relational_events(
-  n_events = 1500,
-  senders = LETTERS[1:8], receivers = LETTERS[1:8],
-  baseline_rate = 1, allow_loops = FALSE,
+  n_events = 1500, senders = LETTERS[1:8], receivers = LETTERS[1:8],
   endogenous_stats   = c("reciprocity_count", "transitivity_count"),
   endogenous_effects = c(reciprocity_count = 0.4, transitivity_count = 0.2))
 ```
 
-### What's inside
+## What's inside
 
-- **`simulate_relational_events()`** — exact Gillespie or τ-leap;
-  composes exogenous, endogenous, and time-varying global
-  covariates; emits plain event logs or stratified case–control
-  data for partial-likelihood inference.
-- **`compute_endogenous_features()`** — the same 41-stat catalogue
-  computed post-hoc from any `(sender, receiver, time)` event log.
-  Every shared name is cross-validated row-by-row against the
-  simulator by `test-sim-vs-posthoc-parity.R`.
-- **`sample_non_events()`** — nested case–control sampling with
-  appearance / citation / remove risk-set rules.
-- **`compare_models()`** — single-call AIC comparison across
-  competing endogenous specifications, with `n_controls = 1`
-  (binomial GLM on differences) or `n_controls > 1` (stratified
-  conditional logistic via `survival::coxph`).
-- **`standardize_event_log()`**, **`attach_static_covariates()`**,
-  **`simulate_actor_covariates()`** — utilities for ingest and
-  exogenous covariate engineering.
+- **`rem()`** — the unified fitter for preprocessed case-control data, with a
+  conditional-logit backend (case-*k*-control) and a degenerate-logistic backend
+  (case-1-control) supporting linear / `tv` / `nl` / `tvnl` smooth effects and
+  `re()` random effects, plus `summary()` / `coef()` / `plot()`.
+  `widen_case_control()` reshapes a long case-control log into the wide form
+  `rem()` expects.
+- **`simulate_relational_events()`** — exact Gillespie or τ-leap; composes
+  exogenous, endogenous, and time-varying global covariates; with `wide = TRUE`
+  emits a ready-to-fit case-1-control table.
+- **`compute_endogenous_features()`** — the endogenous catalogue computed
+  post-hoc from any `(sender, receiver, time)` log; via `history_log` it scores
+  sampled non-events without polluting the event history.
+- **`sample_non_events()`** — nested case-control sampling with appearance /
+  citation / remove risk-set rules.
+- **Goodness of fit** — `gof_global()`, `gof_multivariate()`, `gof_auxiliary()`,
+  and pointwise `martingale_residuals()`.
+- The earlier `compare_models()`, `compare_models_smooth()` and
+  `compare_models_global()` remain available (superseded by `rem()`).
 
-### The endogenous catalogue
+## Guides
 
-Same 41-stat catalogue is exposed by both the simulator and the
-post-hoc engine, organised by family × variant:
+| Guide | What you'll find |
+|---|---|
+| [Quick start](articles/quick-start.html) | install + simulate-and-recover in a few lines |
+| [Simulation](articles/simulation.html) | the dyadic mechanisms, Gillespie vs τ-leap |
+| [Endogenous catalogue](articles/endogenous-catalogue.html) | the statistic catalogue and its variant axes |
+| [Estimation](articles/estimation.html) | case-control sampling, `rem()`, model comparison, GOF |
+| [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model and RHEM simulators |
+| [Datasets](articles/datasets.html) | the bundled REM datasets |
+| [Real-data analysis](articles/real-data-analysis.html) | sender-frailty flip, smooth effect curves |
+| [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity |
 
-| Family            | count/binary | ordered | exp-decay | time (recent/first) | interrupted time |
-|-------------------|:---:|:---:|:---:|:---:|:---:|
-| Reciprocity       | ✓ | — | ✓ | ✓ | ✓ |
-| Transitivity      | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Cyclic            | ✓ | — | ✓ | ✓ | ✓ |
-| Sending balance   | ✓ | — | ✓ | ✓ | ✓ |
-| Receiving balance | ✓ | — | ✓ | ✓ | ✓ |
+Full per-function documentation is under [Reference](reference/index.html). The
+[whitepaper](https://github.com/franciscorichter/amore/blob/main/paper/whitepaper.pdf)
+has the complete statistical methods and validation experiments.
 
-The **reciprocity interrupted** column covers all five variants
-(binary / count / exp-decay / time-recent / time-first); the four
-closure families' interrupted column covers the *time-recent* and
-*time-first* variants empirically preferred by Juozaitienė & Wit
-(2024) Table 3. See [`?compute_endogenous_features`](reference/compute_endogenous_features.html)
-for the full list.
+## References
 
-### Where to next
-
-- The [model-comparison vignette](articles/model-comparison.html)
-  walks through the full pipeline on `classroom_events` and ends
-  with a simulator → inference round-trip.
-- The [endogenous-and-global vignette](articles/endogenous-and-global.html)
-  composes endogenous mechanisms with time-varying global covariates.
-- The [species-invasion vignette](articles/species-invasion.html)
-  covers the `risk = "remove"` one-shot mode.
-- The [whitepaper](https://github.com/franciscorichter/amore/blob/main/paper/whitepaper.pdf)
-  has the full statistical methods, the validation experiments,
-  smooth-effect curve replication, and the limitations / roadmap.
-
-### Reference
-
-Juozaitienė R, Wit EC (2024). It's about time: revisiting
-reciprocity and triadicity in relational event analysis.
-*JRSS-A* 188(4), 1246–1262. [doi:10.1093/jrsssa/qnae132](https://doi.org/10.1093/jrsssa/qnae132).
+- Juozaitienė R., Wit E.C. (2024). *It's about time: revisiting reciprocity and
+  triadicity in relational event analysis.* JRSS-A 188(4), 1246–1262.
+  [doi:10.1093/jrsssa/qnae132](https://doi.org/10.1093/jrsssa/qnae132).
+- Boschi M., Lerner J., Wit E.C. (2025). *Beyond Linearity and Time-Homogeneity:
+  Relational Hyper Event Models with Time-Varying Non-Linear Effects.*
+  arXiv:2509.05289.
+- Lembo M., Juozaitienė R., Vinciotti V., Wit E.C. (2025). *Relational Event
+  Models with Global Covariates.* JRSS-C.
+- Boschi M., Wit E.C. (2025). *Goodness of fit in relational event models.*
+  Statistics and Computing 36(4).

@@ -5,12 +5,19 @@ template:
   bootswatch: flatly
   mathjax: true
   favicon: man/figures/logo-github-white.png
+  bslib:
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
 
 navbar:
   structure:
-    left: [reference, articles]
-    right: [github]
+    left: [get-started, reference, articles]
+    right: [search, github]
   components:
+    get-started:
+      text: Get started
+      href: articles/quick-start.html
     github:
       icon: fab fa-github
       aria-label: "GitHub repository"
@@ -19,8 +26,29 @@ navbar:
       text: Reference
       href: reference/index.html
     articles:
-      text: Articles
-      href: articles/index.html
+      text: Guides
+      menu:
+        - text: "Guides"
+        - text: Quick start
+          href: articles/quick-start.html
+        - text: Simulation
+          href: articles/simulation.html
+        - text: Endogenous catalogue
+          href: articles/endogenous-catalogue.html
+        - text: Estimation
+          href: articles/estimation.html
+        - text: Hyperedge models
+          href: articles/hyperedge-models.html
+        - text: Datasets
+          href: articles/datasets.html
+        - text: Real-data analysis
+          href: articles/real-data-analysis.html
+        - text: Validation experiments
+          href: articles/validation-experiments.html
+        - text: -------
+        - text: "Worked examples"
+        - text: All articles
+          href: articles/index.html
 
 reference:
   - title: "Simulation helpers"
@@ -71,7 +99,19 @@ reference:
       - email_eu_core
 
 articles:
-  - title: "Get started"
+  - title: "Guides"
+    desc: "End-to-end walkthroughs of the package."
+    contents:
+      - articles/quick-start
+      - articles/simulation
+      - articles/endogenous-catalogue
+      - articles/estimation
+      - articles/hyperedge-models
+      - articles/datasets
+      - articles/real-data-analysis
+      - articles/validation-experiments
+  - title: "Worked examples"
+    desc: "Focused, executable vignettes."
     contents:
       - simulation-demo
       - exogenous-covariates
