@@ -44,8 +44,7 @@ contract — the same contract every downstream helper expects.
 [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
 accepts a named list of character vectors. Each entry is one candidate
 specification; the vector contents are the endogenous statistic names.
-Here we mirror the three minimal specifications from the whitepaper
-§6.2:
+Here we compare three minimal specifications:
 
 ``` r
 

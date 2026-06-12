@@ -101,7 +101,7 @@ summary(fit)
 | [Quick start](https://franciscorichter.github.io/amore/articles/quick-start.md) | install + simulate-and-recover in a few lines |
 | [Simulation](https://franciscorichter.github.io/amore/articles/simulation.md) | the dyadic mechanisms, Gillespie vs τ-leap |
 | [Endogenous catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.md) | the statistic catalogue and its variant axes |
-| [Estimation](https://franciscorichter.github.io/amore/articles/estimation.md) | case-control sampling, [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md), model comparison, GOF |
+| [Estimation](https://franciscorichter.github.io/amore/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](https://franciscorichter.github.io/amore/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amore/articles/datasets.md) | the bundled REM datasets |
 | [Real-data analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md) | sender-frailty flip, smooth effect curves |
@@ -109,9 +109,6 @@ summary(fit)
 
 Full per-function documentation is under
 [Reference](https://franciscorichter.github.io/amore/reference/index.md).
-The
-[whitepaper](https://github.com/franciscorichter/amore/blob/main/paper/whitepaper.pdf)
-has the complete statistical methods and validation experiments.
 
 ## References
 
