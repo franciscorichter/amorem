@@ -7,8 +7,17 @@ First public release.
 - [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
   unified fitter for preprocessed case-control data, with a `gam`
   (case-1-control logistic via
-  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html)) and a `clogit`
-  backend.
+  [`mgcv::gam()`](https://rdrr.io/pkg/mgcv/man/gam.html)), a `clogit`,
+  and a neural-network (`nn`) backend.
+- `rem(method = "nn")`: a multilayer perceptron scores every candidate
+  in a case-control stratum and is trained on the conditional-logistic
+  partial likelihood (softmax over each risk set) — a nonlinear,
+  prediction-oriented counterpart of `clogit`. Pure-R implementation (no
+  extra dependencies), configured via
+  [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md);
+  [`summary()`](https://rdrr.io/r/base/summary.html) reports held-out
+  concordance and `plot(type = "pdp")` shows per-feature
+  partial-dependence curves.
 - Smooth-term formula wrappers for the `gam` backend: `tv()`
   (time-varying linear), `nl()` (non-linear), `tvnl()` (time-varying
   non-linear), and `re()` (grouping random effect).

@@ -114,13 +114,21 @@ When the covariates have already been computed — e.g. by
 [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
 — [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
 fits the model directly from the case-control table, decoupling fitting
-from feature computation. It has two backends:
+from feature computation. It has three backends:
 
 - **`method = "clogit"`** — conditional logistic regression on a
   **case-k-control** design
   ([`survival::clogit`](https://rdrr.io/pkg/survival/man/clogit.html)).
   Strata come from `stratum`, or are derived as `cumsum(case == 1)` for
   the eventnet blocked layout. Linear terms only.
+- **`method = "nn"`** — a neural conditional-logistic model on the same
+  case-k-control design as `clogit`: a multilayer perceptron scores
+  every candidate and the loss is the softmax over each risk set,
+  i.e. exactly the conditional partial likelihood with a *learned*
+  nonlinear intensity in place of the linear predictor.
+  Prediction-oriented — no coefficient table; it earns its keep when
+  effects interact or bend in ways an additive model cannot capture.
+  Pure R, no extra dependencies.
 - **`method = "gam"`** — degenerate logistic regression on a
   **case-1-control** design
   ([`mgcv::gam`](https://rdrr.io/pkg/mgcv/man/gam.html)), supporting
@@ -143,7 +151,27 @@ coef(fit20); summary(fit20)
 w    <- widen_case_control(lesmis, stratum = "EVENT_INTERVAL")
 fit1 <- rem(~ nl(dyadic.activity), data = w, method = "gam")
 plot(fit1)            # the fitted smooth panel
+
+# neural conditional logit on the same long case-control log
+fitnn <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
+             data = lesmis, method = "nn", stratum = "EVENT_INTERVAL",
+             nn = nn_control(hidden = c(16, 8), epochs = 300, seed = 1))
+summary(fitnn)               # architecture, held-out concordance
+plot(fitnn$fit, type = "pdp")  # learned per-feature effect curves
 ```
+
+The `nn` backend is trained full-batch with Adam, early-stops on a
+held-out fraction of strata (`nn_control(validation = , patience = )`),
+and standardizes features internally.
+[`logLik()`](https://rdrr.io/r/stats/logLik.html) returns the partial
+likelihood at the trained network, so
+[`AIC()`](https://rdrr.io/r/stats/AIC.html)-style comparisons against
+`clogit` fits are possible (with the usual caveats about effective
+degrees of freedom for neural networks). Because it shares the
+case-control machinery, everything upstream —
+[`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md),
+feature engineering, stratum handling — is identical to the other
+backends.
 
 [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
 reshapes a long case-(k-)control log into the wide `<cov>_ev` /

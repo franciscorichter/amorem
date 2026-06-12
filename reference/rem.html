@@ -68,12 +68,13 @@ intended to supersede <code><a href="compare_models.html">compare_models()</a></
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">rem</span><span class="op">(</span></span>
 <span>  <span class="va">formula</span>,</span>
 <span>  <span class="va">data</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gam"</span>, <span class="st">"clogit"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gam"</span>, <span class="st">"clogit"</span>, <span class="st">"nn"</span><span class="op">)</span>,</span>
 <span>  case <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratum <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  time <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  k <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gam_method <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  nn <span class="op">=</span> <span class="fu"><a href="nn_control.html">nn_control</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -97,8 +98,8 @@ intended to supersede <code><a href="compare_models.html">compare_models()</a></
 
 <dt id="arg-case">case<a class="anchor" aria-label="anchor" href="#arg-case"></a></dt>
 <dd><p>Optional name of the 0/1 event-indicator column for the <code>clogit</code>
-backend. If <code>NULL</code> (default), the indicator is taken from the formula's
-left-hand side (e.g. <code>event ~ x</code>). Ignored by the <code>gam</code> method.</p></dd>
+and <code>nn</code> backends. If <code>NULL</code> (default), the indicator is taken from the
+formula's left-hand side (e.g. <code>event ~ x</code>). Ignored by the <code>gam</code> method.</p></dd>
 
 
 <dt id="arg-stratum">stratum<a class="anchor" aria-label="anchor" href="#arg-stratum"></a></dt>
@@ -119,6 +120,11 @@ left-hand side (e.g. <code>event ~ x</code>). Ignored by the <code>gam</code> me
 passed to <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>. Defaults to <code>NULL</code>, which uses mgcv's own default
 (<code>"GCV.Cp"</code>) and reproduces the Intro-to-REM tutorial parameterization.
 Set to <code>"REML"</code> for the REML fit used in some papers.</p></dd>
+
+
+<dt id="arg-nn">nn<a class="anchor" aria-label="anchor" href="#arg-nn"></a></dt>
+<dd><p>An <code><a href="nn_control.html">nn_control()</a></code> object with the architecture and training
+hyper-parameters for <code>method = "nn"</code>. Ignored by the other backends.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -147,6 +153,16 @@ design via <code><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="e
 strata are taken from <code>stratum</code>, or derived as <code>cumsum(case == 1)</code> when
 <code>stratum</code> is <code>NULL</code> (assuming each case is immediately followed by its
 controls, the eventnet blocked layout).</p></dd>
+
+<dt><code>"nn"</code></dt>
+<dd><p>Neural conditional-logistic model on the same case-k-control
+design as <code>clogit</code>: a multilayer perceptron scores every candidate and
+the loss is the softmax over each risk set — exactly the conditional
+partial likelihood, with a learned nonlinear intensity in place of the
+linear predictor. Prediction-oriented: there is no coefficient table;
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports held-out concordance and <code>plot(type = "pdp")</code> shows
+per-feature partial-dependence curves. Configure with <code><a href="nn_control.html">nn_control()</a></code>.
+Pure-R implementation, no extra dependencies.</p></dd>
 
 
 </dl></div>

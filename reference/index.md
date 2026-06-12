@@ -33,6 +33,8 @@
 
 - [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md) :
   Fit a relational (hyper)event model on preprocessed case-control data
+- [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md)
+  : Control parameters for the neural-network backend of rem()
 - [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
   : Compare candidate endogenous specifications by AIC
 - [`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)

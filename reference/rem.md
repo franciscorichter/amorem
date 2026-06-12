@@ -16,12 +16,13 @@ which couple feature computation and fitting.
 rem(
   formula,
   data,
-  method = c("gam", "clogit"),
+  method = c("gam", "clogit", "nn"),
   case = NULL,
   stratum = NULL,
   time = NULL,
   k = NULL,
   gam_method = NULL,
+  nn = nn_control(),
   ...
 )
 ```
@@ -43,8 +44,8 @@ rem(
 
 - case:
 
-  Optional name of the 0/1 event-indicator column for the `clogit`
-  backend. If `NULL` (default), the indicator is taken from the
+  Optional name of the 0/1 event-indicator column for the `clogit` and
+  `nn` backends. If `NULL` (default), the indicator is taken from the
   formula's left-hand side (e.g. `event ~ x`). Ignored by the `gam`
   method.
 
@@ -68,6 +69,13 @@ rem(
   `NULL`, which uses mgcv's own default (`"GCV.Cp"`) and reproduces the
   Intro-to-REM tutorial parameterization. Set to `"REML"` for the REML
   fit used in some papers.
+
+- nn:
+
+  An
+  [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md)
+  object with the architecture and training hyper-parameters for
+  `method = "nn"`. Ignored by the other backends.
 
 - ...:
 
@@ -104,6 +112,19 @@ Two estimation backends are provided:
   or derived as `cumsum(case == 1)` when `stratum` is `NULL` (assuming
   each case is immediately followed by its controls, the eventnet
   blocked layout).
+
+- `"nn"`:
+
+  Neural conditional-logistic model on the same case-k-control design as
+  `clogit`: a multilayer perceptron scores every candidate and the loss
+  is the softmax over each risk set — exactly the conditional partial
+  likelihood, with a learned nonlinear intensity in place of the linear
+  predictor. Prediction-oriented: there is no coefficient table;
+  [`summary()`](https://rdrr.io/r/base/summary.html) reports held-out
+  concordance and `plot(type = "pdp")` shows per-feature
+  partial-dependence curves. Configure with
+  [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md).
+  Pure-R implementation, no extra dependencies.
 
 ## Formula syntax
 
