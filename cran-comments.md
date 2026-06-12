@@ -1,10 +1,8 @@
 ## Submission
 
 This is a new submission of **amore** (Augmented Modelling of Relational
-Events), version 0.2.0 — tools for simulating, fitting, and checking
-relational event models. (An earlier 0.1.0 was prepared; 0.2.0 adds a
-neural-network estimation backend and small API refinements and is the
-version intended for release.)
+Events), version 0.9.0 — tools for simulating, fitting, and checking
+relational event models.
 
 ## Test environments
 
