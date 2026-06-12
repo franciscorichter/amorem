@@ -1,8 +1,11 @@
 Package: amore
 Title: Augmented Modelling of Relational Events
 Version: 0.1.0
-Authors@R: 
-    person(given = "Francisco", family = "Richter", email = "richtf@usi.ch", role = c("aut", "cre"))
+Authors@R: c(
+    person(given = "Francisco", family = "Richter", email = "richtf@usi.ch", role = c("aut", "cre")),
+    person(given = "Martina", family = "Boschi", role = "aut"),
+    person(given = "Ernst C.", family = "Wit", role = "aut"),
+    person(given = "Melania", family = "Lembo", role = "aut"))
 Description: Utilities for simulating and prototyping relational event models,
     including helpers to generate dynamic event sequences and covariate
     processes for sender and receiver sets. The endogenous-effect and

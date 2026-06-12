@@ -21,5 +21,12 @@ Useful links:
 \author{
 \strong{Maintainer}: Francisco Richter \email{richtf@usi.ch}
 
+Authors:
+\itemize{
+  \item Martina Boschi
+  \item Ernst C. Wit
+  \item Melania Lembo
+}
+
 }
 \keyword{internal}
