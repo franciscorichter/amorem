@@ -40,24 +40,19 @@ data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
 data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
 data(radoslaw_email)          # 82,927 emails, 167 actors (Michalski et al. 2014)
 
-# 2. Compute endogenous features post-hoc
+# 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
 feat <- compute_endogenous_features(
-  classroom_events,
-  stats = c("reciprocity_count", "reciprocity_time_recent_interrupted",
-            "transitivity_count", "transitivity_time_recent_interrupted"))
+  classroom_events, stats = c("reciprocity", "recency"))
 
-# 3. Fit a model on preprocessed case-control data
-cc  <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
-fit <- rem(~ reciprocity_count + nl(reciprocity_time_recent) + re(sender),
-           data = widen_case_control(cc), method = "gam")
-summary(fit)
-
-# 4. Simulate a stream with known endogenous structure
-set.seed(2026)
-sim <- simulate_relational_events(
+# 3. Simulate a ready-to-fit case-1-control table with known structure ...
+w <- simulate_relational_events(
   n_events = 1500, senders = LETTERS[1:8], receivers = LETTERS[1:8],
-  endogenous_stats   = c("reciprocity_count", "transitivity_count"),
-  endogenous_effects = c(reciprocity_count = 0.4, transitivity_count = 0.2))
+  n_controls = 1, endogenous_stats = "reciprocity_count",
+  endogenous_effects = c(reciprocity_count = 0.4), wide = TRUE)
+
+# 4. ... and fit it with the default "gam" backend
+fit <- rem(~ reciprocity_count, data = w, method = "gam")
+summary(fit)
 ```
 
 ## What’s inside

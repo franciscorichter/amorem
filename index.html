@@ -105,24 +105,19 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">social_evolution_calls</span><span class="op">)</span>  <span class="co"># 439 events,    54 actors  (Madan et al. 2011)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span>          <span class="co"># 82,927 emails, 167 actors (Michalski et al. 2014)</span></span>
 <span></span>
-<span><span class="co"># 2. Compute endogenous features post-hoc</span></span>
+<span><span class="co"># 2. Compute endogenous features post-hoc from any (sender, receiver, time) log</span></span>
 <span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_endogenous_features.html">compute_endogenous_features</a></span><span class="op">(</span></span>
-<span>  <span class="va">classroom_events</span>,</span>
-<span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"reciprocity_time_recent_interrupted"</span>,</span>
-<span>            <span class="st">"transitivity_count"</span>, <span class="st">"transitivity_time_recent_interrupted"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">classroom_events</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity"</span>, <span class="st">"recency"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 3. Fit a model on preprocessed case-control data</span></span>
-<span><span class="va">cc</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>, n_controls <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="va">reciprocity_count</span> <span class="op">+</span> <span class="fu">nl</span><span class="op">(</span><span class="va">reciprocity_time_recent</span><span class="op">)</span> <span class="op">+</span> <span class="fu">re</span><span class="op">(</span><span class="va">sender</span><span class="op">)</span>,</span>
-<span>           data <span class="op">=</span> <span class="fu"><a href="reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span>, method <span class="op">=</span> <span class="st">"gam"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># 4. Simulate a stream with known endogenous structure</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
-<span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span><span class="co"># 3. Simulate a ready-to-fit case-1-control table with known structure ...</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events <span class="op">=</span> <span class="fl">1500</span>, senders <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>, receivers <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,</span>
-<span>  endogenous_stats   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span>
-<span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="fl">0.4</span>, transitivity_count <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  n_controls <span class="op">=</span> <span class="fl">1</span>, endogenous_stats <span class="op">=</span> <span class="st">"reciprocity_count"</span>,</span>
+<span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span>, wide <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># 4. ... and fit it with the default "gam" backend</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="va">reciprocity_count</span>, data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="whats-inside">What’s inside<a class="anchor" aria-label="anchor" href="#whats-inside"></a>

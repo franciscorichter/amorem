@@ -13,7 +13,7 @@ difference (`d_<cov>`, event minus control) are emitted, ready for the
 ``` r
 widen_case_control(
   data,
-  case = "IS_OBSERVED",
+  case = NULL,
   stratum = NULL,
   covariates = NULL,
   control_index = 1L
@@ -28,7 +28,10 @@ widen_case_control(
 
 - case:
 
-  Name of the 0/1 event-indicator column.
+  Optional name of the 0/1 event-indicator column. If `NULL` (default),
+  it is auto-detected from the package's `event` column (as produced by
+  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md))
+  or eventnet's `IS_OBSERVED`, preferring `event` when both are present.
 
 - stratum:
 
