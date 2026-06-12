@@ -62,14 +62,14 @@ test_that("widen_case_control() produces ev/nv/diff columns, one row per case", 
   expect_true(all(w$d_x == 2))
 })
 
-test_that("widen + rem(degenerate) round-trips on a simulated case-k-control log", {
+test_that("widen + rem(gam) round-trips on a simulated case-k-control log", {
   skip_if_not_installed("mgcv")
   cc <- make_long_cc(n = 150, n_controls = 5)
   w <- widen_case_control(cc, case = "event", stratum = "stratum",
                           covariates = "reciprocity_count", control_index = 1)
   expect_true(all(c("reciprocity_count_ev", "reciprocity_count_nv",
                     "d_reciprocity_count") %in% names(w)))
-  fit <- rem(~ reciprocity_count, data = w, method = "degenerate")
+  fit <- rem(~ reciprocity_count, data = w, method = "gam")
   expect_named(coef(fit), "reciprocity_count")
 })
 

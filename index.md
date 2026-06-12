@@ -47,7 +47,7 @@ feat <- compute_endogenous_features(
 # 3. Fit a model on preprocessed case-control data
 cc  <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
 fit <- rem(~ reciprocity_count + nl(reciprocity_time_recent) + re(sender),
-           data = widen_case_control(cc), method = "degenerate")
+           data = widen_case_control(cc), method = "gam")
 summary(fit)
 
 # 4. Simulate a stream with known endogenous structure
@@ -61,7 +61,7 @@ sim <- simulate_relational_events(
 ## What's inside
 
 - **`rem()`** — the unified fitter for preprocessed case-control data, with a
-  conditional-logit backend (case-*k*-control) and a degenerate-logistic backend
+  conditional-logit backend (case-*k*-control) and a `gam` backend
   (case-1-control) supporting linear / `tv` / `nl` / `tvnl` smooth effects and
   `re()` random effects, plus `summary()` / `coef()` / `plot()`.
   `widen_case_control()` reshapes a long case-control log into the wide form

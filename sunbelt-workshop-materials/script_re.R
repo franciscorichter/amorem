@@ -41,7 +41,7 @@ colnames(dat.gam) <- c("event",
                        "sender_nv",
                        "receiver_nv", 
                        "stratum")
-fit <- rem(~ re(sender), data = dat.gam, method = "degenerate")
+fit <- rem(~ re(sender), data = dat.gam, method = "gam")
 
 sort(coef(fit), decreasing = TRUE)[1:5]
 sort(coef(fit))[1:5]

@@ -12,7 +12,7 @@ title: "Estimation"
    wide case-1-control form).
 2. **`rem()`** — the unified fitter for (already preprocessed)
    case-control data: a conditional-logit backend for case-k-control
-   designs and a degenerate-logistic backend for case-1-control,
+   designs and a `gam` backend for case-1-control,
    with linear / TV / NL / TVNL effects and `summary()` /
    `coef()` / `plot()` methods.
 3. **`compare_models*` helpers** evaluate a list of candidate
@@ -109,7 +109,7 @@ computation. It has two backends:
   **case-k-control** design (`survival::clogit`). Strata come from
   `stratum`, or are derived as `cumsum(case == 1)` for the eventnet
   blocked layout. Linear terms only.
-- **`method = "degenerate"`** — degenerate logistic regression on a
+- **`method = "gam"`** — degenerate logistic regression on a
   **case-1-control** design (`mgcv::gam`), supporting smooth
   effects. In the formula a bare name is a linear effect; wrap it as
   `tv(x)`, `nl(x)` or `tvnl(x)` for a time-varying, non-linear,
@@ -126,12 +126,12 @@ coef(fit20); summary(fit20)
 
 # case-1-control degenerate logistic with a non-linear effect
 w    <- widen_case_control(lesmis, stratum = "EVENT_INTERVAL")
-fit1 <- rem(~ nl(dyadic.activity), data = w, method = "degenerate")
+fit1 <- rem(~ nl(dyadic.activity), data = w, method = "gam")
 plot(fit1)            # the fitted smooth panel
 ```
 
 `widen_case_control()` reshapes a long case-(k-)control log into the
-wide `<cov>_ev` / `<cov>_nv` / `d_<cov>` form the degenerate backend
+wide `<cov>_ev` / `<cov>_nv` / `d_<cov>` form the `gam` backend
 expects (one row per case). Undirected logs (set-valued senders, no
 receiver column) are supported throughout. Column resolution follows
 the eventnet conventions (`x`, `d_x`, `x_ev`/`x_nv`,

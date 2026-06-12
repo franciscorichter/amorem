@@ -3,9 +3,9 @@
 First public release.
 
 * `rem()` unified fitter for preprocessed case-control data, with a
-  `degenerate` (case-1-control logistic via `mgcv::gam()`) and a `clogit`
+  `gam` (case-1-control logistic via `mgcv::gam()`) and a `clogit`
   backend.
-* Smooth-term formula wrappers for the degenerate backend: `tv()`
+* Smooth-term formula wrappers for the `gam` backend: `tv()`
   (time-varying linear), `nl()` (non-linear), `tvnl()` (time-varying
   non-linear), and `re()` (grouping random effect).
 * `re()` reproduces the Intro-to-REM tutorial parameterization; `rem()` gains a

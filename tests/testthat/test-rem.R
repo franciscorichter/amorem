@@ -1,4 +1,4 @@
-# Tests for rem() degenerate-logistic backend (issue #85). Uses
+# Tests for rem() `gam` backend (issue #85). Uses
 # simulate_relational_events(wide = TRUE) as a self-contained wide
 # case-1-control fixture (<cov>_ev / <cov>_nv / d_<cov> + time).
 
@@ -16,10 +16,10 @@ make_wide <- function(seed = 1, n = 300) {
 test_that("rem() fits a linear degenerate-logistic model and exposes coef/summary", {
   skip_if_not_installed("mgcv")
   w <- make_wide()
-  fit <- rem(~ reciprocity_count, data = w, method = "degenerate")
+  fit <- rem(~ reciprocity_count, data = w, method = "gam")
 
   expect_s3_class(fit, "rem")
-  expect_equal(fit$method, "degenerate")
+  expect_equal(fit$method, "gam")
   expect_equal(fit$n, nrow(w))
   cf <- coef(fit)
   expect_length(cf, 1L)                       # one linear term, no intercept
@@ -34,14 +34,14 @@ test_that("rem() accepts multiple linear terms", {
   skip_if_not_installed("mgcv")
   w <- make_wide()
   fit <- rem(~ reciprocity_count + reciprocity_binary, data = w,
-             method = "degenerate")
+             method = "gam")
   expect_length(coef(fit), 2L)
 })
 
 test_that("rem() builds a tv (time-varying) smooth term", {
   skip_if_not_installed("mgcv")
   w <- make_wide()
-  fit <- rem(~ tv(reciprocity_count), data = w, method = "degenerate",
+  fit <- rem(~ tv(reciprocity_count), data = w, method = "gam",
              time = "time")
   expect_s3_class(fit, "rem")
   # a smooth term shows up in the fitted gam
@@ -52,7 +52,7 @@ test_that("rem() builds a tv (time-varying) smooth term", {
 test_that("rem() builds an nl (non-linear) smooth term from _ev/_nv columns", {
   skip_if_not_installed("mgcv")
   w <- make_wide()
-  fit <- rem(~ nl(reciprocity_count), data = w, method = "degenerate")
+  fit <- rem(~ nl(reciprocity_count), data = w, method = "gam")
   expect_gt(length(fit$fit$smooth), 0L)
 })
 
@@ -60,7 +60,7 @@ test_that("rem() mixes linear and smooth terms", {
   skip_if_not_installed("mgcv")
   w <- make_wide()
   fit <- rem(~ reciprocity_binary + tv(reciprocity_count),
-             data = w, method = "degenerate", time = "time")
+             data = w, method = "gam", time = "time")
   expect_s3_class(fit, "rem")
   expect_gt(length(fit$fit$smooth), 0L)
 })
@@ -70,9 +70,9 @@ test_that("rem() errors helpfully on bad input", {
   w <- make_wide()
   expect_error(rem("notaformula", data = w), "must be a formula")
   expect_error(rem(~ 1, data = w), "at least one term")
-  expect_error(rem(~ tv(reciprocity_count), data = w, method = "degenerate"),
+  expect_error(rem(~ tv(reciprocity_count), data = w, method = "gam"),
                "time")                                  # missing `time`
-  expect_error(rem(~ no_such_cov, data = w, method = "degenerate"),
+  expect_error(rem(~ no_such_cov, data = w, method = "gam"),
                "Cannot find")
   # clogit needs a case-indicator column; the wide fixture has none
   expect_error(rem(~ reciprocity_count, data = w, method = "clogit"),

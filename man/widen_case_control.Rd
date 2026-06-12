@@ -39,7 +39,7 @@ Reshapes a long case-(k-)control dataset -- one row per case and per control,
 with a 0/1 case indicator -- into a wide \strong{case-1-control} table with one row
 per case. For each covariate the event value (\verb{<cov>_ev}), the matched
 control value (\verb{<cov>_nv}) and their difference (\verb{d_<cov>}, event minus
-control) are emitted, ready for the degenerate-logistic fit of \code{\link[=rem]{rem()}}.
+control) are emitted, ready for the \code{gam} backend of \code{\link[=rem]{rem()}}.
 }
 \details{
 This is the preprocessing companion to \code{\link[=rem]{rem()}} for eventnet-style output,

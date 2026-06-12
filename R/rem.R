@@ -8,7 +8,7 @@
 #'
 #' Two estimation backends are provided:
 #' \describe{
-#'   \item{`"degenerate"`}{Degenerate logistic regression on a case-1-control
+#'   \item{`"gam"`}{Degenerate logistic regression on a case-1-control
 #'     design (Boschi, Lerner & Wit 2025): the response is a constant 1 and the
 #'     linear predictor is built from event-minus-control differences. Supports
 #'     smooth time-varying (`tv`), non-linear (`nl`) and time-varying
@@ -22,7 +22,7 @@
 #'
 #' @section Formula syntax:
 #' The right-hand side lists covariates. A bare name is a **linear** effect; wrap
-#' a name to request a smooth effect (degenerate method only):
+#' a name to request a smooth effect (`gam` method only):
 #' \itemize{
 #'   \item `tv(x)`   — time-varying linear effect: `s(time, by = d_x)`.
 #'   \item `nl(x)`   — non-linear effect: `s(cbind(x_ev, x_nv), by = c(1, -1))`.
@@ -35,7 +35,7 @@
 #'     `x_ev` / `x_nv` are absent. Identified only when the event and control
 #'     differ on `x`.
 #' }
-#' For the degenerate method the left-hand side is ignored (the response is the
+#' For the `gam` method the left-hand side is ignored (the response is the
 #' constant case indicator); for `clogit` the left-hand side names the 0/1 event
 #' indicator column (e.g. `event ~ x`), unless `case` is given explicitly.
 #'
@@ -48,16 +48,16 @@
 #'
 #' @param formula A formula; see *Formula syntax*.
 #' @param data A data.frame of preprocessed case-control data (wide for the
-#'   degenerate method; long with a case indicator and stratum for `clogit`).
+#'   `gam` method; long with a case indicator and stratum for `clogit`).
 #' @param method Estimation backend; see *Description*.
 #' @param case Optional name of the 0/1 event-indicator column for the `clogit`
 #'   backend. If `NULL` (default), the indicator is taken from the formula's
-#'   left-hand side (e.g. `event ~ x`). Ignored by the degenerate method.
+#'   left-hand side (e.g. `event ~ x`). Ignored by the `gam` method.
 #' @param stratum Name of the column grouping each case with its controls
 #'   (required by `clogit`).
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
 #' @param k Optional integer basis dimension passed to `s()` / `te()`.
-#' @param gam_method Smoothness-selection method for the `degenerate` backend,
+#' @param gam_method Smoothness-selection method for the `gam` backend,
 #'   passed to [mgcv::gam()]. Defaults to `NULL`, which uses mgcv's own default
 #'   (`"GCV.Cp"`) and reproduces the Intro-to-REM tutorial parameterization.
 #'   Set to `"REML"` for the REML fit used in some papers.
@@ -80,12 +80,12 @@
 #'   n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
 #'   n_controls = 1, endogenous_stats = "reciprocity_count",
 #'   endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
-#' fit <- rem(~ reciprocity_count, data = w, method = "degenerate")
+#' fit <- rem(~ reciprocity_count, data = w, method = "gam")
 #' coef(fit)
 #'
 #' @export
 rem <- function(formula, data,
-                method = c("degenerate", "clogit"),
+                method = c("gam", "clogit"),
                 case = NULL, stratum = NULL, time = NULL,
                 k = NULL, gam_method = NULL, ...) {
   method <- match.arg(method)
@@ -110,7 +110,7 @@ rem <- function(formula, data,
     }
     if (any(vapply(terms_info, function(t) t$type != "linear", logical(1)))) {
       stop("method = \"clogit\" supports linear terms only; smooth terms ",
-           "(tv/nl/tvnl) require method = \"degenerate\".")
+           "(tv/nl/tvnl) require method = \"gam\".")
     }
     # Resolve the event-indicator column: explicit `case`, else the formula LHS.
     if (is.null(case)) {
@@ -142,7 +142,7 @@ rem <- function(formula, data,
   }
 
   if (!requireNamespace("mgcv", quietly = TRUE)) {
-    stop("The `mgcv` package is required by rem(method = \"degenerate\"). ",
+    stop("The `mgcv` package is required by rem(method = \"gam\"). ",
          "Install it with install.packages(\"mgcv\").")
   }
   n <- nrow(data)

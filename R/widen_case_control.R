@@ -4,7 +4,7 @@
 #' with a 0/1 case indicator -- into a wide **case-1-control** table with one row
 #' per case. For each covariate the event value (`<cov>_ev`), the matched
 #' control value (`<cov>_nv`) and their difference (`d_<cov>`, event minus
-#' control) are emitted, ready for the degenerate-logistic fit of [rem()].
+#' control) are emitted, ready for the `gam` backend of [rem()].
 #'
 #' This is the preprocessing companion to [rem()] for eventnet-style output,
 #' where a case row is followed by its controls and the stratum id is left blank

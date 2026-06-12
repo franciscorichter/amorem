@@ -11,7 +11,7 @@ test_that("G4: rem() builds an re() random-effect smooth", {
     endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
   # re() builds the matched event/control random-effect smooth
   # s(cbind(sender_ev, sender_nv), by = c(1,-1), bs = "re").
-  fit <- rem(~ reciprocity_count + re(sender), data = w, method = "degenerate")
+  fit <- rem(~ reciprocity_count + re(sender), data = w, method = "gam")
   expect_s3_class(fit, "rem")
   expect_gt(length(fit$fit$smooth), 0L)            # the random-effect smooth
   expect_true(is.finite(logLik(fit)))
@@ -25,8 +25,8 @@ test_that("G4: re() default fit reproduces plain mgcv::gam; REML is opt-in (issu
     n_controls = 1, endogenous_stats = "reciprocity_count",
     endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
 
-  fit_default <- rem(~ re(sender), data = w, method = "degenerate")
-  fit_reml    <- rem(~ re(sender), data = w, method = "degenerate",
+  fit_default <- rem(~ re(sender), data = w, method = "gam")
+  fit_reml    <- rem(~ re(sender), data = w, method = "gam",
                      gam_method = "REML")
 
   # Tutorial reference: plain mgcv::gam with the matched +-1 factor matrix,
@@ -50,7 +50,7 @@ test_that("G4: re() on a missing column errors clearly; clogit rejects it", {
     n_events = 100, senders = paste0("a", 1:6), receivers = paste0("a", 1:6),
     n_controls = 1, endogenous_stats = "reciprocity_count",
     endogenous_effects = c(reciprocity_count = 0.5), wide = TRUE)
-  expect_error(rem(~ re(nope), data = w, method = "degenerate"), "Cannot find")
+  expect_error(rem(~ re(nope), data = w, method = "gam"), "Cannot find")
   expect_error(rem(~ re(sender_ev), data = w, method = "clogit"),
                "linear terms only")
 })
