@@ -463,7 +463,7 @@ Currently linear-effect specs only.
 
 ------------------------------------------------------------------------
 
-### The neural backend and related work
+### The neural backend
 
 `amore` ships a neural estimation backend, `rem(method = "nn")`
 (described above): a single multilayer perceptron scores every candidate
@@ -475,21 +475,11 @@ table (effects are recovered post-hoc via partial-dependence plots) and,
 for now, of uncertainty quantification. The implementation is pure R
 with no extra dependencies, so it is reachable directly from
 [`install.packages()`](https://rdrr.io/r/utils/install.packages.html).
+See the [Validation
+experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md)
+for a gradient-correctness check and an interaction-recovery comparison
+against the linear backend.
 
-This complements **DREAM** ([Filippi-Mazzola & Wit 2024, *Social
-Networks* 79, 25-33](https://doi.org/10.1016/j.socnet.2024.05.004)), the
-deep relational-event model from the same group, which is best seen as
-related prior work rather than part of `amore`. DREAM is a *Neural
-Additive Model*: each effect $`f_k(x_{srk})`$ is fit by an
-**independent** feed-forward network — so, like `gam`, it stays additive
-across effects — trained on the same case-1-control partial likelihood,
-with a `torch` backend and bootstrap / Gaussian-process uncertainty
-bands. DREAM targets very large networks where a spline-basis GAM
-becomes a memory bottleneck. It is not implemented in `amore`; `amore`’s
-`nn` backend takes the complementary, interaction-capable (non-additive)
-route in pure R.
-
-**Future directions.** A DREAM-style additive-NN architecture, an
-optional `torch` engine for depth and GPU, factor embeddings (a neural
-analogue of `re()`), and uncertainty quantification for `method = "nn"`
-are natural extensions.
+**Future directions.** An optional `torch` engine for depth and GPU,
+factor embeddings (a neural analogue of `re()`), and uncertainty
+quantification for `method = "nn"` are natural extensions.

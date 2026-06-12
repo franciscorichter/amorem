@@ -618,7 +618,7 @@ Currently linear-effect specs only.</p>
 <hr>
 </div>
 <div class="section level3">
-<h3 id="the-neural-backend-and-related-work">The neural backend and related work<a class="anchor" aria-label="anchor" href="#the-neural-backend-and-related-work"></a>
+<h3 id="the-neural-backend">The neural backend<a class="anchor" aria-label="anchor" href="#the-neural-backend"></a>
 </h3>
 <p><code>amore</code> ships a neural estimation backend,
 <code>rem(method = "nn")</code> (described above): a single multilayer
@@ -630,26 +630,13 @@ additive <code>gam</code> backend cannot — at the cost of a coefficient
 table (effects are recovered post-hoc via partial-dependence plots) and,
 for now, of uncertainty quantification. The implementation is pure R
 with no extra dependencies, so it is reachable directly from
-<code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code>.</p>
-<p>This complements <strong>DREAM</strong> (<a href="https://doi.org/10.1016/j.socnet.2024.05.004" class="external-link">Filippi-Mazzola
-&amp; Wit 2024, <em>Social Networks</em> 79, 25-33</a>), the deep
-relational-event model from the same group, which is best seen as
-related prior work rather than part of <code>amore</code>. DREAM is a
-<em>Neural Additive Model</em>: each effect
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mrow><mi>s</mi><mi>r</mi><mi>k</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f_k(x_{srk})</annotation></semantics></math>
-is fit by an <strong>independent</strong> feed-forward network — so,
-like <code>gam</code>, it stays additive across effects — trained on the
-same case-1-control partial likelihood, with a <code>torch</code>
-backend and bootstrap / Gaussian-process uncertainty bands. DREAM
-targets very large networks where a spline-basis GAM becomes a memory
-bottleneck. It is not implemented in <code>amore</code>;
-<code>amore</code>’s <code>nn</code> backend takes the complementary,
-interaction-capable (non-additive) route in pure R.</p>
-<p><strong>Future directions.</strong> A DREAM-style additive-NN
-architecture, an optional <code>torch</code> engine for depth and GPU,
-factor embeddings (a neural analogue of <code>re()</code>), and
-uncertainty quantification for <code>method = "nn"</code> are natural
-extensions.</p>
+<code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code>. See the <a href="validation-experiments.html">Validation experiments</a> for a
+gradient-correctness check and an interaction-recovery comparison
+against the linear backend.</p>
+<p><strong>Future directions.</strong> An optional <code>torch</code>
+engine for depth and GPU, factor embeddings (a neural analogue of
+<code>re()</code>), and uncertainty quantification for
+<code>method = "nn"</code> are natural extensions.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
