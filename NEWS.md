@@ -1,23 +1,34 @@
+# amore 0.2.0
+
+New neural backend and a small number of API refinements made before the
+first CRAN release.
+
+* **New `rem(method = "nn")` backend:** a multilayer perceptron scores every
+  candidate in a case-control stratum and is trained on the
+  conditional-logistic partial likelihood (softmax over each risk set) — a
+  nonlinear, prediction-oriented counterpart of `clogit`. Pure-R implementation
+  (no extra dependencies), configured via `nn_control()`; `summary()` reports
+  in-sample (and, with a validation split, held-out) concordance and
+  `plot(type = "pdp")` shows per-feature partial-dependence curves.
+* **API:** the degenerate-logistic backend is now `method = "gam"` (was
+  `"degenerate"`); the smooth-term wrappers are `tv()` / `nl()` / `tvnl()`
+  (was `tve()` / `nle()` / `tvnle()`); `re()` is unchanged.
+* `rem()`'s `case` argument now defaults to `NULL` and is taken from the
+  formula's left-hand side (e.g. `event ~ x`) for the `clogit`/`nn` backends.
+* `widen_case_control()` auto-detects the 0/1 indicator column (`event` or
+  `IS_OBSERVED`) when `case` is not given.
+* `cpp_supported_stats()` is now exported.
+
 # amore 0.1.0
 
-First public release.
+First release.
 
 * `rem()` unified fitter for preprocessed case-control data, with a
-  `gam` (case-1-control logistic via `mgcv::gam()`), a `clogit`, and a
-  neural-network (`nn`) backend.
-* `rem(method = "nn")`: a multilayer perceptron scores every candidate in a
-  case-control stratum and is trained on the conditional-logistic partial
-  likelihood (softmax over each risk set) — a nonlinear, prediction-oriented
-  counterpart of `clogit`. Pure-R implementation (no extra dependencies),
-  configured via `nn_control()`; `summary()` reports in-sample (and, with a
-  validation split, held-out) concordance and
-  `plot(type = "pdp")` shows per-feature partial-dependence curves.
-* Smooth-term formula wrappers for the `gam` backend: `tv()`
-  (time-varying linear), `nl()` (non-linear), `tvnl()` (time-varying
-  non-linear), and `re()` (grouping random effect).
-* `re()` reproduces the Intro-to-REM tutorial parameterization; `rem()` gains a
-  `gam_method` argument (default uses mgcv's own smoothness selection, with
-  `gam_method = "REML"` available).
+  `gam` (case-1-control logistic via `mgcv::gam()`) and a `clogit` backend.
+* Smooth-term formula wrappers for the `gam` backend (time-varying, non-linear,
+  time-varying-non-linear) and an `re()` grouping random effect; `re()`
+  reproduces the Intro-to-REM tutorial parameterization, and `rem()` exposes a
+  `gam_method` argument.
 * Simulation via `simulate_relational_events()` (Gillespie and tau-leap),
-  endogenous-feature computation, non-event sampling, and goodness-of-fit
-  helpers.
+  the endogenous-statistic feature engine, non-event sampling, and the
+  martingale-residual goodness-of-fit family.

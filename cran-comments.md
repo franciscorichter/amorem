@@ -1,13 +1,16 @@
 ## Submission
 
 This is a new submission of **amore** (Augmented Modelling of Relational
-Events), version 0.1.0 — tools for simulating and prototyping relational
-event models.
+Events), version 0.2.0 — tools for simulating, fitting, and checking
+relational event models. (An earlier 0.1.0 was prepared; 0.2.0 adds a
+neural-network estimation backend and small API refinements and is the
+version intended for release.)
 
 ## Test environments
 
 * local: macOS (aarch64), R 4.5.1 — `R CMD check --as-cran`
-* (please also run win-builder devel/release and R-hub before acceptance)
+* win-builder devel and release
+* GitHub Actions (ubuntu-latest, R release)
 
 ## R CMD check results
 
