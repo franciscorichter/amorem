@@ -7,12 +7,13 @@
 rem(
   formula,
   data,
-  method = c("gam", "clogit"),
+  method = c("gam", "clogit", "nn"),
   case = NULL,
   stratum = NULL,
   time = NULL,
   k = NULL,
   gam_method = NULL,
+  nn = nn_control(),
   ...
 )
 }
@@ -25,8 +26,8 @@ rem(
 \item{method}{Estimation backend; see \emph{Description}.}
 
 \item{case}{Optional name of the 0/1 event-indicator column for the \code{clogit}
-backend. If \code{NULL} (default), the indicator is taken from the formula's
-left-hand side (e.g. \code{event ~ x}). Ignored by the \code{gam} method.}
+and \code{nn} backends. If \code{NULL} (default), the indicator is taken from the
+formula's left-hand side (e.g. \code{event ~ x}). Ignored by the \code{gam} method.}
 
 \item{stratum}{Name of the column grouping each case with its controls
 (required by \code{clogit}).}
@@ -39,6 +40,9 @@ left-hand side (e.g. \code{event ~ x}). Ignored by the \code{gam} method.}
 passed to \code{\link[mgcv:gam]{mgcv::gam()}}. Defaults to \code{NULL}, which uses mgcv's own default
 (\code{"GCV.Cp"}) and reproduces the Intro-to-REM tutorial parameterization.
 Set to \code{"REML"} for the REML fit used in some papers.}
+
+\item{nn}{An \code{\link[=nn_control]{nn_control()}} object with the architecture and training
+hyper-parameters for \code{method = "nn"}. Ignored by the other backends.}
 
 \item{...}{Reserved for future use.}
 }
@@ -68,6 +72,14 @@ design via \code{\link[survival:clogit]{survival::clogit()}} (linear terms only)
 strata are taken from \code{stratum}, or derived as \code{cumsum(case == 1)} when
 \code{stratum} is \code{NULL} (assuming each case is immediately followed by its
 controls, the eventnet blocked layout).}
+\item{\code{"nn"}}{Neural conditional-logistic model on the same case-k-control
+design as \code{clogit}: a multilayer perceptron scores every candidate and
+the loss is the softmax over each risk set — exactly the conditional
+partial likelihood, with a learned nonlinear intensity in place of the
+linear predictor. Prediction-oriented: there is no coefficient table;
+\code{summary()} reports held-out concordance and \code{plot(type = "pdp")} shows
+per-feature partial-dependence curves. Configure with \code{\link[=nn_control]{nn_control()}}.
+Pure-R implementation, no extra dependencies.}
 }
 }
 \section{Formula syntax}{

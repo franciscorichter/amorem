@@ -69,6 +69,7 @@ reference:
   - title: "Model fitting and comparison"
     contents:
       - rem
+      - nn_control
       - compare_models
       - compare_models_smooth
       - compare_models_global

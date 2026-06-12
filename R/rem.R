@@ -18,6 +18,14 @@
 #'     strata are taken from `stratum`, or derived as `cumsum(case == 1)` when
 #'     `stratum` is `NULL` (assuming each case is immediately followed by its
 #'     controls, the eventnet blocked layout).}
+#'   \item{`"nn"`}{Neural conditional-logistic model on the same case-k-control
+#'     design as `clogit`: a multilayer perceptron scores every candidate and
+#'     the loss is the softmax over each risk set — exactly the conditional
+#'     partial likelihood, with a learned nonlinear intensity in place of the
+#'     linear predictor. Prediction-oriented: there is no coefficient table;
+#'     `summary()` reports held-out concordance and `plot(type = "pdp")` shows
+#'     per-feature partial-dependence curves. Configure with [nn_control()].
+#'     Pure-R implementation, no extra dependencies.}
 #' }
 #'
 #' @section Formula syntax:
@@ -51,8 +59,8 @@
 #'   `gam` method; long with a case indicator and stratum for `clogit`).
 #' @param method Estimation backend; see *Description*.
 #' @param case Optional name of the 0/1 event-indicator column for the `clogit`
-#'   backend. If `NULL` (default), the indicator is taken from the formula's
-#'   left-hand side (e.g. `event ~ x`). Ignored by the `gam` method.
+#'   and `nn` backends. If `NULL` (default), the indicator is taken from the
+#'   formula's left-hand side (e.g. `event ~ x`). Ignored by the `gam` method.
 #' @param stratum Name of the column grouping each case with its controls
 #'   (required by `clogit`).
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
@@ -61,6 +69,8 @@
 #'   passed to [mgcv::gam()]. Defaults to `NULL`, which uses mgcv's own default
 #'   (`"GCV.Cp"`) and reproduces the Intro-to-REM tutorial parameterization.
 #'   Set to `"REML"` for the REML fit used in some papers.
+#' @param nn An [nn_control()] object with the architecture and training
+#'   hyper-parameters for `method = "nn"`. Ignored by the other backends.
 #' @param ... Reserved for future use.
 #'
 #' @return An object of class `"rem"`: a list with the fitted model (`$fit`),
@@ -85,9 +95,9 @@
 #'
 #' @export
 rem <- function(formula, data,
-                method = c("gam", "clogit"),
+                method = c("gam", "clogit", "nn"),
                 case = NULL, stratum = NULL, time = NULL,
-                k = NULL, gam_method = NULL, ...) {
+                k = NULL, gam_method = NULL, nn = nn_control(), ...) {
   method <- match.arg(method)
   if (!inherits(formula, "formula")) stop("`formula` must be a formula.")
   if (!is.data.frame(data)) stop("`data` must be a data.frame.")
@@ -138,6 +148,44 @@ rem <- function(formula, data,
     return(structure(
       list(fit = fit, method = method, formula = formula,
            terms = terms_info, n = nrow(data), gam_formula = fm),
+      class = "rem"))
+  }
+
+  if (method == "nn") {
+    if (any(vapply(terms_info, function(t) t$type != "linear", logical(1)))) {
+      stop("method = \"nn\" takes bare covariate names only; the network ",
+           "learns nonlinearities itself (tv/nl/tvnl/re are for method = \"gam\").")
+    }
+    if (!inherits(nn, "nn_control")) {
+      stop("`nn` must be an nn_control() object.")
+    }
+    # Same indicator resolution as clogit: explicit `case`, else formula LHS.
+    if (is.null(case)) {
+      if (attr(stats::terms(formula), "response") == 0L) {
+        stop("method = \"nn\" needs a 0/1 event indicator: put it on the ",
+             "formula's left-hand side (e.g. `event ~ x`), or pass `case`.")
+      }
+      case <- all.vars(formula)[1L]
+    }
+    ci <- data[[case]]
+    if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
+    strat <- .derive_stratum(data, case, stratum)
+    vars <- vapply(terms_info, function(t) t$var, character(1))
+    miss <- setdiff(vars, names(data))
+    if (length(miss)) {
+      stop("Covariate column(s) not found in `data`: ", paste(miss, collapse = ", "))
+    }
+    non_num <- vars[!vapply(data[vars], is.numeric, logical(1))]
+    if (length(non_num)) {
+      stop("method = \"nn\" needs numeric covariates; non-numeric: ",
+           paste(non_num, collapse = ", "),
+           ". Encode factors numerically (e.g. model.matrix) first.")
+    }
+    X <- as.matrix(data[, vars, drop = FALSE]); storage.mode(X) <- "double"
+    fit <- .rem_nn_fit(X, strat, as.integer(ci) == 1L, nn, vars)
+    return(structure(
+      list(fit = fit, method = method, formula = formula,
+           terms = terms_info, n = nrow(data), gam_formula = NULL),
       class = "rem"))
   }
 
@@ -267,6 +315,9 @@ plot.rem <- function(x, ...) plot(x$fit, ...)
 
 #' @export
 logLik.rem <- function(object, ...) stats::logLik(object$fit)
+
+#' @export
+predict.rem <- function(object, ...) stats::predict(object$fit, ...)
 
 # Derive the case-control stratum vector aligned to data's rows.
 # If `stratum` names a column, use it (forward-filling blanks, since eventnet
