@@ -462,14 +462,11 @@ analytic gradient entry to a central finite difference.</li>
 <li>
 <em>Recovery.</em> 600 case-1-control strata, where the event in
 each stratum is drawn by a softmax over a true score. Two regimes: a
-<strong>linear</strong> truth
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>1.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 1.5\,x_1</annotation></semantics></math>
-and an <strong>interaction</strong> truth
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 2.5\,x_1 x_2</annotation></semantics></math>.
-Fit <code>rem(method = "nn")</code> and
-<code>rem(method = "clogit")</code> on each and compare top-1
-concordance (the fraction of strata whose observed event scores
-highest).</li>
+<strong>linear</strong> truth <code>eta = 1.5*x1</code> and an
+<strong>interaction</strong> truth <code>eta = 2.5*x1*x2</code>. Fit
+<code>rem(method = "nn")</code> and <code>rem(method = "clogit")</code>
+on each and compare top-1 concordance (the fraction of strata whose
+observed event scores highest).</li>
 </ul>
 <p><strong>Code.</strong></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -511,13 +508,11 @@ highest).</li>
 <span><span class="co"># gradient correctness is checked against numerical differentiation in</span></span>
 <span><span class="co"># tests/testthat/test-rem-nn.R (max |analytic - numerical| = 1.4e-10).</span></span></code></pre></div>
 <p><strong>Result — passes.</strong> Analytic and numerical gradients
-agree to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">|</mo><mi>⋅</mi><mo stretchy="false" form="prefix">|</mo><mo>=</mo><mn>1.4</mn><mo>×</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>10</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\max|\cdot| = 1.4 \times 10^{-10}</annotation></semantics></math>,
-confirming the backprop. Under the linear truth the neural backend
-matches the linear conditional logit (0.78 vs 0.78 — no overfitting
-penalty); under the interaction truth, where the additive
-<code>clogit</code> is stuck near chance (0.52), the joint MLP recovers
-the structure (0.81).</p>
+agree to <code>max|analytic - numerical| = 1.4e-10</code>, confirming
+the backprop. Under the linear truth the neural backend matches the
+linear conditional logit (0.78 vs 0.78 — no overfitting penalty); under
+the interaction truth, where the additive <code>clogit</code> is stuck
+near chance (0.52), the joint MLP recovers the structure (0.81).</p>
 <table class="table">
 <thead><tr class="header">
 <th>Truth</th>
@@ -529,15 +524,13 @@ the structure (0.81).</p>
 <tbody>
 <tr class="odd">
 <td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>1.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 1.5\,x_1</annotation></semantics></math>
-(linear)</td>
+<code>eta = 1.5*x1</code> (linear)</td>
 <td align="right">0.78</td>
 <td align="right">0.78</td>
 </tr>
 <tr class="even">
 <td>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 2.5\,x_1 x_2</annotation></semantics></math>
-(interaction)</td>
+<code>eta = 2.5*x1*x2</code> (interaction)</td>
 <td align="right">0.52</td>
 <td align="right">0.81</td>
 </tr>
@@ -548,11 +541,11 @@ the structure (0.81).</p>
 surface</div>
 </div>
 <p>The learned score surface (right) reproduces the saddle of
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">2.5\,x_1 x_2</annotation></semantics></math>
-— high at the matching-sign corners, low at the opposite-sign corners.
-This is exactly the case the neural backend is for: when endogenous
-effects interact, the additive backends cannot represent the structure,
-and the MLP — which scores the full candidate vector jointly — does.</p>
+<code>2.5*x1*x2</code> — high at the matching-sign corners, low at the
+opposite-sign corners. This is exactly the case the neural backend is
+for: when endogenous effects interact, the additive backends cannot
+represent the structure, and the MLP — which scores the full candidate
+vector jointly — does.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
