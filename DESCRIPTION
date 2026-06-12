@@ -1,6 +1,6 @@
 Package: amore
 Title: Augmented Modelling of Relational Events
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person(given = "Francisco", family = "Richter", email = "richtf@usi.ch", role = c("aut", "cre"))
 Description: Utilities for simulating and prototyping relational event models,
