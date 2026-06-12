@@ -105,7 +105,7 @@ summary(fit)
 | [Hyperedge models](https://franciscorichter.github.io/amore/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amore/articles/datasets.md) | the bundled REM datasets |
 | [Real-data analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md) | sender-frailty flip, smooth effect curves |
-| [Validation experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md) | recovery, smooth, scaling, parity |
+| [Validation experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 
 Full per-function documentation is under
 [Reference](https://franciscorichter.github.io/amore/reference/index.md).

@@ -423,13 +423,86 @@ authoritative for count statistics in downstream fitting</strong>.</p>
 <hr>
 </div>
 <div class="section level3">
+<h3 id="e6-neural-backend-gradient-correctness-and-interaction-recovery">E6 — Neural backend: gradient correctness and interaction
+recovery<a class="anchor" aria-label="anchor" href="#e6-neural-backend-gradient-correctness-and-interaction-recovery"></a>
+</h3>
+<p><strong>Property.</strong> The <code>nn</code> backend’s hand-derived
+analytic gradients must match numerical differentiation, and the fitted
+network must (a) match a linear conditional logit when the truth is
+linear, and (b) outperform it when effects interact in a way an additive
+model cannot represent.</p>
+<p><strong>Design.</strong></p>
+<ul>
+<li>
+<em>Gradients.</em> A 3-feature MLP on four strata; compare every
+analytic gradient entry to a central finite difference.</li>
+<li>
+<em>Recovery.</em> 600 case-1-control strata, where the event in
+each stratum is drawn by a softmax over a true score. Two regimes: a
+<strong>linear</strong> truth
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>1.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 1.5\,x_1</annotation></semantics></math>
+and an <strong>interaction</strong> truth
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 2.5\,x_1 x_2</annotation></semantics></math>.
+Fit <code>rem(method = "nn")</code> and
+<code>rem(method = "clogit")</code> on each and compare top-1
+concordance (the fraction of strata whose observed event scores
+highest).</li>
+</ul>
+<p><strong>Driver.</strong> <code>experiments/exp6_nn.R</code></p>
+<p><strong>Result — passes.</strong> Analytic and numerical gradients
+agree to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">|</mo><mi>⋅</mi><mo stretchy="false" form="prefix">|</mo><mo>=</mo><mn>1.4</mn><mo>×</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>10</mn></mrow></msup></mrow><annotation encoding="application/x-tex">\max|\cdot| = 1.4 \times 10^{-10}</annotation></semantics></math>,
+confirming the backprop. Under the linear truth the neural backend
+matches the linear conditional logit (0.78 vs 0.78 — no overfitting
+penalty); under the interaction truth, where the additive
+<code>clogit</code> is stuck near chance (0.52), the joint MLP recovers
+the structure (0.81).</p>
+<table class="table">
+<thead><tr class="header">
+<th>Truth</th>
+<th align="right">
+<code>clogit</code> (linear)</th>
+<th align="right">
+<code>nn</code> (MLP)</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>1.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 1.5\,x_1</annotation></semantics></math>
+(linear)</td>
+<td align="right">0.78</td>
+<td align="right">0.78</td>
+</tr>
+<tr class="even">
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>η</mi><mo>=</mo><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\eta = 2.5\,x_1 x_2</annotation></semantics></math>
+(interaction)</td>
+<td align="right">0.52</td>
+<td align="right">0.81</td>
+</tr>
+</tbody>
+</table>
+<div class="float">
+<img src="figures/exp6-nn.png" alt="nn recovery and learned interaction surface"><div class="figcaption">nn recovery and learned interaction
+surface</div>
+</div>
+<p>The learned score surface (right) reproduces the saddle of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2.5</mn><mspace width="0.167em"></mspace><msub><mi>x</mi><mn>1</mn></msub><msub><mi>x</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">2.5\,x_1 x_2</annotation></semantics></math>
+— high at the matching-sign corners, low at the opposite-sign corners.
+This is exactly the case the neural backend is for: when endogenous
+effects interact, the additive backends cannot represent the structure,
+and the MLP — which scores the full candidate vector jointly — does.</p>
+<hr>
+</div>
+<div class="section level3">
 <h3 id="reproducing-the-experiments">Reproducing the experiments<a class="anchor" aria-label="anchor" href="#reproducing-the-experiments"></a>
 </h3>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp1_recovery.R</span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp2_smooth.R</span>
 <span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp3_frailty.R</span>
 <span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp4_scaling.R</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp5_parity.R</span></code></pre></div>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp5_parity.R</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="ex">Rscript</span> paper/wiki/experiments/exp6_nn.R</span></code></pre></div>
 <p>All driver scripts use deterministic seeds (master family
 <code>20260518…20260520</code>); the figures and tables above were
 produced by these exact scripts at the current <code>main</code>.</p>
