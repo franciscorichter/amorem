@@ -618,75 +618,38 @@ Currently linear-effect specs only.</p>
 <hr>
 </div>
 <div class="section level3">
-<h3 id="coming-next-dream-filippi-mazzola-wit-2024">Coming next · DREAM (Filippi-Mazzola &amp; Wit 2024)<a class="anchor" aria-label="anchor" href="#coming-next-dream-filippi-mazzola-wit-2024"></a>
+<h3 id="the-neural-backend-and-related-work">The neural backend and related work<a class="anchor" aria-label="anchor" href="#the-neural-backend-and-related-work"></a>
 </h3>
-<p><code>compare_models_smooth(... = "nl")</code> fits non-linear
-effects with <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> + a B-spline basis. That works well
-at Classroom / Manufacturing scale, but the spline-basis matrix becomes
-a memory bottleneck once both the actor universe and the number of
-non-linear covariates grow.</p>
-<p><a href="https://doi.org/10.1016/j.socnet.2024.05.004" class="external-link">Filippi-Mazzola
-&amp; Wit (2024, <em>Social Networks</em> 79, 25-33)</a> propose
-<strong>DREAM</strong> — Deep Relational Event Additive Model. Each
-effect
+<p><code>amore</code> ships a neural estimation backend,
+<code>rem(method = "nn")</code> (described above): a single multilayer
+perceptron scores every candidate in a case-control stratum, trained by
+Adam on the conditional-logistic partial likelihood. Because it scores
+the full covariate vector <em>jointly</em>, it can capture
+<strong>interactions</strong> between endogenous statistics that the
+additive <code>gam</code> backend cannot — at the cost of a coefficient
+table (effects are recovered post-hoc via partial-dependence plots) and,
+for now, of uncertainty quantification. The implementation is pure R
+with no extra dependencies, so it is reachable directly from
+<code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code>.</p>
+<p>This complements <strong>DREAM</strong> (<a href="https://doi.org/10.1016/j.socnet.2024.05.004" class="external-link">Filippi-Mazzola
+&amp; Wit 2024, <em>Social Networks</em> 79, 25-33</a>), the deep
+relational-event model from the same group, which is best seen as
+related prior work rather than part of <code>amore</code>. DREAM is a
+<em>Neural Additive Model</em>: each effect
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>f</mi><mi>k</mi></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mrow><mi>s</mi><mi>r</mi><mi>k</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f_k(x_{srk})</annotation></semantics></math>
-is fit by an <em>independent</em> small feed-forward neural network
-(Neural Additive Model architecture), trained with ADAM on the same NCC
-partial likelihood <code>amore</code> already uses (eq. 3 of the paper =
-our <code>n_controls = 1</code> binomial-GLM path). Uncertainty bands
-come from either a non-parametric bootstrap or a post-hoc Gaussian
-Process regression refit on a small bootstrap sample.</p>
-<p>The empirical win:</p>
-<table class="table">
-<colgroup>
-<col width="33%">
-<col width="33%">
-<col width="33%">
-</colgroup>
-<thead><tr class="header">
-<th>Scale</th>
-<th>
-<code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam</a></code> (NL)</th>
-<th>DREAM</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>100k events × 1k actors, 10 covariates</td>
-<td>~500 s</td>
-<td>~80 s</td>
-</tr>
-<tr class="even">
-<td>500k events × 5k actors, 4 covariates</td>
-<td>~600 s</td>
-<td>~50 s</td>
-</tr>
-<tr class="odd">
-<td>500k events × 5k actors, ≥ 5 covariates</td>
-<td>fails to converge</td>
-<td>converges</td>
-</tr>
-<tr class="even">
-<td>100 M citations × 8 M actors (US patents)</td>
-<td>not feasible</td>
-<td>feasible</td>
-</tr>
-</tbody>
-</table>
-<p>Planned <code>amore</code> integration:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">compare_models_dream</span><span class="op">(</span></span>
-<span>  <span class="va">event_log</span>, <span class="va">models</span>,</span>
-<span>  hidden     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">64</span><span class="op">)</span>,    <span class="co"># ANN architecture per covariate</span></span>
-<span>  activation <span class="op">=</span> <span class="st">"gcu"</span>,         <span class="co"># Growing Cosine Unit (paper §A.1)</span></span>
-<span>  dropout    <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>  epochs     <span class="op">=</span> <span class="fl">200</span>,</span>
-<span>  uncertainty <span class="op">=</span> <span class="st">"gpr"</span>,        <span class="co"># or "bootstrap"</span></span>
-<span>  device     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cpu"</span>,<span class="st">"mps"</span>,<span class="st">"cuda"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Backend: the <code>torch</code> R package (<code>mlverse</code>, no
-Python). Suggests-only — users without <code>torch</code> keep the
-<code>mgcv</code> path. Output contract matches
-<code><a href="../reference/compare_models_smooth.html">compare_models_smooth()</a></code> so the <code>gof_*</code> battery
-plugs in unchanged.</p>
+is fit by an <strong>independent</strong> feed-forward network — so,
+like <code>gam</code>, it stays additive across effects — trained on the
+same case-1-control partial likelihood, with a <code>torch</code>
+backend and bootstrap / Gaussian-process uncertainty bands. DREAM
+targets very large networks where a spline-basis GAM becomes a memory
+bottleneck. It is not implemented in <code>amore</code>;
+<code>amore</code>’s <code>nn</code> backend takes the complementary,
+interaction-capable (non-additive) route in pure R.</p>
+<p><strong>Future directions.</strong> A DREAM-style additive-NN
+architecture, an optional <code>torch</code> engine for depth and GPU,
+factor embeddings (a neural analogue of <code>re()</code>), and
+uncertainty quantification for <code>method = "nn"</code> are natural
+extensions.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
