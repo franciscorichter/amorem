@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amore</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,18 +47,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.0" id="amore-010">amore 0.1.0<a class="anchor" aria-label="anchor" href="#amore-010"></a></h2>
-<p>First public release.</p>
+<h2 class="pkg-version" data-toc-text="0.2.0" id="amore-020">amore 0.2.0<a class="anchor" aria-label="anchor" href="#amore-020"></a></h2>
+<p>New neural backend and a small number of API refinements made before the first CRAN release.</p>
 <ul><li>
-<code><a href="../reference/rem.html">rem()</a></code> unified fitter for preprocessed case-control data, with a <code>gam</code> (case-1-control logistic via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>), a <code>clogit</code>, and a neural-network (<code>nn</code>) backend.</li>
+<strong>New <code>rem(method = "nn")</code> backend:</strong> a multilayer perceptron scores every candidate in a case-control stratum and is trained on the conditional-logistic partial likelihood (softmax over each risk set) — a nonlinear, prediction-oriented counterpart of <code>clogit</code>. Pure-R implementation (no extra dependencies), configured via <code><a href="../reference/nn_control.html">nn_control()</a></code>; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports in-sample (and, with a validation split, held-out) concordance and <code>plot(type = "pdp")</code> shows per-feature partial-dependence curves.</li>
 <li>
-<code>rem(method = "nn")</code>: a multilayer perceptron scores every candidate in a case-control stratum and is trained on the conditional-logistic partial likelihood (softmax over each risk set) — a nonlinear, prediction-oriented counterpart of <code>clogit</code>. Pure-R implementation (no extra dependencies), configured via <code><a href="../reference/nn_control.html">nn_control()</a></code>; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports in-sample (and, with a validation split, held-out) concordance and <code>plot(type = "pdp")</code> shows per-feature partial-dependence curves.</li>
-<li>Smooth-term formula wrappers for the <code>gam</code> backend: <code>tv()</code> (time-varying linear), <code>nl()</code> (non-linear), <code>tvnl()</code> (time-varying non-linear), and <code>re()</code> (grouping random effect).</li>
+<strong>API:</strong> the degenerate-logistic backend is now <code>method = "gam"</code> (was <code>"degenerate"</code>); the smooth-term wrappers are <code>tv()</code> / <code>nl()</code> / <code>tvnl()</code> (was <code>tve()</code> / <code>nle()</code> / <code>tvnle()</code>); <code>re()</code> is unchanged.</li>
 <li>
-<code>re()</code> reproduces the Intro-to-REM tutorial parameterization; <code><a href="../reference/rem.html">rem()</a></code> gains a <code>gam_method</code> argument (default uses mgcv’s own smoothness selection, with <code>gam_method = "REML"</code> available).</li>
-<li>Simulation via <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code> (Gillespie and tau-leap), endogenous-feature computation, non-event sampling, and goodness-of-fit helpers.</li>
+<code><a href="../reference/rem.html">rem()</a></code>’s <code>case</code> argument now defaults to <code>NULL</code> and is taken from the formula’s left-hand side (e.g. <code>event ~ x</code>) for the <code>clogit</code>/<code>nn</code> backends.</li>
+<li>
+<code><a href="../reference/widen_case_control.html">widen_case_control()</a></code> auto-detects the 0/1 indicator column (<code>event</code> or <code>IS_OBSERVED</code>) when <code>case</code> is not given.</li>
+<li>
+<code><a href="../reference/cpp_supported_stats.html">cpp_supported_stats()</a></code> is now exported.</li>
 </ul></div>
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="amore-010">amore 0.1.0<a class="anchor" aria-label="anchor" href="#amore-010"></a></h2>
+<p>First release.</p>
+<ul><li>
+<code><a href="../reference/rem.html">rem()</a></code> unified fitter for preprocessed case-control data, with a <code>gam</code> (case-1-control logistic via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>) and a <code>clogit</code> backend.</li>
+<li>Smooth-term formula wrappers for the <code>gam</code> backend (time-varying, non-linear, time-varying-non-linear) and an <code>re()</code> grouping random effect; <code>re()</code> reproduces the Intro-to-REM tutorial parameterization, and <code><a href="../reference/rem.html">rem()</a></code> exposes a <code>gam_method</code> argument.</li>
+<li>Simulation via <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code> (Gillespie and tau-leap), the endogenous-statistic feature engine, non-event sampling, and the martingale-residual goodness-of-fit family.</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
