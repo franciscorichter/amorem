@@ -13,7 +13,7 @@ classroom_events
 
 ## Format
 
-A data frame with 692 rows and 5 columns:
+A data frame with 691 rows and 5 columns:
 
 - time:
 
