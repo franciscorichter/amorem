@@ -79,3 +79,18 @@ sample_non_events(
 
 A data.frame containing the original events (`event = 1`) and the
 sampled controls (`event = 0`), grouped by `stratum` identifiers.
+
+## Examples
+
+``` r
+data(classroom_events)
+cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+head(cc)
+#>   stratum event sender receiver  time interaction_type weight
+#> 1       1     1     14       12 0.125           social      1
+#> 2       1     0      1        3 0.125             <NA>     NA
+#> 3       2     1     12       14 0.250           social      1
+#> 4       2     0     20       10 0.250             <NA>     NA
+#> 5       3     1     18       12 0.375         sanction      1
+#> 6       3     0      6       19 0.375             <NA>     NA
+```

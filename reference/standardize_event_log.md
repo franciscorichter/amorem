@@ -65,3 +65,18 @@ standardize_event_log(
 
 A data.frame with columns `sender`, `receiver`, and `time`. The return
 object is tagged with class `"amore_event_log"` for downstream dispatch.
+
+## Examples
+
+``` r
+data(classroom_events)
+std <- standardize_event_log(classroom_events)
+head(std)
+#>    time sender receiver interaction_type weight
+#> 1 0.125     14       12           social      1
+#> 2 0.250     12       14           social      1
+#> 3 0.375     18       12         sanction      1
+#> 4 0.500     12       18         sanction      1
+#> 5 0.625      1       12         sanction      1
+#> 6 0.750     12        1         sanction      1
+```

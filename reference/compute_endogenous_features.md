@@ -210,3 +210,19 @@ block for set-valued endogenous covariates, e.g. an alien species'
 previously invaded regions). It honours `history_log`, so it can be
 computed for sampled non-events without those non-events polluting the
 history.
+
+## Examples
+
+``` r
+data(classroom_events)
+feats <- compute_endogenous_features(classroom_events,
+                                     stats = c("reciprocity", "recency"))
+head(feats)
+#>    time sender receiver interaction_type weight reciprocity recency
+#> 1 0.125     14       12           social      1           0      NA
+#> 2 0.250     12       14           social      1           1      NA
+#> 3 0.375     18       12         sanction      1           0      NA
+#> 4 0.500     12       18         sanction      1           1      NA
+#> 5 0.625      1       12         sanction      1           0      NA
+#> 6 0.750     12        1         sanction      1           1      NA
+```

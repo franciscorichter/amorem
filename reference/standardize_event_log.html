@@ -110,6 +110,20 @@ preserved.</p></dd>
 object is tagged with class <code>"amore_event_log"</code> for downstream dispatch.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">std</span> <span class="op">&lt;-</span> <span class="fu">standardize_event_log</span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">std</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time sender receiver interaction_type weight</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.125     14       12           social      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 0.250     12       14           social      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 0.375     18       12         sanction      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 0.500     12       18         sanction      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 0.625      1       12         sanction      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 0.750     12        1         sanction      1</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
