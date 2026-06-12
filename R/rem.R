@@ -36,7 +36,8 @@
 #'     differ on `x`.
 #' }
 #' For the degenerate method the left-hand side is ignored (the response is the
-#' constant case indicator); for `clogit` it is the 0/1 event indicator.
+#' constant case indicator); for `clogit` the left-hand side names the 0/1 event
+#' indicator column (e.g. `event ~ x`), unless `case` is given explicitly.
 #'
 #' @section Column resolution:
 #' For a covariate `x`, the event/control difference is taken from column `x`,
@@ -49,7 +50,9 @@
 #' @param data A data.frame of preprocessed case-control data (wide for the
 #'   degenerate method; long with a case indicator and stratum for `clogit`).
 #' @param method Estimation backend; see *Description*.
-#' @param case Name of the 0/1 event-indicator column (used by `clogit`).
+#' @param case Optional name of the 0/1 event-indicator column for the `clogit`
+#'   backend. If `NULL` (default), the indicator is taken from the formula's
+#'   left-hand side (e.g. `event ~ x`). Ignored by the degenerate method.
 #' @param stratum Name of the column grouping each case with its controls
 #'   (required by `clogit`).
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
@@ -83,7 +86,7 @@
 #' @export
 rem <- function(formula, data,
                 method = c("degenerate", "clogit"),
-                case = "IS_OBSERVED", stratum = NULL, time = NULL,
+                case = NULL, stratum = NULL, time = NULL,
                 k = NULL, gam_method = NULL, ...) {
   method <- match.arg(method)
   if (!inherits(formula, "formula")) stop("`formula` must be a formula.")
@@ -108,6 +111,14 @@ rem <- function(formula, data,
     if (any(vapply(terms_info, function(t) t$type != "linear", logical(1)))) {
       stop("method = \"clogit\" supports linear terms only; smooth terms ",
            "(tv/nl/tvnl) require method = \"degenerate\".")
+    }
+    # Resolve the event-indicator column: explicit `case`, else the formula LHS.
+    if (is.null(case)) {
+      if (attr(stats::terms(formula), "response") == 0L) {
+        stop("method = \"clogit\" needs a 0/1 event indicator: put it on the ",
+             "formula's left-hand side (e.g. `event ~ x`), or pass `case`.")
+      }
+      case <- all.vars(formula)[1L]
     }
     ci <- data[[case]]
     if (is.null(ci)) stop("case column '", case, "' not found in `data`.")

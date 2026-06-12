@@ -8,7 +8,7 @@ rem(
   formula,
   data,
   method = c("degenerate", "clogit"),
-  case = "IS_OBSERVED",
+  case = NULL,
   stratum = NULL,
   time = NULL,
   k = NULL,
@@ -24,7 +24,9 @@ degenerate method; long with a case indicator and stratum for \code{clogit}).}
 
 \item{method}{Estimation backend; see \emph{Description}.}
 
-\item{case}{Name of the 0/1 event-indicator column (used by \code{clogit}).}
+\item{case}{Optional name of the 0/1 event-indicator column for the \code{clogit}
+backend. If \code{NULL} (default), the indicator is taken from the formula's
+left-hand side (e.g. \code{event ~ x}). Ignored by the degenerate method.}
 
 \item{stratum}{Name of the column grouping each case with its controls
 (required by \code{clogit}).}
@@ -85,7 +87,8 @@ species-invasiveness term). Falls back to a single column \code{x} when
 differ on \code{x}.
 }
 For the degenerate method the left-hand side is ignored (the response is the
-constant case indicator); for \code{clogit} it is the 0/1 event indicator.
+constant case indicator); for \code{clogit} the left-hand side names the 0/1 event
+indicator column (e.g. \code{event ~ x}), unless \code{case} is given explicitly.
 }
 
 \section{Column resolution}{
