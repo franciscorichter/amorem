@@ -1,0 +1,46 @@
+\title{\pkg{amore}: A Unified Case-Control Partial-Likelihood Toolchain for
+Simulating, Fitting, and Checking Relational and Hyper-Event Models in \proglang{R}}
+
+\author{
+  Francisco Richter \\ Universit\`a della Svizzera italiana
+  \And
+  Martina Boschi \\ Universit\`a della Svizzera italiana
+  \AND
+  Melania Lembo \\ Universit\`a della Svizzera italiana
+  \And
+  Ernst C. Wit \\ Universit\`a della Svizzera italiana
+}
+
+\Plainauthor{Francisco Richter, Martina Boschi, Melania Lembo, Ernst C. Wit}
+\Plaintitle{amore: A Unified Case-Control Partial-Likelihood Toolchain for
+Simulating, Fitting, and Checking Relational and Hyper-Event Models in R}
+
+\date{}
+
+\begin{abstract}
+Relational event models describe how interactions in a network unfold in
+continuous time, with intensities driven by the history of past events.
+Recent methodological advances --- timing and closure variants of the
+endogenous statistics, smooth and time-varying effects, global covariates,
+hyper-events, and martingale-residual goodness-of-fit tests --- have so far
+lived in separate implementations, making complete analyses difficult to
+carry out and to reproduce. We present \pkg{amore}, an \proglang{R} package
+that brings the full workflow --- simulation, case-control sampling,
+endogenous-statistic construction, estimation, and model checking --- under
+a single case-control partial likelihood. The estimation framework offers a
+spectrum of intensity specifications behind one interface: a linear
+conditional logit, smooth additive effects --- fitted in memory or, at scale,
+by stochastic gradient over per-covariate spline bases --- and a neural
+network scoring the full covariate vector, trading interpretability against
+flexibility in a controlled way. A generative engine simulates from the
+same model class it estimates, which yields an internal consistency check:
+statistics computed during simulation and reconstructed from the event
+history agree to numerical precision, and effects planted in simulation are
+recovered in estimation. We illustrate the workflow on classroom,
+e-mail, and social-network event data.
+\end{abstract}
+
+\Keywords{relational event models, partial likelihood, case-control sampling,
+network event data, goodness of fit, \proglang{R}}
+\Plainkeywords{relational event models, partial likelihood, case-control
+sampling, network event data, goodness of fit, R}

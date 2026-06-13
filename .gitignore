@@ -16,3 +16,23 @@ src/*.o
 src/*.so
 src/*.dll
 docs/
+
+# Track the manuscript & benchmark report sources (paper/ is otherwise ignored;
+# all of paper/ stays .Rbuildignore'd so nothing ships to CRAN).
+!/paper/
+/paper/*
+!/paper/manuscript/
+/paper/manuscript/figs/
+!/paper/manuscript/figs/
+/paper/manuscript/*.aux
+/paper/manuscript/*.log
+/paper/manuscript/*.out
+/paper/manuscript/*.blg
+/paper/manuscript/*.bbl
+/paper/manuscript/*.pdf
+!/paper/benchmark/
+/paper/benchmark/*.aux
+/paper/benchmark/*.log
+/paper/benchmark/*.out
+/paper/benchmark/*.pdf
+!/paper/PAPER_DESIGN.md

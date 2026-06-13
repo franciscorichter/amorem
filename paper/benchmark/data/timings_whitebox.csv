@@ -1,0 +1,8 @@
+"machine","experiment","seconds","status"
+"whitebox","exp1_recovery",8.54,"ok"
+"whitebox","exp2_smooth",0.93,"ok"
+"whitebox","exp3_frailty",4.54,"ok"
+"whitebox","exp4_scaling",61.44,"ok"
+"whitebox","exp5_parity",1.31,"ok"
+"whitebox","exp6_nn",1.14,"ok"
+"whitebox","compile_warmup",2.98,"ok"

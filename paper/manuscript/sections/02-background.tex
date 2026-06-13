@@ -1,0 +1,219 @@
+\section{Relational event models and case-control estimation}
+\label{sec:background}
+
+This section fixes the statistical objects that the rest of the paper
+builds on. We recall the relational event intensity and its partial
+likelihood (Section~\ref{sec:rem-likelihood}), the nested case-control
+device that makes that likelihood computable at scale and its expression
+as a conditional-logistic (risk-set softmax) partial likelihood
+(Section~\ref{sec:case-control}), the algebraically related degenerate
+case-1-control binomial reduction used by the smooth backend
+(Section~\ref{sec:degenerate}), the endogenous-statistics catalogue that
+supplies the predictors (Section~\ref{sec:statistics}), and the
+time-shifted partial likelihood that admits global covariates
+(Section~\ref{sec:global}). None of this machinery is new to \pkg{amore};
+the contribution of the package is to consolidate it. We give just enough
+notation to make the three estimation backends of
+Section~\ref{sec:framework} and the goodness-of-fit family of
+Section~\ref{sec:software-gof} precise.
+
+\subsection{The relational event intensity and its partial likelihood}
+\label{sec:rem-likelihood}
+
+A relational event log is an ordered sequence of triples
+$e_i = (s_i, r_i, t_i)$, $i = 1, \dots, M$, with $t_1 < t_2 < \cdots <
+t_M$, where at time $t_i$ sender $s_i$ directs an action at receiver
+$r_i$ \citep{butts2008}. Let $\mathcal{R}(t)$ denote the \emph{risk set}
+at time $t$: the collection of ordered dyads $(s, r)$ that could fire an
+event just after $t$. In the simplest one-mode setting with actor set
+$V$, $\mathcal{R}(t) = \{(s, r) : s, r \in V,\ s \neq r\}$, but
+\pkg{amore} also supports two-mode (bipartite) universes and
+non-repeatable processes in which a dyad leaves the risk set once it has
+fired (Section~\ref{sec:case-control}).
+
+The relational event model treats the log as a realization of a marked
+point process in which each dyad $(s,r)$ carries its own conditional
+intensity
+\begin{equation}
+\lambda_{sr}(t \mid H_t)
+  = \lambda_0(t)\,\exp\!\bigl\{\eta_{sr}(t \mid H_t)\bigr\},
+  \qquad
+\eta_{sr}(t \mid H_t) = \boldsymbol{\beta}^\top
+   \mathbf{x}_{sr}(t \mid H_t),
+\label{eq:intensity}
+\end{equation}
+where $H_t = \{e_j : t_j < t\}$ is the event history up to $t$,
+$\mathbf{x}_{sr}(t \mid H_t)$ is a vector of \emph{statistics} that
+summarize how the dyad's propensity to act depends on that history and on
+exogenous attributes, $\boldsymbol{\beta}$ is the parameter of interest,
+and $\lambda_0(t)$ is a baseline rate. We refer to
+$\eta_{sr}(t \mid H_t)$ as the dyad's \emph{log-intensity} or
+\emph{score}; it is the quantity each estimation backend models, linearly
+or otherwise.
+
+Conditioning on the observed event times, the baseline $\lambda_0$ drops
+out and inference for $\boldsymbol{\beta}$ proceeds through the Cox-type
+partial likelihood
+\begin{equation}
+\mathrm{PL}(\boldsymbol{\beta})
+  = \prod_{i=1}^{M}
+    \frac{\exp\!\bigl\{\eta_{s_i r_i}(t_i \mid H_{t_i})\bigr\}}
+         {\sum_{(s,r) \in \mathcal{R}(t_i)}
+            \exp\!\bigl\{\eta_{sr}(t_i \mid H_{t_i})\bigr\}},
+\label{eq:partial-likelihood}
+\end{equation}
+in which the $i$-th factor is the probability that, among all dyads at
+risk at $t_i$, the one that actually fired was $(s_i, r_i)$
+\citep{butts2008, bianchi2024}. Equation~\eqref{eq:partial-likelihood} is
+a product of softmax terms over the risk sets and is the estimand that
+unifies the package: it is what the linear conditional logit and the
+neural backend of Section~\ref{sec:framework} both maximize.
+
+\subsection{Nested case-control sampling and the conditional-logistic
+partial likelihood}
+\label{sec:case-control}
+
+The denominator of Equation~\eqref{eq:partial-likelihood} sums over the
+entire risk set, which has $O(|V|^2)$ terms and must be recomputed (with
+its history-dependent statistics) at every event. For networks of even
+moderate size this is the computational bottleneck of REM estimation.
+Nested case-control sampling removes it \citep{lerner2020}: at each event
+time $t_i$ one retains the observed dyad (the \emph{case}) and draws a
+small set of $k$ non-events (the \emph{controls}) uniformly at random from
+$\mathcal{R}(t_i) \setminus \{(s_i, r_i)\}$. The case together with its
+$k$ sampled controls forms a \emph{stratum} $\mathcal{S}_i$ of size
+$k + 1$. Replacing the full risk set by $\mathcal{S}_i$ in
+Equation~\eqref{eq:partial-likelihood} yields the sampled partial
+likelihood
+\begin{equation}
+\mathrm{PL}_{\mathrm{cc}}(\boldsymbol{\beta})
+  = \prod_{i=1}^{M}
+    \frac{\exp\!\bigl\{\eta_{s_i r_i}(t_i \mid H_{t_i})\bigr\}}
+         {\sum_{(s,r) \in \mathcal{S}_i}
+            \exp\!\bigl\{\eta_{sr}(t_i \mid H_{t_i})\bigr\}},
+\label{eq:cc-likelihood}
+\end{equation}
+which is exactly the partial likelihood of a \emph{stratified
+conditional-logistic regression}: each stratum contributes one event
+among $k+1$ candidates, and the contribution is the softmax of the
+candidate scores. \citet{lerner2020} show that the resulting estimator is
+consistent and that its efficiency relative to the full-risk-set fit is
+governed by the number of controls $k$, with diminishing returns beyond a
+handful. This is the design that \pkg{amore} adopts as its canonical
+in-memory representation: a long table with one row per candidate,
+carrying the event indicator, the stratum identifier, and the computed
+statistics. We write $y_{ij} \in \{0,1\}$ for the event indicator of
+candidate $j$ in stratum $\mathcal{S}_i$ (with $\sum_j y_{ij} = 1$) and
+$\boldsymbol{\eta}_i = (\eta_{ij})_j$ for the stratum's score vector;
+Equation~\eqref{eq:cc-likelihood} is then $\prod_i
+\mathrm{softmax}(\boldsymbol{\eta}_i)_{j^\star(i)}$ evaluated at the event
+position $j^\star(i)$.
+
+\pkg{amore} builds this table with \texttt{sample\_non\_events()}, which
+exposes the sampling \emph{scope} (drawing controls from all dyads, only
+from already-appeared actors, or only along admissible citation edges),
+the \emph{mode} (one- versus two-mode universes), and a \emph{risk}
+policy that, for non-repeatable processes such as citation or species
+invasion, removes a dyad from the risk set once it has fired and excludes
+concurrent events from one another's control pools. Crucially, controls
+read the \emph{true} network history $H_{t_i}$ when their statistics are
+evaluated, but, being non-events, they never write to it; this read/write
+split is what keeps the sampled statistics faithful to the full-data
+intensity of Equation~\eqref{eq:intensity}.
+
+\subsection{The degenerate case-1-control binomial reduction}
+\label{sec:degenerate}
+
+The conditional-logistic likelihood~\eqref{eq:cc-likelihood} admits
+linear predictors only. To fit smooth, time-varying, and random effects
+with the mature \pkg{mgcv} machinery, \pkg{amore} uses the specialization
+of \citet{boschi2025gof, boschi2025rhem} to a single matched control,
+$k = 1$. With exactly one case and one control per stratum, write
+$\mathbf{x}^{\mathrm{ev}}_i$ and $\mathbf{x}^{\mathrm{nv}}_i$ for the
+statistic vectors of the event and its matched non-event. The two-element
+softmax in Equation~\eqref{eq:cc-likelihood} then collapses to a logistic
+form in the \emph{difference} $\mathbf{x}^{\mathrm{ev}}_i -
+\mathbf{x}^{\mathrm{nv}}_i$, which can be fitted as an ordinary binomial
+regression with all responses equal to one and the linear predictor
+entered through a paired event-minus-control contrast. \pkg{amore}'s wide
+case-1-control representation materializes this directly, carrying for
+each covariate the event value, the non-event value, and their difference
+($\texttt{<cov>\_ev}$, $\texttt{<cov>\_nv}$, $\texttt{d\_<cov>}$), so that
+a smooth term $f(\cdot)$ enters \pkg{mgcv} as the matched contrast
+$f(\mathbf{x}^{\mathrm{ev}}_i) - f(\mathbf{x}^{\mathrm{nv}}_i)$.
+
+We stress the precise relationship, because it is easy to overstate. The
+degenerate binomial logistic regression of this subsection and the
+conditional-logistic partial likelihood of
+Equation~\eqref{eq:cc-likelihood} \emph{coincide} only in the single-control
+case $k = 1$; they are algebraically related, not identical, and the
+package does not constrain the conditional-logit and neural backends to
+$k = 1$. Accordingly, throughout the paper we treat the smooth backend as
+fitting the \emph{degenerate case-1-control binomial logistic regression}
+of \citet{boschi2025gof}, distinct from---though kindred to---the risk-set
+softmax partial likelihood that the linear and neural backends share.
+
+\subsection{Endogenous statistics: families and variant axes}
+\label{sec:statistics}
+
+The statistics $\mathbf{x}_{sr}(t \mid H_t)$ are what make the model
+\emph{relational}: they encode how prior events shape current propensities.
+\pkg{amore} ships the endogenous-effect catalogue of
+\citet{juozaitiene2024}, organized as a small number of structural
+\emph{families} crossed with several \emph{variant axes}. The families are
+the canonical sub-network configurations of directed interaction:
+\emph{reciprocity} ($r$ has recently acted on $s$), \emph{transitivity}
+and \emph{cyclic} closure (two-path and three-cycle configurations through
+a common third actor), and \emph{sending} and \emph{receiving balance}
+(shared-partner effects on the sender and receiver sides), together with
+the elementary degree and recency statistics. Each family is then
+instantiated along orthogonal variant axes that control \emph{how} past
+events are aggregated:
+\begin{itemize}
+  \item \emph{counting} versus \emph{binary} --- the number of qualifying
+    past events versus a $0/1$ indicator of their presence;
+  \item \emph{exponential decay} and \emph{recency} (\texttt{time\_recent},
+    \texttt{time\_first}) --- weighting past events by elapsed time, with a
+    tunable half-life, rather than counting them equally;
+  \item \emph{ordered} --- distinguishing the temporal order of the two
+    legs of a closure configuration;
+  \item \emph{interrupted} --- the central methodological variant of
+    \citet{juozaitiene2024}, which switches a closure statistic off once an
+    intervening event has broken the configuration, capturing the
+    transience of social structure.
+\end{itemize}
+Crossing the families with these axes yields a catalogue of $74$ numeric
+statistics, of which $66$ are computed through a C\texttt{++} fast path and
+$8$ through a pure-R fallback, plus the list-valued
+\texttt{sender\_receivers\_set} statistic used internally for
+appearance-scoped sampling. The same engine,
+\texttt{compute\_endogenous\_features()}, evaluates these statistics
+post~hoc from timestamps alone, and (Section~\ref{sec:validation}) agrees
+with the on-the-fly values recorded by the simulator to floating-point
+precision. Exogenous covariates---actor attributes, dyadic distances, and
+the like---enter $\eta_{sr}$ additively alongside the endogenous terms.
+
+\subsection{Global covariates via a time-shifted partial likelihood}
+\label{sec:global}
+
+A purely time-varying covariate that is shared by every dyad at a given
+instant---a calendar effect, weather, a system-wide shock---cancels from
+the risk-set softmax of Equation~\eqref{eq:cc-likelihood}, because it
+enters every candidate's score identically and so vanishes from the
+ratio. Such \emph{global} covariates are therefore not identifiable from
+the standard partial likelihood. \citet{lembo2025} resolve this with a
+time-shifted construction: each candidate's global covariate is evaluated
+not at the event time but at a dyad-specific shifted time determined by
+its own history (for instance, the time since that dyad last acted), so
+that the covariate no longer enters identically across the stratum and a
+coefficient becomes estimable within the same conditional-logistic
+framework. \pkg{amore} implements this scheme so that global covariates
+can be carried through the identical case-control pipeline as endogenous
+and exogenous statistics, with no change to the downstream fitter.
+
+Together, Equations~\eqref{eq:intensity}--\eqref{eq:cc-likelihood}, the
+$k=1$ reduction of Section~\ref{sec:degenerate}, the statistics catalogue
+of Section~\ref{sec:statistics}, and the time-shift of
+Section~\ref{sec:global} define the single case-control table that every
+component of \pkg{amore} produces or consumes. The next section describes
+how the package constructs that table.
