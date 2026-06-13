@@ -480,6 +480,25 @@ experiments](https://franciscorichter.github.io/amore/articles/validation-experi
 for a gradient-correctness check and an interaction-recovery comparison
 against the linear backend.
 
+The same training machinery also offers an **additive-spline
+architecture** — the STREAM construction of [Filippi-Mazzola & Wit
+(2024, *JRSS-C* 73(4))](https://doi.org/10.1093/jrsssc/qlae023): each
+covariate gets a B-spline expansion, a single linear layer over the
+concatenated bases yields `sum_k f_k(x_k)`, and the model is trained by
+(mini-batch) stochastic gradient on the exact case-control partial
+likelihood. This keeps GAM-style interpretability (per-feature curves
+via `plot(type = "pdp")`) while `batch_strata` mini-batching scales to
+event logs far beyond what an in-memory smooth fit can hold:
+
+``` r
+
+fit_add <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
+               data = lesmis, method = "nn", stratum = "EVENT_INTERVAL",
+               nn = nn_control(architecture = "additive_spline",
+                               spline_df = 8, batch_strata = 512, seed = 1))
+plot(fit_add$fit, type = "pdp")   # the fitted additive spline curves
+```
+
 **Future directions.** An optional `torch` engine for depth and GPU,
 factor embeddings (a neural analogue of `re()`), and uncertainty
 quantification for `method = "nn"` are natural extensions.
