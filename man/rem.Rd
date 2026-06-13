@@ -72,15 +72,17 @@ design via \code{\link[survival:clogit]{survival::clogit()}} (linear terms only)
 strata are taken from \code{stratum}, or derived as \code{cumsum(case == 1)} when
 \code{stratum} is \code{NULL} (assuming each case is immediately followed by its
 controls, the eventnet blocked layout).}
-\item{\code{"nn"}}{Neural conditional-logistic model on the same case-k-control
-design as \code{clogit}: a multilayer perceptron scores every candidate and
-the loss is the softmax over each risk set — exactly the conditional
-partial likelihood, with a learned nonlinear intensity in place of the
-linear predictor. Prediction-oriented: there is no coefficient table;
-\code{summary()} reports in-sample (and, with a validation split, held-out)
-concordance and \code{plot(type = "pdp")} shows
-per-feature partial-dependence curves. Configure with \code{\link[=nn_control]{nn_control()}}.
-Pure-R implementation, no extra dependencies.}
+\item{\code{"nn"}}{Flexible conditional-logistic models on the same
+case-k-control design as \code{clogit}, trained by (mini-batch) gradient
+descent on the exact risk-set softmax partial likelihood. Two
+architectures via \code{\link[=nn_control]{nn_control()}}: a multilayer perceptron scoring the
+full covariate vector jointly (interaction-capable), or an
+\code{additive_spline} predictor — per-covariate B-spline expansions fitted
+by stochastic gradient, the STREAM construction of Filippi-Mazzola &
+Wit (2024, JRSS-C). No coefficient table; \code{summary()} reports
+in-sample (and, with a validation split, held-out) concordance and
+\code{plot(type = "pdp")} shows per-feature curves. Pure-R implementation,
+no extra dependencies.}
 }
 }
 \section{Formula syntax}{

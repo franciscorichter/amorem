@@ -1,17 +1,36 @@
 #' Control parameters for the neural-network backend of rem()
 #'
 #' Collects the architecture and training hyper-parameters used by
-#' `rem(method = "nn")`. The network is a multilayer perceptron scoring each
-#' candidate in a case-control stratum; training maximizes the same
-#' conditional-logistic partial likelihood as `method = "clogit"` (softmax over
-#' each risk set), so the neural backend is a drop-in nonlinear counterpart of
-#' the linear conditional logit.
+#' `rem(method = "nn")`. Training maximizes the same conditional-logistic
+#' partial likelihood as `method = "clogit"` (softmax over each risk set), so
+#' this backend is a drop-in flexible counterpart of the linear conditional
+#' logit. Two predictor architectures are available:
+#' \describe{
+#'   \item{`"mlp"`}{a multilayer perceptron scoring the full covariate vector
+#'     jointly — can represent interactions between statistics.}
+#'   \item{`"additive_spline"`}{an additive predictor `sum_k f_k(x_k)` with
+#'     each `f_k` a B-spline expansion fitted by (mini-batch) stochastic
+#'     gradient — the STREAM construction of Filippi-Mazzola & Wit (2024,
+#'     JRSS-C 73(4), \doi{10.1093/jrsssc/qlae023}). Interpretable per-feature
+#'     curves; with `batch_strata` it scales to event logs far beyond what an
+#'     in-memory smooth fit can hold.}
+#' }
 #'
-#' @param hidden Integer vector of hidden-layer sizes, e.g. `c(16, 8)`. Use
-#'   `integer(0)` for no hidden layer (recovers a linear conditional logit fit
-#'   by gradient descent).
-#' @param activation Hidden-layer activation: `"relu"` or `"tanh"`.
-#' @param epochs Maximum number of full-batch training epochs.
+#' @param hidden Integer vector of hidden-layer sizes for `"mlp"`, e.g.
+#'   `c(16, 8)`. Use `integer(0)` for no hidden layer (recovers a linear
+#'   conditional logit fit by gradient descent). Ignored for
+#'   `"additive_spline"`.
+#' @param activation Hidden-layer activation for `"mlp"`: `"relu"` or
+#'   `"tanh"`.
+#' @param architecture Predictor architecture: `"mlp"` (default) or
+#'   `"additive_spline"`; see *Description*.
+#' @param spline_df Degrees of freedom (basis size) per covariate for
+#'   `"additive_spline"`; passed to [splines::bs()].
+#' @param batch_strata Optional mini-batch size, in **strata**, for stochastic
+#'   gradient training. `NULL` (default) trains full-batch; a value such as
+#'   `512` takes one Adam step per sampled chunk of strata each epoch.
+#' @param epochs Maximum number of training epochs (full passes over the
+#'   training strata).
 #' @param lr Adam learning rate.
 #' @param l2 L2 penalty (weight decay) on the weights (not the biases).
 #' @param validation Fraction of strata held out for validation / early
@@ -29,15 +48,28 @@
 #' @seealso [rem()]
 #' @export
 nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
+                       architecture = c("mlp", "additive_spline"),
+                       spline_df = 8L, batch_strata = NULL,
                        epochs = 300L, lr = 1e-2, l2 = 1e-4,
                        validation = 0.2, patience = 25L,
                        standardize = TRUE, seed = NULL, verbose = FALSE) {
   activation <- match.arg(activation)
+  architecture <- match.arg(architecture)
   hidden <- as.integer(hidden)
   if (any(hidden < 1L)) stop("`hidden` layer sizes must be positive integers.")
   if (lr <= 0) stop("`lr` must be positive.")
   if (validation < 0 || validation >= 1) stop("`validation` must be in [0, 1).")
+  spline_df <- as.integer(spline_df)
+  if (architecture == "additive_spline" && spline_df < 4L) {
+    stop("`spline_df` must be at least 4 for the additive_spline architecture.")
+  }
+  if (!is.null(batch_strata)) {
+    batch_strata <- as.integer(batch_strata)
+    if (batch_strata < 2L) stop("`batch_strata` must be at least 2 (or NULL).")
+  }
   structure(list(hidden = hidden, activation = activation,
+                 architecture = architecture, spline_df = spline_df,
+                 batch_strata = batch_strata,
                  epochs = as.integer(epochs), lr = lr, l2 = l2,
                  validation = validation, patience = as.integer(patience),
                  standardize = isTRUE(standardize), seed = seed,
@@ -128,6 +160,34 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   list(layers = layers, state = state)
 }
 
+# ---- additive-spline expansion (the STREAM construction) ------------------
+# A B-spline basis per feature; a linear layer over the concatenated bases is
+# exactly an additive spline model sum_k f_k(x_k), trained on the same
+# risk-set softmax partial likelihood (Filippi-Mazzola & Wit 2024, JRSS-C).
+
+.nn_spline_expand <- function(X, df) {
+  metas <- vector("list", ncol(X)); blocks <- vector("list", ncol(X))
+  for (j in seq_len(ncol(X))) {
+    b <- splines::bs(X[, j], df = df)
+    metas[[j]] <- list(knots = attr(b, "knots"),
+                       Boundary.knots = attr(b, "Boundary.knots"),
+                       degree = attr(b, "degree"),
+                       intercept = attr(b, "intercept"))
+    blocks[[j]] <- unclass(b)
+  }
+  list(X = do.call(cbind, blocks), meta = metas, df = df)
+}
+
+.nn_spline_apply <- function(X, expansion) {
+  blocks <- lapply(seq_len(ncol(X)), function(j) {
+    m <- expansion$meta[[j]]
+    suppressWarnings(unclass(splines::bs(
+      X[, j], knots = m$knots, Boundary.knots = m$Boundary.knots,
+      degree = m$degree, intercept = m$intercept)))
+  })
+  do.call(cbind, blocks)
+}
+
 # Fit the neural conditional-logistic model.
 # X: numeric feature matrix [n_rows, p]; strat_id: stratum of each row;
 # is_event: logical event indicator per row.
@@ -140,6 +200,15 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
     scaler <- list(mean = mu, sd = sdv)
   }
 
+  # architecture: joint MLP on X, or linear layer over per-feature B-splines
+  expansion <- NULL
+  if (control$architecture == "additive_spline") {
+    ex <- .nn_spline_expand(X, control$spline_df)
+    Xfit <- ex$X; expansion <- ex; hidden <- integer(0)
+  } else {
+    Xfit <- X; hidden <- control$hidden
+  }
+
   if (!is.null(control$seed)) set.seed(control$seed)
   strata <- unique(strat_id)
   val_strata <- integer(0)
@@ -148,24 +217,39 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   }
   in_val <- strat_id %in% val_strata
   tr <- !in_val
+  tr_strata <- setdiff(strata, val_strata)
 
-  layers <- .nn_init(ncol(X), control$hidden, seed = control$seed)
+  layers <- .nn_init(ncol(Xfit), hidden, seed = control$seed)
   state <- lapply(layers, function(ly) list(
     W = list(m = ly$W * 0, v = ly$W * 0), b = list(m = ly$b * 0, v = ly$b * 0)))
 
   history <- data.frame(epoch = integer(0), train = numeric(0), val = numeric(0))
   best <- list(loss = Inf, layers = layers, epoch = 0L)
-  stall <- 0L
+  stall <- 0L; step <- 0L
   for (t in seq_len(control$epochs)) {
-    fw <- .nn_forward(layers, X[tr, , drop = FALSE], control$activation)
-    lg <- .nn_loss_grad(fw$scores, strat_id[tr], is_event[tr])
-    grads <- .nn_backward(layers, fw$acts, lg$grad, control$activation, control$l2)
-    upd <- .nn_adam_step(layers, grads, state, control$lr, t)
-    layers <- upd$layers; state <- upd$state
+    if (is.null(control$batch_strata)) {
+      batches <- list(which(tr))
+    } else {
+      sh <- sample(tr_strata)
+      chunks <- split(sh, ceiling(seq_along(sh) / control$batch_strata))
+      batches <- lapply(chunks, function(ss) which(strat_id %in% ss))
+    }
+    ep_loss <- 0; ep_strata <- 0L
+    for (rows in batches) {
+      step <- step + 1L
+      fw <- .nn_forward(layers, Xfit[rows, , drop = FALSE], control$activation)
+      lg <- .nn_loss_grad(fw$scores, strat_id[rows], is_event[rows])
+      grads <- .nn_backward(layers, fw$acts, lg$grad, control$activation, control$l2)
+      upd <- .nn_adam_step(layers, grads, state, control$lr, step)
+      layers <- upd$layers; state <- upd$state
+      nb <- length(unique(strat_id[rows]))
+      ep_loss <- ep_loss + lg$loss * nb; ep_strata <- ep_strata + nb
+    }
+    train_loss <- ep_loss / max(ep_strata, 1L)
 
     val_loss <- NA_real_
     if (length(val_strata)) {
-      fv <- .nn_forward(layers, X[in_val, , drop = FALSE], control$activation)
+      fv <- .nn_forward(layers, Xfit[in_val, , drop = FALSE], control$activation)
       val_loss <- .nn_loss_grad(fv$scores, strat_id[in_val], is_event[in_val])$loss
       if (val_loss < best$loss - 1e-6) {
         best <- list(loss = val_loss, layers = layers, epoch = t); stall <- 0L
@@ -174,16 +258,16 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
         if (stall >= control$patience) break
       }
     }
-    history <- rbind(history, data.frame(epoch = t, train = lg$loss, val = val_loss))
+    history <- rbind(history, data.frame(epoch = t, train = train_loss, val = val_loss))
     if (control$verbose && t %% 50L == 0L) {
-      cat(sprintf("epoch %4d  train %.4f  val %s\n", t, lg$loss,
+      cat(sprintf("epoch %4d  train %.4f  val %s\n", t, train_loss,
                   ifelse(is.na(val_loss), "-", sprintf("%.4f", val_loss))))
     }
   }
   if (length(val_strata)) layers <- best$layers
 
   # final pass over everything: log-likelihood, validation concordance
-  fa <- .nn_forward(layers, X, control$activation)
+  fa <- .nn_forward(layers, Xfit, control$activation)
   all_loss <- .nn_loss_grad(fa$scores, strat_id, is_event)
   n_strata <- length(unique(strat_id))
   concord <- function(rows) {
@@ -196,7 +280,8 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
 
   structure(list(
     layers = layers, activation = control$activation, scaler = scaler,
-    features = feature_names, control = control, history = history,
+    expansion = expansion, features = feature_names, control = control,
+    history = history,
     logLik = -all_loss$loss * n_strata, n_strata = n_strata, n_par = n_par,
     concordance = list(all = concord(seq_along(is_event)),
                        validation = concord(which(strat_id %in% val_strata))),
@@ -209,9 +294,14 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
 #' @export
 print.rem_nn_fit <- function(x, ...) {
   cat("Neural conditional-logistic REM fit\n")
-  cat("  architecture : ", paste(c(length(x$features), x$control$hidden, 1L),
-                                 collapse = " - "),
-      "  (", x$activation, ")\n", sep = "")
+  if (!is.null(x$expansion)) {
+    cat("  architecture : additive B-splines (df = ", x$expansion$df,
+        " per feature, ", length(x$features), " features)\n", sep = "")
+  } else {
+    cat("  architecture : ", paste(c(length(x$features), x$control$hidden, 1L),
+                                   collapse = " - "),
+        "  (", x$activation, ")\n", sep = "")
+  }
   cat("  parameters   : ", x$n_par, "\n", sep = "")
   cat("  strata       : ", x$n_strata, "\n", sep = "")
   cat("  best epoch   : ", x$best_epoch, "\n", sep = "")
@@ -256,6 +346,7 @@ predict.rem_nn_fit <- function(object, newdata, ...) {
   if (!is.null(object$scaler)) {
     X <- sweep(sweep(X, 2L, object$scaler$mean, "-"), 2L, object$scaler$sd, "/")
   }
+  if (!is.null(object$expansion)) X <- .nn_spline_apply(X, object$expansion)
   .nn_forward(object$layers, X, object$activation)$scores
 }
 

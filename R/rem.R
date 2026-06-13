@@ -18,15 +18,17 @@
 #'     strata are taken from `stratum`, or derived as `cumsum(case == 1)` when
 #'     `stratum` is `NULL` (assuming each case is immediately followed by its
 #'     controls, the eventnet blocked layout).}
-#'   \item{`"nn"`}{Neural conditional-logistic model on the same case-k-control
-#'     design as `clogit`: a multilayer perceptron scores every candidate and
-#'     the loss is the softmax over each risk set — exactly the conditional
-#'     partial likelihood, with a learned nonlinear intensity in place of the
-#'     linear predictor. Prediction-oriented: there is no coefficient table;
-#'     `summary()` reports in-sample (and, with a validation split, held-out)
-#'     concordance and `plot(type = "pdp")` shows
-#'     per-feature partial-dependence curves. Configure with [nn_control()].
-#'     Pure-R implementation, no extra dependencies.}
+#'   \item{`"nn"`}{Flexible conditional-logistic models on the same
+#'     case-k-control design as `clogit`, trained by (mini-batch) gradient
+#'     descent on the exact risk-set softmax partial likelihood. Two
+#'     architectures via [nn_control()]: a multilayer perceptron scoring the
+#'     full covariate vector jointly (interaction-capable), or an
+#'     `additive_spline` predictor — per-covariate B-spline expansions fitted
+#'     by stochastic gradient, the STREAM construction of Filippi-Mazzola &
+#'     Wit (2024, JRSS-C). No coefficient table; `summary()` reports
+#'     in-sample (and, with a validation split, held-out) concordance and
+#'     `plot(type = "pdp")` shows per-feature curves. Pure-R implementation,
+#'     no extra dependencies.}
 #' }
 #'
 #' @section Formula syntax:

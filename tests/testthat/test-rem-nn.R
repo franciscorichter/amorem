@@ -127,3 +127,44 @@ test_that("nn fit methods: print/summary/coef/logLik/predict/plot", {
   expect_silent(plot(fit$fit, type = "pdp"))
   grDevices::dev.off()
 })
+
+test_that("additive_spline architecture recovers a nonlinear additive truth", {
+  # truth: eta = sin(2*x1) + 0.8*x2 — additive but nonlinear in x1
+  cc <- make_nn_cc(S = 500L, eta = function(x) sin(2 * x[1]) + 0.8 * x[2],
+                   seed = 11)
+  fit <- rem(event ~ x1 + x2, data = cc, method = "nn",
+             nn = nn_control(architecture = "additive_spline", spline_df = 8L,
+                             epochs = 400L, lr = 5e-2, seed = 12))
+  expect_s3_class(fit$fit, "rem_nn_fit")
+  expect_false(is.null(fit$fit$expansion))
+  expect_gt(fit$fit$concordance$all, 0.62)
+  # the learned f1 should correlate with sin(2x) over the data range
+  g <- seq(-1.8, 1.8, length.out = 60)
+  nd <- data.frame(x1 = g, x2 = 0)
+  f1 <- predict(fit, nd)
+  expect_gt(cor(f1 - mean(f1), sin(2 * g) - mean(sin(2 * g))), 0.9)
+  # ... and clearly beat the linear clogit, which can't represent sin
+  skip_if_not_installed("survival")
+  fcl <- rem(event ~ x1 + x2, data = cc, method = "clogit", stratum = "stratum")
+  eta_cl <- as.matrix(cc[, c("x1", "x2")]) %*% coef(fcl)
+  c_cl <- concordance(drop(eta_cl), cc$stratum, cc$event)
+  expect_gt(fit$fit$concordance$all, c_cl + 0.03)
+})
+
+test_that("mini-batch SGD training reaches full-batch quality", {
+  cc <- make_nn_cc(S = 400L, eta = function(x) 1.2 * x[1], seed = 13)
+  fit_mb <- rem(event ~ x1 + x2, data = cc, method = "nn",
+                nn = nn_control(architecture = "additive_spline", spline_df = 6L,
+                                batch_strata = 64L, epochs = 150L, lr = 5e-2,
+                                seed = 14))
+  expect_gt(fit_mb$fit$concordance$all, 0.65)
+  # predict round-trips on new data through the stored basis
+  nd <- data.frame(x1 = rnorm(10), x2 = rnorm(10))
+  expect_length(predict(fit_mb, nd), 10L)
+})
+
+test_that("nn_control validates the new arguments", {
+  expect_error(nn_control(architecture = "additive_spline", spline_df = 2),
+               "spline_df")
+  expect_error(nn_control(batch_strata = 1), "batch_strata")
+})

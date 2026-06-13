@@ -7,6 +7,9 @@
 nn_control(
   hidden = c(16L, 8L),
   activation = c("relu", "tanh"),
+  architecture = c("mlp", "additive_spline"),
+  spline_df = 8L,
+  batch_strata = NULL,
   epochs = 300L,
   lr = 0.01,
   l2 = 1e-04,
@@ -18,13 +21,26 @@ nn_control(
 )
 }
 \arguments{
-\item{hidden}{Integer vector of hidden-layer sizes, e.g. \code{c(16, 8)}. Use
-\code{integer(0)} for no hidden layer (recovers a linear conditional logit fit
-by gradient descent).}
+\item{hidden}{Integer vector of hidden-layer sizes for \code{"mlp"}, e.g.
+\code{c(16, 8)}. Use \code{integer(0)} for no hidden layer (recovers a linear
+conditional logit fit by gradient descent). Ignored for
+\code{"additive_spline"}.}
 
-\item{activation}{Hidden-layer activation: \code{"relu"} or \code{"tanh"}.}
+\item{activation}{Hidden-layer activation for \code{"mlp"}: \code{"relu"} or
+\code{"tanh"}.}
 
-\item{epochs}{Maximum number of full-batch training epochs.}
+\item{architecture}{Predictor architecture: \code{"mlp"} (default) or
+\code{"additive_spline"}; see \emph{Description}.}
+
+\item{spline_df}{Degrees of freedom (basis size) per covariate for
+\code{"additive_spline"}; passed to \code{\link[splines:bs]{splines::bs()}}.}
+
+\item{batch_strata}{Optional mini-batch size, in \strong{strata}, for stochastic
+gradient training. \code{NULL} (default) trains full-batch; a value such as
+\code{512} takes one Adam step per sampled chunk of strata each epoch.}
+
+\item{epochs}{Maximum number of training epochs (full passes over the
+training strata).}
 
 \item{lr}{Adam learning rate.}
 
@@ -50,11 +66,20 @@ A list of class \code{"nn_control"}.
 }
 \description{
 Collects the architecture and training hyper-parameters used by
-\code{rem(method = "nn")}. The network is a multilayer perceptron scoring each
-candidate in a case-control stratum; training maximizes the same
-conditional-logistic partial likelihood as \code{method = "clogit"} (softmax over
-each risk set), so the neural backend is a drop-in nonlinear counterpart of
-the linear conditional logit.
+\code{rem(method = "nn")}. Training maximizes the same conditional-logistic
+partial likelihood as \code{method = "clogit"} (softmax over each risk set), so
+this backend is a drop-in flexible counterpart of the linear conditional
+logit. Two predictor architectures are available:
+\describe{
+\item{\code{"mlp"}}{a multilayer perceptron scoring the full covariate vector
+jointly — can represent interactions between statistics.}
+\item{\code{"additive_spline"}}{an additive predictor \verb{sum_k f_k(x_k)} with
+each \code{f_k} a B-spline expansion fitted by (mini-batch) stochastic
+gradient — the STREAM construction of Filippi-Mazzola & Wit (2024,
+JRSS-C 73(4), \doi{10.1093/jrsssc/qlae023}). Interpretable per-feature
+curves; with \code{batch_strata} it scales to event logs far beyond what an
+in-memory smooth fit can hold.}
+}
 }
 \seealso{
 \code{\link[=rem]{rem()}}
