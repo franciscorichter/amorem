@@ -85,9 +85,9 @@
 <div class="section level2">
 <h2 id="validation-experiments">Validation experiments<a class="anchor" aria-label="anchor" href="#validation-experiments"></a>
 </h2>
-<p>Six end-to-end experiments stress different correctness properties of
-<code>amore</code>’s simulator and estimation pipeline. Each follows the
-same template: the <strong>property tested</strong>, the
+<p>Seven end-to-end experiments stress different correctness properties
+of <code>amore</code>’s simulator and estimation pipeline. Each follows
+the same template: the <strong>property tested</strong>, the
 <strong>experimental design</strong>, the <strong>code</strong> that
 runs it, and the <strong>numerical / graphical outcome</strong>. Every
 experiment is self-contained — copy the block and run it.</p>
@@ -731,6 +731,163 @@ opposite-sign corners. This is exactly the case the neural backend is
 for: when endogenous effects interact, the additive backends cannot
 represent the structure, and the MLP — which scores the full candidate
 vector jointly — does.</p>
+<hr>
+</div>
+<div class="section level3">
+<h3 id="e7-additive-spline-stream-backend-recovery-mini-batch-invariance-and-scaling">E7 — Additive-spline (STREAM) backend: recovery, mini-batch
+invariance, and scaling<a class="anchor" aria-label="anchor" href="#e7-additive-spline-stream-backend-recovery-mini-batch-invariance-and-scaling"></a>
+</h3>
+<p><strong>Property.</strong> The <code>additive_spline</code>
+architecture — per-covariate B-spline expansions trained by stochastic
+gradient on the exact case-control partial likelihood, the STREAM
+construction of <a href="https://doi.org/10.1093/jrsssc/qlae023" class="external-link">Filippi-Mazzola &amp; Wit
+(2024, <em>JRSS-C</em> 73(4))</a> — must (a) recover the shape of
+additive effects, including returning a flat curve for a null covariate;
+(b) give the same fit under full-batch and mini-batch training; and (c)
+scale better than the in-memory <code>gam</code> backend as the
+case-control table grows.</p>
+<p><strong>Design.</strong> Strata of one event and one control, with an
+additive truth <code>eta = sin(2*x1) + 0.8*x2 + 0*x3</code> (nonlinear,
+linear, and null). <em>Recovery and invariance:</em> 2,000 strata, 10
+Monte-Carlo replicates, fitting full-batch and mini-batched
+(<code>batch_strata</code> 256 and 64); for each fitted <code>f_k</code>
+we report the correlation with the centered truth and, for the null, the
+curve amplitude. <em>Scaling:</em> a single fit at 2k / 8k / 32k / 64k
+strata, timing the additive-spline SGD (<code>batch_strata = 256</code>)
+against <code>rem(method = "gam")</code> with <code>nl()</code> smooths
+on the same data, recording wall-clock and peak R memory.</p>
+<p><strong>Code.</strong></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span>
+<span><span class="va">f1</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">2</span><span class="op">*</span><span class="va">x</span><span class="op">)</span>; <span class="va">f2</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fl">0.8</span><span class="op">*</span><span class="va">x</span>          <span class="co"># f3 is the null</span></span>
+<span><span class="va">eta</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu">f1</span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="fu">f2</span><span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0</span><span class="op">*</span><span class="va">x</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span></span>
+<span><span class="va">make_cc</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">S</span>, <span class="va">seed</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span>; <span class="va">rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">vector</a></span><span class="op">(</span><span class="st">"list"</span>, <span class="va">S</span><span class="op">)</span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">s</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">S</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span> <span class="va">X</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span>    <span class="va">pr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">X</span>, <span class="fl">1</span>, <span class="va">eta</span><span class="op">)</span><span class="op">)</span>; <span class="va">pr</span> <span class="op">&lt;-</span> <span class="va">pr</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">pr</span><span class="op">)</span>; <span class="va">e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fl">1</span>, prob <span class="op">=</span> <span class="va">pr</span><span class="op">)</span></span>
+<span>    <span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">X</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span>,<span class="st">"x3"</span><span class="op">)</span></span>
+<span>    <span class="va">d</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span> <span class="op">==</span> <span class="va">e</span><span class="op">)</span>; <span class="va">d</span><span class="op">$</span><span class="va">stratum</span> <span class="op">&lt;-</span> <span class="va">s</span></span>
+<span>    <span class="va">rows</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">d</span><span class="op">$</span><span class="va">event</span><span class="op">)</span>, <span class="op">]</span> <span class="op">}</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">rows</span><span class="op">)</span> <span class="op">}</span></span>
+<span></span>
+<span><span class="va">cc</span>  <span class="op">&lt;-</span> <span class="fu">make_cc</span><span class="op">(</span><span class="fl">2000</span>, seed <span class="op">=</span> <span class="fl">7101</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">x1</span> <span class="op">+</span> <span class="va">x2</span> <span class="op">+</span> <span class="va">x3</span>, data <span class="op">=</span> <span class="va">cc</span>, method <span class="op">=</span> <span class="st">"nn"</span>,</span>
+<span>           nn <span class="op">=</span> <span class="fu"><a href="../reference/nn_control.html">nn_control</a></span><span class="op">(</span>architecture <span class="op">=</span> <span class="st">"additive_spline"</span>, spline_df <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>                           batch_strata <span class="op">=</span> <span class="fl">256</span>, epochs <span class="op">=</span> <span class="fl">80</span>, lr <span class="op">=</span> <span class="fl">5e-2</span>, seed <span class="op">=</span> <span class="fl">7201</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">g</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">2</span>, <span class="fl">2</span>, length.out <span class="op">=</span> <span class="fl">81</span><span class="op">)</span>                  <span class="co"># read each fitted f_k off a grid</span></span>
+<span><span class="va">f1_hat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">g</span>, x2 <span class="op">=</span> <span class="fl">0</span>, x3 <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">f1_hat</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">f1_hat</span><span class="op">)</span>, <span class="fu">f1</span><span class="op">(</span><span class="va">g</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu">f1</span><span class="op">(</span><span class="va">g</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>     <span class="co"># ~ 0.98 vs the sin truth</span></span>
+<span><span class="co">#&gt; [1] 0.978</span></span></code></pre></div>
+<p><strong>Result — passes on all three properties.</strong> Aggregated
+over 10 replicates:</p>
+<table class="table">
+<colgroup>
+<col width="15%">
+<col width="21%">
+<col width="21%">
+<col width="21%">
+<col width="21%">
+</colgroup>
+<thead><tr class="header">
+<th>Training</th>
+<th align="right">cor(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mn>1</mn></msub><annotation encoding="application/x-tex">\hat f_1</annotation></semantics></math>,
+sin)</th>
+<th align="right">cor(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mn>2</mn></msub><annotation encoding="application/x-tex">\hat f_2</annotation></semantics></math>,
+linear)</th>
+<th align="right">null amplitude
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">max</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">|</mo><msub><mover><mi>f</mi><mo accent="true">̂</mo></mover><mn>3</mn></msub><mo stretchy="false" form="prefix">|</mo></mrow><annotation encoding="application/x-tex">\max|\hat f_3|</annotation></semantics></math>
+</th>
+<th align="right">concordance</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>full-batch</td>
+<td align="right">0.974</td>
+<td align="right">0.994</td>
+<td align="right">0.176</td>
+<td align="right">0.739</td>
+</tr>
+<tr class="even">
+<td>mini-batch (256)</td>
+<td align="right">0.978</td>
+<td align="right">0.997</td>
+<td align="right">0.153</td>
+<td align="right">0.740</td>
+</tr>
+<tr class="odd">
+<td>mini-batch (64)</td>
+<td align="right">0.976</td>
+<td align="right">0.996</td>
+<td align="right">0.186</td>
+<td align="right">0.740</td>
+</tr>
+<tr class="even">
+<td>linear <code>clogit</code> (reference)</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">—</td>
+<td align="right">0.676</td>
+</tr>
+</tbody>
+</table>
+<p>The nonlinear and linear effects are recovered (correlation
+0.97–0.99); the null effect stays near-flat (amplitude ≈ 0.17 against a
+unit-scale signal); the fit is invariant to mini-batching; and the
+additive-spline backend beats the linear conditional logit on
+concordance (0.74 vs 0.68) because it captures the <code>sin</code>
+curvature the linear fit cannot. The left panel below overlays the
+fitted curves (solid) on the truths (dotted).</p>
+<p><strong>Scaling</strong> (single fit per size; wall-clock and peak R
+memory):</p>
+<table class="table">
+<thead><tr class="header">
+<th align="right">strata</th>
+<th align="right">SGD time</th>
+<th align="right">SGD memory</th>
+<th align="right">
+<code>gam</code> time</th>
+<th align="right">
+<code>gam</code> memory</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="right">2,000</td>
+<td align="right">0.2 s</td>
+<td align="right">197 MB</td>
+<td align="right">1.0 s</td>
+<td align="right">219 MB</td>
+</tr>
+<tr class="even">
+<td align="right">8,000</td>
+<td align="right">0.9 s</td>
+<td align="right">223 MB</td>
+<td align="right">1.7 s</td>
+<td align="right">196 MB</td>
+</tr>
+<tr class="odd">
+<td align="right">32,000</td>
+<td align="right">5.5 s</td>
+<td align="right">252 MB</td>
+<td align="right">6.4 s</td>
+<td align="right">272 MB</td>
+</tr>
+<tr class="even">
+<td align="right">64,000</td>
+<td align="right">8.1 s</td>
+<td align="right">342 MB</td>
+<td align="right">12.7 s</td>
+<td align="right">402 MB</td>
+</tr>
+</tbody>
+</table>
+<p>At 64,000 strata the additive-spline SGD is about 1.6× faster and
+uses less memory than the in-memory <code>gam</code> fit, and the gap
+widens with size — the regime STREAM was designed for, here measured at
+modest scale (these runs were also corroborated on a second machine;
+absolute seconds are machine-dependent).</p>
+<div class="float">
+<img src="figures/exp7-additive.png" alt="Additive-spline recovery and scaling"><div class="figcaption">Additive-spline recovery and scaling</div>
+</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

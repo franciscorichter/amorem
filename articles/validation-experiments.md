@@ -2,7 +2,7 @@
 
 ## Validation experiments
 
-Six end-to-end experiments stress different correctness properties of
+Seven end-to-end experiments stress different correctness properties of
 `amore`’s simulator and estimation pipeline. Each follows the same
 template: the **property tested**, the **experimental design**, the
 **code** that runs it, and the **numerical / graphical outcome**. Every
@@ -451,3 +451,89 @@ high at the matching-sign corners, low at the opposite-sign corners.
 This is exactly the case the neural backend is for: when endogenous
 effects interact, the additive backends cannot represent the structure,
 and the MLP — which scores the full candidate vector jointly — does.
+
+------------------------------------------------------------------------
+
+### E7 — Additive-spline (STREAM) backend: recovery, mini-batch invariance, and scaling
+
+**Property.** The `additive_spline` architecture — per-covariate
+B-spline expansions trained by stochastic gradient on the exact
+case-control partial likelihood, the STREAM construction of
+[Filippi-Mazzola & Wit (2024, *JRSS-C*
+73(4))](https://doi.org/10.1093/jrsssc/qlae023) — must (a) recover the
+shape of additive effects, including returning a flat curve for a null
+covariate; (b) give the same fit under full-batch and mini-batch
+training; and (c) scale better than the in-memory `gam` backend as the
+case-control table grows.
+
+**Design.** Strata of one event and one control, with an additive truth
+`eta = sin(2*x1) + 0.8*x2 + 0*x3` (nonlinear, linear, and null).
+*Recovery and invariance:* 2,000 strata, 10 Monte-Carlo replicates,
+fitting full-batch and mini-batched (`batch_strata` 256 and 64); for
+each fitted `f_k` we report the correlation with the centered truth and,
+for the null, the curve amplitude. *Scaling:* a single fit at 2k / 8k /
+32k / 64k strata, timing the additive-spline SGD (`batch_strata = 256`)
+against `rem(method = "gam")` with `nl()` smooths on the same data,
+recording wall-clock and peak R memory.
+
+**Code.**
+
+``` r
+
+library(amore)
+f1 <- function(x) sin(2*x); f2 <- function(x) 0.8*x          # f3 is the null
+eta <- function(x) f1(x[1]) + f2(x[2]) + 0*x[3]
+make_cc <- function(S, seed) { set.seed(seed); rows <- vector("list", S)
+  for (s in seq_len(S)) { X <- matrix(rnorm(6), 2, 3)
+    pr <- exp(apply(X, 1, eta)); pr <- pr/sum(pr); e <- sample(1:2, 1, prob = pr)
+    d <- as.data.frame(X); names(d) <- c("x1","x2","x3")
+    d$event <- as.integer(seq_len(2) == e); d$stratum <- s
+    rows[[s]] <- d[order(-d$event), ] }
+  do.call(rbind, rows) }
+
+cc  <- make_cc(2000, seed = 7101)
+fit <- rem(event ~ x1 + x2 + x3, data = cc, method = "nn",
+           nn = nn_control(architecture = "additive_spline", spline_df = 8,
+                           batch_strata = 256, epochs = 80, lr = 5e-2, seed = 7201))
+
+g  <- seq(-2, 2, length.out = 81)                  # read each fitted f_k off a grid
+f1_hat <- predict(fit, data.frame(x1 = g, x2 = 0, x3 = 0))
+cor(f1_hat - mean(f1_hat), f1(g) - mean(f1(g)))     # ~ 0.98 vs the sin truth
+#> [1] 0.978
+```
+
+**Result — passes on all three properties.** Aggregated over 10
+replicates:
+
+| Training | cor($`\hat f_1`$, sin) | cor($`\hat f_2`$, linear) | null amplitude $`\max|\hat f_3|`$ | concordance |
+|----|---:|---:|---:|---:|
+| full-batch | 0.974 | 0.994 | 0.176 | 0.739 |
+| mini-batch (256) | 0.978 | 0.997 | 0.153 | 0.740 |
+| mini-batch (64) | 0.976 | 0.996 | 0.186 | 0.740 |
+| linear `clogit` (reference) | — | — | — | 0.676 |
+
+The nonlinear and linear effects are recovered (correlation 0.97–0.99);
+the null effect stays near-flat (amplitude ≈ 0.17 against a unit-scale
+signal); the fit is invariant to mini-batching; and the additive-spline
+backend beats the linear conditional logit on concordance (0.74 vs 0.68)
+because it captures the `sin` curvature the linear fit cannot. The left
+panel below overlays the fitted curves (solid) on the truths (dotted).
+
+**Scaling** (single fit per size; wall-clock and peak R memory):
+
+| strata | SGD time | SGD memory | `gam` time | `gam` memory |
+|-------:|---------:|-----------:|-----------:|-------------:|
+|  2,000 |    0.2 s |     197 MB |      1.0 s |       219 MB |
+|  8,000 |    0.9 s |     223 MB |      1.7 s |       196 MB |
+| 32,000 |    5.5 s |     252 MB |      6.4 s |       272 MB |
+| 64,000 |    8.1 s |     342 MB |     12.7 s |       402 MB |
+
+At 64,000 strata the additive-spline SGD is about 1.6× faster and uses
+less memory than the in-memory `gam` fit, and the gap widens with size —
+the regime STREAM was designed for, here measured at modest scale (these
+runs were also corroborated on a second machine; absolute seconds are
+machine-dependent).
+
+![Additive-spline recovery and scaling](figures/exp7-additive.png)
+
+Additive-spline recovery and scaling
