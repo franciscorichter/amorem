@@ -1,118 +1,82 @@
+# install.packages("remotes")
+# install.packages("remotes")
+# remotes::install_github("franciscorichter/amore")
+
 library(amore)
-suppressPackageStartupMessages(library(survival))
-library(knitr)
 library(pbapply)
-library(mgcv)
 load("input/first_records.RData")
+
+
 
 # P2.1: Importing data ####
 event_log <- standardize_event_log(first_records[,c(1,3:4)],
                                    sender_col = "species",
                                    receiver_col = "region",
                                    time_col = "year")
-event_log <- event_log[order(event_log$time), ]
-tab1 <- head(event_log)
-kable(tab1, format = "latex", booktabs = TRUE)
+  
+head(event_log)
 
-# P2.2: Defining the risk set####
-# PROPOSAL
-# raw_data_m1 <- sample_non_events(event_log,
-#                               scope      = "all", 
-#                               # exclude if it has already occurred.
-#                               risk       = "remove",
-#                               exclude_fn = 
-#                                 function(sender, receiver, time, fr) {
-#                                   # exclude if is part of the native range
-#                                   is_native     <- any(native$species == sender & 
-#                                                        native$region == receiver)
-#                                   # exclude if it has occurred at the same time
-#                                   is_concurrent <- any(fr$time == time)
-#                                   is_native || is_concurrent})
 
-# currently possible in amore (but wrong conceptually for this application):
-raw_data_m1 <- sample_non_events(event_log,
-                              scope      = "all", 
-                              risk       = "remove")
-head(raw_data_m1)
+native_df<-cbind(native[, c("species", "region")],"time" = 1879)
+colnames(native_df)<-c("sender", "receiver", "time")
+head(native_df)
 
-native_codified           <- native[, c("sp.num", "species", "region")]
-colnames(native_codified) <- c("sp.num", "sender", "receiver")
+# P2.2: Case-control sampling from the risk set####
+set.seed(1234)
+cc <- sample_non_events(event_log,
+                        n_controls = 1,              # 1 control is default
+                        scope         = "all",
+                        mode          = "two",
+                        risk          = "remove",    # drops past + concurrent
+                        exclude_pairs = native_df[,1:2])   ### sender 1st col rec 2nd col
 
-# PROPOSAL: TO BE CHECKED AND CORRECTED
-source("compute_relational_stats.R")
-cc_feat <- compute_relational_stats(
-  event_log                  = raw_data_m1,
-  stats                      = c("out_sender"),
-  sort                       = TRUE,
-  additional_previous_events = native_codified,
-  history_log                = event_log        # only first records update state
-)
-cc_feat <- cc_feat[order(cc_feat$time), ]
+
+head(cc)
+
 
 # P2.3: Computing endogenous covariates ####
 
 ## P2.3.1: Invaded regions ####
 
-# CHECK WITH EXISTING CODE
-# invaded.regions <- function(sp.n, r.n, y, native, first_records){
-# 
-#   # Convert input arguments to numeric type if not already
-#   sp.n <- as.numeric(sp.n)
-#   r.n <- as.numeric(r.n)
-#   y <- as.numeric(y)
-# 
-#   # Get unique combinations of species number and region number from native data
-#   t <- unique(as.vector(subset(native, sp.num == sp.n, r.num)))
-# 
-#   # Get region numbers from first records data where species number matches
-#   pr <- as.vector(subset(first_records, sp.num == sp.n, r.num))
-# 
-#   # If the invasion is both present in first records data and in native range
-#   # consider the former as actual piece of information
-#   t <- setdiff(t, pr)
-# 
-#   # Find indices of first records occurring before end date for the species
-#   set.sp <- which(first_records$sp.num == sp.n & first_records$year < y)
-# 
-#   # Combine regions in native range with regions in first records before date
-#   t <- na.omit(c(t, first_records$r.num[set.sp]))
-# 
-#   # Do not consider the involved region
-#   inv <- unlist(setdiff(t, r.n))
-# 
-#   # Return invaded regions
-#   return(inv)
-# }
+### ISSUE: compute_endogenous_features() cannot easily handle both warm-starting
+### and non-event masking via the history_log argument. The code that follows 
+### is a workaround: prior_events must be manually prepended to event_log and history_log. 
+### Then the output it trimmed to not contain prior events (which intended to be used only for covariate computation and not for subsequent analysis)
+### POTENTIAL SOLUTION: separate these 2 aspects:
+###   - add a prior_log/prior_events argument intended to be used for covariate computation
+###   - leave history_log as now to manage non-event masking
+### IMPORTANT NOTE: whatever the fix, the function should correctly compute covariates of both events
+### and non-events, making sure the latter do not influence the computation of the ones for the events.
 
-# for (i in 1:nrow(first_records)) {
-#   sp  <- first_records$sp.num[i]
-#   reg <- first_records$r.num[i]
-#   yr  <- first_records$year[i]
-#   
-#   # find the matching row in cc_feat
-#   cc_row <- which(cc_feat$sender   == first_records$species[i] &
-#                     cc_feat$receiver == first_records$region[i]  &
-#                     cc_feat$time     == yr)
-#   
-#   if(!identical(unique(colnames(data_distance)[invaded.regions(sp, reg, yr, native, first_records)]),
-#                 unique(cc_feat[cc_row, "out_sender"][[1]]))){
-#     print(i)
-#     print(c("invaded:", colnames(data_distance)[invaded.regions(sp, reg, yr, native, first_records)]))
-#     print(c("new:", cc_feat[cc_row, "out_sender"][[1]]))
-#   }
-# }
+native_df_ext<- cbind(0,1,native_df)
+colnames(native_df_ext)<-c("stratum", "event", colnames(native_df))
+full_log <- rbind(native_df_ext,cc)
+head(full_log)
+
+feats_ext <- compute_endogenous_features(full_log, stats = "sender_receivers_set",
+                                     history_log = rbind(native_df,event_log))
+
+head(feats_ext)
+
+feats <- feats_ext[feats_ext$time > 1879,]
+head(feats)
+
+## remove current region to avoid zero difference
+feats$invaded<- mapply(setdiff,feats$sender_receivers_set,feats$receiver)
+
 
 ## P2.3.2: Temperature ####
+head(data_temperature)
 
 compound_region_map <- list(
   "USACanada" = c("United States", "Canada")
 )
 
-get_temp <- function(region) {
+get_temp <- function(region,compound_areas = compound_region_map) {
   if (region %in% data_temperature$X) {
     return(data_temperature[data_temperature$X == region, "temp"][1])
   }
-  if (region %in% names(compound_region_map)) {
+  if (region %in% names(compound_areas)) {
     parts <- compound_region_map[[region]]
     temps <- data_temperature[data_temperature$X %in% parts, "temp"]
     if (length(temps) > 0) return(mean(temps, na.rm = TRUE))
@@ -132,11 +96,13 @@ dt_value <- mapply(function(invaded_regions, current_region) {
   
   min(abs(avg_temp_invaded - avg_temp_interest), na.rm = TRUE)
   
-}, cc_feat$out_sender, cc_feat$receiver)
+}, feats$invaded, feats$receiver)
 
-cc_feat$dt_value <- dt_value
+feats$temp  <- dt_value
 
 ## P2.3.3: Trade ####
+
+head(data_trade)
 
 t <- which(data_trade$transfer < 0)
 data_trade$transfer[t] <- 0
@@ -161,11 +127,13 @@ trade_value <- pbmapply(function(invaded_regions, current_region, y) {
   } else {
     trade_funct_new(current_region)
   }
-}, cc_feat$out_sender, cc_feat$receiver, cc_feat$time)
+}, feats$invaded, feats$receiver, feats$time)
 
-cc_feat$tr_value <- trade_value
+feats$trade<- trade_value
 
 ## P2.3.4: Distance ####
+
+head(data_distance)
 
 distance_value <- pbmapply(function(invaded_regions, current_region, y) {
   
@@ -175,86 +143,76 @@ distance_value <- pbmapply(function(invaded_regions, current_region, y) {
   
   log(min(distances, na.rm = TRUE) + 1)
   
-}, cc_feat$out_sender, cc_feat$receiver, cc_feat$time)
+}, feats$invaded, feats$receiver, feats$time)
 
-cc_feat$d_value <- distance_value
+feats$dist <- distance_value
 
-## P2.4: Constructing the case-control dataset ####
 
-cases_direct <- cc_feat[cc_feat$event == 1L, ]
-ctrls_direct <- cc_feat[cc_feat$event == 0L, ]
-cases_direct <- cases_direct[order(cases_direct$stratum), ]
-ctrls_direct <- ctrls_direct[order(ctrls_direct$stratum), ]
-ncc_data <- data.frame(
-  stratum    = cases_direct$stratum,
-  sender_ev  = cases_direct$sender,
-  receiver_ev = cases_direct$receiver,
-  sender_nv  = ctrls_direct$sender,
-  receiver_nv = ctrls_direct$receiver,
-  prev_inv_ev = I(cases_direct$out_sender),
-  prev_inv_nv = I(ctrls_direct$out_sender),
-  dt_ev  = cases_direct$dt_value,
-  dt_nv  = ctrls_direct$dt_value,
-  d_dt   = cases_direct$dt_value - ctrls_direct$dt_value,
-  tr_ev  = cases_direct$tr_value,
-  tr_nv  = ctrls_direct$tr_value,
-  d_tr   = cases_direct$tr_value - ctrls_direct$tr_value,
-  d_ev  = cases_direct$d_value,
-  d_nv  = ctrls_direct$d_value,
-  d_d   = cases_direct$d_value - ctrls_direct$d_value,
-  one    = 1
+# P2.4: Constructing the case-control dataset ####
+cc_wide <- widen_case_control(feats, case = "event",stratum = "stratum")
+head(cc_wide)
+
+
+# P2.5: Fitting various model formulation ####
+
+## P2.5.1 Fixed linear effect ####
+m1_only_temp_l<- rem(~ temp, data = cc_wide, method = "gam")
+summary(m1_only_temp_l)
+
+## P2.5.2 Time-varying linear effect ####
+m2_only_trade_tv<- rem(~ tv(trade),time = "time_ev", data = cc_wide, method = "gam")
+summary(m2_only_trade_tv)
+plot(m2_only_trade_tv)
+
+## P2.5.3 Non-linear effect ####
+m3_only_dist_nl<- rem(~ nl(dist), data = cc_wide, method = "gam")
+summary(m3_only_dist_nl)
+plot(m3_only_dist_nl)
+
+## P2.5.4 Random effect (intercept) ####
+
+#### adding sender and receiver info to wide case control dataset (because calling widen_case_control() drops them currently)
+node_ev_info <- feats[feats$event == 1L, c("stratum", "sender", "receiver")] # extract sender/receiver from case rows only, keyed by stratum
+names(node_ev_info)[2:3] <- c("sender_ev", "receiver_ev") # rename to make clear these are the event's nodes
+node_nv_info <- feats[feats$event == 0L, c("stratum", "sender", "receiver")] # also get the control actors
+names(node_nv_info)[2:3] <- c("sender_nv", "receiver_nv") # also get the control actors
+widened <- merge(cc_wide, node_ev_info,   by = "stratum", all.x = TRUE) # join both
+widened <- merge(widened, node_nv_info, by = "stratum", all.x = TRUE) # join both
+
+
+m4_only_sender_re<- rem(~ re(sender), data = widened, method = "gam")
+summary(m4_only_sender_re)
+re.species <- coefficients(m4_only_sender_re)
+
+#### rem with re() effect specification fits a random intercept based on the specified group var
+#### it handles factor encoding internally which renders used of output less intuitive.
+#### the following replicates the mapping from group var format to factor in order to print results in the original format
+ev <- widened[["sender_ev"]]
+nv <- widened[["sender_nv"]]
+fmat <- factor(c(as.character(ev), as.character(nv))) # Replicate what rem() does internally
+names(re.species) <- levels(fmat)  # The mapping: index 1 = levels(fmat)[1], index 2 = levels(fmat)[2], etc.
+
+
+cat("5 most invasive species:\n");  print(sort(re.species, decreasing = TRUE)[1:5])
+cat("5 least invasive species:\n"); print(sort(re.species)[1:5])
+
+## P2.5.5 Full model ####
+m5_full <- rem(~ temp + 
+                 tv(trade) + 
+                 nl(dist) +
+                 re(sender), time = "time_ev", data = widened, method = "gam")
+
+# P2.6 Model Comparison (using AIC) ####
+
+aic_table <- data.frame(
+  model     = c("temp_only", "trade_only", "dist_only", "species_only", "complete"),
+  AIC       = c(AIC(m1_only_temp_l), AIC(m2_only_trade_tv), AIC(m3_only_dist_nl),
+                AIC(m4_only_sender_re), AIC(m5_full))
 )
+aic_table <- aic_table[order(aic_table$AIC), ]
+print(aic_table)
 
-ncc_data[which(ncc_data$dt_ev != dat.gam$dt1),"receiver_ev"]
-# Difference is due to a previous bug related to the 
-# absence of USACanada among the rows of data_temperature
 
-ncc_data[which(ncc_data$tr_ev != dat.gam$tr1),"receiver_ev"]
-# Some differences are due to a previous bug
-# related to the usage of mean(,) instead of mean(c(,))
-other_idx <- which(
-  ncc_data$tr_ev != dat.gam$tr1 &
-    !ncc_data$receiver_ev %in% c("USACanada")
-)
-# Check if they are equal within floating point tolerance
-for (i in other_idx) {
-  cat("Row", i, "| diff:", ncc_data$tr_ev[i] - dat.gam$tr1[i],
-      "| check:", isTRUE(all.equal(ncc_data$tr_ev[i], dat.gam$tr1[i])), "\n")
-}
 
-ncc_data[which(ncc_data$d_ev != dat.gam$d1),"receiver_ev"]
-# Same as obtained using the previous code
 
-## P2.5: Fitting various model formulation ####
 
-# compare_models_smooth currently sample the non-events
-# this process should follow the non-event sampling strategy shown above
-
-# again it would be important to extrapolate the model objects
-
-# compare_models_smooth(
-#   ncc_data,
-#   models = list(
-#     linear_dt = c(d_dt = "linear"),
-#     tve_tr    = c(d_tr = "tv"),
-#     nle_d     = c(d_d  = "nl")
-#   ),
-#   seed = 11, 
-#   k = 5)
-
-# REMARK: MISSING RANDOM EFFECTS AS SPLINES!
-
-ss1 <- ncc_data$sender_ev
-ss2 <- ncc_data$sender_nv
-ss <- factor(c(ss1,ss2))
-dim(ss) <- c(length(ss1),2)
-unit <- rep(1, nrow(dat.gam))
-I = cbind(unit,-unit)	
-gam_ss.only <- gam(one ~ s(ss, by=I, bs="re") - 1,
-                   family="binomial"(link = 'logit'), data=ncc_data)
-
-re.species <- coefficients(gam_ss.only)
-names(re.species) <- levels(ss)
-
-# 5 most invasive species
-sort(re.species, decreasing = TRUE)[1:5]
