@@ -1,6 +1,4 @@
 library(amore)
-suppressPackageStartupMessages(library(survival))
-library(knitr)
 
 # P1.1: What does the generated data look like? ####
 set.seed(1)
@@ -10,17 +8,16 @@ raw_data_m1 <- simulate_relational_events(
   receivers          = paste0("a", 1:20),
   baseline_rate      = 1,
   n_controls         = 1,
-  endogenous_stats   = "reciprocity_count",
+  endogenous_stats   = "reciprocity_count", 
   endogenous_effects = c(reciprocity_count = 0.6)
 )
 
-tab1 <- head(raw_data_m1, which(raw_data_m1$event == 1 & raw_data_m1$reciprocity_count == 1)[1] + 1)
-kable(tab1, format = "latex", booktabs = TRUE)
+head(raw_data_m1)
 
 
 # P1.2: Construct datasets for two inference procedures ####
 
-## (a): Case-$7$-control fitted via conditional logistic regression ####
+## (a): Case-$7$-control for inference via conditional logistic regression ####
 
 set.seed(1)
 raw_data_m7 <- simulate_relational_events(
@@ -29,73 +26,56 @@ raw_data_m7 <- simulate_relational_events(
   receivers          = paste0("a", 1:20),
   baseline_rate      = 1,
   n_controls         = 7,
-  endogenous_stats   = "reciprocity_count",
-  endogenous_effects = c(reciprocity_count = 0.6)
+  endogenous_stats   = "reciprocity_count", 
+  endogenous_effects = c(reciprocity_count = 0.6),
 )
 
-tab2 <- raw_data_m7[raw_data_m7$stratum<=2,]
-kable(tab2, format = "latex", booktabs = TRUE)
+head(raw_data_m7,10)
 
-fit_clogit <- clogit(event ~ reciprocity_count + strata(stratum),
-                     data = raw_data_m7)
-coef(fit_clogit)
+## (b): Case-$1$-control dataset in "wide" format for inference via degenerate logistic regression ####
 
-## (b): Case-$1$-control fitted via degenerate logistic regression ####
 
-cases_direct <- raw_data_m1[raw_data_m1$event == 1L, ]
-ctrls_direct <- raw_data_m1[raw_data_m1$event == 0L, ]
-cases_direct <- cases_direct[order(cases_direct$stratum), ]
-ctrls_direct <- ctrls_direct[order(ctrls_direct$stratum), ]
-ncc_data  <- data.frame(
-  stratum = cases_direct$stratum,
-  sender_ev = cases_direct$sender,
-  receiver_ev = cases_direct$receiver,
-  sender_nv = ctrls_direct$sender,
-  receiver_nv = ctrls_direct$receiver,
-  d_reciprocity_count = cases_direct$reciprocity_count -
-    ctrls_direct$reciprocity_count,
-  one = 1
-)
-fit_glm <- glm(one ~ d_reciprocity_count - 1,
-               family = "binomial", data = ncc_data)
-tab3 <- ncc_data[ncc_data$stratum<=8,]
-kable(tab3, format = "latex", booktabs = TRUE)
-AIC(fit_glm)
 
-cc <- sample_non_events(
-  raw_data_m1[raw_data_m1$event == 1L, c("sender", "receiver", "time")],
-  n_controls = 1,
-  scope      = "all",
-  mode       = "one",
-  seed=1
-)
-cc_feat <- compute_endogenous_features(cc, stats = "reciprocity_count")
+### ISSUE: widen_case_control() returns a data frame that no longer contains sender and receiver info
+### for both event (ev suffix) and control (nv suffix) which could be usefuel for additional covariate computationa and effect specification (e.g. random intercepts)
+### POTENTIAL SOLUTIONS:
+###   - leave as is and use event and stratum column to include such info manually a-posteriori, if the use requires it
+###   - modify the function such that it returns with an additional 4 columns: sender_ev, receiver_ev, sender_nv, receiver_nv
 
-cases_r <- cc_feat[cc_feat$event == 1L, ]
-ctrls_r <- cc_feat[cc_feat$event == 0L, ]
-cases_r <- cases_r[order(cases_r$stratum), ]
-ctrls_r <- ctrls_r[order(ctrls_r$stratum), ]
+wide_data_m1 <- widen_case_control(raw_data_m1, case = "event", stratum = "stratum")
+head(wide_data_m1)
 
-ncc_resampled <- data.frame(
-  d_reciprocity_count = cases_r$reciprocity_count - ctrls_r$reciprocity_count,
-  one = 1L
-)
-fit_glm_r <- glm(one ~ d_reciprocity_count - 1,
-                 family = binomial, data = ncc_resampled)
-AIC(fit_glm_r)
 
-compare_models(
-  raw_data_m1[raw_data_m1$event == 1L, c("sender", "receiver", "time")],
-  models = list(
-    count       = c("reciprocity_count")),
-  n_controls = 1, seed = 1)
+# P1.3: Inference procedures ####
 
-# P1.3: Replicate the simulation study 100 times ####
+## (a): Conditional logistic regression ####
+
+fit_clogit <- rem(event ~ reciprocity_count, data = raw_data_m7, method = "clogit")
+summary(fit_clogit)
+
+
+## (b): Degenerate logistic regression ####
+
+fit_glm <- rem(~ reciprocity_count, data = wide_data_m1, method = "gam")
+summary(fit_glm)
+
+
+### ISSUE: if trying to fit degenerate logistic when passing data in the long format (event and corresponding controls on different rows)
+### the results are not correct (and not the same as when passing data in the wide format)
+### POTENTIAL SOLUTIONS:
+###   - double check how the data in long format in managed when method = "gam" and consider adding internally the widening
+###   - return an error if method="gam" is called when data is in long format
+
+fit_glm_long_format <- rem(~ reciprocity_count, data = raw_data_m1, method = "gam")
+summary(fit_glm_long_format)
+
+
+# P1.4: Replicate the simulation study 100 times  ####
 
 # parameters
 N_SIM        <- 100
 N_EVENTS     <- 1000
-TRUE_BETA    <- 0.6          
+TRUE_BETA    <- 0.6        
 SENDERS      <- paste0("a", 1:20)
 RECEIVERS    <- paste0("a", 1:20)
 
@@ -105,6 +85,7 @@ coefs <- data.frame(
   clogit_7  = numeric(N_SIM), # conditional logit,   7 controls
   clogit_20 = numeric(N_SIM)  # conditional logit,  20 controls
 )
+
 
 for (i in seq_len(N_SIM)) {
   
@@ -117,23 +98,15 @@ for (i in seq_len(N_SIM)) {
     receivers          = RECEIVERS,
     baseline_rate      = 1,
     n_controls         = 1,
-    endogenous_stats   = "reciprocity_count",
+    endogenous_stats   = "reciprocity_count", 
     endogenous_effects = c(reciprocity_count = TRUE_BETA),
   )
   
-  cases <- d1[d1$event == 1L, ]
-  ctrls <- d1[d1$event == 0L, ]
-  cases <- cases[order(cases$stratum), ]
-  ctrls <- ctrls[order(ctrls$stratum), ]
+  # fit degenerate logistic regression
+  wide_d1 <- widen_case_control(d1, case = "event", stratum = "stratum")
+  fit_glm <- rem(~ reciprocity_count, data = wide_d1, method = "gam")
+  coefs$glm_1[i] <- coef(fit_glm)[["reciprocity_count"]]
   
-  ncc <- data.frame(
-    d_reciprocity_count = cases$reciprocity_count - ctrls$reciprocity_count,
-    one = 1L
-  )
-  
-  fit_glm <- glm(one ~ d_reciprocity_count - 1,
-                 family = binomial, data = ncc)
-  coefs$glm_1[i] <- coef(fit_glm)[["d_reciprocity_count"]]
   
   # case-7-control dataset
   d7 <- simulate_relational_events(
@@ -142,12 +115,12 @@ for (i in seq_len(N_SIM)) {
     receivers          = RECEIVERS,
     baseline_rate      = 1,
     n_controls         = 7,
-    endogenous_stats   = "reciprocity_count",
-    endogenous_effects = c(reciprocity_count = TRUE_BETA),
+    endogenous_stats   = "reciprocity_count", 
+    endogenous_effects = c(reciprocity_count = TRUE_BETA)
   )
   
-  fit7 <- clogit(event ~ reciprocity_count + strata(stratum), data = d7)
-  coefs$clogit_7[i] <- coef(fit7)[["reciprocity_count"]]
+  fit_clogit_7 <- rem(event ~ reciprocity_count, data = d7, method = "clogit")
+  coefs$clogit_7[i] <- coef(fit_clogit_7)[["reciprocity_count"]]
   
   # case-20-control dataset
   d20 <- simulate_relational_events(
@@ -156,14 +129,16 @@ for (i in seq_len(N_SIM)) {
     receivers          = RECEIVERS,
     baseline_rate      = 1,
     n_controls         = 20,
-    endogenous_stats   = "reciprocity_count",
+    endogenous_stats   = "reciprocity_count", 
     endogenous_effects = c(reciprocity_count = TRUE_BETA),
   )
   
-  fit20 <- clogit(event ~ reciprocity_count + strata(stratum), data = d20)
-  coefs$clogit_20[i] <- coef(fit20)[["reciprocity_count"]]
+  fit_clogit_20 <- rem(event ~ reciprocity_count, data = d20, method = "clogit")
+  coefs$clogit_20[i] <- coef(fit_clogit_20)[["reciprocity_count"]]
   
   if (i %% 10 == 0) message(sprintf("  Completed %d / %d replications", i, N_SIM))
+  
+  
 }
 
 coefs_long <- stack(coefs)
