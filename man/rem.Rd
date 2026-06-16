@@ -21,7 +21,10 @@ rem(
 \item{formula}{A formula; see \emph{Formula syntax}.}
 
 \item{data}{A data.frame of preprocessed case-control data (wide for the
-\code{gam} method; long with a case indicator and stratum for \code{clogit}).}
+\code{gam} method; long with a case indicator and stratum for \code{clogit}). For
+\code{method = "gam"}, long case-control input (a \code{event}/\code{IS_OBSERVED}
+indicator with control rows) is detected and widened automatically via
+\code{\link[=widen_case_control]{widen_case_control()}}, with a message.}
 
 \item{method}{Estimation backend; see \emph{Description}.}
 

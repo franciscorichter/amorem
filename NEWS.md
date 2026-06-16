@@ -24,6 +24,20 @@ intended for the first CRAN release.
   formula's left-hand side (e.g. `event ~ x`) for the `clogit`/`nn` backends.
 * `widen_case_control()` auto-detects the 0/1 indicator column (`event` or
   `IS_OBSERVED`) when `case` is not given.
+* `widen_case_control()` now carries the sender/receiver identifiers of the
+  case and its matched control into the output (`sender_ev`/`receiver_ev`/
+  `sender_nv`/`receiver_nv`); the new `keep_ids` argument controls this
+  (default `TRUE`). The dyads behind each pair are no longer lost, and `re()`
+  grouping terms can reach the actor levels (#92).
+* `rem(method = "gam")` now detects long-format case-control input (a
+  `event`/`IS_OBSERVED` indicator with control rows) and widens it with
+  `widen_case_control()` before fitting, emitting a message — instead of
+  silently misreading raw per-row values as event-minus-control differences
+  (#93).
+* `compute_endogenous_features()` gains a `prior_log` argument for
+  warm-starting the network state from events that precede the study window:
+  its rows update the running state but never appear in the output, separating
+  warm-starting from the non-event masking role of `history_log` (#94).
 * `cpp_supported_stats()` is now exported.
 
 # amore 0.1.0

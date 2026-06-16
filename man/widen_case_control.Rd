@@ -9,7 +9,8 @@ widen_case_control(
   case = NULL,
   stratum = NULL,
   covariates = NULL,
-  control_index = 1L
+  control_index = 1L,
+  keep_ids = TRUE
 )
 }
 \arguments{
@@ -31,9 +32,18 @@ stratum, and the standard eventnet bookkeeping columns (\code{EVENT},
 
 \item{control_index}{Which control within each stratum to pair with the case
 (default the first). Lets a case-k-control log be reduced to case-1-control.}
+
+\item{keep_ids}{Logical; when \code{TRUE} (default) the sender/receiver identifier
+columns present in \code{data} are carried into the output as \code{sender_ev} /
+\code{receiver_ev} (the observed event) and \code{sender_nv} / \code{receiver_nv} (the
+matched control), so the dyads behind each case-control pair remain
+recoverable (and become available to \code{re()} grouping terms in \code{\link[=rem]{rem()}}).
+Set to \code{FALSE} to emit only the widened covariate columns.}
 }
 \value{
-A data.frame with one row per case: a \code{stratum} column and, for each
+A data.frame with one row per case: a \code{stratum} column, the
+sender/receiver identifiers (\code{sender_ev}/\code{receiver_ev}/\code{sender_nv}/
+\code{receiver_nv}, when present in \code{data} and \code{keep_ids = TRUE}) and, for each
 covariate, \verb{<cov>_ev}, \verb{<cov>_nv} and \verb{d_<cov>}. Strata without exactly one
 case or without the requested control are dropped (with a message).
 }
