@@ -73,7 +73,8 @@ even after a closure event).</p>
 <span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sender_outdegree"</span>, <span class="st">"receiver_indegree"</span>, <span class="st">"reciprocity"</span>, <span class="st">"recency"</span><span class="op">)</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  sort <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  history_log <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  history_log <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prior_log <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -112,6 +113,17 @@ endogenous statistics for non-events without those non-events polluting
 the history. Defaults to <code>NULL</code> (every row is treated as an event).
 Currently supported only for statistics handled by the C++ engine
 (see <code><a href="cpp_supported_stats.html">cpp_supported_stats()</a></code>).</p></dd>
+
+
+<dt id="arg-prior-log">prior_log<a class="anchor" aria-label="anchor" href="#arg-prior-log"></a></dt>
+<dd><p>Optional data.frame of events that precede the study window
+(columns <code>sender</code>, <code>receiver</code>, <code>time</code>), used to <strong>warm-start</strong> the network
+state. Its rows always update the running state but never appear in the
+returned data.frame. This separates warm-starting from the non-event
+masking role of <code>history_log</code>: pass earlier history through <code>prior_log</code>
+and use <code>history_log</code> purely to mark which rows of <code>event_log</code> are real
+events. Defaults to <code>NULL</code>. Like <code>history_log</code>, it is currently supported
+only for statistics handled by the C++ engine (see <code><a href="cpp_supported_stats.html">cpp_supported_stats()</a></code>).</p></dd>
 
 </dl></div>
     <div class="section level2">

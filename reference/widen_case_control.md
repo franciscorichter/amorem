@@ -16,7 +16,8 @@ widen_case_control(
   case = NULL,
   stratum = NULL,
   covariates = NULL,
-  control_index = 1L
+  control_index = 1L,
+  keep_ids = TRUE
 )
 ```
 
@@ -51,11 +52,24 @@ widen_case_control(
   Which control within each stratum to pair with the case (default the
   first). Lets a case-k-control log be reduced to case-1-control.
 
+- keep_ids:
+
+  Logical; when `TRUE` (default) the sender/receiver identifier columns
+  present in `data` are carried into the output as `sender_ev` /
+  `receiver_ev` (the observed event) and `sender_nv` / `receiver_nv`
+  (the matched control), so the dyads behind each case-control pair
+  remain recoverable (and become available to `re()` grouping terms in
+  [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)).
+  Set to `FALSE` to emit only the widened covariate columns.
+
 ## Value
 
-A data.frame with one row per case: a `stratum` column and, for each
-covariate, `<cov>_ev`, `<cov>_nv` and `d_<cov>`. Strata without exactly
-one case or without the requested control are dropped (with a message).
+A data.frame with one row per case: a `stratum` column, the
+sender/receiver identifiers (`sender_ev`/`receiver_ev`/`sender_nv`/
+`receiver_nv`, when present in `data` and `keep_ids = TRUE`) and, for
+each covariate, `<cov>_ev`, `<cov>_nv` and `d_<cov>`. Strata without
+exactly one case or without the requested control are dropped (with a
+message).
 
 ## Details
 

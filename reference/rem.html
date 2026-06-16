@@ -89,7 +89,10 @@ intended to supersede <code><a href="compare_models.html">compare_models()</a></
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data.frame of preprocessed case-control data (wide for the
-<code>gam</code> method; long with a case indicator and stratum for <code>clogit</code>).</p></dd>
+<code>gam</code> method; long with a case indicator and stratum for <code>clogit</code>). For
+<code>method = "gam"</code>, long case-control input (a <code>event</code>/<code>IS_OBSERVED</code>
+indicator with control rows) is detected and widened automatically via
+<code><a href="widen_case_control.html">widen_case_control()</a></code>, with a message.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>

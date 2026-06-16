@@ -36,7 +36,11 @@ rem(
 - data:
 
   A data.frame of preprocessed case-control data (wide for the `gam`
-  method; long with a case indicator and stratum for `clogit`).
+  method; long with a case indicator and stratum for `clogit`). For
+  `method = "gam"`, long case-control input (a `event`/`IS_OBSERVED`
+  indicator with control rows) is detected and widened automatically via
+  [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md),
+  with a message.
 
 - method:
 

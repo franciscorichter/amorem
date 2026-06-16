@@ -70,7 +70,8 @@ control) are emitted, ready for the <code>gam</code> backend of <code><a href="r
 <span>  case <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stratum <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  control_index <span class="op">=</span> <span class="fl">1L</span></span>
+<span>  control_index <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>  keep_ids <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -106,10 +107,21 @@ stratum, and the standard eventnet bookkeeping columns (<code>EVENT</code>,
 <dd><p>Which control within each stratum to pair with the case
 (default the first). Lets a case-k-control log be reduced to case-1-control.</p></dd>
 
+
+<dt id="arg-keep-ids">keep_ids<a class="anchor" aria-label="anchor" href="#arg-keep-ids"></a></dt>
+<dd><p>Logical; when <code>TRUE</code> (default) the sender/receiver identifier
+columns present in <code>data</code> are carried into the output as <code>sender_ev</code> /
+<code>receiver_ev</code> (the observed event) and <code>sender_nv</code> / <code>receiver_nv</code> (the
+matched control), so the dyads behind each case-control pair remain
+recoverable (and become available to <code>re()</code> grouping terms in <code><a href="rem.html">rem()</a></code>).
+Set to <code>FALSE</code> to emit only the widened covariate columns.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data.frame with one row per case: a <code>stratum</code> column and, for each
+    <p>A data.frame with one row per case: a <code>stratum</code> column, the
+sender/receiver identifiers (<code>sender_ev</code>/<code>receiver_ev</code>/<code>sender_nv</code>/
+<code>receiver_nv</code>, when present in <code>data</code> and <code>keep_ids = TRUE</code>) and, for each
 covariate, <code>&lt;cov&gt;_ev</code>, <code>&lt;cov&gt;_nv</code> and <code>d_&lt;cov&gt;</code>. Strata without exactly one
 case or without the requested control are dropped (with a message).</p>
     </div>

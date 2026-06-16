@@ -30,6 +30,25 @@ intended for the first CRAN release.
 - [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
   auto-detects the 0/1 indicator column (`event` or `IS_OBSERVED`) when
   `case` is not given.
+- [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+  now carries the sender/receiver identifiers of the case and its
+  matched control into the output (`sender_ev`/`receiver_ev`/
+  `sender_nv`/`receiver_nv`); the new `keep_ids` argument controls this
+  (default `TRUE`). The dyads behind each pair are no longer lost, and
+  `re()` grouping terms can reach the actor levels
+  ([\#92](https://github.com/franciscorichter/amore/issues/92)).
+- `rem(method = "gam")` now detects long-format case-control input (a
+  `event`/`IS_OBSERVED` indicator with control rows) and widens it with
+  [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+  before fitting, emitting a message — instead of silently misreading
+  raw per-row values as event-minus-control differences
+  ([\#93](https://github.com/franciscorichter/amore/issues/93)).
+- [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+  gains a `prior_log` argument for warm-starting the network state from
+  events that precede the study window: its rows update the running
+  state but never appear in the output, separating warm-starting from
+  the non-event masking role of `history_log`
+  ([\#94](https://github.com/franciscorichter/amore/issues/94)).
 - [`cpp_supported_stats()`](https://franciscorichter.github.io/amore/reference/cpp_supported_stats.md)
   is now exported.
 

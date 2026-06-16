@@ -15,7 +15,8 @@ compute_endogenous_features(
   stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
   half_life = NULL,
   sort = TRUE,
-  history_log = NULL
+  history_log = NULL,
+  prior_log = NULL
 )
 ```
 
@@ -52,6 +53,19 @@ compute_endogenous_features(
   endogenous statistics for non-events without those non-events
   polluting the history. Defaults to `NULL` (every row is treated as an
   event). Currently supported only for statistics handled by the C++
+  engine (see
+  [`cpp_supported_stats()`](https://franciscorichter.github.io/amore/reference/cpp_supported_stats.md)).
+
+- prior_log:
+
+  Optional data.frame of events that precede the study window (columns
+  `sender`, `receiver`, `time`), used to **warm-start** the network
+  state. Its rows always update the running state but never appear in
+  the returned data.frame. This separates warm-starting from the
+  non-event masking role of `history_log`: pass earlier history through
+  `prior_log` and use `history_log` purely to mark which rows of
+  `event_log` are real events. Defaults to `NULL`. Like `history_log`,
+  it is currently supported only for statistics handled by the C++
   engine (see
   [`cpp_supported_stats()`](https://franciscorichter.github.io/amore/reference/cpp_supported_stats.md)).
 
