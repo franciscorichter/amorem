@@ -12,7 +12,7 @@ raw_data_m1 <- simulate_relational_events(
   endogenous_effects = c(reciprocity_count = 0.6)
 )
 
-head(raw_data_m1)
+head(raw_data_m1,20)
 
 
 # P1.2: Construct datasets for two inference procedures ####
@@ -35,15 +35,10 @@ head(raw_data_m7,10)
 ## (b): Case-$1$-control dataset in "wide" format for inference via degenerate logistic regression ####
 
 
-
-### ISSUE: widen_case_control() returns a data frame that no longer contains sender and receiver info
-### for both event (ev suffix) and control (nv suffix) which could be usefuel for additional covariate computationa and effect specification (e.g. random intercepts)
-### POTENTIAL SOLUTIONS:
-###   - leave as is and use event and stratum column to include such info manually a-posteriori, if the use requires it
-###   - modify the function such that it returns with an additional 4 columns: sender_ev, receiver_ev, sender_nv, receiver_nv
-
-wide_data_m1 <- widen_case_control(raw_data_m1, case = "event", stratum = "stratum")
+wide_data_m1 <- widen_case_control(raw_data_m1, case = "event", stratum= "stratum")
 head(wide_data_m1)
+
+### could have also gotten it already in this format from simulate_relational_events(..., n_controls = 1, wide = T)
 
 
 # P1.3: Inference procedures ####
@@ -60,13 +55,8 @@ fit_glm <- rem(~ reciprocity_count, data = wide_data_m1, method = "gam")
 summary(fit_glm)
 
 
-### ISSUE: if trying to fit degenerate logistic when passing data in the long format (event and corresponding controls on different rows)
-### the results are not correct (and not the same as when passing data in the wide format)
-### POTENTIAL SOLUTIONS:
-###   - double check how the data in long format in managed when method = "gam" and consider adding internally the widening
-###   - return an error if method="gam" is called when data is in long format
-
-fit_glm_long_format <- rem(~ reciprocity_count, data = raw_data_m1, method = "gam")
+### if passing directly data in long format
+fit_glm_long_format <- rem(~ reciprocity_count, data = raw_data_m1, method = "gam", stratum = "stratum")
 summary(fit_glm_long_format)
 
 
