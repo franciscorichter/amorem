@@ -1,8 +1,0 @@
-"machine","experiment","seconds","status"
-"studio","exp1_recovery",8.34,"ok"
-"studio","exp2_smooth",1.32,"ok"
-"studio","exp3_frailty",5.48,"ok"
-"studio","exp4_scaling",56.2,"ok"
-"studio","exp5_parity",1.72,"ok"
-"studio","exp6_nn",1.4,"ok"
-"studio","compile_warmup",1.33,"ok"
