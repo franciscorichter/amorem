@@ -38,27 +38,9 @@ head(cc)
 
 ## P2.3.1: Invaded regions ####
 
-### ISSUE: compute_endogenous_features() cannot easily handle both warm-starting
-### and non-event masking via the history_log argument. The code that follows 
-### is a workaround: prior_events must be manually prepended to event_log and history_log. 
-### Then the output it trimmed to not contain prior events (which intended to be used only for covariate computation and not for subsequent analysis)
-### POTENTIAL SOLUTION: separate these 2 aspects:
-###   - add a prior_log/prior_events argument intended to be used for covariate computation
-###   - leave history_log as now to manage non-event masking
-### IMPORTANT NOTE: whatever the fix, the function should correctly compute covariates of both events
-### and non-events, making sure the latter do not influence the computation of the ones for the events.
+feats <- compute_endogenous_features(cc, stats = "sender_receivers_set",
+                                         history_log = event_log, prior_log = native_df)
 
-native_df_ext<- cbind(0,1,native_df)
-colnames(native_df_ext)<-c("stratum", "event", colnames(native_df))
-full_log <- rbind(native_df_ext,cc)
-head(full_log)
-
-feats_ext <- compute_endogenous_features(full_log, stats = "sender_receivers_set",
-                                     history_log = rbind(native_df,event_log))
-
-head(feats_ext)
-
-feats <- feats_ext[feats_ext$time > 1879,]
 head(feats)
 
 ## remove current region to avoid zero difference
@@ -170,25 +152,15 @@ summary(m3_only_dist_nl)
 plot(m3_only_dist_nl)
 
 ## P2.5.4 Random effect (intercept) ####
-
-#### adding sender and receiver info to wide case control dataset (because calling widen_case_control() drops them currently)
-node_ev_info <- feats[feats$event == 1L, c("stratum", "sender", "receiver")] # extract sender/receiver from case rows only, keyed by stratum
-names(node_ev_info)[2:3] <- c("sender_ev", "receiver_ev") # rename to make clear these are the event's nodes
-node_nv_info <- feats[feats$event == 0L, c("stratum", "sender", "receiver")] # also get the control actors
-names(node_nv_info)[2:3] <- c("sender_nv", "receiver_nv") # also get the control actors
-widened <- merge(cc_wide, node_ev_info,   by = "stratum", all.x = TRUE) # join both
-widened <- merge(widened, node_nv_info, by = "stratum", all.x = TRUE) # join both
-
-
-m4_only_sender_re<- rem(~ re(sender), data = widened, method = "gam")
+m4_only_sender_re<- rem(~ re(sender), data = cc_wide, method = "gam")
 summary(m4_only_sender_re)
 re.species <- coefficients(m4_only_sender_re)
 
 #### rem with re() effect specification fits a random intercept based on the specified group var
 #### it handles factor encoding internally which renders used of output less intuitive.
 #### the following replicates the mapping from group var format to factor in order to print results in the original format
-ev <- widened[["sender_ev"]]
-nv <- widened[["sender_nv"]]
+ev <- cc_wide[["sender_ev"]]
+nv <- cc_wide[["sender_nv"]]
 fmat <- factor(c(as.character(ev), as.character(nv))) # Replicate what rem() does internally
 names(re.species) <- levels(fmat)  # The mapping: index 1 = levels(fmat)[1], index 2 = levels(fmat)[2], etc.
 
@@ -200,12 +172,12 @@ cat("5 least invasive species:\n"); print(sort(re.species)[1:5])
 m5_full <- rem(~ temp + 
                  tv(trade) + 
                  nl(dist) +
-                 re(sender), time = "time_ev", data = widened, method = "gam")
+                 re(sender), time = "time_ev", data = cc_wide, method = "gam")
 
 # P2.6 Model Comparison (using AIC) ####
 
 aic_table <- data.frame(
-  model     = c("temp_only", "trade_only", "dist_only", "species_only", "complete"),
+  model     = c("dt_only", "tr_only", "d_only", "sp_only", "complete"),
   AIC       = c(AIC(m1_only_temp_l), AIC(m2_only_trade_tv), AIC(m3_only_dist_nl),
                 AIC(m4_only_sender_re), AIC(m5_full))
 )
