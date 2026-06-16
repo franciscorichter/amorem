@@ -105,12 +105,11 @@ gam_tvnle <- rem(~ tvnl(diff.author.publication.activity) + ## automatically use
                  method="gam", time = "transformed_time",
                  data = ncc_data)
 
-viz <- getViz(gam_tvnle$fit) ## small inconstincency in rem output
-# when fitting a tvnl effect: the output is not directly a gam object as it is for the other cases
-# the gam object is 
+viz <- getViz(gam_tvnle$fit) ## small inconstincency with getViz(): it doesn't work unless we 
+### pass the fit argument, while summary() and plot() work directly with rem output
 
 ## -----------------------------------------------------------------------------
-summary(gam_tvnle$fit)
+summary(gam_tvnle)
 
 ## -----------------------------------------------------------------------------
 plot_obj <- plot(viz)
