@@ -24,8 +24,16 @@
 #'   `INTEGER_TIME`, `TIME_POINT`, `TIME_UNIT`, `EVENT_INTERVAL`).
 #' @param control_index Which control within each stratum to pair with the case
 #'   (default the first). Lets a case-k-control log be reduced to case-1-control.
+#' @param keep_ids Logical; when `TRUE` (default) the sender/receiver identifier
+#'   columns present in `data` are carried into the output as `sender_ev` /
+#'   `receiver_ev` (the observed event) and `sender_nv` / `receiver_nv` (the
+#'   matched control), so the dyads behind each case-control pair remain
+#'   recoverable (and become available to `re()` grouping terms in [rem()]).
+#'   Set to `FALSE` to emit only the widened covariate columns.
 #'
-#' @return A data.frame with one row per case: a `stratum` column and, for each
+#' @return A data.frame with one row per case: a `stratum` column, the
+#'   sender/receiver identifiers (`sender_ev`/`receiver_ev`/`sender_nv`/
+#'   `receiver_nv`, when present in `data` and `keep_ids = TRUE`) and, for each
 #'   covariate, `<cov>_ev`, `<cov>_nv` and `d_<cov>`. Strata without exactly one
 #'   case or without the requested control are dropped (with a message).
 #'
@@ -40,7 +48,8 @@
 #'
 #' @export
 widen_case_control <- function(data, case = NULL, stratum = NULL,
-                               covariates = NULL, control_index = 1L) {
+                               covariates = NULL, control_index = 1L,
+                               keep_ids = TRUE) {
   if (!is.data.frame(data)) stop("`data` must be a data.frame.")
   # Resolve the 0/1 indicator column: explicit `case`, else auto-detect the
   # package (`event`, from sample_non_events()) or eventnet (`IS_OBSERVED`)
@@ -68,6 +77,12 @@ widen_case_control <- function(data, case = NULL, stratum = NULL,
   miss <- setdiff(covariates, names(data))
   if (length(miss)) stop("Covariate column(s) not found: ", paste(miss, collapse = ", "))
 
+  # Identifier columns to carry through (see issue #92). The sender/receiver of
+  # both the case (`_ev`) and the matched control (`_nv`) are otherwise lost in
+  # the wide pivot; keeping them lets callers recover the dyads and lets re()
+  # grouping terms in rem() reach the actor levels.
+  id_cols <- if (isTRUE(keep_ids)) intersect(c("sender", "receiver"), names(data)) else character(0)
+
   idx <- split(seq_len(nrow(data)), strat)
   dropped <- 0L
   rows <- lapply(idx, function(ix) {
@@ -79,6 +94,10 @@ widen_case_control <- function(data, case = NULL, stratum = NULL,
     }
     ctrl <- ct[control_index]
     base <- data.frame(stratum = strat[cs], stringsAsFactors = FALSE)
+    for (idc in id_cols) {
+      base[[paste0(idc, "_ev")]] <- data[[idc]][cs]
+      base[[paste0(idc, "_nv")]] <- data[[idc]][ctrl]
+    }
     for (v in covariates) {
       ev <- as.numeric(data[[v]][cs])
       nv <- as.numeric(data[[v]][ctrl])

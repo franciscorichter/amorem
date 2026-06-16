@@ -242,6 +242,14 @@ attach_static_covariates <- function(
 #'   the history. Defaults to `NULL` (every row is treated as an event).
 #'   Currently supported only for statistics handled by the C++ engine
 #'   (see [cpp_supported_stats()]).
+#' @param prior_log Optional data.frame of events that precede the study window
+#'   (columns `sender`, `receiver`, `time`), used to **warm-start** the network
+#'   state. Its rows always update the running state but never appear in the
+#'   returned data.frame. This separates warm-starting from the non-event
+#'   masking role of `history_log`: pass earlier history through `prior_log`
+#'   and use `history_log` purely to mark which rows of `event_log` are real
+#'   events. Defaults to `NULL`. Like `history_log`, it is currently supported
+#'   only for statistics handled by the C++ engine (see [cpp_supported_stats()]).
 #'
 #' @details All statistics are evaluated immediately **before** the event is
 #'   logged.  They are grouped into five families.
@@ -344,7 +352,8 @@ compute_endogenous_features <- function(
     stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
     half_life = NULL,
     sort = TRUE,
-    history_log = NULL) {
+    history_log = NULL,
+    prior_log = NULL) {
 
   if (!is.data.frame(event_log)) {
     stop("`event_log` must be a data.frame.")
@@ -354,6 +363,58 @@ compute_endogenous_features <- function(
   if (length(missing_cols)) {
     stop("Event log is missing required column(s): ",
          paste(missing_cols, collapse = ", "))
+  }
+
+  # Warm-start support (issue #94). `prior_log` holds events that precede the
+  # study window: they must update the running network state but never appear
+  # in the output. We internalize the documented prepend-and-trim recipe ---
+  # prepend the prior events, treat them (and the usual events) as history, run
+  # the normal machinery, then strip the prior rows. This keeps `history_log`
+  # free to do non-event masking on `event_log` alone. Restoring the original
+  # event_log rows by a private row id (not by sender/receiver/time key) makes
+  # the strip robust even if a prior event shares a triple with a real row.
+  if (!is.null(prior_log)) {
+    if (!is.data.frame(prior_log)) {
+      stop("`prior_log` must be a data.frame or NULL.")
+    }
+    pl_missing <- setdiff(required_cols, names(prior_log))
+    if (length(pl_missing)) {
+      stop("`prior_log` is missing required column(s): ",
+           paste(pl_missing, collapse = ", "))
+    }
+    eid <- ".__amore_eid__"
+    event_aug <- event_log
+    event_aug[[eid]] <- seq_len(nrow(event_log))
+    # Prior rows aligned to event_log's columns (extra columns left NA via
+    # NA-row indexing, which preserves each column's type); they carry no event
+    # id so they are dropped after the computation.
+    prior_aug <- event_aug[rep(NA_integer_, nrow(prior_log)), , drop = FALSE]
+    prior_aug$sender   <- as.character(prior_log$sender)
+    prior_aug$receiver <- as.character(prior_log$receiver)
+    prior_aug$time     <- as.numeric(prior_log$time)
+    prior_aug[[eid]]   <- NA_integer_
+    combined <- rbind(prior_aug, event_aug)
+    # Effective history: prior rows always update state; among event_log rows,
+    # those that update state are the ones history_log already designates
+    # (every row, when history_log is NULL).
+    base_hist <- if (is.null(history_log)) event_log else history_log
+    eff_hist <- rbind(
+      data.frame(sender = as.character(prior_log$sender),
+                 receiver = as.character(prior_log$receiver),
+                 time = as.numeric(prior_log$time),
+                 stringsAsFactors = FALSE),
+      data.frame(sender = as.character(base_hist$sender),
+                 receiver = as.character(base_hist$receiver),
+                 time = as.numeric(base_hist$time),
+                 stringsAsFactors = FALSE))
+    res <- compute_endogenous_features(
+      combined, stats = stats, half_life = half_life, sort = sort,
+      history_log = eff_hist, prior_log = NULL)
+    res <- res[!is.na(res[[eid]]), , drop = FALSE]
+    res <- res[order(res[[eid]]), , drop = FALSE]
+    res[[eid]] <- NULL
+    rownames(res) <- NULL
+    return(res)
   }
   # Optional authoritative event history. When supplied, only rows of
   # `event_log` whose (sender, receiver, time) triple appears in

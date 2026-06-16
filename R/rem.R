@@ -59,7 +59,10 @@
 #'
 #' @param formula A formula; see *Formula syntax*.
 #' @param data A data.frame of preprocessed case-control data (wide for the
-#'   `gam` method; long with a case indicator and stratum for `clogit`).
+#'   `gam` method; long with a case indicator and stratum for `clogit`). For
+#'   `method = "gam"`, long case-control input (a `event`/`IS_OBSERVED`
+#'   indicator with control rows) is detected and widened automatically via
+#'   [widen_case_control()], with a message.
 #' @param method Estimation backend; see *Description*.
 #' @param case Optional name of the 0/1 event-indicator column for the `clogit`
 #'   and `nn` backends. If `NULL` (default), the indicator is taken from the
@@ -196,6 +199,27 @@ rem <- function(formula, data,
     stop("The `mgcv` package is required by rem(method = \"gam\"). ",
          "Install it with install.packages(\"mgcv\").")
   }
+
+  # Guard against long-format data reaching the wide `gam` backend (issue #93).
+  # The gam design is case-1-control: one row per case, each covariate supplied
+  # as an event-minus-control difference. If a 0/1 indicator column
+  # (`event`/`IS_OBSERVED`) with control rows is present, `data` is a long
+  # case-control log; fitting it directly would silently misread the raw
+  # per-row covariate values as differences. Auto-widen (loudly) instead.
+  ind_cand <- intersect(c("event", "IS_OBSERVED"), names(data))
+  if (length(ind_cand)) {
+    ind <- ind_cand[1L]
+    iv <- suppressWarnings(as.integer(data[[ind]]))
+    if (any(!is.na(iv) & iv == 0L)) {
+      message("rem(method = \"gam\"): `data` looks long-format (column '", ind,
+              "' contains control rows); widening it with ",
+              "widen_case_control() before fitting. Pass already-wide data ",
+              "(one row per case) to silence this.")
+      data <- widen_case_control(data, case = ind, stratum = stratum)
+      stratum <- NULL
+    }
+  }
+
   n <- nrow(data)
   if (!n) stop("`data` has no rows.")
 
