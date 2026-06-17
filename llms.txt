@@ -241,6 +241,8 @@ End-to-end walkthroughs of the package.
   analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md):
 - [Validation
   experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md):
+- [GoF
+  calibration](https://franciscorichter.github.io/amore/articles/gof-calibration.md):
 
 ### Worked examples
 

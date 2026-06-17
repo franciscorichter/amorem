@@ -429,6 +429,13 @@ These tests are complementary to the AIC-based selection performed by
 `compare_models*()`: AIC ranks competing fits, GOF tests check that the
 ranked-best fit is actually adequate.
 
+These p-values are well calibrated under the null and for *bounded*
+statistics, but become anti-conservative for *unbounded count*
+statistics in the presence of a real effect — read them as diagnostic
+there. See the [GoF
+calibration](https://franciscorichter.github.io/amore/articles/gof-calibration.md)
+article for the empirical study and guidance.
+
 ------------------------------------------------------------------------
 
 ### Pointwise diagnostic · `martingale_residuals()`

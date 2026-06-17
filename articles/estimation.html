@@ -50,6 +50,7 @@
     <li><a class="dropdown-item" href="../articles/datasets.html">Datasets</a></li>
     <li><a class="dropdown-item" href="../articles/real-data-analysis.html">Real-data analysis</a></li>
     <li><a class="dropdown-item" href="../articles/validation-experiments.html">Validation experiments</a></li>
+    <li><a class="dropdown-item" href="../articles/gof-calibration.html">GoF calibration</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Worked examples</h6></li>
     <li><a class="dropdown-item" href="../articles/index.html">All articles</a></li>
@@ -588,6 +589,11 @@ re-test.</p>
 <p>These tests are complementary to the AIC-based selection performed by
 <code>compare_models*()</code>: AIC ranks competing fits, GOF tests
 check that the ranked-best fit is actually adequate.</p>
+<p>These p-values are well calibrated under the null and for
+<em>bounded</em> statistics, but become anti-conservative for
+<em>unbounded count</em> statistics in the presence of a real effect —
+read them as diagnostic there. See the <a href="gof-calibration.html">GoF calibration</a> article for the
+empirical study and guidance.</p>
 <hr>
 </div>
 <div class="section level3">
