@@ -1,4 +1,15 @@
-# amore 0.9.0
+# amorem 1.0.0
+
+First CRAN release, under the name **amorem**. The package was renamed from the
+working name `amore`, which collided (case-insensitively) with the archived CRAN
+package `AMORE`. This release consolidates the 0.9.0 development line into the
+first stable, installable version: the unified `rem()` front-end (the `clogit`,
+`gam`, and `nn` backends, including the additive-spline architecture), the
+Gillespie / tau-leap simulation engine, the endogenous-statistics catalogue, and
+the martingale-residual goodness-of-fit family. No API changes relative to 0.9.0
+beyond the package name.
+
+# amorem 0.9.0
 
 New neural backend and a small number of API refinements; the version
 intended for the first CRAN release.
@@ -40,7 +51,7 @@ intended for the first CRAN release.
   warm-starting from the non-event masking role of `history_log` (#94).
 * `cpp_supported_stats()` is now exported.
 
-# amore 0.1.0
+# amorem 0.1.0
 
 First release.
 
