@@ -45,6 +45,8 @@ navbar:
           href: articles/real-data-analysis.html
         - text: Validation experiments
           href: articles/validation-experiments.html
+        - text: GoF calibration
+          href: articles/gof-calibration.html
         - text: -------
         - text: "Worked examples"
         - text: All articles
@@ -112,6 +114,7 @@ articles:
       - articles/datasets
       - articles/real-data-analysis
       - articles/validation-experiments
+      - articles/gof-calibration
   - title: "Worked examples"
     desc: "Focused, executable vignettes."
     contents:
