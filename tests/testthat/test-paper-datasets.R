@@ -1,5 +1,5 @@
 # test-paper-datasets.R
-# Smoke tests for the four datasets shipped with amore that come from
+# Smoke tests for the four datasets shipped with amorem that come from
 # the five real-world studies analysed in Juozaitienė & Wit (2024).
 # (Enron is intentionally not shipped: the public source is aggregated
 # daily counts, not the event-level slice used in the paper.)

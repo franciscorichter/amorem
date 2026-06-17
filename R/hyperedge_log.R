@@ -1,7 +1,7 @@
 #' Build / detect / convert hyperedge event logs
 #'
 #' A *hyperedge log* generalises the dyadic
-#' `(sender, receiver, time)` event log used elsewhere in `amore` to a
+#' `(sender, receiver, time)` event log used elsewhere in `amorem` to a
 #' `(I, J, time)` event log where `I` and `J` are list-columns
 #' containing the set of senders and the set of receivers participating
 #' in each hyperevent. This matches the data model of Boschi, Lerner &
@@ -33,7 +33,7 @@
 #'   non-decreasing after sorting.
 #' @param x A data frame or list-of-columns to test or convert.
 #' @return A `data.frame` with columns `I`, `J`, `time`, additionally
-#'   carrying class `amore_hyperedge_log` to distinguish it from a
+#'   carrying class `amorem_hyperedge_log` to distinguish it from a
 #'   dyadic log in dispatch contexts. Sorted by `time` ascending.
 #' @references
 #' Boschi M, Lerner J, Wit EC (2025). *Beyond Linearity and
@@ -76,14 +76,14 @@ hyperedge_log <- function(I, J, time) {
   df$I <- I[ord]
   df$J <- J[ord]
   df <- df[, c("I", "J", "time"), drop = FALSE]
-  class(df) <- c("amore_hyperedge_log", "data.frame")
+  class(df) <- c("amorem_hyperedge_log", "data.frame")
   df
 }
 
 #' @rdname hyperedge_log
 #' @export
 is_hyperedge_log <- function(x) {
-  inherits(x, "amore_hyperedge_log") ||
+  inherits(x, "amorem_hyperedge_log") ||
     (is.data.frame(x) &&
      all(c("I", "J", "time") %in% names(x)) &&
      is.list(x$I) && is.list(x$J))

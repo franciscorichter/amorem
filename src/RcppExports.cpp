@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // compute_features_cpp
 List compute_features_cpp(CharacterVector senders, CharacterVector receivers, NumericVector times, CharacterVector stat_names, LogicalVector is_event, double half_life);
-RcppExport SEXP _amore_compute_features_cpp(SEXP sendersSEXP, SEXP receiversSEXP, SEXP timesSEXP, SEXP stat_namesSEXP, SEXP is_eventSEXP, SEXP half_lifeSEXP) {
+RcppExport SEXP _amorem_compute_features_cpp(SEXP sendersSEXP, SEXP receiversSEXP, SEXP timesSEXP, SEXP stat_namesSEXP, SEXP is_eventSEXP, SEXP half_lifeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type senders(sendersSEXP);
@@ -27,7 +27,7 @@ END_RCPP
 }
 // cpp_supported_stats
 CharacterVector cpp_supported_stats();
-RcppExport SEXP _amore_cpp_supported_stats() {
+RcppExport SEXP _amorem_cpp_supported_stats() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     rcpp_result_gen = Rcpp::wrap(cpp_supported_stats());
@@ -36,12 +36,12 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_amore_compute_features_cpp", (DL_FUNC) &_amore_compute_features_cpp, 6},
-    {"_amore_cpp_supported_stats", (DL_FUNC) &_amore_cpp_supported_stats, 0},
+    {"_amorem_compute_features_cpp", (DL_FUNC) &_amorem_compute_features_cpp, 6},
+    {"_amorem_cpp_supported_stats", (DL_FUNC) &_amorem_cpp_supported_stats, 0},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_amore(DllInfo *dll) {
+RcppExport void R_init_amorem(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -1,19 +1,19 @@
-# amore
+# amorem
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="man/figures/logo-github-dark.png">
-    <img src="man/figures/logo-github-white.png" width="220" alt="amore logo" />
+    <img src="man/figures/logo-github-white.png" width="220" alt="amorem logo" />
   </picture>
 </p>
 
 <p align="center">
-  <a href="https://github.com/franciscorichter/amore/actions/workflows/R-CMD-check.yaml"><img src="https://github.com/franciscorichter/amore/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check" /></a>
-  <a href="https://franciscorichter.github.io/amore/"><img src="https://img.shields.io/badge/docs-pkgdown-blue" alt="pkgdown docs" /></a>
+  <a href="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml"><img src="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check" /></a>
+  <a href="https://franciscorichter.github.io/amorem/"><img src="https://img.shields.io/badge/docs-pkgdown-blue" alt="pkgdown docs" /></a>
   <img src="https://img.shields.io/badge/status-prototype-blue" alt="status prototype" />
 </p>
 
-**amore** (Augmented Modelling of Relational Events) is an R package for
+**amorem** (Augmented Modelling of Relational Events) is an R package for
 simulation and inference in relational event models (REMs) and relational
 *hyper* event models (RHEMs) — dynamic network data in continuous time.
 
@@ -21,7 +21,7 @@ simulation and inference in relational event models (REMs) and relational
 
 **Everything lives on the documentation site:**
 
-### → [franciscorichter.github.io/amore](https://franciscorichter.github.io/amore/)
+### → [franciscorichter.github.io/amorem](https://franciscorichter.github.io/amorem/)
 
 Installation, the quick-start tutorial, the full guide set (simulation,
 endogenous catalogue, estimation, hyperedge models, datasets, real-data
@@ -30,7 +30,7 @@ all there.
 
 ## References
 
-Methodological background for the models implemented in **amore**:
+Methodological background for the models implemented in **amorem**:
 
 - Bianchi, F., Filippi-Mazzola, E., Lomi, A., & Wit, E. C. (2024). Relational
   Event Modeling. *Annual Review of Statistics and Its Application*, 11,

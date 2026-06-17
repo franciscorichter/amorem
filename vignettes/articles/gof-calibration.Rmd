@@ -21,7 +21,7 @@ simulator, 1{,}500 events and 150 replicates per cell unless stated, and a singl
 control per case (the `m = 2` design the GoF uses).
 
 ```r
-library(amore)
+library(amorem)
 actors <- paste0("a", 1:20)
 
 # one replicate under correct specification: simulate with a known effect,

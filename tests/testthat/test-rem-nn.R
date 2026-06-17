@@ -37,18 +37,18 @@ test_that("nn backend: analytic gradients match numerical differentiation", {
   is_event <- as.logical(ave(rnorm(n), strat,
                              FUN = function(z) z == max(z)))
   l2 <- 1e-3
-  layers <- amore:::.nn_init(p, c(5L), seed = 7)
+  layers <- amorem:::.nn_init(p, c(5L), seed = 7)
 
   loss_at <- function(layers) {
-    fw <- amore:::.nn_forward(layers, X, "tanh")
-    base <- amore:::.nn_loss_grad(fw$scores, strat, is_event)$loss
+    fw <- amorem:::.nn_forward(layers, X, "tanh")
+    base <- amorem:::.nn_loss_grad(fw$scores, strat, is_event)$loss
     pen <- sum(vapply(layers, function(l) sum(l$W^2), numeric(1)))
     base + 0.5 * l2 * pen
   }
 
-  fw <- amore:::.nn_forward(layers, X, "tanh")
-  lg <- amore:::.nn_loss_grad(fw$scores, strat, is_event)
-  grads <- amore:::.nn_backward(layers, fw$acts, lg$grad, "tanh", l2)
+  fw <- amorem:::.nn_forward(layers, X, "tanh")
+  lg <- amorem:::.nn_loss_grad(fw$scores, strat, is_event)
+  grads <- amorem:::.nn_backward(layers, fw$acts, lg$grad, "tanh", l2)
 
   eps <- 1e-6
   for (l in seq_along(layers)) {

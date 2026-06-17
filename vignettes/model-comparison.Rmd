@@ -19,11 +19,11 @@ knitr::opts_chunk$set(
 
 This vignette walks through the canonical "candidate-specifications →
 AIC ranking" workflow used in REM literature (Juozaitienė & Wit
-2024, *JRSS-A* 188(4)) — with `amore`'s bundled real-world dataset
+2024, *JRSS-A* 188(4)) — with `amorem`'s bundled real-world dataset
 and the one-call `compare_models()` helper.
 
 ```{r}
-library(amore)
+library(amorem)
 ```
 
 ## 1. Load a bundled REM dataset

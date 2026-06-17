@@ -6,7 +6,7 @@ test_that("hyperedge_log() validates inputs and sorts by time", {
     I    = list(c("b","a"), c("a","c")),
     J    = list(c("X"),      c("Y","Z")),
     time = c(2.5, 1.0))
-  expect_s3_class(hl, "amore_hyperedge_log")
+  expect_s3_class(hl, "amorem_hyperedge_log")
   expect_equal(hl$time, c(1.0, 2.5))
   expect_equal(hl$J[[1]], c("Y", "Z"))   # sorted alongside time
   expect_true(is_hyperedge_log(hl))

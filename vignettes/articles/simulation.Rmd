@@ -4,7 +4,7 @@ title: "Simulation"
 
 # Simulation
 
-`amore` exposes a single front-door simulator,
+`amorem` exposes a single front-door simulator,
 `simulate_relational_events()`, that composes five mechanisms on
 top of an event-by-event inner loop. Two algorithms drive the loop:
 **Gillespie** (exact, per-event) and **τ-leap** (approximate,

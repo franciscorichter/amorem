@@ -211,6 +211,6 @@ test_that("two-axis random_effects = c('sender','receiver') fits via coxme", {
 test_that("two-axis path errors out clearly when coxme is unavailable", {
   # We can't actually uninstall coxme here, so just check the error
   # message exists in the validator for the namespace check.
-  src <- deparse(args(amore::compare_models))
+  src <- deparse(args(amorem::compare_models))
   expect_true(any(grepl("random_effects", src)))
 })

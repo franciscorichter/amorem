@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 compute_features_cpp <- function(senders, receivers, times, stat_names, is_event, half_life = NA_real_) {
-    .Call(`_amore_compute_features_cpp`, senders, receivers, times, stat_names, is_event, half_life)
+    .Call(`_amorem_compute_features_cpp`, senders, receivers, times, stat_names, is_event, half_life)
 }
 
 cpp_supported_stats <- function() {
-    .Call(`_amore_cpp_supported_stats`)
+    .Call(`_amorem_cpp_supported_stats`)
 }
 

@@ -38,12 +38,12 @@ columns.}
 }
 \value{
 A \code{data.frame} with columns \code{I}, \code{J}, \code{time}, additionally
-carrying class \code{amore_hyperedge_log} to distinguish it from a
+carrying class \code{amorem_hyperedge_log} to distinguish it from a
 dyadic log in dispatch contexts. Sorted by \code{time} ascending.
 }
 \description{
 A \emph{hyperedge log} generalises the dyadic
-\verb{(sender, receiver, time)} event log used elsewhere in \code{amore} to a
+\verb{(sender, receiver, time)} event log used elsewhere in \code{amorem} to a
 \verb{(I, J, time)} event log where \code{I} and \code{J} are list-columns
 containing the set of senders and the set of receivers participating
 in each hyperevent. This matches the data model of Boschi, Lerner &

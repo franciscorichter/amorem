@@ -4,7 +4,7 @@ title: "Bundled datasets"
 
 # Bundled datasets
 
-`amore` ships five real-world relational-event datasets directly,
+`amorem` ships five real-world relational-event datasets directly,
 each as a tidy `(time, sender, receiver, ...)` event table loadable
 via `data(...)`. They span three orders of magnitude in size and
 cover three interaction types — face-to-face contact, phone calls,
@@ -110,7 +110,7 @@ attr(college_msg, "unix_origin")
 ## Citing the datasets
 
 If you publish results from any bundled dataset, please cite the
-original source in addition to citing `amore`:
+original source in addition to citing `amorem`:
 
 - McFarland, D.A. (2001). *Student resistance: How the formal and
   informal organization of classrooms facilitate everyday forms

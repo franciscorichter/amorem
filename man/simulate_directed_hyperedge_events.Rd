@@ -45,7 +45,7 @@ same length and order as \code{endogenous_stats}.}
 }
 \value{
 A directed hyperedge log
-(\code{amore_hyperedge_log} data frame with \code{I}, \code{J}, \code{time} columns;
+(\code{amorem_hyperedge_log} data frame with \code{I}, \code{J}, \code{time} columns;
 \code{J} non-empty on every row).
 }
 \description{

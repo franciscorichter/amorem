@@ -4,7 +4,7 @@ title: "Quick start"
 
 # Quick start
 
-A 10-line tour of `amore`: simulate a relational event stream with
+A 10-line tour of `amorem`: simulate a relational event stream with
 a known driver, then recover the driver's coefficient from the
 emitted case-control table.
 
@@ -16,7 +16,7 @@ From GitHub:
 
 ```r
 # install.packages("remotes")
-remotes::install_github("franciscorichter/amore")
+remotes::install_github("franciscorichter/amorem")
 ```
 
 Hard dependencies: `Rcpp`, `survival` (for `coxph` / `clogit`),
@@ -29,7 +29,7 @@ A 20-actor network, 1200 events, with a single endogenous mechanism
 — *reciprocity* at strength `β = 0.6`:
 
 ```r
-library(amore)
+library(amorem)
 suppressPackageStartupMessages(library(survival))
 
 set.seed(1)

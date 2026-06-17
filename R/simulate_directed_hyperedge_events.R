@@ -42,7 +42,7 @@
 #'   same length and order as `endogenous_stats`.
 #' @param start_time Simulation start time.
 #' @return A directed hyperedge log
-#'   (`amore_hyperedge_log` data frame with `I`, `J`, `time` columns;
+#'   (`amorem_hyperedge_log` data frame with `I`, `J`, `time` columns;
 #'   `J` non-empty on every row).
 #' @references
 #' Boschi M, Lerner J, Wit EC (2025). *Beyond Linearity and

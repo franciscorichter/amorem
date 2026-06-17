@@ -15,7 +15,7 @@ test_that("standardize_event_log cleans and tags logs", {
     remove_duplicates = TRUE
   )
 
-  expect_s3_class(out, "amore_event_log")
+  expect_s3_class(out, "amorem_event_log")
   expect_equal(names(out)[1:3], c("sender", "receiver", "time"))
   expect_true(all(out$sender != out$receiver))
   expect_true(is.unsorted(out$time) == FALSE)

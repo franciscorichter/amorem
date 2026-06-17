@@ -4,7 +4,7 @@ title: "Hyperedge models"
 
 # Hyperedge models
 
-`amore` supports **relational hyper event models** (RHEMs) — the
+`amorem` supports **relational hyper event models** (RHEMs) — the
 extension of REMs from dyadic `(sender, receiver, time)` events to
 set-valued `(I, J, time)` hyperedges, where `I` is a set of senders
 and `J` is a set of receivers. Following

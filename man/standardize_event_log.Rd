@@ -45,7 +45,7 @@ preserved.}
 }
 \value{
 A data.frame with columns \code{sender}, \code{receiver}, and \code{time}. The return
-object is tagged with class \code{"amore_event_log"} for downstream dispatch.
+object is tagged with class \code{"amorem_event_log"} for downstream dispatch.
 }
 \description{
 Module A focuses on preprocessing utilities. This helper normalizes user

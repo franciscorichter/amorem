@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-library(amore)
+library(amorem)
 ```
 
 Beyond static dyadic covariates, the rate at which relational events fire

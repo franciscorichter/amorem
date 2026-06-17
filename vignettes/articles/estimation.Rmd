@@ -4,7 +4,7 @@ title: "Estimation"
 
 # Estimation
 
-`amore`'s estimation surface has these layers:
+`amorem`'s estimation surface has these layers:
 
 1. **Case-control sampling** turns a raw event log into a stratified
    table that survival / GLM tools can fit directly
@@ -40,7 +40,7 @@ Throughout this page we use the bundled `classroom_events` log —
 any event log with `time`, `sender`, `receiver` columns will do.
 
 ```r
-library(amore)
+library(amorem)
 data(classroom_events)
 
 cc <- sample_non_events(classroom_events,
@@ -343,7 +343,7 @@ global / exogenous covariates fed into `compare_models_global()`.
 
 ## Goodness-of-fit · cumulative martingale residual tests
 
-`amore` implements the four GOF tests of
+`amorem` implements the four GOF tests of
 [Boschi & Wit (2025)](https://doi.org/10.1007/s11222-025-10751-2)
 on the cumulative martingale residual process `G[γ̂, u]`. After
 normalisation, `Ŵ[γ̂, u] = Ĵ^{-1/2} · n^{-1/2} · G[γ̂, u]`
@@ -427,7 +427,7 @@ GOF rejection above. Currently linear-effect specs only.
 
 ## The neural backend
 
-`amore` ships a neural estimation backend, `rem(method = "nn")` (described
+`amorem` ships a neural estimation backend, `rem(method = "nn")` (described
 above): a single multilayer perceptron scores every candidate in a
 case-control stratum, trained by Adam on the conditional-logistic partial
 likelihood. Because it scores the full covariate vector *jointly*, it can

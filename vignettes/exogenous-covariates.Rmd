@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-library(amore)
+library(amorem)
 ```
 
 Exogenous information — such as geographic distance between actors — can
-drive the rate at which relational events occur.  `amore` supports this
+drive the rate at which relational events occur.  `amorem` supports this
 through the `contribution_logits` argument of `simulate_relational_events()`,
 which accepts any sender × receiver matrix of log-intensities.
 
@@ -32,7 +32,7 @@ The package ships a 56 × 56 distance matrix (in metres) between US states
 and territories.  We load it and transform to a log-scale:
 
 ```{r}
-data("dist_matrix", package = "amore")
+data("dist_matrix", package = "amorem")
 
 # log-transform to compress the range
 dist_log <- log(dist_matrix / 100000 + 1)
@@ -129,5 +129,5 @@ abline(h = 0, lty = 2, col = "grey50")
 ```
 
 The GAM successfully captures the non-linear relationship between distance
-and event intensity, demonstrating that `amore` handles exogenous dyadic
+and event intensity, demonstrating that `amorem` handles exogenous dyadic
 covariates seamlessly through `contribution_logits`.

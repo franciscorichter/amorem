@@ -24,7 +24,7 @@
 #'   preserved.
 #'
 #' @return A data.frame with columns `sender`, `receiver`, and `time`. The return
-#'   object is tagged with class `"amore_event_log"` for downstream dispatch.
+#'   object is tagged with class `"amorem_event_log"` for downstream dispatch.
 #' @examples
 #' data(classroom_events)
 #' std <- standardize_event_log(classroom_events)
@@ -103,7 +103,7 @@ standardize_event_log <- function(
   }
 
   rownames(out) <- NULL
-  class(out) <- unique(c("amore_event_log", class(out)))
+  class(out) <- unique(c("amorem_event_log", class(out)))
   out
 }
 
