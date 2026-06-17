@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,42 @@
       <small>Source: <a href="https://github.com/franciscorichter/amorem/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="amorem-100">amorem 1.0.0<a class="anchor" aria-label="anchor" href="#amorem-100"></a></h2>
+<p>First CRAN release, under the name <strong>amorem</strong>. The package was renamed from the working name <code>amore</code>, which collided (case-insensitively) with the archived CRAN package <code>AMORE</code>. This release consolidates the 0.9.0 development line into the first stable, installable version: the unified <code><a href="../reference/rem.html">rem()</a></code> front-end (the <code>clogit</code>, <code>gam</code>, and <code>nn</code> backends, including the additive-spline architecture), the Gillespie / tau-leap simulation engine, the endogenous-statistics catalogue, and the martingale-residual goodness-of-fit family. No API changes relative to 0.9.0 beyond the package name.</p>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.9.0" id="amorem-090">amorem 0.9.0<a class="anchor" aria-label="anchor" href="#amorem-090"></a></h2>
+<p>New neural backend and a small number of API refinements; the version intended for the first CRAN release.</p>
+<ul><li>
+<strong>STREAM-style additive splines:</strong> <code>nn_control(architecture = "additive_spline", batch_strata = )</code> fits per-covariate B-spline effects by (mini-batch) stochastic gradient on the exact case-control partial likelihood — the construction of Filippi-Mazzola &amp; Wit (2024, JRSS-C, <a href="doi:10.1093/jrsssc/qlae023" class="uri">doi:10.1093/jrsssc/qlae023</a>) — giving interpretable additive smooth curves on the same objective as <code>clogit</code>, with mini-batching for large event logs.</li>
+<li>
+<strong>New <code>rem(method = "nn")</code> backend:</strong> a multilayer perceptron scores every candidate in a case-control stratum and is trained on the conditional-logistic partial likelihood (softmax over each risk set) — a nonlinear, prediction-oriented counterpart of <code>clogit</code>. Pure-R implementation (no extra dependencies), configured via <code><a href="../reference/nn_control.html">nn_control()</a></code>; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> reports in-sample (and, with a validation split, held-out) concordance and <code>plot(type = "pdp")</code> shows per-feature partial-dependence curves.</li>
+<li>
+<strong>API:</strong> the degenerate-logistic backend is now <code>method = "gam"</code> (was <code>"degenerate"</code>); the smooth-term wrappers are <code>tv()</code> / <code>nl()</code> / <code>tvnl()</code> (was <code>tve()</code> / <code>nle()</code> / <code>tvnle()</code>); <code>re()</code> is unchanged.</li>
+<li>
+<code><a href="../reference/rem.html">rem()</a></code>’s <code>case</code> argument now defaults to <code>NULL</code> and is taken from the formula’s left-hand side (e.g. <code>event ~ x</code>) for the <code>clogit</code>/<code>nn</code> backends.</li>
+<li>
+<code><a href="../reference/widen_case_control.html">widen_case_control()</a></code> auto-detects the 0/1 indicator column (<code>event</code> or <code>IS_OBSERVED</code>) when <code>case</code> is not given.</li>
+<li>
+<code><a href="../reference/widen_case_control.html">widen_case_control()</a></code> now carries the sender/receiver identifiers of the case and its matched control into the output (<code>sender_ev</code>/<code>receiver_ev</code>/ <code>sender_nv</code>/<code>receiver_nv</code>); the new <code>keep_ids</code> argument controls this (default <code>TRUE</code>). The dyads behind each pair are no longer lost, and <code>re()</code> grouping terms can reach the actor levels (<a href="https://github.com/franciscorichter/amorem/issues/92" class="external-link">#92</a>).</li>
+<li>
+<code>rem(method = "gam")</code> now detects long-format case-control input (a <code>event</code>/<code>IS_OBSERVED</code> indicator with control rows) and widens it with <code><a href="../reference/widen_case_control.html">widen_case_control()</a></code> before fitting, emitting a message — instead of silently misreading raw per-row values as event-minus-control differences (<a href="https://github.com/franciscorichter/amorem/issues/93" class="external-link">#93</a>).</li>
+<li>
+<code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> gains a <code>prior_log</code> argument for warm-starting the network state from events that precede the study window: its rows update the running state but never appear in the output, separating warm-starting from the non-event masking role of <code>history_log</code> (<a href="https://github.com/franciscorichter/amorem/issues/94" class="external-link">#94</a>).</li>
+<li>
+<code><a href="../reference/cpp_supported_stats.html">cpp_supported_stats()</a></code> is now exported.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="amorem-010">amorem 0.1.0<a class="anchor" aria-label="anchor" href="#amorem-010"></a></h2>
+<p>First release.</p>
+<ul><li>
+<code><a href="../reference/rem.html">rem()</a></code> unified fitter for preprocessed case-control data, with a <code>gam</code> (case-1-control logistic via <code><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">mgcv::gam()</a></code>) and a <code>clogit</code> backend.</li>
+<li>Smooth-term formula wrappers for the <code>gam</code> backend (time-varying, non-linear, time-varying-non-linear) and an <code>re()</code> grouping random effect; <code>re()</code> reproduces the Intro-to-REM tutorial parameterization, and <code><a href="../reference/rem.html">rem()</a></code> exposes a <code>gam_method</code> argument.</li>
+<li>Simulation via <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code> (Gillespie and tau-leap), the endogenous-statistic feature engine, non-event sampling, and the martingale-residual goodness-of-fit family.</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
