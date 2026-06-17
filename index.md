@@ -57,7 +57,7 @@ summary(fit)
 
 ## What’s inside
 
-- **[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)**
+- **[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)**
   — the unified fitter for preprocessed case-control data, with a
   conditional-logit backend (case-*k*-control) and a `gam` backend
   (case-1-control) supporting linear / `tv` / `nl` / `tvnl` smooth
@@ -65,50 +65,50 @@ summary(fit)
   [`summary()`](https://rdrr.io/r/base/summary.html) /
   [`coef()`](https://rdrr.io/r/stats/coef.html) /
   [`plot()`](https://rdrr.io/r/graphics/plot.default.html).
-  [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+  [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
   reshapes a long case-control log into the wide form
-  [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
   expects.
-- **[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)**
+- **[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)**
   — exact Gillespie or τ-leap; composes exogenous, endogenous, and
   time-varying global covariates; with `wide = TRUE` emits a
   ready-to-fit case-1-control table.
-- **[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)**
+- **[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)**
   — the endogenous catalogue computed post-hoc from any
   `(sender, receiver, time)` log; via `history_log` it scores sampled
   non-events without polluting the event history.
-- **[`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md)**
+- **[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)**
   — nested case-control sampling with appearance / citation / remove
   risk-set rules.
 - **Goodness of fit** —
-  [`gof_global()`](https://franciscorichter.github.io/amore/reference/gof_global.md),
-  [`gof_multivariate()`](https://franciscorichter.github.io/amore/reference/gof_multivariate.md),
-  [`gof_auxiliary()`](https://franciscorichter.github.io/amore/reference/gof_auxiliary.md),
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
+  [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md),
   and pointwise
-  [`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md).
+  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md).
 - The earlier
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md),
-  [`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
   and
-  [`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md)
+  [`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
   remain available (superseded by
-  [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)).
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)).
 
 ## Guides
 
 | Guide | What you’ll find |
 |----|----|
-| [Quick start](https://franciscorichter.github.io/amore/articles/quick-start.md) | install + simulate-and-recover in a few lines |
-| [Simulation](https://franciscorichter.github.io/amore/articles/simulation.md) | the dyadic mechanisms, Gillespie vs τ-leap |
-| [Endogenous catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.md) | the statistic catalogue and its variant axes |
-| [Estimation](https://franciscorichter.github.io/amore/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
-| [Hyperedge models](https://franciscorichter.github.io/amore/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
-| [Datasets](https://franciscorichter.github.io/amore/articles/datasets.md) | the bundled REM datasets |
-| [Real-data analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md) | sender-frailty flip, smooth effect curves |
-| [Validation experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
+| [Quick start](https://franciscorichter.github.io/amorem/articles/quick-start.md) | install + simulate-and-recover in a few lines |
+| [Simulation](https://franciscorichter.github.io/amorem/articles/simulation.md) | the dyadic mechanisms, Gillespie vs τ-leap |
+| [Endogenous catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md) | the statistic catalogue and its variant axes |
+| [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
+| [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
+| [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the bundled REM datasets |
+| [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | sender-frailty flip, smooth effect curves |
+| [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 
 Full per-function documentation is under
-[Reference](https://franciscorichter.github.io/amore/reference/index.md).
+[Reference](https://franciscorichter.github.io/amorem/reference/index.md).
 
 ## References
 

@@ -26,19 +26,19 @@ martingale_residuals(
 - event_log:
 
   Dyadic event log (see
-  [`standardize_event_log()`](https://franciscorichter.github.io/amore/reference/standardize_event_log.md)).
+  [`standardize_event_log()`](https://franciscorichter.github.io/amorem/reference/standardize_event_log.md)).
 
 - model:
 
   A named character vector mapping statistic name to `"linear"`. Mirrors
   a single entry of
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)'s
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)'s
   `models` argument. Non-linear effect types are currently rejected.
 
 - scope, mode, half_life, seed:
 
   Same meaning as in
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md);
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md);
   control the case-control sampling and the feature computation.
 
 ## Value
@@ -56,10 +56,10 @@ matches `survival::residuals.coxph(type = "martingale")` for the
 two-element risk set induced by 1-control case-control sampling.
 
 Only the linear partial-likelihood path
-([`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)-style
+([`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)-style
 linear-effect specs) is supported by this helper; for smooth-effect fits
 the case-vs-control matrix design used by
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 does not have a clean per-observation martingale interpretation.
 
 ## References
@@ -69,8 +69,8 @@ for survival models*. Biometrika 77(1), 147–160.
 
 ## See also
 
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md),
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md).
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md).
 
 ## Examples
 

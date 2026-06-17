@@ -117,7 +117,7 @@ Fit wall-clock: **~40 s**. Driver: section (b) of the same script.
 
 A sanity check on the newly bundled `college_msg` dataset (60k IMs, 1899
 users, 193 days; see
-[Datasets](https://franciscorichter.github.io/amore/articles/datasets.md)).
+[Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)).
 The first 30 days alone hold 22,265 messages across 1,086 users:
 
 ``` r
@@ -134,7 +134,7 @@ compare_models(cm30, specs, n_controls = 1, seed = 11)
 The same pattern as Classroom — `*_count` “wins” by tens of thousands of
 AIC points because CollegeMsg has dramatic activity heterogeneity (see
 the actor-degree panel on the
-[Datasets](https://franciscorichter.github.io/amore/articles/datasets.md)
+[Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)
 page). This is the kind of dataset where the sender-frailty correction
 is not optional; the naive ranking is not a reflection of the dynamics,
 it is a reflection of who happens to be highly active in the data.

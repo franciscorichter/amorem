@@ -4,7 +4,7 @@ Generates a sequence of *directed* hyperevents from a sender set \\I_m
 \subseteq V^I\\ to a receiver set \\J_m \subseteq V^J\\, with both
 \\I_m\\ and \\J_m\\ non-empty. This is the directed two-mode counterpart
 to
-[`simulate_hyperedge_events()`](https://franciscorichter.github.io/amore/reference/simulate_hyperedge_events.md)
+[`simulate_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_hyperedge_events.md)
 and matches the data model used in Boschi, Lerner & Wit (2025) Section 5
 for citation networks (authors citing papers).
 
@@ -70,7 +70,7 @@ simulate_directed_hyperedge_events(
 
 ## Value
 
-A directed hyperedge log (`amore_hyperedge_log` data frame with `I`,
+A directed hyperedge log (`amorem_hyperedge_log` data frame with `I`,
 `J`, `time` columns; `J` non-empty on every row).
 
 ## Details

@@ -2,13 +2,13 @@
 
 ``` r
 
-library(amore)
+library(amorem)
 ```
 
 Exogenous information — such as geographic distance between actors — can
-drive the rate at which relational events occur. `amore` supports this
+drive the rate at which relational events occur. `amorem` supports this
 through the `contribution_logits` argument of
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md),
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md),
 which accepts any sender × receiver matrix of log-intensities.
 
 ## US state distance matrix
@@ -18,7 +18,7 @@ states and territories. We load it and transform to a log-scale:
 
 ``` r
 
-data("dist_matrix", package = "amore")
+data("dist_matrix", package = "amorem")
 
 # log-transform to compress the range
 dist_log <- log(dist_matrix / 100000 + 1)
@@ -149,5 +149,5 @@ abline(h = 0, lty = 2, col = "grey50")
 ![](exogenous-covariates_files/figure-html/effect-plot-1.png)
 
 The GAM successfully captures the non-linear relationship between
-distance and event intensity, demonstrating that `amore` handles
+distance and event intensity, demonstrating that `amorem` handles
 exogenous dyadic covariates seamlessly through `contribution_logits`.

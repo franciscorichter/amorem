@@ -1,9 +1,9 @@
 # Endogenous features for a hyperedge event log
 
 Hyperedge analogue of
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 Accepts a hyperedge log (see
-[`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md))
+[`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md))
 and computes hyperedge-native statistics, falling back to the dyadic
 engine for stat names that belong to the standard dyadic endogenous
 catalogue.
@@ -19,13 +19,13 @@ compute_hyperedge_features(hyperedge_log, stats, half_life = NULL)
 - hyperedge_log:
 
   A hyperedge log (see
-  [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)).
+  [`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)).
 
 - stats:
 
   Character vector of statistic names. Mix of hyperedge- native names
   listed above and the dyadic catalogue names accepted by
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 
 - half_life:
 
@@ -61,9 +61,9 @@ Recognised hyperedge stat names:
 
 For dyadic-shaped events (every row has `|I| = |J| = 1`) and a dyadic
 stat name, this function delegates to
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 via
-[`as_dyadic_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md).
+[`as_dyadic_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md).
 
 ## References
 
@@ -73,9 +73,9 @@ Non-Linear Effects*. arXiv:2509.05289.
 
 ## See also
 
-[`hyperedge_subrep()`](https://franciscorichter.github.io/amore/reference/hyperedge_subrep.md),
-[`hyperedge_activity()`](https://franciscorichter.github.io/amore/reference/hyperedge_activity.md),
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+[`hyperedge_subrep()`](https://franciscorichter.github.io/amorem/reference/hyperedge_subrep.md),
+[`hyperedge_activity()`](https://franciscorichter.github.io/amorem/reference/hyperedge_activity.md),
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 
 ## Examples
 

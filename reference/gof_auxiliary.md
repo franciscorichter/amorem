@@ -39,7 +39,7 @@ gof_auxiliary(
 
   Name of the statistic to test as an unmodelled feature; must be a
   statistic computable by
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 
 - n_sim:
 
@@ -48,7 +48,7 @@ gof_auxiliary(
 - scope, mode, half_life, seed:
 
   See
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md).
 
 ## Value
 

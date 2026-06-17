@@ -64,7 +64,8 @@ standardize_event_log(
 ## Value
 
 A data.frame with columns `sender`, `receiver`, and `time`. The return
-object is tagged with class `"amore_event_log"` for downstream dispatch.
+object is tagged with class `"amorem_event_log"` for downstream
+dispatch.
 
 ## Examples
 

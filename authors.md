@@ -13,16 +13,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/franciscorichter/amore/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/franciscorichter/amorem/blob/main/DESCRIPTION)
 
-Richter F, Boschi M, Wit E, Lembo M (2026). *amore: Augmented Modelling
+Richter F, Boschi M, Wit E, Lembo M (2026). *amorem: Augmented Modelling
 of Relational Events*. R package version 0.9.0,
-<https://franciscorichter.github.io/amore/>.
+<https://franciscorichter.github.io/amorem/>.
 
     @Manual{,
-      title = {amore: Augmented Modelling of Relational Events},
+      title = {amorem: Augmented Modelling of Relational Events},
       author = {Francisco Richter and Martina Boschi and Ernst C. Wit and Melania Lembo},
       year = {2026},
       note = {R package version 0.9.0},
-      url = {https://franciscorichter.github.io/amore/},
+      url = {https://franciscorichter.github.io/amorem/},
     }

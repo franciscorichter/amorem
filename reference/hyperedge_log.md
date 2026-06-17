@@ -1,7 +1,7 @@
 # Build / detect / convert hyperedge event logs
 
 A *hyperedge log* generalises the dyadic `(sender, receiver, time)`
-event log used elsewhere in `amore` to a `(I, J, time)` event log where
+event log used elsewhere in `amorem` to a `(I, J, time)` event log where
 `I` and `J` are list-columns containing the set of senders and the set
 of receivers participating in each hyperevent. This matches the data
 model of Boschi, Lerner & Wit (2025): each event is a time-stamped
@@ -54,7 +54,7 @@ as_dyadic_log(hyperedge_log)
 ## Value
 
 A `data.frame` with columns `I`, `J`, `time`, additionally carrying
-class `amore_hyperedge_log` to distinguish it from a dyadic log in
+class `amorem_hyperedge_log` to distinguish it from a dyadic log in
 dispatch contexts. Sorted by `time` ascending.
 
 ## Details

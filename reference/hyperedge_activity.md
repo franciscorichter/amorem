@@ -15,7 +15,7 @@ hyperedge_activity(hyperedge_log, I, J = character(0), t)
 - hyperedge_log:
 
   A hyperedge log (see
-  [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)).
+  [`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)).
 
 - I:
 

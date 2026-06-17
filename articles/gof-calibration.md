@@ -3,10 +3,10 @@
 ## Goodness-of-fit calibration
 
 The martingale-residual goodness-of-fit family
-([`gof_univariate()`](https://franciscorichter.github.io/amore/reference/gof_univariate.md),
-[`gof_global()`](https://franciscorichter.github.io/amore/reference/gof_global.md),
-[`gof_auxiliary()`](https://franciscorichter.github.io/amore/reference/gof_auxiliary.md),
-[`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md))
+([`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md),
+[`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
+[`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md),
+[`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md))
 reports p-values against an analytic null. This article documents an
 empirical study of **when those p-values are exact and when they should
 be read as diagnostic**. In short: the tests are well calibrated under
@@ -25,7 +25,7 @@ replicates per cell unless stated, and a single control per case (the
 
 ``` r
 
-library(amore)
+library(amorem)
 actors <- paste0("a", 1:20)
 
 # one replicate under correct specification: simulate with a known effect,
@@ -132,7 +132,7 @@ for count covariates with a true effect.
   decayed variants): the p-values are trustworthy.
 - **For raw, unbounded count statistics with a real effect**, read the
   GoF as a **diagnostic** — inspect the cumulative residual process and
-  [`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md)
+  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md)
   — rather than relying on the exact p-value, which is anti-conservative
   (type-I ≈ 0.15 at the settings above).
 - **Open direction.** A proper fix is a methods question rather than a
@@ -144,7 +144,7 @@ for count covariates with a true effect.
   controls grows is the natural next experiment.
 
 See the
-[Estimation](https://franciscorichter.github.io/amore/articles/estimation.md)
+[Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md)
 guide for the GoF API and [Validation
-experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md)
+experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md)
 for the recovery and parity studies (E1–E7).

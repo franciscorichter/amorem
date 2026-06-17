@@ -6,7 +6,7 @@ table with one row per case. For each covariate the event value
 (`<cov>_ev`), the matched control value (`<cov>_nv`) and their
 difference (`d_<cov>`, event minus control) are emitted, ready for the
 `gam` backend of
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md).
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md).
 
 ## Usage
 
@@ -31,7 +31,7 @@ widen_case_control(
 
   Optional name of the 0/1 event-indicator column. If `NULL` (default),
   it is auto-detected from the package's `event` column (as produced by
-  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md))
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md))
   or eventnet's `IS_OBSERVED`, preferring `event` when both are present.
 
 - stratum:
@@ -59,7 +59,7 @@ widen_case_control(
   `receiver_ev` (the observed event) and `sender_nv` / `receiver_nv`
   (the matched control), so the dyads behind each case-control pair
   remain recoverable (and become available to `re()` grouping terms in
-  [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)).
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)).
   Set to `FALSE` to emit only the widened covariate columns.
 
 ## Value
@@ -74,14 +74,14 @@ message).
 ## Details
 
 This is the preprocessing companion to
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md) for
-eventnet-style output, where a case row is followed by its controls and
-the stratum id is left blank on control rows.
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+for eventnet-style output, where a case row is followed by its controls
+and the stratum id is left blank on control rows.
 
 ## See also
 
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
 (`wide = TRUE`).
 
 ## Examples

@@ -7,7 +7,7 @@ each event is a subset of `actors` with size in `1..max_size`, fired
 with rate \$\$ \lambda(t, I) \\=\\ \mathrm{baseline\\rate} \\\cdot\\
 \exp\\\left(\sum_k \beta_k \\ x_k(t, I)\right), \$\$ where each \\x_k(t,
 I)\\ is one of the hyperedge-native covariates supported by
-[`compute_hyperedge_features()`](https://franciscorichter.github.io/amore/reference/compute_hyperedge_features.md)
+[`compute_hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/compute_hyperedge_features.md)
 (`activity`, `subrep_<rho>` for undirected events) or `size` (the
 event's cardinality \\\|I\|\\).
 
@@ -48,7 +48,7 @@ simulate_hyperedge_events(
 - endogenous_stats:
 
   Character vector of stat names accepted by
-  [`compute_hyperedge_features()`](https://franciscorichter.github.io/amore/reference/compute_hyperedge_features.md)
+  [`compute_hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/compute_hyperedge_features.md)
   (undirected variants — `activity`, `subrep_1`, `subrep_2`, ...) or the
   literal `"size"` (the event's cardinality).
 
@@ -68,7 +68,7 @@ simulate_hyperedge_events(
 ## Value
 
 A hyperedge log (see
-[`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md))
+[`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md))
 with `n_events` rows.
 
 ## Details

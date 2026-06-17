@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Quick start • amore</title>
+<title>Quick start • amorem</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -25,7 +25,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">amore</a>
+    <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
@@ -61,7 +61,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amore" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amorem" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -77,7 +77,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Quick start</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amore/blob/main/vignettes/articles/quick-start.Rmd" class="external-link"><code>vignettes/articles/quick-start.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/articles/quick-start.Rmd" class="external-link"><code>vignettes/articles/quick-start.Rmd</code></a></small>
       <div class="d-none name"><code>quick-start.Rmd</code></div>
     </div>
 
@@ -86,7 +86,7 @@
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>A 10-line tour of <code>amore</code>: simulate a relational event
+<p>A 10-line tour of <code>amorem</code>: simulate a relational event
 stream with a known driver, then recover the driver’s coefficient from
 the emitted case-control table.</p>
 <p>Numbers shown below are actual output, re-run on every release.</p>
@@ -96,7 +96,7 @@ the emitted case-control table.</p>
 <p>From GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"franciscorichter/amore"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"franciscorichter/amorem"</span><span class="op">)</span></span></code></pre></div>
 <p>Hard dependencies: <code>Rcpp</code>, <code>survival</code> (for
 <code>coxph</code> / <code>clogit</code>), <code>mgcv</code> (for
 smooth-effect curves). Suggested: <code>coxme</code> (two-axis random
@@ -108,7 +108,7 @@ effects).</p>
 <p>A 20-actor network, 1200 events, with a single endogenous mechanism —
 <em>reciprocity</em> at strength <code>β = 0.6</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amorem/">amorem</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressPackageStartupMessages</a></span><span class="op">(</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>

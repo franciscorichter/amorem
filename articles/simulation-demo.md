@@ -2,7 +2,7 @@
 
 ``` r
 
-library(amore)
+library(amorem)
 ```
 
 ## Simulating actor covariates

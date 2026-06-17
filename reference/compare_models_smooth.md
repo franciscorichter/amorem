@@ -1,12 +1,12 @@
 # Compare candidate specifications with smooth (TV / NL / TVNL) effects
 
 **Superseded** by
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
 which fits the same smooth (TV / NL / TVNL) effects on preprocessed
 case-control data. `compare_models_smooth()` remains fully supported.
 
 Mirrors
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 but lets each statistic in a specification take one of four effect types
 instead of a single linear coefficient: linear, time-varying (TV),
 non-linear (NL), or jointly time-varying non-linear (TVNL). The smooth
@@ -20,7 +20,7 @@ For each specification:
 
 - For every requested statistic, both the case (event) and the control
   (non-event) features are computed via
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 
 - The mgcv design uses the case-vs-control matrix trick:
 
@@ -45,7 +45,7 @@ For each specification:
 AIC values are directly comparable across specifications because every
 fit uses the same case-control sample. Returns the same tidy
 `data.frame` as
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md).
 
 ## Usage
 
@@ -87,7 +87,7 @@ compare_models_smooth(
 - scope, mode:
 
   Passed through to
-  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md).
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md).
 
 - half_life:
 
@@ -122,7 +122,7 @@ Non-Linear Effects*. arXiv:2509.05289.
 
 ## See also
 
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 for the linear-only variant.
 
 ## Examples

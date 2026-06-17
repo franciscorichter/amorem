@@ -1,4 +1,4 @@
-# amore: Augmented Modelling of Relational Events
+# amorem: Augmented Modelling of Relational Events
 
 Utilities for simulating and prototyping relational event models,
 including helpers to generate dynamic event sequences and covariate
@@ -10,9 +10,9 @@ case-control estimation machinery follows Juozaitiene and Wit (2024)
 
 Useful links:
 
-- <https://franciscorichter.github.io/amore/>
+- <https://franciscorichter.github.io/amorem/>
 
-- <https://github.com/franciscorichter/amore>
+- <https://github.com/franciscorichter/amorem>
 
 ## Author
 

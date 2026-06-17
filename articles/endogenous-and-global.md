@@ -2,14 +2,14 @@
 
 ``` r
 
-library(amore)
+library(amorem)
 ```
 
 Beyond static dyadic covariates, the rate at which relational events
 fire typically depends on *what has already happened* (endogenous
 mechanisms such as reciprocity) and on *when in time* the process is
 observed (time-varying global factors such as weekday/weekend).
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
 exposes both through the `endogenous_stats` / `endogenous_effects` and
 `global_covariates` / `global_effects` argument families. This vignette
 walks through a minimal example for each, then shows how they compose.
@@ -74,7 +74,7 @@ The estimate sits in the same ballpark as the simulated
 `global_covariates` is a data.frame with a strictly increasing
 `time_start` column and one numeric column per global covariate. Between
 two breaks the covariate value is constant. Internally,
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
 uses a boundary-aware Gillespie scheme that redraws the next waiting
 time whenever the proposed event would jump into the next interval.
 

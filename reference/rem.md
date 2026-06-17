@@ -4,10 +4,10 @@
 from **already preprocessed** case-control data (e.g. produced by
 `eventnet`), where the endogenous/exogenous covariates have already been
 computed. It is intended to supersede
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md),
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 and
-[`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md),
+[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md),
 which couple feature computation and fitting.
 
 ## Usage
@@ -39,7 +39,7 @@ rem(
   method; long with a case indicator and stratum for `clogit`). For
   `method = "gam"`, long case-control input (a `event`/`IS_OBSERVED`
   indicator with control rows) is detected and widened automatically via
-  [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md),
+  [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md),
   with a message.
 
 - method:
@@ -77,7 +77,7 @@ rem(
 - nn:
 
   An
-  [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md)
+  [`nn_control()`](https://franciscorichter.github.io/amorem/reference/nn_control.md)
   object with the architecture and training hyper-parameters for
   `method = "nn"`. Ignored by the other backends.
 
@@ -122,7 +122,7 @@ Two estimation backends are provided:
   Flexible conditional-logistic models on the same case-k-control design
   as `clogit`, trained by (mini-batch) gradient descent on the exact
   risk-set softmax partial likelihood. Two architectures via
-  [`nn_control()`](https://franciscorichter.github.io/amore/reference/nn_control.md):
+  [`nn_control()`](https://franciscorichter.github.io/amorem/reference/nn_control.md):
   a multilayer perceptron scoring the full covariate vector jointly
   (interaction-capable), or an `additive_spline` predictor —
   per-covariate B-spline expansions fitted by stochastic gradient, the
@@ -167,11 +167,11 @@ receiver/`TARGET` column) are supported.
 
 ## See also
 
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 (superseded),
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
 (whose `wide = TRUE` output is a valid input here),
-[`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amore/reference/simulate_directed_hyperevents_tvnl.md).
+[`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md).
 
 ## Examples
 

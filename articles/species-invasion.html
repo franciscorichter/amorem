@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Species invasions as a relational event process • amore</title>
+<title>Species invasions as a relational event process • amorem</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -25,7 +25,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">amore</a>
+    <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
@@ -61,7 +61,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amore" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amorem" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -77,14 +77,14 @@
       <img src="../logo.png" class="logo" alt=""><h1>Species invasions as a relational event process</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amore/blob/main/vignettes/species-invasion.Rmd" class="external-link"><code>vignettes/species-invasion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/species-invasion.Rmd" class="external-link"><code>vignettes/species-invasion.Rmd</code></a></small>
       <div class="d-none name"><code>species-invasion.Rmd</code></div>
     </div>
 
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amorem/">amorem</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="why-model-invasions-as-relational-events">Why model invasions as relational events?<a class="anchor" aria-label="anchor" href="#why-model-invasions-as-relational-events"></a>
 </h2>
@@ -95,7 +95,7 @@ reached <code>r</code>, the dyad <code>(s, r)</code> is removed from the
 at-risk set — it cannot fire again. This is a textbook
 <strong>relational event process</strong> with a one-shot
 <code>risk = "remove"</code> rule.</p>
-<p>We sketch a minimal end-to-end workflow in <code>amore</code>:</p>
+<p>We sketch a minimal end-to-end workflow in <code>amorem</code>:</p>
 <ol style="list-style-type: decimal">
 <li>Build a synthetic invasion log with known drivers (distance and
 propagule pressure).</li>
@@ -109,10 +109,10 @@ GAM.</li>
 <h2 id="a-synthetic-invasion-process">A synthetic invasion process<a class="anchor" aria-label="anchor" href="#a-synthetic-invasion-process"></a>
 </h2>
 <p>We use the 56 × 56 US-state distance matrix shipped with
-<code>amore</code> as a stand-in for inter-country distances and treat
+<code>amorem</code> as a stand-in for inter-country distances and treat
 the states as the country universe.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dist_matrix"</span>, package <span class="op">=</span> <span class="st">"amore"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dist_matrix"</span>, package <span class="op">=</span> <span class="st">"amorem"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span></span>
 <span><span class="va">n_states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">states</span><span class="op">)</span></span>

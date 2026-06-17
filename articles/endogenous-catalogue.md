@@ -2,12 +2,12 @@
 
 ## Endogenous catalogue
 
-`amore` exposes 74 numeric endogenous statistics — 66 with a compiled
+`amorem` exposes 74 numeric endogenous statistics — 66 with a compiled
 C++ fast path, 8 in pure R — plus the `sender_receivers_set`
 list-column, organised into six families × seven variant axes. The same
 history can be summarised many ways; the variant axis decides which way.
 The simulator and the post-hoc
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 engine cover the catalogue together, and every shared statistic is
 parity-tested on common event logs.
 
@@ -44,7 +44,7 @@ Juozaitienė & Wit (2024): a closure event “resets” the relevant counter,
 so the statistic measures only the most recent unclosed cycle. On
 Manufacturing it carries information distinct from `*_time_recent`
 ([Real-data
-analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md)).
+analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)).
 
 Driver script: `paper/wiki/experiments/variant_traces.R`.
 
@@ -83,7 +83,7 @@ generate from these variants.
 
 The simulator’s closure-family state matrices are sized `|U| × |U|` over
 the unified actor universe;
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 is universe-agnostic via its string-keyed history. Both paths handle
 bipartite and arbitrarily overlapping sender / receiver sets for every
 closure-family statistic, and are cross-validated on bipartite seeds by
@@ -98,6 +98,6 @@ fly” and re-computed post-hoc agree row-for-row on timing variants
 (`*_time_recent`, `*_time_first`, `*_time_*_interrupted`), but the
 **count** and **exp_decay** families currently show an O(events)-scale
 gap that needs investigation — see [Validation experiments /
-E4](https://franciscorichter.github.io/amore/articles/validation-experiments.md).
+E4](https://franciscorichter.github.io/amorem/articles/validation-experiments.md).
 Until that gap closes, treat the post-hoc engine as authoritative for
 count statistics in downstream model fitting.

@@ -2,7 +2,7 @@
 
 ``` r
 
-library(amore)
+library(amorem)
 ```
 
 ## Why model invasions as relational events?
@@ -13,7 +13,7 @@ time `t`. Once `s` has reached `r`, the dyad `(s, r)` is removed from
 the at-risk set — it cannot fire again. This is a textbook **relational
 event process** with a one-shot `risk = "remove"` rule.
 
-We sketch a minimal end-to-end workflow in `amore`:
+We sketch a minimal end-to-end workflow in `amorem`:
 
 1.  Build a synthetic invasion log with known drivers (distance and
     propagule pressure).
@@ -22,13 +22,13 @@ We sketch a minimal end-to-end workflow in `amore`:
 
 ## A synthetic invasion process
 
-We use the 56 × 56 US-state distance matrix shipped with `amore` as a
+We use the 56 × 56 US-state distance matrix shipped with `amorem` as a
 stand-in for inter-country distances and treat the states as the country
 universe.
 
 ``` r
 
-data("dist_matrix", package = "amore")
+data("dist_matrix", package = "amorem")
 
 states <- rownames(dist_matrix)
 n_states <- length(states)

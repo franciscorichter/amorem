@@ -2,7 +2,7 @@
 
 ## Bundled datasets
 
-`amore` ships five real-world relational-event datasets directly, each
+`amorem` ships five real-world relational-event datasets directly, each
 as a tidy `(time, sender, receiver, ...)` event table loadable via
 `data(...)`. They span three orders of magnitude in size and cover three
 interaction types — face-to-face contact, phone calls, and email /
@@ -22,7 +22,7 @@ The bundled datasets are emphatically *non-stationary*: term boundaries,
 weekly cycles, weekends, and bursty episodes all show up in the per-bin
 rate. This is exactly the regime the time-varying / global-covariate
 machinery in
-[Estimation](https://franciscorichter.github.io/amore/articles/estimation.md)
+[Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md)
 is built for.
 
 ![Event-rate trace](figures/datasets-rate.png)
@@ -57,13 +57,13 @@ Activity distributions
 
 These differences matter for inference: the `*_count` family in the
 [Endogenous
-catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.md)
+catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md)
 absorbs activity heterogeneity directly, so heavy-tailed datasets like
 Manufacturing and CollegeMsg make sender / receiver random effects (or
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 non-linear specs) a near- requirement for honest interpretation. See
 [Real-data
-analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md)
+analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)
 for the worked example on Classroom (where the AIC ranking flips once
 sender frailty is added).
 
@@ -108,12 +108,12 @@ attr(college_msg, "unix_origin")
   friendship-survey event log accompanying their main event tables.
 - `dist_matrix` — a 56 × 56 matrix of inter-state geographic distances;
   used by Experiment 2 in [Validation
-  experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md).
+  experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md).
 
 ### Citing the datasets
 
 If you publish results from any bundled dataset, please cite the
-original source in addition to citing `amore`:
+original source in addition to citing `amorem`:
 
 - McFarland, D.A. (2001). *Student resistance: How the formal and
   informal organization of classrooms facilitate everyday forms of

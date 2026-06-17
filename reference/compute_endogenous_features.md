@@ -54,7 +54,7 @@ compute_endogenous_features(
   polluting the history. Defaults to `NULL` (every row is treated as an
   event). Currently supported only for statistics handled by the C++
   engine (see
-  [`cpp_supported_stats()`](https://franciscorichter.github.io/amore/reference/cpp_supported_stats.md)).
+  [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)).
 
 - prior_log:
 
@@ -67,7 +67,7 @@ compute_endogenous_features(
   `event_log` are real events. Defaults to `NULL`. Like `history_log`,
   it is currently supported only for statistics handled by the C++
   engine (see
-  [`cpp_supported_stats()`](https://franciscorichter.github.io/amore/reference/cpp_supported_stats.md)).
+  [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)).
 
 ## Value
 

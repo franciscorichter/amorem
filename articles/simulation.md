@@ -2,8 +2,8 @@
 
 ## Simulation
 
-`amore` exposes a single front-door simulator,
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md),
+`amorem` exposes a single front-door simulator,
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md),
 that composes five mechanisms on top of an event-by-event inner loop.
 Two algorithms drive the loop: **Gillespie** (exact, per-event) and
 **τ-leap** (approximate, fixed time slices). The two are compared at the
@@ -20,7 +20,7 @@ bottom of this page.
     tables with their effect vectors.
 4.  **Endogenous statistics** — any subset of the catalogue listed in
     [Endogenous
-    catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.md),
+    catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md),
     updated after each fired event.
 5.  **Time-varying global covariates** — piecewise-constant modifiers
     tied to an interval grid, advanced with a boundary-aware Gillespie
@@ -137,7 +137,7 @@ Recovery by method
 τ-leap at τ ≥ 0.05 runs **about 3× faster** than Gillespie at 50 actors.
 The crossover grows with the actor universe: in the full scaling sweep
 ([Validation experiments /
-E3](https://franciscorichter.github.io/amore/articles/validation-experiments.md)),
+E3](https://franciscorichter.github.io/amorem/articles/validation-experiments.md)),
 τ-leap is 20×–70× faster than Gillespie at 100 actors.
 
 ![Wall-clock by method](figures/sim-methods-time.png)
@@ -164,7 +164,7 @@ knob and validate it once at the start of each project.
 ### Related pages
 
 - [Validation
-  experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md)
+  experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md)
   — the full wall-clock scaling grid (4 × 5 × 2) and parity tests.
-- [Estimation](https://franciscorichter.github.io/amore/articles/estimation.md)
+- [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md)
   — how to use the case-control output produced by `n_controls ≥ 1`.

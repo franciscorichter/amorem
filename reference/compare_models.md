@@ -1,7 +1,7 @@
 # Compare candidate endogenous specifications by AIC
 
 **Superseded** by
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
 the unified front-end for fitting relational event models on
 preprocessed case-control data. `compare_models()` remains fully
 supported.
@@ -13,7 +13,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 are directly comparable.
 
 Each specification is a character vector of stat names accepted by
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 The function computes the union of all stats once, builds
 case-minus-control differences, and fits one binomial GLM per
 specification with the appropriate subset of columns. The fitted models
@@ -54,12 +54,12 @@ compare_models(
   Named list of character vectors. Each entry names one candidate
   specification; the vector contents are the endogenous statistics it
   includes. Stats must be valid names for
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md).
+  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
 
 - n_controls:
 
   Number of controls per case in
-  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md).
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md).
   `1` uses a binomial GLM on differences; `> 1` uses
   [`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html)
   on the stratified case-control table.
@@ -67,7 +67,7 @@ compare_models(
 - scope, mode:
 
   Passed through to
-  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md);
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md);
   see that help page for semantics.
 
 - random_effects:
@@ -120,8 +120,8 @@ Statistical Society Series A* 188(4), 1246-1262.
 
 ## See also
 
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md),
-[`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md).
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md),
+[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md).
 
 ## Examples
 

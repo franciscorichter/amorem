@@ -112,4 +112,4 @@ A list of class `"nn_control"`.
 
 ## See also
 
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)

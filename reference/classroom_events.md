@@ -22,12 +22,12 @@ A data frame with 691 rows and 5 columns:
 - sender:
 
   Character actor id matching
-  [classroom_actors](https://franciscorichter.github.io/amore/reference/classroom_actors.md)`$id`.
+  [classroom_actors](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)`$id`.
 
 - receiver:
 
   Character actor id matching
-  [classroom_actors](https://franciscorichter.github.io/amore/reference/classroom_actors.md)`$id`.
+  [classroom_actors](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)`$id`.
 
 - interaction_type:
 
@@ -48,4 +48,4 @@ the `networkDynamic` R package (CRAN), dataset
 
 ## See also
 
-[classroom_actors](https://franciscorichter.github.io/amore/reference/classroom_actors.md)
+[classroom_actors](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)

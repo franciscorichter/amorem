@@ -26,7 +26,7 @@ hyperedge_subrep(
 - hyperedge_log:
 
   A hyperedge log (see
-  [`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)).
+  [`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)).
 
 - I:
 
@@ -60,7 +60,7 @@ A single non-negative numeric.
 For dyadic events with \\\|I\| = \|J\| = 1\\, `subrep(rho = 1, l = 1)`
 reduces to the dyad event count (already exposed as `reciprocity_count`
 and related stats in
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)).
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)).
 The function exists because for true hyperedge data the average over
 subsets of intermediate size captures partial-subset repetition that no
 dyadic statistic can represent.

@@ -3,7 +3,7 @@
 ## Validation experiments
 
 Seven end-to-end experiments stress different correctness properties of
-`amore`’s simulator and estimation pipeline. Each follows the same
+`amorem`’s simulator and estimation pipeline. Each follows the same
 template: the **property tested**, the **experimental design**, the
 **code** that runs it, and the **numerical / graphical outcome**. Every
 experiment is self-contained — copy the block and run it.
@@ -14,7 +14,7 @@ experiment is self-contained — copy the block and run it.
 
 **Property.** The simulator and the case-control likelihood are
 consistent: a true `β` plugged into
-[`simulate_relational_events()`](https://franciscorichter.github.io/amore/reference/simulate_relational_events.md)
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
 should be recovered (up to Monte Carlo noise) by fitting a stratified
 `clogit` on the emitted case-control table.
 
@@ -27,7 +27,7 @@ stress row), 30 replicates each — 150 fits.
 
 ``` r
 
-library(amore)
+library(amorem)
 actors <- paste0("a", 1:15); betas <- c(-0.4, 0, 0.4, 0.8, 1.2); n_reps <- 30
 res <- do.call(rbind, lapply(seq_along(betas), function(bi){
   b <- betas[bi]; est <- se <- numeric(n_reps)
@@ -95,7 +95,7 @@ partial smooth on a 150-point grid.
 
 ``` r
 
-library(amore); library(survival)
+library(amorem); library(survival)
 
 f_true <- function(x) sin(x) - 0.3 * (x - 3)        # true non-linear effect
 set.seed(20260518)
@@ -158,7 +158,7 @@ On each replicate: naive
 
 ``` r
 
-library(amore); library(survival)
+library(amorem); library(survival)
 B <- 0.5; NA_ <- 20; A <- paste0("a", 1:NA_)
 run_one <- function(ne, act, seed){ set.seed(seed)
   lm <- matrix(log(act), NA_, NA_, dimnames=list(A,A)); diag(lm) <- 0  # sender offsets
@@ -225,7 +225,7 @@ scaling shape and ratios are what transfer.
 
 ``` r
 
-library(amore)
+library(amorem)
 sim_time <- function(na, ne, method, tau=NULL, seed=1) {
   act <- paste0("a", seq_len(na)); set.seed(20260613L + seed)
   args <- list(n_events=ne, senders=act, receivers=act,
@@ -289,7 +289,7 @@ Scaling lines
 
 **Property.** The simulator records each endogenous statistic on the fly
 as it generates events; the post-hoc engine
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 re-derives the same statistics from the timestamps alone. The two should
 agree row-for-row on any case-control table the simulator emits.
 
@@ -307,7 +307,7 @@ at tied timestamps).
 
 ``` r
 
-library(amore)
+library(amorem)
 set.seed(505)
 actors <- sprintf("a%02d", 1:15)
 stats <- c("reciprocity_count","reciprocity_binary","transitivity_count",
@@ -391,7 +391,7 @@ when effects interact in a way an additive model cannot represent.
 
 ``` r
 
-library(amore)
+library(amorem)
 
 # one event + one control per stratum; the event is drawn by a softmax
 # over a true score eta(x)
@@ -480,7 +480,7 @@ recording wall-clock and peak R memory.
 
 ``` r
 
-library(amore)
+library(amorem)
 f1 <- function(x) sin(2*x); f2 <- function(x) 0.8*x          # f3 is the null
 eta <- function(x) f1(x[1]) + f2(x[2]) + 0*x[3]
 make_cc <- function(S, seed) { set.seed(seed); rows <- vector("list", S)

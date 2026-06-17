@@ -1,7 +1,7 @@
 # Classroom actor attributes (McFarland 2001)
 
 Per-actor covariates for the
-[classroom_events](https://franciscorichter.github.io/amore/reference/classroom_events.md)
+[classroom_events](https://franciscorichter.github.io/amorem/reference/classroom_events.md)
 event stream.
 
 ## Usage
@@ -17,7 +17,7 @@ A data frame with 20 rows and 3 columns:
 - id:
 
   Character actor id matching the `sender`/`receiver` columns of
-  [classroom_events](https://franciscorichter.github.io/amore/reference/classroom_events.md).
+  [classroom_events](https://franciscorichter.github.io/amorem/reference/classroom_events.md).
 
 - sex:
 
@@ -30,4 +30,4 @@ A data frame with 20 rows and 3 columns:
 ## Source
 
 McFarland (2001), via `networkDynamic`. See
-[classroom_events](https://franciscorichter.github.io/amore/reference/classroom_events.md).
+[classroom_events](https://franciscorichter.github.io/amorem/reference/classroom_events.md).

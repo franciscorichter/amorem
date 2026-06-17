@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Estimation • amore</title>
+<title>Estimation • amorem</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -25,7 +25,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">amore</a>
+    <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.9.0</small>
 
@@ -61,7 +61,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amore" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/franciscorichter/amorem" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -77,7 +77,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Estimation</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amore/blob/main/vignettes/articles/estimation.Rmd" class="external-link"><code>vignettes/articles/estimation.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/articles/estimation.Rmd" class="external-link"><code>vignettes/articles/estimation.Rmd</code></a></small>
       <div class="d-none name"><code>estimation.Rmd</code></div>
     </div>
 
@@ -86,7 +86,7 @@
 <div class="section level2">
 <h2 id="estimation">Estimation<a class="anchor" aria-label="anchor" href="#estimation"></a>
 </h2>
-<p><code>amore</code>’s estimation surface has these layers:</p>
+<p><code>amorem</code>’s estimation surface has these layers:</p>
 <ol style="list-style-type: decimal">
 <li>
 <strong>Case-control sampling</strong> turns a raw event log into a
@@ -125,7 +125,7 @@ non-firing dyads per case.</p>
 log — any event log with <code>time</code>, <code>sender</code>,
 <code>receiver</code> columns will do.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amore/">amore</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amorem/">amorem</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>,</span>
@@ -518,7 +518,7 @@ step for global / exogenous covariates fed into
 <div class="section level3">
 <h3 id="goodness-of-fit-cumulative-martingale-residual-tests">Goodness-of-fit · cumulative martingale residual tests<a class="anchor" aria-label="anchor" href="#goodness-of-fit-cumulative-martingale-residual-tests"></a>
 </h3>
-<p><code>amore</code> implements the four GOF tests of <a href="https://doi.org/10.1007/s11222-025-10751-2" class="external-link">Boschi &amp; Wit
+<p><code>amorem</code> implements the four GOF tests of <a href="https://doi.org/10.1007/s11222-025-10751-2" class="external-link">Boschi &amp; Wit
 (2025)</a> on the cumulative martingale residual process
 <code>G[γ̂, u]</code>. After normalisation,
 <code>Ŵ[γ̂, u] = Ĵ^{-1/2} · n^{-1/2} · G[γ̂, u]</code> converges to a
@@ -626,7 +626,7 @@ Currently linear-effect specs only.</p>
 <div class="section level3">
 <h3 id="the-neural-backend">The neural backend<a class="anchor" aria-label="anchor" href="#the-neural-backend"></a>
 </h3>
-<p><code>amore</code> ships a neural estimation backend,
+<p><code>amorem</code> ships a neural estimation backend,
 <code>rem(method = "nn")</code> (described above): a single multilayer
 perceptron scores every candidate in a case-control stratum, trained by
 Adam on the conditional-logistic partial likelihood. Because it scores

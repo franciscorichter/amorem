@@ -39,7 +39,7 @@ gof_univariate(
 - scope, mode, half_life, seed:
 
   See
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md).
 
 ## Value
 

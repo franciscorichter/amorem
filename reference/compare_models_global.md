@@ -1,7 +1,7 @@
 # Compare REM specifications with global covariate effects
 
 **Superseded** by
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
 the unified front-end for fitting relational event models on
 preprocessed case-control data. `compare_models_global()` remains fully
 supported.
@@ -33,7 +33,7 @@ in practice and that the estimates are robust to choices in \\\[0.1,
 
 Specification format. Each entry of `models` is a named character vector
 mapping a covariate name (a statistic in
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 **or** a column of `global_covariates`) to an effect type:
 
 - `"linear"` – linear `beta * x` term.
@@ -92,7 +92,7 @@ compare_models_global(
 - scope, mode:
 
   Passed through to
-  [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md).
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md).
 
 - half_life:
 
@@ -139,9 +139,9 @@ of the Royal Statistical Society, Series C.
 
 ## See also
 
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 (linear, no globals),
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 (smooth dyadic effects, no globals).
 
 ## Examples

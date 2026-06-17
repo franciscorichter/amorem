@@ -2,7 +2,7 @@
 
 ## Hyperedge models
 
-`amore` supports **relational hyper event models** (RHEMs) — the
+`amorem` supports **relational hyper event models** (RHEMs) — the
 extension of REMs from dyadic `(sender, receiver, time)` events to
 set-valued `(I, J, time)` hyperedges, where `I` is a set of senders and
 `J` is a set of receivers. Following [Boschi, Lerner & Wit
@@ -65,9 +65,9 @@ count.
 
 #### Feature engine
 
-[`compute_hyperedge_features()`](https://franciscorichter.github.io/amore/reference/compute_hyperedge_features.md)
+[`compute_hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/compute_hyperedge_features.md)
 is the hyperedge analogue of
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md):
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md):
 
 ``` r
 
@@ -80,7 +80,7 @@ feat <- compute_hyperedge_features(hl,
 | `"activity"` | `hyperedge_activity` on each row’s `(I, J)` |
 | `"subrep_<rho>_<l>"` | directed subset repetition |
 | `"subrep_<rho>"` | undirected subset repetition (`l = 0`) |
-| any name in the 68-stat catalogue | delegated to [`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md) after [`as_dyadic_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md) — requires every row to be dyadic |
+| any name in the 68-stat catalogue | delegated to [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md) after [`as_dyadic_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md) — requires every row to be dyadic |
 
 ------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ hl <- simulate_directed_hyperedge_events(
 
 Supported endogenous stats: `"size_I"`, `"size_J"`, `"activity"`,
 `"subrep_<rho>_<l>"`. Output is a
-[`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+[`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)
 with non-empty `I` and `J` on every row.
 
 #### What the two endogenous effects do
@@ -156,7 +156,7 @@ The simulator enumerates every subset of `actors` of size
 `min_size..max_size`, scores each via the rolling event history, draws
 an event proportional to its exp-score, and waits an exponential time
 with rate equal to the total score. Output: a
-[`hyperedge_log()`](https://franciscorichter.github.io/amore/reference/hyperedge_log.md)
+[`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)
 with empty receiver sets.
 
 #### Preferential attachment from `subrep`
@@ -183,9 +183,9 @@ effect is strong.
 
 Once features are computed, you can fit linear / TV / NL / TVNL
 specifications via
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 — see
-[Estimation](https://franciscorichter.github.io/amore/articles/estimation.md).
+[Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md).
 The case-control likelihood used by
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 matches Boschi et al. (2025) equation 8.

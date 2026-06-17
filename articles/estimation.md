@@ -2,14 +2,14 @@
 
 ## Estimation
 
-`amore`’s estimation surface has these layers:
+`amorem`’s estimation surface has these layers:
 
 1.  **Case-control sampling** turns a raw event log into a stratified
     table that survival / GLM tools can fit directly
-    ([`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md);
-    [`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+    ([`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md);
+    [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
     reshapes it to the wide case-1-control form).
-2.  **[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)**
+2.  **[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)**
     — the unified fitter for (already preprocessed) case-control data: a
     conditional-logit backend for case-k-control designs and a `gam`
     backend for case-1-control, with linear / TV / NL / TVNL effects and
@@ -19,7 +19,7 @@
 3.  **`compare_models*` helpers** evaluate a list of candidate
     specifications on a single sample and return a tidy AIC table
     (superseded by
-    [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md),
+    [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
     still supported).
 4.  **Goodness-of-fit tests** check whether the selected fit is actually
     adequate.
@@ -43,7 +43,7 @@ event log with `time`, `sender`, `receiver` columns will do.
 
 ``` r
 
-library(amore)
+library(amorem)
 data(classroom_events)
 
 cc <- sample_non_events(classroom_events,
@@ -87,7 +87,7 @@ a case-control draw.
 To compute endogenous covariates for the sampled non-events *without*
 letting them enter the event history, pass the true event log as
 `history_log` to
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
 — only rows present in `history_log` update the running network state.
 
 For set-valued covariates, the `"sender_receivers_set"` statistic
@@ -111,8 +111,8 @@ feats$dt      <- mapply(min_climatic_diff, feats$invaded, feats$receiver, feats$
 
 When the covariates have already been computed — e.g. by
 [`eventnet`](https://github.com/juergenlerner/eventnet) or by
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amore/reference/compute_endogenous_features.md)
-— [`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
+[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+— [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
 fits the model directly from the case-control table, decoupling fitting
 from feature computation. It has three backends:
 
@@ -169,24 +169,24 @@ likelihood at the trained network, so
 `clogit` fits are possible (with the usual caveats about effective
 degrees of freedom for neural networks). Because it shares the
 case-control machinery, everything upstream —
-[`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md),
+[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md),
 feature engineering, stratum handling — is identical to the other
 backends.
 
-[`widen_case_control()`](https://franciscorichter.github.io/amore/reference/widen_case_control.md)
+[`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
 reshapes a long case-(k-)control log into the wide `<cov>_ev` /
 `<cov>_nv` / `d_<cov>` form the `gam` backend expects (one row per
 case). Undirected logs (set-valued senders, no receiver column) are
 supported throughout. Column resolution follows the eventnet conventions
 (`x`, `d_x`, `x_ev`/`x_nv`, `transform_x_*`, `transformed_time`).
 
-[`rem()`](https://franciscorichter.github.io/amore/reference/rem.md)
+[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
 supersedes
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 /
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 /
-[`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md),
+[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md),
 which remain available and are documented below.
 
 ------------------------------------------------------------------------
@@ -227,7 +227,7 @@ fire?”* reduces to *“how active is this sender?”*. The naive count win
 is a well-known artefact. Adding a sender frailty term flips the ranking
 to **continuous** by ΔAIC ≈ 6, recovering Table 3 of Juozaitienė & Wit
 (2024) — see [Real-data
-analysis](https://franciscorichter.github.io/amore/articles/real-data-analysis.md)
+analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)
 for the corrected fit.
 
 | Argument | Meaning |
@@ -235,7 +235,7 @@ for the corrected fit.
 | `event_log` | data frame with `sender`, `receiver`, `time` |
 | `models` | named list of character vectors of stat names |
 | `n_controls` | controls per case (`1`: GLM; `> 1`: stratified Cox) |
-| `scope`, `mode` | passed to [`sample_non_events()`](https://franciscorichter.github.io/amore/reference/sample_non_events.md) |
+| `scope`, `mode` | passed to [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md) |
 | `random_effects` | `"sender"` or `"receiver"` — see below |
 | `half_life` | required when any spec uses an exp-decay stat |
 | `seed` | for the shared case-control draw |
@@ -254,7 +254,7 @@ plot(attr(res, "fits")[["nl"]])     # the chosen spec's smooth panel
 
 #### Actor random effects
 
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 accepts `random_effects = "sender"` or `"receiver"` (requires
 `n_controls > 1`). Internally this injects a Gamma
 [`survival::frailty()`](https://rdrr.io/pkg/survival/man/frailty.html)
@@ -272,9 +272,9 @@ on Classroom-sized data. Requires the `coxme` package (Suggests).
 ### `compare_models_smooth()` · TV / NL / TVNL effects
 
 Where
-[`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 fits a *single* coefficient per statistic,
-[`compare_models_smooth()`](https://franciscorichter.github.io/amore/reference/compare_models_smooth.md)
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
 lets each statistic take one of four effect types: `linear`, `tv`
 (time-varying), `nl` (non-linear in the covariate), or `tvnl` (jointly
 time-varying non-linear via a tensor product smooth). Implementation
@@ -374,13 +374,13 @@ non-negative inter-event time gaps to bounded weights via
 reference) gaps. Default median rule sends zero → 1 and the median gap →
 `exp(-1/2) ≈ 0.607`. Useful as a preprocessing step for global /
 exogenous covariates fed into
-[`compare_models_global()`](https://franciscorichter.github.io/amore/reference/compare_models_global.md).
+[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md).
 
 ------------------------------------------------------------------------
 
 ### Goodness-of-fit · cumulative martingale residual tests
 
-`amore` implements the four GOF tests of [Boschi & Wit
+`amorem` implements the four GOF tests of [Boschi & Wit
 (2025)](https://doi.org/10.1007/s11222-025-10751-2) on the cumulative
 martingale residual process `G[γ̂, u]`. After normalisation,
 `Ŵ[γ̂, u] = Ĵ^{-1/2} · n^{-1/2} · G[γ̂, u]` converges to a standard
@@ -415,7 +415,7 @@ model with `p < 10⁻³` — and the per-component test pinpoints
 `transitivity_count` as the offender. The right next move is to enrich
 the transitivity term (try `tv`, `nl`, or a finer variant from the
 [Endogenous
-catalogue](https://franciscorichter.github.io/amore/articles/endogenous-catalogue.md))
+catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md))
 and re-test.
 
 | Function | Statistic | p-value |
@@ -433,7 +433,7 @@ These p-values are well calibrated under the null and for *bounded*
 statistics, but become anti-conservative for *unbounded count*
 statistics in the presence of a real effect — read them as diagnostic
 there. See the [GoF
-calibration](https://franciscorichter.github.io/amore/articles/gof-calibration.md)
+calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md)
 article for the empirical study and guidance.
 
 ------------------------------------------------------------------------
@@ -441,7 +441,7 @@ article for the empirical study and guidance.
 ### Pointwise diagnostic · `martingale_residuals()`
 
 For a more granular per-observation view,
-[`martingale_residuals()`](https://franciscorichter.github.io/amore/reference/martingale_residuals.md)
+[`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md)
 returns one row per case-control observation with the residual
 `M_i = y_i − π_i` where `π_i = exp(η_i) / (exp(η_case) + exp(η_ctrl))`
 is the fitted probability that observation `i` is the case in its
@@ -472,7 +472,7 @@ Currently linear-effect specs only.
 
 ### The neural backend
 
-`amore` ships a neural estimation backend, `rem(method = "nn")`
+`amorem` ships a neural estimation backend, `rem(method = "nn")`
 (described above): a single multilayer perceptron scores every candidate
 in a case-control stratum, trained by Adam on the conditional-logistic
 partial likelihood. Because it scores the full covariate vector
@@ -483,7 +483,7 @@ for now, of uncertainty quantification. The implementation is pure R
 with no extra dependencies, so it is reachable directly from
 [`install.packages()`](https://rdrr.io/r/utils/install.packages.html).
 See the [Validation
-experiments](https://franciscorichter.github.io/amore/articles/validation-experiments.md)
+experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md)
 for a gradient-correctness check and an interaction-recovery comparison
 against the linear backend.
 

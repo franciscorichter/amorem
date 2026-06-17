@@ -22,7 +22,7 @@ A data frame with 439 rows and 4 columns:
 - sender:
 
   Character actor id matching
-  [social_evolution_actors](https://franciscorichter.github.io/amore/reference/social_evolution_actors.md)`$id`.
+  [social_evolution_actors](https://franciscorichter.github.io/amorem/reference/social_evolution_actors.md)`$id`.
 
 - receiver:
 
@@ -42,5 +42,5 @@ Redistributed via the `goldfish` R package
 
 ## See also
 
-[social_evolution_actors](https://franciscorichter.github.io/amore/reference/social_evolution_actors.md),
-[social_evolution_friendship](https://franciscorichter.github.io/amore/reference/social_evolution_friendship.md)
+[social_evolution_actors](https://franciscorichter.github.io/amorem/reference/social_evolution_actors.md),
+[social_evolution_friendship](https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.md)

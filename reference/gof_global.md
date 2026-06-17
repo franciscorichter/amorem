@@ -2,7 +2,7 @@
 
 Implements the omnibus test of Boschi & Wit (2025), Section 3.6 / eq.
 19. Runs
-[`gof_univariate()`](https://franciscorichter.github.io/amore/reference/gof_univariate.md)
+[`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md)
 per covariate in `model`, then combines the resulting p-values via the
 Cauchy combination \\T_o = \tfrac{1}{L}\sum_l \tan(\pi(0.5 - P_l))\\
 (Liu & Xie 2020), with analytic p-value \\\tfrac{1}{2} -
@@ -34,7 +34,7 @@ gof_global(
 - scope, mode, half_life, seed:
 
   See
-  [`compare_models()`](https://franciscorichter.github.io/amore/reference/compare_models.md).
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md).
 
 ## Value
 
