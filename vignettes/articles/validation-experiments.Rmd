@@ -277,7 +277,7 @@ knowing when simulating small, strongly self-exciting networks.
 
 **Property.** The simulator records each endogenous statistic on the
 fly as it generates events; the post-hoc engine
-`compute_endogenous_features()` re-derives the same statistics from
+`endogenous_features()` re-derives the same statistics from
 the timestamps alone. The two should agree row-for-row on any
 case-control table the simulator emits.
 
@@ -307,9 +307,9 @@ ev <- simulate_relational_events(n_events=1200, senders=actors, receivers=actors
         baseline_rate=1, n_controls=1, endogenous_stats=stats,
         endogenous_effects=setNames(rep(0,length(stats)),stats), half_life=5)
 ev$rid <- seq_len(nrow(ev)); base <- ev[,c("rid","sender","receiver","time")]
-fn <- compute_endogenous_features(base, stats=stats, half_life=5)        # naive
+fn <- endogenous_features(base, stats=stats, half_life=5)        # naive
 hl <- ev[ev$event==1L, c("sender","receiver","time")]
-fc <- compute_endogenous_features(base, stats=stats, half_life=5,
+fc <- endogenous_features(base, stats=stats, half_life=5,
                                   history_log=hl)                        # aligned
 fn <- fn[order(fn$rid),]; fc <- fc[order(fc$rid),]; evo <- ev[order(ev$rid),]
 md <- function(a,b){ b[is.na(b)] <- 0; max(abs(a-b)) }

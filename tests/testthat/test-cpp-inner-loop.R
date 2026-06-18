@@ -98,7 +98,7 @@ call_cpp <- function(ev, stats, half_life = NA_real_) {
 build_reference <- function(ev, stats, half_life = NULL) {
   # Force the pure-R path by appending an unsupported stat
   # (reciprocity_time_recent is R-only).
-  feat <- compute_endogenous_features(
+  feat <- endogenous_features(
     ev, stats = c(stats, "reciprocity_time_recent"),
     half_life = half_life)
   feat
@@ -173,7 +173,7 @@ test_that("C++ dispatches on a mixed timing+count stat set", {
              "cyclic_count", "cyclic_time_recent",
              "sending_balance_time_first",
              "receiving_balance_time_first")
-  out_fast <- compute_endogenous_features(classroom_events, stats = stats)
+  out_fast <- endogenous_features(classroom_events, stats = stats)
   out_ref  <- build_reference(classroom_events, stats)
   for (st in stats) {
     cpp_v <- out_fast[[st]]; r_ref <- out_ref[[st]]
@@ -204,7 +204,7 @@ test_that("C++ dispatch covers a mixed timing+count+exp_decay stat set", {
              "cyclic_exp_decay",
              "sending_balance_time_first",
              "receiving_balance_exp_decay")
-  out_fast <- compute_endogenous_features(classroom_events,
+  out_fast <- endogenous_features(classroom_events,
                                             stats = stats, half_life = 30)
   out_ref  <- build_reference(classroom_events, stats, half_life = 30)
   for (st in stats) {
@@ -226,14 +226,14 @@ test_that("C++ exp_decay errors out when half_life is missing", {
     regexp = "half_life")
 })
 
-test_that("compute_endogenous_features dispatches to C++ when the stat set allows", {
+test_that("endogenous_features dispatches to C++ when the stat set allows", {
   data(classroom_events)
   stats <- c("reciprocity_count", "transitivity_count",
              "sender_outdegree", "receiver_indegree")
   # The dispatch should pick C++ for this stats list. We verify only
   # the result equals the R reference (forced by including an
   # unsupported stat).
-  out_fast <- compute_endogenous_features(classroom_events, stats = stats)
+  out_fast <- endogenous_features(classroom_events, stats = stats)
   out_ref  <- build_reference(classroom_events, stats)
   for (st in stats) {
     expect_equal(out_fast[[st]], out_ref[[st]], tolerance = 1e-9, info = st)

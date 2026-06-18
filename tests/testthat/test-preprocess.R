@@ -96,14 +96,14 @@ test_that("sample_non_events supports citation scope and removal risk", {
   expect_equal(augmented$receiver_pop, c(6, 4, 5))
 })
 
-test_that("compute_endogenous_features derives requested statistics", {
+test_that("endogenous_features derives requested statistics", {
   events <- data.frame(
     sender = c("a", "b", "b", "a", "c"),
     receiver = c("b", "a", "c", "c", "a"),
     time = c(1, 2, 3, 4, 5)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency")
   )
 
@@ -132,7 +132,7 @@ test_that("reciprocity variants are computed correctly", {
     time     = c(1,   3,   5,   8)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("reciprocity", "reciprocity_binary", "reciprocity_count",
               "reciprocity_time_recent", "reciprocity_time_first")
   )
@@ -171,7 +171,7 @@ test_that("reciprocity_exp_decay uses half_life correctly", {
   )
 
   hl <- 2
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = "reciprocity_exp_decay", half_life = hl
   )
 
@@ -190,7 +190,7 @@ test_that("transitivity stats are computed correctly", {
     time     = c(1,   2,   4)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("transitivity_binary", "transitivity_count",
               "transitivity_binary_ordered", "transitivity_count_ordered",
               "transitivity_time_recent", "transitivity_time_first",
@@ -223,7 +223,7 @@ test_that("transitivity ordered vs unordered differ when order is reversed", {
     time     = c(1,   2,   4)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("transitivity_binary", "transitivity_binary_ordered",
               "transitivity_time_recent", "transitivity_time_recent_ordered")
   )
@@ -248,7 +248,7 @@ test_that("cyclic closure stats are computed correctly", {
     time     = c(1,   2,   4)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("cyclic_binary", "cyclic_count", "cyclic_time_recent")
   )
 
@@ -271,7 +271,7 @@ test_that("sending balance stats are computed correctly", {
     time     = c(1,   2,   5)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("sending_balance_binary", "sending_balance_count",
               "sending_balance_time_recent")
   )
@@ -292,7 +292,7 @@ test_that("receiving balance stats are computed correctly", {
     time     = c(1,   3,   5)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("receiving_balance_binary", "receiving_balance_count",
               "receiving_balance_time_recent")
   )
@@ -313,7 +313,7 @@ test_that("transitivity_exp_decay uses half_life correctly", {
   )
 
   hl <- 3
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("transitivity_exp_decay", "transitivity_exp_decay_ordered"),
     half_life = hl
   )
@@ -333,7 +333,7 @@ test_that("multiple intermediaries are counted correctly", {
     time     = c(1,   2,   3,   4,   6)
   )
 
-  feats <- compute_endogenous_features(events,
+  feats <- endogenous_features(events,
     stats = c("transitivity_count", "transitivity_time_recent",
               "transitivity_time_first")
   )
@@ -349,11 +349,11 @@ test_that("multiple intermediaries are counted correctly", {
 test_that("exp_decay stats require half_life", {
   events <- data.frame(sender = "a", receiver = "b", time = 1)
   expect_error(
-    compute_endogenous_features(events, stats = "reciprocity_exp_decay"),
+    endogenous_features(events, stats = "reciprocity_exp_decay"),
     "half_life"
   )
   expect_error(
-    compute_endogenous_features(events, stats = "transitivity_exp_decay"),
+    endogenous_features(events, stats = "transitivity_exp_decay"),
     "half_life"
   )
 })

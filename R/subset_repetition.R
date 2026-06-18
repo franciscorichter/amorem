@@ -51,7 +51,7 @@ hyperedge_activity <- function(hyperedge_log, I, J = character(0), t) {
 #' For dyadic events with \eqn{|I| = |J| = 1}{|I|=|J|=1},
 #' `subrep(rho = 1, l = 1)` reduces to the dyad event count
 #' (already exposed as `reciprocity_count` and related stats in
-#' [compute_endogenous_features()]). The function exists because
+#' [endogenous_features()]). The function exists because
 #' for true hyperedge data the average over subsets of intermediate
 #' size captures partial-subset repetition that no dyadic statistic
 #' can represent.

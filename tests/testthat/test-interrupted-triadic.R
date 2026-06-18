@@ -61,7 +61,7 @@ run_family_check <- function(family) {
   stats <- c(paste0(family, "_count_interrupted"),
              paste0(family, "_binary_interrupted"),
              paste0(family, "_exp_decay_interrupted"))
-  out <- compute_endogenous_features(ev_fixture, stats = stats,
+  out <- endogenous_features(ev_fixture, stats = stats,
                                       half_life = half_life)
   dirs <- fam_dirs[[family]]
   for (i in seq_len(nrow(ev_fixture))) {
@@ -103,7 +103,7 @@ test_that("receiving_balance_*_interrupted match brute force", {
 test_that("binary_interrupted equals (count_interrupted > 0) for every family", {
   for (family in c("transitivity", "cyclic",
                    "sending_balance", "receiving_balance")) {
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = c(paste0(family, "_count_interrupted"),
                 paste0(family, "_binary_interrupted")))
     expect_equal(out[[paste0(family, "_binary_interrupted")]],
@@ -115,7 +115,7 @@ test_that("binary_interrupted equals (count_interrupted > 0) for every family", 
 test_that("count_interrupted is <= unordered count on every row", {
   for (family in c("transitivity", "cyclic",
                    "sending_balance", "receiving_balance")) {
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = c(paste0(family, "_count"),
                 paste0(family, "_count_interrupted")))
     expect_true(all(out[[paste0(family, "_count_interrupted")]] <=
@@ -128,7 +128,7 @@ test_that("exp_decay_interrupted requires half_life", {
   for (family in c("transitivity", "cyclic",
                    "sending_balance", "receiving_balance")) {
     expect_error(
-      compute_endogenous_features(ev_fixture,
+      endogenous_features(ev_fixture,
         stats = paste0(family, "_exp_decay_interrupted")),
       regexp = "half_life")
   }
@@ -138,7 +138,7 @@ test_that("exp_decay_interrupted is finite and non-negative", {
   for (family in c("transitivity", "cyclic",
                    "sending_balance", "receiving_balance")) {
     col <- paste0(family, "_exp_decay_interrupted")
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = col, half_life = 4)
     v <- out[[col]]
     expect_true(all(is.finite(v)) && all(v >= 0), info = family)

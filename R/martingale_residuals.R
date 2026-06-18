@@ -77,7 +77,7 @@ martingale_residuals <- function(event_log, model,
   stat_set <- names(model)
   cc <- sample_non_events(event_log, n_controls = 1L,
                           scope = scope, mode = mode, seed = seed)
-  cc_feat <- compute_endogenous_features(cc, stats = stat_set,
+  cc_feat <- endogenous_features(cc, stats = stat_set,
                                           half_life = half_life)
   for (st in stat_set) {
     v <- cc_feat[[st]]

@@ -12,7 +12,7 @@
 #' values are directly comparable.
 #'
 #' Each specification is a character vector of stat names accepted by
-#' [compute_endogenous_features()]. The function computes the union of
+#' [endogenous_features()]. The function computes the union of
 #' all stats once, builds case-minus-control differences, and fits one
 #' binomial GLM per specification with the appropriate subset of
 #' columns. The fitted models are equivalent to the partial-likelihood
@@ -31,7 +31,7 @@
 #' @param models Named list of character vectors. Each entry names one
 #'   candidate specification; the vector contents are the
 #'   endogenous statistics it includes. Stats must be valid names for
-#'   [compute_endogenous_features()].
+#'   [endogenous_features()].
 #' @param n_controls Number of controls per case in
 #'   [sample_non_events()]. `1` uses a binomial GLM on differences;
 #'   `> 1` uses `survival::clogit()` on the stratified case-control
@@ -64,7 +64,7 @@
 #'   `model`, `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`. Sorted
 #'   ascending by `AIC`. The model with the lowest AIC has
 #'   `delta_AIC = 0`.
-#' @seealso [compute_endogenous_features()], [sample_non_events()].
+#' @seealso [endogenous_features()], [sample_non_events()].
 #' @references
 #' Juozaitienė R, Wit EC (2024). It's about time: revisiting reciprocity
 #' and triadicity in relational event analysis. *Journal of the Royal
@@ -145,7 +145,7 @@ compare_models <- function(event_log,
                           n_controls = n_controls,
                           scope = scope, mode = mode,
                           seed = seed)
-  cc_feat <- compute_endogenous_features(cc, stats = all_stats,
+  cc_feat <- endogenous_features(cc, stats = all_stats,
                                           half_life = half_life)
   # NA -> 0 so that case-minus-control differences are well-defined
   # everywhere; matches the simulator's never-seen convention.

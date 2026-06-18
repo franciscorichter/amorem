@@ -12,7 +12,7 @@
 #'   lambda(t, I) = baseline_rate * exp(sum_k beta_k * x_k(t, I)),
 #' }
 #' where each \eqn{x_k(t, I)}{x_k(t, I)} is one of the hyperedge-native
-#' covariates supported by `compute_hyperedge_features()`
+#' covariates supported by `hyperedge_features()`
 #' (`activity`, `subrep_<rho>` for undirected events) or `size`
 #' (the event's cardinality \eqn{|I|}{|I|}).
 #'
@@ -28,7 +28,7 @@
 #'   paper). Must be in `1..length(actors)`.
 #' @param baseline_rate Multiplicative baseline (\eqn{\lambda_0}{lambda_0}).
 #' @param endogenous_stats Character vector of stat names accepted by
-#'   `compute_hyperedge_features()` (undirected variants — `activity`,
+#'   `hyperedge_features()` (undirected variants — `activity`,
 #'   `subrep_1`, `subrep_2`, ...) or the literal `"size"` (the event's
 #'   cardinality).
 #' @param endogenous_effects Numeric vector of coefficients, same

@@ -38,7 +38,7 @@ itself is mapped to approximately
 This is the data-driven recency parametrisation used as a preprocessing
 step for global and exogenous covariates in
 Lembo, Juozaitiene, Vinciotti & Wit (2025) and matches the
-"recency" axis of \code{\link[=compute_endogenous_features]{compute_endogenous_features()}}.
+"recency" axis of \code{\link[=endogenous_features]{endogenous_features()}}.
 }
 \examples{
 set.seed(1)

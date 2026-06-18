@@ -1,4 +1,4 @@
-# Tests for the history_log / non-event support in compute_endogenous_features().
+# Tests for the history_log / non-event support in endogenous_features().
 # The non-events must have their statistics computed against the true event
 # history WITHOUT entering (polluting) that history.
 
@@ -28,7 +28,7 @@ test_that("post-hoc features with history_log reproduce the simulator (events + 
   df$row_id <- seq_len(nrow(df))
   events_only <- cc[cc$event == 1L, c("sender", "receiver", "time")]
 
-  rec <- compute_endogenous_features(
+  rec <- endogenous_features(
     df,
     stats       = c("reciprocity_count", "transitivity_count"),
     history_log = events_only
@@ -46,7 +46,7 @@ test_that("without history_log the non-events DO pollute the history (the bug)",
   df <- cc[, c("sender", "receiver", "time")]
   df$row_id <- seq_len(nrow(df))
 
-  bug <- compute_endogenous_features(df, stats = "reciprocity_count")
+  bug <- endogenous_features(df, stats = "reciprocity_count")
   bug <- bug[order(bug$row_id), ]
 
   expect_false(isTRUE(all.equal(bug$reciprocity_count, cc$reciprocity_count)))
@@ -58,11 +58,11 @@ test_that("event rows are identical whether or not non-events are present", {
   cc <- make_cc(stats = "reciprocity_count", effects = c(reciprocity_count = 0.5))
   events_only <- cc[cc$event == 1L, c("sender", "receiver", "time")]
 
-  feat_events <- compute_endogenous_features(events_only, stats = "reciprocity_count")
+  feat_events <- endogenous_features(events_only, stats = "reciprocity_count")
 
   df <- cc[, c("sender", "receiver", "time")]
   df$is_ev <- cc$event == 1L
-  full <- compute_endogenous_features(df, stats = "reciprocity_count",
+  full <- endogenous_features(df, stats = "reciprocity_count",
                                       history_log = events_only)
   ev_rows <- full[full$is_ev, ]
   ev_rows <- ev_rows[order(ev_rows$time), ]
@@ -85,7 +85,7 @@ test_that("a non-event reads reverse-dyad history strictly before its time", {
     events,
     data.frame(sender = "b", receiver = "a", time = 3, stringsAsFactors = FALSE)
   )
-  res <- compute_endogenous_features(combined, stats = "reciprocity_count",
+  res <- endogenous_features(combined, stats = "reciprocity_count",
                                      history_log = events)
   res <- res[order(res$time), ]
   # the b->a row at t=3 sees 2 prior a->b events
@@ -95,7 +95,7 @@ test_that("a non-event reads reverse-dyad history strictly before its time", {
   combined2 <- rbind(combined,
                      data.frame(sender = "a", receiver = "b", time = 4,
                                 stringsAsFactors = FALSE))
-  res2 <- compute_endogenous_features(combined2, stats = "reciprocity_count",
+  res2 <- endogenous_features(combined2, stats = "reciprocity_count",
                                       history_log = events)
   expect_equal(res2$reciprocity_count[res2$time == 4], 0)
 })
@@ -104,12 +104,12 @@ test_that("history_log is validated", {
   events <- data.frame(sender = "a", receiver = "b", time = 1,
                        stringsAsFactors = FALSE)
   expect_error(
-    compute_endogenous_features(events, stats = "reciprocity_count",
+    endogenous_features(events, stats = "reciprocity_count",
                                 history_log = list(1, 2)),
     "must be a data.frame"
   )
   expect_error(
-    compute_endogenous_features(events, stats = "reciprocity_count",
+    endogenous_features(events, stats = "reciprocity_count",
                                 history_log = data.frame(sender = "a")),
     "missing required column"
   )

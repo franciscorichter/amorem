@@ -1,10 +1,10 @@
 # test-sim-vs-posthoc-parity.R
 # Cross-validation: for every endogenous statistic that both the
-# simulator and compute_endogenous_features() support, the two paths
+# simulator and endogenous_features() support, the two paths
 # must agree row-by-row on the same event log.
 #
 # The simulator computes each stat at the time the event fires
-# (immediately before it fires). compute_endogenous_features() does
+# (immediately before it fires). endogenous_features() does
 # the same when applied to the resulting event table. If both
 # implementations follow paper semantics they must produce identical
 # columns.
@@ -34,12 +34,12 @@ sim_vs_posthoc <- function(stats, seed = 11, n_events = 25,
   if (!is.null(half_life)) args$half_life <- half_life
   ev <- do.call(simulate_relational_events, args)
   base <- ev[, c("sender", "receiver", "time")]
-  feats <- compute_endogenous_features(base, stats = stats,
+  feats <- endogenous_features(base, stats = stats,
                                         half_life = half_life)
   list(sim = ev, posthoc = feats)
 }
 
-# Per-stat equality with a small tolerance. compute_endogenous_features()
+# Per-stat equality with a small tolerance. endogenous_features()
 # returns NA for never-observed timing slots; the simulator returns 0.
 # Treat the two as equivalent (the simulator's 0 means "no such
 # two-path yet", same condition that triggers NA post-hoc).
@@ -134,7 +134,7 @@ test_that("simulator and post-hoc agree on per-actor / single-direction stats", 
     endogenous_effects = setNames(rep(0, length(stats)), stats)
   )
   base <- ev[, c("sender", "receiver", "time")]
-  feats <- compute_endogenous_features(base, stats = stats)
+  feats <- endogenous_features(base, stats = stats)
   # `recency`: simulator initialises to `start_time` so the elapsed
   # time at row 1 is the event time - start_time = the event time
   # (start_time defaults to 0). Post-hoc returns NA for never-seen

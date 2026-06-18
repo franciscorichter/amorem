@@ -82,13 +82,13 @@ test_that("interrupted state resets to 0 (count) / NA (time) after a closure eve
   #   t=3: A -> B (closure -- resets)
   #   t=4: B -> A (reverse again, post-reset)
   # We can't drive specific firings through the simulator easily, but
-  # we CAN inject the log into compute_endogenous_features() and verify
+  # we CAN inject the log into endogenous_features() and verify
   # the resulting columns.
   log_df <- data.frame(
     sender   = c("B", "B", "A", "B", "A"),
     receiver = c("A", "A", "B", "A", "B"),
     time     = c(1,   2,   3,   4,   5))
-  feat <- compute_endogenous_features(
+  feat <- endogenous_features(
     log_df,
     stats = c("reciprocity_count_interrupted",
               "reciprocity_time_recent_interrupted",
@@ -138,7 +138,7 @@ test_that("sim and post-hoc agree on every interrupted variant", {
     half_life = hl
   )
   base <- ev[, c("sender", "receiver", "time")]
-  phf <- compute_endogenous_features(base, stats = stats_vec, half_life = hl)
+  phf <- endogenous_features(base, stats = stats_vec, half_life = hl)
   for (st in stats_vec) {
     a <- ev[[st]]; b <- phf[[st]]
     b[is.na(b)] <- 0  # post-hoc NA = simulator 0 for never-since-closure

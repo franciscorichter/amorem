@@ -50,7 +50,7 @@ of \code{J} of size \code{l}, per Boschi, Lerner & Wit (2025) Equation 4:
 For dyadic events with \eqn{|I| = |J| = 1}{|I|=|J|=1},
 \code{subrep(rho = 1, l = 1)} reduces to the dyad event count
 (already exposed as \code{reciprocity_count} and related stats in
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}). The function exists because
+\code{\link[=endogenous_features]{endogenous_features()}}). The function exists because
 for true hyperedge data the average over subsets of intermediate
 size captures partial-subset repetition that no dyadic statistic
 can represent.

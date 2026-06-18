@@ -16,7 +16,7 @@
 #' This is the data-driven recency parametrisation used as a preprocessing
 #' step for global and exogenous covariates in
 #' Lembo, Juozaitiene, Vinciotti & Wit (2025) and matches the
-#' "recency" axis of [compute_endogenous_features()].
+#' "recency" axis of [endogenous_features()].
 #'
 #' @param delta Numeric vector of non-negative time gaps. NAs propagate.
 #' @param half_life Optional positive scalar. If supplied, used directly

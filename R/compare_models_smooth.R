@@ -18,7 +18,7 @@
 #'     `n_controls = 1` (paired event / non-event design).
 #'   \item For every requested statistic, both the case (event) and the
 #'     control (non-event) features are computed via
-#'     [compute_endogenous_features()].
+#'     [endogenous_features()].
 #'   \item The mgcv design uses the case-vs-control matrix trick:
 #'     \itemize{
 #'       \item linear -> a single coefficient on `case - control` (column `d_stat`).
@@ -133,7 +133,7 @@ compare_models_smooth <- function(event_log,
                           n_controls = 1L,
                           scope = scope, mode = mode,
                           seed = seed)
-  cc_feat <- compute_endogenous_features(cc, stats = all_stats,
+  cc_feat <- endogenous_features(cc, stats = all_stats,
                                           half_life = half_life)
   for (st in all_stats) {
     v <- cc_feat[[st]]

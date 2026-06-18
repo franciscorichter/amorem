@@ -18,7 +18,7 @@ run_parity <- function(family, seed, n_events = 40, n_actors = 5,
     baseline_rate = baseline_rate,
     endogenous_stats = stats,
     endogenous_effects = setNames(rep(0, length(stats)), stats))
-  ref <- compute_endogenous_features(
+  ref <- endogenous_features(
     ev[, c("sender", "receiver", "time")],
     stats = stats)
   for (st in stats) {
@@ -93,7 +93,7 @@ test_that("two families simultaneously active stay independent", {
     baseline_rate = 2,
     endogenous_stats = stats,
     endogenous_effects = setNames(rep(0, length(stats)), stats))
-  ref <- compute_endogenous_features(
+  ref <- endogenous_features(
     ev[, c("sender", "receiver", "time")], stats = stats)
   for (st in stats) {
     expect_equal(ev[[st]], ref[[st]], tolerance = 1e-9, info = st)

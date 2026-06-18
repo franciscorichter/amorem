@@ -76,12 +76,12 @@ test_that("simulate_relational_events handles numeric actor labels via as.charac
   expect_setequal(unique(ev$sender), as.character(1:4))
 })
 
-# ----- compute_endogenous_features() -------------------------------------
+# ----- endogenous_features() -------------------------------------
 
-test_that("compute_endogenous_features on an empty event log returns the right shape", {
+test_that("endogenous_features on an empty event log returns the right shape", {
   empty <- data.frame(sender = character(0), receiver = character(0),
                       time = numeric(0))
-  out <- compute_endogenous_features(empty,
+  out <- endogenous_features(empty,
                                       stats = c("reciprocity_count",
                                                 "transitivity_count"))
   expect_s3_class(out, "data.frame")
@@ -89,9 +89,9 @@ test_that("compute_endogenous_features on an empty event log returns the right s
   expect_true(all(c("reciprocity_count", "transitivity_count") %in% names(out)))
 })
 
-test_that("compute_endogenous_features on a single-row event log produces zeros", {
+test_that("endogenous_features on a single-row event log produces zeros", {
   one <- data.frame(sender = "A", receiver = "B", time = 1)
-  out <- compute_endogenous_features(one,
+  out <- endogenous_features(one,
                                       stats = c("reciprocity_count",
                                                 "transitivity_count",
                                                 "reciprocity_time_recent"))
@@ -100,20 +100,20 @@ test_that("compute_endogenous_features on a single-row event log produces zeros"
   expect_true(is.na(out$reciprocity_time_recent))  # never-seen -> NA
 })
 
-test_that("compute_endogenous_features rejects unsupported stat names with a useful message", {
+test_that("endogenous_features rejects unsupported stat names with a useful message", {
   log <- data.frame(sender = c("A", "B"), receiver = c("B", "A"), time = c(1, 2))
-  expect_error(compute_endogenous_features(log, stats = "not_a_real_stat"),
+  expect_error(endogenous_features(log, stats = "not_a_real_stat"),
                "Unsupported")
 })
 
-test_that("compute_endogenous_features handles ties in event times deterministically", {
+test_that("endogenous_features handles ties in event times deterministically", {
   # Two events at the same timestamp -- the engine must process them in
   # row order and produce well-defined output (never an error).
   log <- data.frame(
     sender   = c("A", "B", "B"),
     receiver = c("B", "A", "A"),
     time     = c(1, 1, 2))
-  out <- compute_endogenous_features(log,
+  out <- endogenous_features(log,
                                       stats = c("reciprocity_count",
                                                 "reciprocity_binary"))
   expect_equal(nrow(out), 3L)

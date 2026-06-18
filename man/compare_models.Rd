@@ -23,7 +23,7 @@ columns.}
 \item{models}{Named list of character vectors. Each entry names one
 candidate specification; the vector contents are the
 endogenous statistics it includes. Stats must be valid names for
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}.}
+\code{\link[=endogenous_features]{endogenous_features()}}.}
 
 \item{n_controls}{Number of controls per case in
 \code{\link[=sample_non_events]{sample_non_events()}}. \code{1} uses a binomial GLM on differences;
@@ -77,7 +77,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 values are directly comparable.
 
 Each specification is a character vector of stat names accepted by
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}. The function computes the union of
+\code{\link[=endogenous_features]{endogenous_features()}}. The function computes the union of
 all stats once, builds case-minus-control differences, and fits one
 binomial GLM per specification with the appropriate subset of
 columns. The fitted models are equivalent to the partial-likelihood
@@ -112,5 +112,5 @@ Statistical Society Series A} 188(4), 1246-1262.
 \doi{10.1093/jrsssa/qnae132}.
 }
 \seealso{
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}, \code{\link[=sample_non_events]{sample_non_events()}}.
+\code{\link[=endogenous_features]{endogenous_features()}}, \code{\link[=sample_non_events]{sample_non_events()}}.
 }

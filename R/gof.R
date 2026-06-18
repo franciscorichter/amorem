@@ -27,7 +27,7 @@
   stat_set <- names(model)
   cc <- sample_non_events(event_log, n_controls = 1L,
                           scope = scope, mode = mode, seed = seed)
-  cc_feat <- compute_endogenous_features(cc, stats = stat_set,
+  cc_feat <- endogenous_features(cc, stats = stat_set,
                                           half_life = half_life)
   for (st in stat_set) {
     v <- cc_feat[[st]]
@@ -328,7 +328,7 @@ gof_global <- function(event_log, model,
 #'   for the *fitted* covariates (must not contain `auxiliary`).
 #' @param auxiliary Name of the statistic to test as an unmodelled
 #'   feature; must be a statistic computable by
-#'   [compute_endogenous_features()].
+#'   [endogenous_features()].
 #' @param n_sim Number of Monte Carlo replicates (default 1000).
 #' @param scope,mode,half_life,seed See [compare_models()].
 #' @return List with `statistic` (\eqn{T_\phi}{T_φ}), `p_value`,
@@ -351,7 +351,7 @@ gof_auxiliary <- function(event_log, model, auxiliary,
   # Compute the auxiliary statistic on the same case-control sample.
   cc_combined <- rbind(prep$cases, prep$ctrls)
   cc_combined <- cc_combined[order(cc_combined$stratum, -cc_combined$event), ]
-  aux_feat <- compute_endogenous_features(cc_combined, stats = auxiliary,
+  aux_feat <- endogenous_features(cc_combined, stats = auxiliary,
                                            half_life = half_life)
   cases_aux <- aux_feat[aux_feat$event == 1L, ]
   ctrls_aux <- aux_feat[aux_feat$event == 0L, ]

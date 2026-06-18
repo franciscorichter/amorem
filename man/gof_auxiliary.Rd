@@ -23,7 +23,7 @@ for the \emph{fitted} covariates (must not contain \code{auxiliary}).}
 
 \item{auxiliary}{Name of the statistic to test as an unmodelled
 feature; must be a statistic computable by
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}.}
+\code{\link[=endogenous_features]{endogenous_features()}}.}
 
 \item{n_sim}{Number of Monte Carlo replicates (default 1000).}
 

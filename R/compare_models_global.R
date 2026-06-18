@@ -40,7 +40,7 @@
 #'
 #' Specification format. Each entry of `models` is a named character
 #' vector mapping a covariate name (a statistic in
-#' [compute_endogenous_features()] **or** a column of
+#' [endogenous_features()] **or** a column of
 #' `global_covariates`) to an effect type:
 #' \itemize{
 #'   \item `"linear"` -- linear `beta * x` term.
@@ -178,7 +178,7 @@ compare_models_global <- function(event_log,
   cc <- sample_non_events(event_log, n_controls = 1L,
                           scope = scope, mode = mode, seed = seed)
   cc_feat <- if (length(all_dyad_stats)) {
-    compute_endogenous_features(cc, stats = all_dyad_stats,
+    endogenous_features(cc, stats = all_dyad_stats,
                                  half_life = half_life)
   } else cc
   if (length(all_dyad_stats)) {

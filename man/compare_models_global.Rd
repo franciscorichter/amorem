@@ -96,7 +96,7 @@ are robust to choices in \eqn{[0.1, 10]}{[0.1, 10]}.
 
 Specification format. Each entry of \code{models} is a named character
 vector mapping a covariate name (a statistic in
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}} \strong{or} a column of
+\code{\link[=endogenous_features]{endogenous_features()}} \strong{or} a column of
 \code{global_covariates}) to an effect type:
 \itemize{
 \item \code{"linear"} -- linear \code{beta * x} term.

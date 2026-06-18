@@ -67,7 +67,7 @@ For each specification:
 \code{n_controls = 1} (paired event / non-event design).
 \item For every requested statistic, both the case (event) and the
 control (non-event) features are computed via
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}.
+\code{\link[=endogenous_features]{endogenous_features()}}.
 \item The mgcv design uses the case-vs-control matrix trick:
 \itemize{
 \item linear -> a single coefficient on \code{case - control} (column \code{d_stat}).

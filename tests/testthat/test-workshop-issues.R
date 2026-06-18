@@ -1,7 +1,7 @@
 # Tests for the three workshop-driven fixes (issues #92, #93, #94):
 #   #92  widen_case_control() carries the sender/receiver identifiers through.
 #   #93  rem(method = "gam") widens long-format input instead of fitting garbage.
-#   #94  compute_endogenous_features() gains a prior_log warm-start argument.
+#   #94  endogenous_features() gains a prior_log warm-start argument.
 
 make_long <- function(seed = 1, n_events = 200, stat, effect, half_life = NULL) {
   set.seed(seed)
@@ -69,7 +69,7 @@ test_that("rem(method = 'gam') auto-widens long-format input (#93)", {
 
 # ---- #94 -------------------------------------------------------------------
 
-test_that("compute_endogenous_features prior_log warm-starts state (#94)", {
+test_that("endogenous_features prior_log warm-starts state (#94)", {
   prior_events <- data.frame(
     sender = c("A", "B"), receiver = c("B", "C"), time = c(1, 2)
   )
@@ -82,7 +82,7 @@ test_that("compute_endogenous_features prior_log warm-starts state (#94)", {
   stat <- "transitivity_binary_interrupted"
   events_only <- cc_log[cc_log$event == 1L, c("sender", "receiver", "time")]
 
-  out <- compute_endogenous_features(
+  out <- endogenous_features(
     event_log   = cc_log,
     prior_log   = prior_events,
     history_log = events_only,
@@ -97,7 +97,7 @@ test_that("compute_endogenous_features prior_log warm-starts state (#94)", {
   # The warm-started A -> C event sees the A -> B, B -> C two-path (value 1);
   # this is the value the documented prepend-and-trim workaround produces.
   full_log <- rbind(prior_events, cc_log[, c("sender", "receiver", "time")])
-  ref <- compute_endogenous_features(
+  ref <- endogenous_features(
     event_log   = full_log,
     stats       = stat,
     history_log = rbind(prior_events, events_only)
@@ -122,7 +122,7 @@ test_that("without prior_log the warm-start is lost (#94 motivation)", {
 
   # Passing the prior events through history_log only (the intuitive-but-wrong
   # call) does not warm-start the state: A -> C is 0, not 1.
-  wrong <- compute_endogenous_features(
+  wrong <- endogenous_features(
     event_log   = cc_log,
     history_log = rbind(prior_events, events_only),
     stats       = stat
@@ -140,7 +140,7 @@ test_that("prior_log is honoured for the sender_receivers_set list-column (#94)"
     time     = c(2,   3),
     event    = c(1,   1)
   )
-  out <- compute_endogenous_features(
+  out <- endogenous_features(
     event_log = ev,
     prior_log = prior_events,
     stats     = "sender_receivers_set"

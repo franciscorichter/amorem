@@ -52,7 +52,7 @@ test_that("AIC matches a manual glm fit on the same case-control sample", {
   set.seed(13)
   cc <- sample_non_events(classroom_events, n_controls = 1, scope = "all",
                           mode = "one", seed = 13)
-  feat <- compute_endogenous_features(cc, stats = specs_small$count)
+  feat <- endogenous_features(cc, stats = specs_small$count)
   feat$reciprocity_count[is.na(feat$reciprocity_count)] <- 0
   feat$transitivity_count[is.na(feat$transitivity_count)] <- 0
   cases <- feat[feat$event == 1L, ]; cases <- cases[order(cases$stratum), ]

@@ -6,8 +6,10 @@ package `AMORE`. This release consolidates the 0.9.0 development line into the
 first stable, installable version: the unified `rem()` front-end (the `clogit`,
 `gam`, and `nn` backends, including the additive-spline architecture), the
 Gillespie / tau-leap simulation engine, the endogenous-statistics catalogue, and
-the martingale-residual goodness-of-fit family. No API changes relative to 0.9.0
-beyond the package name.
+the martingale-residual goodness-of-fit family. Relative to 0.9.0 the package was renamed to **amorem** and the exported feature
+functions dropped their `compute_` prefix --- `compute_endogenous_features()` and
+`compute_hyperedge_features()` became `endogenous_features()` and
+`hyperedge_features()`; the rest of the API is unchanged.
 
 # amorem 0.9.0
 

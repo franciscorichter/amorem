@@ -26,7 +26,7 @@ paper). Must be in \verb{1..length(actors)}.}
 \item{baseline_rate}{Multiplicative baseline (\eqn{\lambda_0}{lambda_0}).}
 
 \item{endogenous_stats}{Character vector of stat names accepted by
-\code{compute_hyperedge_features()} (undirected variants — \code{activity},
+\code{hyperedge_features()} (undirected variants — \code{activity},
 \code{subrep_1}, \code{subrep_2}, ...) or the literal \code{"size"} (the event's
 cardinality).}
 
@@ -54,7 +54,7 @@ in \verb{1..max_size}, fired with rate
   lambda(t, I) = baseline_rate * exp(sum_k beta_k * x_k(t, I)),
 }
 where each \eqn{x_k(t, I)}{x_k(t, I)} is one of the hyperedge-native
-covariates supported by \code{compute_hyperedge_features()}
+covariates supported by \code{hyperedge_features()}
 (\code{activity}, \verb{subrep_<rho>} for undirected events) or \code{size}
 (the event's cardinality \eqn{|I|}{|I|}).
 }

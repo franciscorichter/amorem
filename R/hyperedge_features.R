@@ -1,6 +1,6 @@
 #' Endogenous features for a hyperedge event log
 #'
-#' Hyperedge analogue of [compute_endogenous_features()]. Accepts a
+#' Hyperedge analogue of [endogenous_features()]. Accepts a
 #' hyperedge log (see [hyperedge_log()]) and computes hyperedge-native
 #' statistics, falling back to the dyadic engine for stat names that
 #' belong to the standard dyadic endogenous catalogue.
@@ -23,12 +23,12 @@
 #'
 #' For dyadic-shaped events (every row has \code{|I| = |J| = 1}) and a
 #' dyadic stat name, this function delegates to
-#' [compute_endogenous_features()] via [as_dyadic_log()].
+#' [endogenous_features()] via [as_dyadic_log()].
 #'
 #' @param hyperedge_log A hyperedge log (see [hyperedge_log()]).
 #' @param stats Character vector of statistic names. Mix of hyperedge-
 #'   native names listed above and the dyadic catalogue names accepted
-#'   by [compute_endogenous_features()].
+#'   by [endogenous_features()].
 #' @param half_life Required when an exp-decay statistic is requested
 #'   (only applies to delegated dyadic stats; hyperedge subrep does not
 #'   use a half-life).
@@ -38,16 +38,16 @@
 #' Time-Homogeneity: Relational Hyper Event Models with Time-Varying
 #' Non-Linear Effects*. arXiv:2509.05289.
 #' @seealso [hyperedge_subrep()], [hyperedge_activity()],
-#'   [compute_endogenous_features()].
+#'   [endogenous_features()].
 #' @examples
 #' hl <- hyperedge_log(
 #'   I    = list(c("a","b"), c("a","c"), c("b","c"), c("a","b","c")),
 #'   J    = list(c("X"),     c("X","Y"), c("Y"),     c("X")),
 #'   time = c(1, 2, 3, 4))
-#' compute_hyperedge_features(hl,
+#' hyperedge_features(hl,
 #'   stats = c("subrep_1_1", "subrep_2_1", "activity"))
 #' @export
-compute_hyperedge_features <- function(hyperedge_log, stats,
+hyperedge_features <- function(hyperedge_log, stats,
                                         half_life = NULL) {
   if (!is_hyperedge_log(hyperedge_log)) {
     stop("`hyperedge_log` is not a hyperedge log.")
@@ -116,7 +116,7 @@ compute_hyperedge_features <- function(hyperedge_log, stats,
            sum(sizes_I != 1L | sizes_J != 1L), ".")
     }
     dy <- as_dyadic_log(hyperedge_log)
-    dy_feat <- compute_endogenous_features(dy, stats = dyad_stats,
+    dy_feat <- endogenous_features(dy, stats = dyad_stats,
                                             half_life = half_life)
     for (s in dyad_stats) out[[s]] <- dy_feat[[s]]
   }

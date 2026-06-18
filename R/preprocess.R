@@ -189,7 +189,7 @@ attach_static_covariates <- function(
 # rows update the set, so sampled non-events read the true history without
 # polluting it. Processed in time groups (input assumed time-sorted) so rows
 # sharing a timestamp all read the pre-t set. Backs the `sender_receivers_set`
-# statistic of compute_endogenous_features().
+# statistic of endogenous_features().
 .sender_receivers_set_col <- function(senders, receivers, times,
                                       is_event_mask = logical(0)) {
   n <- length(senders)
@@ -343,11 +343,11 @@ attach_static_covariates <- function(
 #'   (`sender_receivers_set` is added as a list-column).
 #' @examples
 #' data(classroom_events)
-#' feats <- compute_endogenous_features(classroom_events,
+#' feats <- endogenous_features(classroom_events,
 #'                                      stats = c("reciprocity", "recency"))
 #' head(feats)
 #' @export
-compute_endogenous_features <- function(
+endogenous_features <- function(
     event_log,
     stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
     half_life = NULL,
@@ -407,7 +407,7 @@ compute_endogenous_features <- function(
                  receiver = as.character(base_hist$receiver),
                  time = as.numeric(base_hist$time),
                  stringsAsFactors = FALSE))
-    res <- compute_endogenous_features(
+    res <- endogenous_features(
       combined, stats = stats, half_life = half_life, sort = sort,
       history_log = eff_hist, prior_log = NULL)
     res <- res[!is.na(res[[eid]]), , drop = FALSE]
@@ -1383,11 +1383,11 @@ sample_non_events <- function(
 #' Endogenous statistics with a compiled fast path
 #'
 #' Returns the names of the endogenous statistics that
-#' [compute_endogenous_features()] evaluates with the compiled C++ engine.
+#' [endogenous_features()] evaluates with the compiled C++ engine.
 #' Statistics outside this set are computed by the (slower) pure-R fallback.
 #'
 #' @return A character vector of statistic names.
-#' @seealso [compute_endogenous_features()]
+#' @seealso [endogenous_features()]
 #' @examples
 #' length(cpp_supported_stats())
 #' head(cpp_supported_stats())

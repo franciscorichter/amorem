@@ -54,7 +54,7 @@ run_family_check <- function(family) {
              paste0(prefix, "_binary_ordered"),
              paste0(prefix, "_time_recent_ordered"),
              paste0(prefix, "_time_first_ordered"))
-  out <- compute_endogenous_features(ev_fixture, stats = stats)
+  out <- endogenous_features(ev_fixture, stats = stats)
   dirs <- fam_dirs[[family]]
   for (i in seq_len(nrow(ev_fixture))) {
     prior <- ev_fixture[seq_len(i - 1L), , drop = FALSE]
@@ -94,7 +94,7 @@ test_that("receiving_balance_*_ordered match brute-force semantics on a fixed ev
 
 test_that("ordered_count <= unordered_count for every family on every row", {
   for (prefix in c("cyclic", "sending_balance", "receiving_balance")) {
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = c(paste0(prefix, "_count"),
                 paste0(prefix, "_count_ordered")))
     expect_true(all(out[[paste0(prefix, "_count_ordered")]] <=
@@ -105,7 +105,7 @@ test_that("ordered_count <= unordered_count for every family on every row", {
 
 test_that("binary_ordered equals (count_ordered > 0) on every row", {
   for (prefix in c("cyclic", "sending_balance", "receiving_balance")) {
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = c(paste0(prefix, "_count_ordered"),
                 paste0(prefix, "_binary_ordered")))
     expect_equal(out[[paste0(prefix, "_binary_ordered")]],
@@ -116,15 +116,15 @@ test_that("binary_ordered equals (count_ordered > 0) on every row", {
 
 test_that("exp_decay_ordered requires half_life", {
   expect_error(
-    compute_endogenous_features(ev_fixture,
+    endogenous_features(ev_fixture,
       stats = "cyclic_exp_decay_ordered"),
     regexp = "half_life")
   expect_error(
-    compute_endogenous_features(ev_fixture,
+    endogenous_features(ev_fixture,
       stats = "sending_balance_exp_decay_ordered"),
     regexp = "half_life")
   expect_error(
-    compute_endogenous_features(ev_fixture,
+    endogenous_features(ev_fixture,
       stats = "receiving_balance_exp_decay_ordered"),
     regexp = "half_life")
 })
@@ -132,7 +132,7 @@ test_that("exp_decay_ordered requires half_life", {
 test_that("exp_decay_ordered is finite and non-negative when supplied", {
   for (prefix in c("cyclic", "sending_balance", "receiving_balance")) {
     col <- paste0(prefix, "_exp_decay_ordered")
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = col, half_life = 5)
     v <- out[[col]]
     expect_true(all(is.finite(v)) && all(v >= 0), info = prefix)
@@ -141,7 +141,7 @@ test_that("exp_decay_ordered is finite and non-negative when supplied", {
 
 test_that("time_first_ordered >= time_recent_ordered on every non-NA row", {
   for (prefix in c("cyclic", "sending_balance", "receiving_balance")) {
-    out <- compute_endogenous_features(ev_fixture,
+    out <- endogenous_features(ev_fixture,
       stats = c(paste0(prefix, "_time_recent_ordered"),
                 paste0(prefix, "_time_first_ordered")))
     recent <- out[[paste0(prefix, "_time_recent_ordered")]]

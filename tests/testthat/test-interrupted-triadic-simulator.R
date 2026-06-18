@@ -19,7 +19,7 @@ run_parity <- function(family, seed, n_events = 40, n_actors = 5,
     endogenous_stats = stats,
     endogenous_effects = setNames(rep(0, length(stats)), stats),
     half_life = half_life)
-  ref <- compute_endogenous_features(
+  ref <- endogenous_features(
     ev[, c("sender", "receiver", "time")],
     stats = stats, half_life = half_life)
   for (st in stats) {

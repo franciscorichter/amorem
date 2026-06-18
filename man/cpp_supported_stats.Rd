@@ -8,7 +8,7 @@ A character vector of statistic names.
 }
 \description{
 Returns the names of the endogenous statistics that
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}} evaluates with the compiled C++ engine.
+\code{\link[=endogenous_features]{endogenous_features()}} evaluates with the compiled C++ engine.
 Statistics outside this set are computed by the (slower) pure-R fallback.
 }
 \examples{
@@ -16,5 +16,5 @@ length(cpp_supported_stats())
 head(cpp_supported_stats())
 }
 \seealso{
-\code{\link[=compute_endogenous_features]{compute_endogenous_features()}}
+\code{\link[=endogenous_features]{endogenous_features()}}
 }
