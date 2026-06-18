@@ -45,7 +45,8 @@ training strata).}
 
 \item{lr}{Adam learning rate.}
 
-\item{l2}{L2 penalty (weight decay) on the weights (not the biases).}
+\item{l2}{L2 penalty (weight decay). The pure-R engine penalises the weights
+only; the torch engine applies it via Adam's \code{weight_decay}.}
 
 \item{validation}{Fraction of strata held out for validation / early
 stopping. Set to \code{0} to train on everything (no early stopping).}

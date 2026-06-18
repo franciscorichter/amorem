@@ -60,3 +60,13 @@ test_that("nn_uncertainty returns valid bands and a concordance interval", {
   expect_error(nn_uncertainty(structure(list(method = "clogit"), class = "rem"), df),
                "method = \"nn\"")
 })
+
+test_that("nn_uncertainty bands are non-degenerate when the fit used a fixed seed", {
+  # regression: a fixed control$seed must not collapse the bootstrap resampling
+  df <- .cc_fixture(K = 150L)
+  fit <- rem(event ~ x1 + x2, data = df, method = "nn", stratum = "strat",
+             nn = nn_control(hidden = c(8L), engine = "r", epochs = 80L, seed = 1L))
+  u <- nn_uncertainty(fit, df, B = 25L, stratum = "strat", seed = 2L)
+  expect_gt(mean(u$bands$x1$hi - u$bands$x1$lo), 0)
+})
+

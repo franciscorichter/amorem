@@ -32,7 +32,8 @@
 #' @param epochs Maximum number of training epochs (full passes over the
 #'   training strata).
 #' @param lr Adam learning rate.
-#' @param l2 L2 penalty (weight decay) on the weights (not the biases).
+#' @param l2 L2 penalty (weight decay). The pure-R engine penalises the weights
+#'   only; the torch engine applies it via Adam's `weight_decay`.
 #' @param validation Fraction of strata held out for validation / early
 #'   stopping. Set to `0` to train on everything (no early stopping).
 #' @param patience Early-stopping patience: training stops after this many
@@ -243,14 +244,17 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   }
   model <- do.call(torch::nn_sequential, mods)
   lin_mods <- Filter(function(mo) inherits(mo, "nn_linear"), mods)
+  # He-normal init with zero biases, matching the pure-R engine (.nn_init): the
+  # right scale for the relu MLP, and keeps the two engines comparable.
+  for (mo in lin_mods) torch::with_no_grad({
+    mo$weight$normal_(mean = 0, std = sqrt(2 / mo$weight$shape[2L]))
+    mo$bias$zero_()
+  })
 
   # Adam with weight decay on weights only (matches the R engine's W-only L2)
   pn <- names(model$parameters)
   wts <- pn[grepl("weight", pn)]; bis <- setdiff(pn, wts)
-  optim <- torch::optim_adam(list(
-    list(params = lapply(wts, function(n) model$parameters[[n]]), weight_decay = control$l2),
-    list(params = lapply(bis, function(n) model$parameters[[n]]), weight_decay = 0)),
-    lr = control$lr)
+  optim <- torch::optim_adam(model$parameters, lr = control$lr, weight_decay = control$l2)
 
   loss_on <- function(d) torch::nnf_cross_entropy(
     model(d$Xt)$reshape(c(d$K, d$m)), d$target)

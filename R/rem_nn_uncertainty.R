@@ -34,6 +34,12 @@ nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
     stop("`object` must be a rem(method = \"nn\") fit.", call. = FALSE)
   }
   fit <- object$fit; control <- fit$control; vars <- fit$features
+  # Each refit must vary across resamples. The original fit may carry a fixed
+  # `seed`; left in place it would make .rem_nn_fit() reset the global RNG every
+  # refit, so every bootstrap would draw the *same* resample (zero-width bands).
+  # Drop it here and make the whole procedure reproducible via this function's
+  # own `seed` argument instead.
+  control$seed <- NULL
   if (is.null(case)) case <- all.vars(object$formula)[1L]
   ci <- data[[case]]
   if (is.null(ci)) stop("case column '", case, "' not found in `data`.", call. = FALSE)
