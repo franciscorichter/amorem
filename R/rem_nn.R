@@ -40,6 +40,14 @@
 #'   are restored.
 #' @param standardize Z-score the features before training (recommended; the
 #'   scaling is stored and re-applied by `predict()`).
+#' @param engine Training engine: `"r"` (default) uses the built-in pure-R
+#'   implementation with hand-derived gradients; `"torch"` trains the *same*
+#'   model and loss with the \pkg{torch} package (libtorch / autograd), which is
+#'   markedly faster and, with `batch_strata`, scales to large event logs
+#'   (optionally on GPU). The two engines fit identical model classes and return
+#'   interchangeable objects. `"torch"` requires the suggested \pkg{torch}
+#'   package (run `torch::install_torch()` once) and equal-sized strata (the
+#'   usual case-control layout with a fixed number of controls).
 #' @param seed Optional integer seed for reproducible initialization and
 #'   validation split.
 #' @param verbose Print the loss every 50 epochs.
@@ -52,9 +60,11 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
                        spline_df = 8L, batch_strata = NULL,
                        epochs = 300L, lr = 1e-2, l2 = 1e-4,
                        validation = 0.2, patience = 25L,
-                       standardize = TRUE, seed = NULL, verbose = FALSE) {
+                       standardize = TRUE, engine = c("r", "torch"),
+                       seed = NULL, verbose = FALSE) {
   activation <- match.arg(activation)
   architecture <- match.arg(architecture)
+  engine <- match.arg(engine)
   hidden <- as.integer(hidden)
   if (any(hidden < 1L)) stop("`hidden` layer sizes must be positive integers.")
   if (lr <= 0) stop("`lr` must be positive.")
@@ -72,7 +82,7 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
                  batch_strata = batch_strata,
                  epochs = as.integer(epochs), lr = lr, l2 = l2,
                  validation = validation, patience = as.integer(patience),
-                 standardize = isTRUE(standardize), seed = seed,
+                 standardize = isTRUE(standardize), engine = engine, seed = seed,
                  verbose = isTRUE(verbose)),
             class = "nn_control")
 }
@@ -188,6 +198,106 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   do.call(cbind, blocks)
 }
 
+# ---- torch training engine (optional; requires the suggested 'torch' pkg) --
+# Trains the SAME model class and conditional-logistic loss as the pure-R engine
+# with libtorch autograd + Adam and mini-batching over strata, then exports the
+# learned weights into the R `layers` format so predict()/plot()/logLik() reuse
+# the pure-R machinery unchanged. Requires equal-sized strata (the [K, m]
+# cross-entropy layout): the usual case-control table with a fixed n_controls.
+.nn_train_torch <- function(Xfit, strat_id, is_event, hidden, control,
+                            tr, in_val, tr_strata, val_strata) {
+  if (!requireNamespace("torch", quietly = TRUE)) {
+    stop("nn_control(engine = \"torch\") needs the 'torch' package: ",
+         "install.packages(\"torch\") then torch::install_torch().", call. = FALSE)
+  }
+  if (!torch::torch_is_installed()) {
+    stop("libtorch is not installed; run torch::install_torch() once.", call. = FALSE)
+  }
+  if (!is.null(control$seed)) torch::torch_manual_seed(control$seed)
+
+  # rows -> (feature tensor reshaped per stratum, target = within-stratum event)
+  prep <- function(rows) {
+    sid <- strat_id[rows]; ord <- order(sid)
+    rows <- rows[ord]; sid <- sid[ord]
+    sizes <- tabulate(match(sid, unique(sid)))
+    if (length(unique(sizes)) != 1L) {
+      stop("nn_control(engine = \"torch\") requires equal-sized strata; found ",
+           "sizes ", paste(sort(unique(sizes)), collapse = "/"),
+           ". Use engine = \"r\" for variable-sized strata.", call. = FALSE)
+    }
+    m <- sizes[1L]; K <- length(rows) %/% m
+    target <- ((which(is_event[rows]) - 1L) %% m) + 1L     # 1-based event column
+    list(Xt = torch::torch_tensor(Xfit[rows, , drop = FALSE],
+                                  dtype = torch::torch_float()),
+         target = torch::torch_tensor(as.integer(target), dtype = torch::torch_long()),
+         K = K, m = m)
+  }
+
+  # model: linear (+ activation) stack ending in a scalar score
+  sizes <- c(ncol(Xfit), hidden, 1L)
+  act_fn <- if (control$activation == "relu") torch::nn_relu else torch::nn_tanh
+  mods <- list()
+  for (l in seq_len(length(sizes) - 1L)) {
+    mods[[length(mods) + 1L]] <- torch::nn_linear(sizes[l], sizes[l + 1L])
+    if (l < length(sizes) - 1L) mods[[length(mods) + 1L]] <- act_fn()
+  }
+  model <- do.call(torch::nn_sequential, mods)
+  lin_mods <- Filter(function(mo) inherits(mo, "nn_linear"), mods)
+
+  # Adam with weight decay on weights only (matches the R engine's W-only L2)
+  pn <- names(model$parameters)
+  wts <- pn[grepl("weight", pn)]; bis <- setdiff(pn, wts)
+  optim <- torch::optim_adam(list(
+    list(params = lapply(wts, function(n) model$parameters[[n]]), weight_decay = control$l2),
+    list(params = lapply(bis, function(n) model$parameters[[n]]), weight_decay = 0)),
+    lr = control$lr)
+
+  loss_on <- function(d) torch::nnf_cross_entropy(
+    model(d$Xt)$reshape(c(d$K, d$m)), d$target)
+
+  full_tr <- prep(which(tr))
+  vd <- if (length(val_strata)) prep(which(in_val)) else NULL
+
+  history <- data.frame(epoch = integer(0), train = numeric(0), val = numeric(0))
+  best <- list(loss = Inf, state = NULL, epoch = 0L); stall <- 0L
+  for (t in seq_len(control$epochs)) {
+    if (is.null(control$batch_strata)) {
+      batches <- list(full_tr)
+    } else {
+      sh <- sample(tr_strata)
+      chunks <- split(sh, ceiling(seq_along(sh) / control$batch_strata))
+      batches <- lapply(chunks, function(ss) prep(which(strat_id %in% ss)))
+    }
+    tl <- 0
+    for (b in batches) {
+      optim$zero_grad(); l <- loss_on(b); l$backward(); optim$step()
+      tl <- tl + as.numeric(l$item()) * b$K
+    }
+    train_loss <- tl / full_tr$K
+    val_loss <- NA_real_
+    if (!is.null(vd)) {
+      val_loss <- as.numeric(torch::with_no_grad(loss_on(vd))$item())
+      if (val_loss < best$loss - 1e-6) {
+        best <- list(loss = val_loss,
+                     state = lapply(model$state_dict(), function(z) z$clone()),
+                     epoch = t); stall <- 0L
+      } else { stall <- stall + 1L; if (stall >= control$patience) break }
+    }
+    history <- rbind(history, data.frame(epoch = t, train = train_loss, val = val_loss))
+    if (control$verbose && t %% 50L == 0L)
+      cat(sprintf("epoch %4d  train %.4f  val %s\n", t, train_loss,
+                  ifelse(is.na(val_loss), "-", sprintf("%.4f", val_loss))))
+  }
+  if (!is.null(best$state)) model$load_state_dict(best$state)
+
+  # export torch linear layers -> R `layers` (W: [nin,nout], b: [nout])
+  layers <- lapply(lin_mods, function(mo) list(
+    W = t(as.matrix(torch::as_array(mo$weight))),
+    b = as.numeric(torch::as_array(mo$bias))))
+  list(layers = layers, history = history,
+       best_epoch = if (!is.null(best$state)) best$epoch else nrow(history))
+}
+
 # Fit the neural conditional-logistic model.
 # X: numeric feature matrix [n_rows, p]; strat_id: stratum of each row;
 # is_event: logical event indicator per row.
@@ -219,6 +329,12 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   tr <- !in_val
   tr_strata <- setdiff(strata, val_strata)
 
+  if (identical(control$engine, "torch")) {
+    tt <- .nn_train_torch(Xfit, strat_id, is_event, hidden, control,
+                          tr = tr, in_val = in_val,
+                          tr_strata = tr_strata, val_strata = val_strata)
+    layers <- tt$layers; history <- tt$history; best <- list(epoch = tt$best_epoch)
+  } else {
   layers <- .nn_init(ncol(Xfit), hidden, seed = control$seed)
   state <- lapply(layers, function(ly) list(
     W = list(m = ly$W * 0, v = ly$W * 0), b = list(m = ly$b * 0, v = ly$b * 0)))
@@ -265,6 +381,7 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
     }
   }
   if (length(val_strata)) layers <- best$layers
+  }
 
   # final pass over everything: log-likelihood, validation concordance
   fa <- .nn_forward(layers, Xfit, control$activation)

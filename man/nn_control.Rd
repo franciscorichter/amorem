@@ -16,6 +16,7 @@ nn_control(
   validation = 0.2,
   patience = 25L,
   standardize = TRUE,
+  engine = c("r", "torch"),
   seed = NULL,
   verbose = FALSE
 )
@@ -55,6 +56,15 @@ are restored.}
 
 \item{standardize}{Z-score the features before training (recommended; the
 scaling is stored and re-applied by \code{predict()}).}
+
+\item{engine}{Training engine: \code{"r"} (default) uses the built-in pure-R
+implementation with hand-derived gradients; \code{"torch"} trains the \emph{same}
+model and loss with the \pkg{torch} package (libtorch / autograd), which is
+markedly faster and, with \code{batch_strata}, scales to large event logs
+(optionally on GPU). The two engines fit identical model classes and return
+interchangeable objects. \code{"torch"} requires the suggested \pkg{torch}
+package (run \code{torch::install_torch()} once) and equal-sized strata (the
+usual case-control layout with a fixed number of controls).}
 
 \item{seed}{Optional integer seed for reproducible initialization and
 validation split.}

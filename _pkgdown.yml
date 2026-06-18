@@ -73,6 +73,7 @@ reference:
     contents:
       - rem
       - nn_control
+      - nn_uncertainty
       - compare_models
       - compare_models_smooth
       - compare_models_global
