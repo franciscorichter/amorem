@@ -149,7 +149,7 @@ r<sup>(4ai)/t</sup>(7ai) (interrupted timing).</p>
 <p>The helper draws one case-control sample (default
 <code>n_controls = 1</code>) shared across every specification, computes
 the union of all requested statistics with
-<code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code>, builds case-minus-control
+<code><a href="../reference/endogenous_features.html">endogenous_features()</a></code>, builds case-minus-control
 differences, and fits one no-intercept binomial GLM per spec. Returned
 rows are sorted by AIC; the winning spec has
 <code>delta_AIC = 0</code>.</p>
@@ -190,7 +190,7 @@ fit directly:</p>
 <code class="sourceCode R"><span><span class="va">stat_set</span> <span class="op">&lt;-</span> <span class="va">specs</span><span class="op">$</span><span class="va">interrupted</span></span>
 <span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>, n_controls <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                        scope <span class="op">=</span> <span class="st">"all"</span>, mode <span class="op">=</span> <span class="st">"one"</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="va">cc_feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_endogenous_features.html">compute_endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="va">stat_set</span><span class="op">)</span></span>
+<span><span class="va">cc_feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="va">stat_set</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">st</span> <span class="kw">in</span> <span class="va">stat_set</span><span class="op">)</span> <span class="va">cc_feat</span><span class="op">[[</span><span class="va">st</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cc_feat</span><span class="op">[[</span><span class="va">st</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span></span>
 <span><span class="va">cases</span> <span class="op">&lt;-</span> <span class="va">cc_feat</span><span class="op">[</span><span class="va">cc_feat</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1L</span>, <span class="op">]</span></span>
@@ -209,7 +209,7 @@ fit directly:</p>
 <span><span class="co">#&gt; d_rec   -0.1008825 0.01912790 -5.274104 1.334064e-07</span></span>
 <span><span class="co">#&gt; d_trans -0.1319044 0.02943224 -4.481630 7.407511e-06</span></span></code></pre></div>
 <p>The same recipe scales to any subset of the statistics in the
-catalogue. Use <code><a href="../reference/compute_endogenous_features.html">?compute_endogenous_features</a></code> to see the full
+catalogue. Use <code><a href="../reference/endogenous_features.html">?endogenous_features</a></code> to see the full
 list.</p>
 </div>
 <div class="section level2">
@@ -220,11 +220,11 @@ list.</p>
 definitions. The package ships a parity test
 (<code>test-sim-vs-posthoc-parity.R</code>) that runs the simulator on
 every shared stat and verifies that re-running
-<code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> on the resulting event log
-reproduces the simulator’s columns row-for-row. This means: if you want
-to test a model selection pipeline against ground-truth coefficients,
-you can simulate data with <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code>
-using known effects and use <code><a href="../reference/compare_models.html">compare_models()</a></code> to confirm the
+<code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> on the resulting event log reproduces
+the simulator’s columns row-for-row. This means: if you want to test a
+model selection pipeline against ground-truth coefficients, you can
+simulate data with <code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code> using known
+effects and use <code><a href="../reference/compare_models.html">compare_models()</a></code> to confirm the
 ranking.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>

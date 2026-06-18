@@ -169,10 +169,10 @@ dyad event count.</p>
 <div class="section level4">
 <h4 id="feature-engine">Feature engine<a class="anchor" aria-label="anchor" href="#feature-engine"></a>
 </h4>
-<p><code><a href="../reference/compute_hyperedge_features.html">compute_hyperedge_features()</a></code> is the hyperedge analogue
-of <code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code>:</p>
+<p><code><a href="../reference/hyperedge_features.html">hyperedge_features()</a></code> is the hyperedge analogue of
+<code><a href="../reference/endogenous_features.html">endogenous_features()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_hyperedge_features.html">compute_hyperedge_features</a></span><span class="op">(</span><span class="va">hl</span>,</span>
+<code class="sourceCode R"><span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hyperedge_features.html">hyperedge_features</a></span><span class="op">(</span><span class="va">hl</span>,</span>
 <span>  stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"activity"</span>, <span class="st">"subrep_1_1"</span>, <span class="st">"subrep_2_1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
@@ -201,7 +201,7 @@ of <code><a href="../reference/compute_endogenous_features.html">compute_endogen
 </tr>
 <tr class="even">
 <td>any name in the 68-stat catalogue</td>
-<td>delegated to <code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> after
+<td>delegated to <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> after
 <code><a href="../reference/hyperedge_log.html">as_dyadic_log()</a></code> — requires every row to be dyadic</td>
 </tr>
 </tbody>

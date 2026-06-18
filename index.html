@@ -107,7 +107,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span>          <span class="co"># 82,927 emails, 167 actors (Michalski et al. 2014)</span></span>
 <span></span>
 <span><span class="co"># 2. Compute endogenous features post-hoc from any (sender, receiver, time) log</span></span>
-<span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/compute_endogenous_features.html">compute_endogenous_features</a></span><span class="op">(</span></span>
+<span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu">compute_endogenous_features</span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity"</span>, <span class="st">"recency"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Simulate a ready-to-fit case-1-control table with known structure ...</span></span>
@@ -129,7 +129,7 @@
 <li>
 <strong><code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code></strong> — exact Gillespie or τ-leap; composes exogenous, endogenous, and time-varying global covariates; with <code>wide = TRUE</code> emits a ready-to-fit case-1-control table.</li>
 <li>
-<strong><code><a href="reference/compute_endogenous_features.html">compute_endogenous_features()</a></code></strong> — the endogenous catalogue computed post-hoc from any <code>(sender, receiver, time)</code> log; via <code>history_log</code> it scores sampled non-events without polluting the event history.</li>
+<strong><code>compute_endogenous_features()</code></strong> — the endogenous catalogue computed post-hoc from any <code>(sender, receiver, time)</code> log; via <code>history_log</code> it scores sampled non-events without polluting the event history.</li>
 <li>
 <strong><code><a href="reference/sample_non_events.html">sample_non_events()</a></code></strong> — nested case-control sampling with appearance / citation / remove risk-set rules.</li>
 <li>

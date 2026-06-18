@@ -40,7 +40,7 @@ in `delta` are preserved.
 This is the data-driven recency parametrisation used as a preprocessing
 step for global and exogenous covariates in Lembo, Juozaitiene,
 Vinciotti & Wit (2025) and matches the "recency" axis of
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 
 ## References
 

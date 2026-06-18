@@ -1,7 +1,7 @@
 # Endogenous features for a hyperedge event log
 
 Hyperedge analogue of
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 Accepts a hyperedge log (see
 [`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md))
 and computes hyperedge-native statistics, falling back to the dyadic
@@ -11,7 +11,7 @@ catalogue.
 ## Usage
 
 ``` r
-compute_hyperedge_features(hyperedge_log, stats, half_life = NULL)
+hyperedge_features(hyperedge_log, stats, half_life = NULL)
 ```
 
 ## Arguments
@@ -25,7 +25,7 @@ compute_hyperedge_features(hyperedge_log, stats, half_life = NULL)
 
   Character vector of statistic names. Mix of hyperedge- native names
   listed above and the dyadic catalogue names accepted by
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 
 - half_life:
 
@@ -61,7 +61,7 @@ Recognised hyperedge stat names:
 
 For dyadic-shaped events (every row has `|I| = |J| = 1`) and a dyadic
 stat name, this function delegates to
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 via
 [`as_dyadic_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md).
 
@@ -75,7 +75,7 @@ Non-Linear Effects*. arXiv:2509.05289.
 
 [`hyperedge_subrep()`](https://franciscorichter.github.io/amorem/reference/hyperedge_subrep.md),
 [`hyperedge_activity()`](https://franciscorichter.github.io/amorem/reference/hyperedge_activity.md),
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 
 ## Examples
 
@@ -84,7 +84,7 @@ hl <- hyperedge_log(
   I    = list(c("a","b"), c("a","c"), c("b","c"), c("a","b","c")),
   J    = list(c("X"),     c("X","Y"), c("Y"),     c("X")),
   time = c(1, 2, 3, 4))
-compute_hyperedge_features(hl,
+hyperedge_features(hl,
   stats = c("subrep_1_1", "subrep_2_1", "activity"))
 #>         I    J time subrep_1_1 subrep_2_1 activity
 #> 1    a, b    X    1   0.000000  0.0000000        0

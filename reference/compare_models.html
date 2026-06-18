@@ -8,7 +8,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 event_log and shared across every specification so that the AIC
 values are directly comparable.
 Each specification is a character vector of stat names accepted by
-compute_endogenous_features(). The function computes the union of
+endogenous_features(). The function computes the union of
 all stats once, builds case-minus-control differences, and fits one
 binomial GLM per specification with the appropriate subset of
 columns. The fitted models are equivalent to the partial-likelihood
@@ -28,7 +28,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 event_log and shared across every specification so that the AIC
 values are directly comparable.
 Each specification is a character vector of stat names accepted by
-compute_endogenous_features(). The function computes the union of
+endogenous_features(). The function computes the union of
 all stats once, builds case-minus-control differences, and fits one
 binomial GLM per specification with the appropriate subset of
 columns. The fitted models are equivalent to the partial-likelihood
@@ -98,7 +98,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 <code>event_log</code> and shared across every specification so that the AIC
 values are directly comparable.</p>
 <p>Each specification is a character vector of stat names accepted by
-<code><a href="compute_endogenous_features.html">compute_endogenous_features()</a></code>. The function computes the union of
+<code><a href="endogenous_features.html">endogenous_features()</a></code>. The function computes the union of
 all stats once, builds case-minus-control differences, and fits one
 binomial GLM per specification with the appropriate subset of
 columns. The fitted models are equivalent to the partial-likelihood
@@ -140,7 +140,7 @@ columns.</p></dd>
 <dd><p>Named list of character vectors. Each entry names one
 candidate specification; the vector contents are the
 endogenous statistics it includes. Stats must be valid names for
-<code><a href="compute_endogenous_features.html">compute_endogenous_features()</a></code>.</p></dd>
+<code><a href="endogenous_features.html">endogenous_features()</a></code>.</p></dd>
 
 
 <dt id="arg-n-controls">n_controls<a class="anchor" aria-label="anchor" href="#arg-n-controls"></a></dt>
@@ -206,7 +206,7 @@ Statistical Society Series A</em> 188(4), 1246-1262.
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="compute_endogenous_features.html">compute_endogenous_features()</a></code>, <code><a href="sample_non_events.html">sample_non_events()</a></code>.</p></div>
+    <div class="dont-index"><p><code><a href="endogenous_features.html">endogenous_features()</a></code>, <code><a href="sample_non_events.html">sample_non_events()</a></code>.</p></div>
     </div>
 
     <div class="section level2">

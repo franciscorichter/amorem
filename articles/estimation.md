@@ -87,7 +87,7 @@ a case-control draw.
 To compute endogenous covariates for the sampled non-events *without*
 letting them enter the event history, pass the true event log as
 `history_log` to
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 — only rows present in `history_log` update the running network state.
 
 For set-valued covariates, the `"sender_receivers_set"` statistic
@@ -99,7 +99,7 @@ covariate:
 
 ``` r
 
-feats <- compute_endogenous_features(cc, stats = "sender_receivers_set",
+feats <- endogenous_features(cc, stats = "sender_receivers_set",
                                      history_log = event_log)
 feats$invaded <- Map(setdiff, feats$sender_receivers_set, native_range(feats$sender))
 feats$dt      <- mapply(min_climatic_diff, feats$invaded, feats$receiver, feats$time)
@@ -111,7 +111,7 @@ feats$dt      <- mapply(min_climatic_diff, feats$invaded, feats$receiver, feats$
 
 When the covariates have already been computed — e.g. by
 [`eventnet`](https://github.com/juergenlerner/eventnet) or by
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 — [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
 fits the model directly from the case-control table, decoupling fitting
 from feature computation. It has three backends:

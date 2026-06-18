@@ -33,7 +33,7 @@ in practice and that the estimates are robust to choices in \\\[0.1,
 
 Specification format. Each entry of `models` is a named character vector
 mapping a covariate name (a statistic in
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 **or** a column of `global_covariates`) to an effect type:
 
 - `"linear"` – linear `beta * x` term.

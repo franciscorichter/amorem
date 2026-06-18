@@ -13,7 +13,7 @@ tidy AIC comparison table. One case-control sample is drawn from
 are directly comparable.
 
 Each specification is a character vector of stat names accepted by
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 The function computes the union of all stats once, builds
 case-minus-control differences, and fits one binomial GLM per
 specification with the appropriate subset of columns. The fitted models
@@ -54,7 +54,7 @@ compare_models(
   Named list of character vectors. Each entry names one candidate
   specification; the vector contents are the endogenous statistics it
   includes. Stats must be valid names for
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 
 - n_controls:
 
@@ -120,7 +120,7 @@ Statistical Society Series A* 188(4), 1246-1262.
 
 ## See also
 
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md),
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md),
 [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md).
 
 ## Examples

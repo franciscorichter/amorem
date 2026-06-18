@@ -10,8 +10,14 @@ development line into the first stable, installable version: the unified
 front-end (the `clogit`, `gam`, and `nn` backends, including the
 additive-spline architecture), the Gillespie / tau-leap simulation
 engine, the endogenous-statistics catalogue, and the martingale-residual
-goodness-of-fit family. No API changes relative to 0.9.0 beyond the
-package name.
+goodness-of-fit family. Relative to 0.9.0 the package was renamed to
+**amorem** and the exported feature functions dropped their `compute_`
+prefix — `compute_endogenous_features()` and
+`compute_hyperedge_features()` became
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+and
+[`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md);
+the rest of the API is unchanged.
 
 ## amorem 0.9.0
 
@@ -56,11 +62,11 @@ intended for the first CRAN release.
   before fitting, emitting a message — instead of silently misreading
   raw per-row values as event-minus-control differences
   ([\#93](https://github.com/franciscorichter/amorem/issues/93)).
-- [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
-  gains a `prior_log` argument for warm-starting the network state from
-  events that precede the study window: its rows update the running
-  state but never appear in the output, separating warm-starting from
-  the non-event masking role of `history_log`
+- `compute_endogenous_features()` gains a `prior_log` argument for
+  warm-starting the network state from events that precede the study
+  window: its rows update the running state but never appear in the
+  output, separating warm-starting from the non-event masking role of
+  `history_log`
   ([\#94](https://github.com/franciscorichter/amorem/issues/94)).
 - [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)
   is now exported.

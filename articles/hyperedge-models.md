@@ -65,13 +65,13 @@ count.
 
 #### Feature engine
 
-[`compute_hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/compute_hyperedge_features.md)
+[`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md)
 is the hyperedge analogue of
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md):
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md):
 
 ``` r
 
-feat <- compute_hyperedge_features(hl,
+feat <- hyperedge_features(hl,
   stats = c("activity", "subrep_1_1", "subrep_2_1"))
 ```
 
@@ -80,7 +80,7 @@ feat <- compute_hyperedge_features(hl,
 | `"activity"` | `hyperedge_activity` on each row’s `(I, J)` |
 | `"subrep_<rho>_<l>"` | directed subset repetition |
 | `"subrep_<rho>"` | undirected subset repetition (`l = 0`) |
-| any name in the 68-stat catalogue | delegated to [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md) after [`as_dyadic_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md) — requires every row to be dyadic |
+| any name in the 68-stat catalogue | delegated to [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md) after [`as_dyadic_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md) — requires every row to be dyadic |
 
 ------------------------------------------------------------------------
 

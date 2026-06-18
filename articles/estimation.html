@@ -160,7 +160,7 @@ comparable across specifications that share a case-control draw.</p>
 <p>To compute endogenous covariates for the sampled non-events
 <em>without</em> letting them enter the event history, pass the true
 event log as <code>history_log</code> to
-<code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> — only rows present in
+<code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> — only rows present in
 <code>history_log</code> update the running network state.</p>
 <p>For set-valued covariates, the <code>"sender_receivers_set"</code>
 statistic returns a <strong>list-column</strong>: for each row, the set
@@ -169,7 +169,7 @@ species has already invaded). It honours <code>history_log</code> too,
 so it is correct for non-events. Downstream, you join it to an external
 lookup to build the actual covariate:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">feats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_endogenous_features.html">compute_endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="st">"sender_receivers_set"</span>,</span>
+<code class="sourceCode R"><span><span class="va">feats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="st">"sender_receivers_set"</span>,</span>
 <span>                                     history_log <span class="op">=</span> <span class="va">event_log</span><span class="op">)</span></span>
 <span><span class="va">feats</span><span class="op">$</span><span class="va">invaded</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/funprog.html" class="external-link">Map</a></span><span class="op">(</span><span class="va">setdiff</span>, <span class="va">feats</span><span class="op">$</span><span class="va">sender_receivers_set</span>, <span class="fu">native_range</span><span class="op">(</span><span class="va">feats</span><span class="op">$</span><span class="va">sender</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">feats</span><span class="op">$</span><span class="va">dt</span>      <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">min_climatic_diff</span>, <span class="va">feats</span><span class="op">$</span><span class="va">invaded</span>, <span class="va">feats</span><span class="op">$</span><span class="va">receiver</span>, <span class="va">feats</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span></code></pre></div>
@@ -180,9 +180,9 @@ lookup to build the actual covariate:</p>
 <code>rem()</code> · unified fitter for preprocessed data<a class="anchor" aria-label="anchor" href="#rem-unified-fitter-for-preprocessed-data"></a>
 </h3>
 <p>When the covariates have already been computed — e.g. by <a href="https://github.com/juergenlerner/eventnet" class="external-link"><code>eventnet</code></a>
-or by <code><a href="../reference/compute_endogenous_features.html">compute_endogenous_features()</a></code> — <code><a href="../reference/rem.html">rem()</a></code>
-fits the model directly from the case-control table, decoupling fitting
-from feature computation. It has three backends:</p>
+or by <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> — <code><a href="../reference/rem.html">rem()</a></code> fits the
+model directly from the case-control table, decoupling fitting from
+feature computation. It has three backends:</p>
 <ul>
 <li>
 <strong><code>method = "clogit"</code></strong> — conditional

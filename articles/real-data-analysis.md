@@ -81,7 +81,7 @@ stat_names <- c("reciprocity_time_recent",
                 "transitivity_time_recent_interrupted")
 
 cc   <- sample_non_events(re30, n_controls = 3, seed = 11)
-feat <- compute_endogenous_features(cc, stats = stat_names)
+feat <- endogenous_features(cc, stats = stat_names)
 
 fit <- survival::coxph(
   survival::Surv(rep(1, nrow(feat)), event) ~

@@ -7,7 +7,7 @@ C++ fast path, 8 in pure R — plus the `sender_receivers_set`
 list-column, organised into six families × seven variant axes. The same
 history can be summarised many ways; the variant axis decides which way.
 The simulator and the post-hoc
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 engine cover the catalogue together, and every shared statistic is
 parity-tested on common event logs.
 
@@ -83,7 +83,7 @@ generate from these variants.
 
 The simulator’s closure-family state matrices are sized `|U| × |U|` over
 the unified actor universe;
-[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
 is universe-agnostic via its string-keyed history. Both paths handle
 bipartite and arbitrarily overlapping sender / receiver sets for every
 closure-family statistic, and are cross-validated on bipartite seeds by

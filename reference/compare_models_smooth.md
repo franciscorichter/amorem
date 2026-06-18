@@ -20,7 +20,7 @@ For each specification:
 
 - For every requested statistic, both the case (event) and the control
   (non-event) features are computed via
-  [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md).
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md).
 
 - The mgcv design uses the case-vs-control matrix trick:
 

@@ -20,7 +20,7 @@
   : Standardize a relational event log
 - [`attach_static_covariates()`](https://franciscorichter.github.io/amorem/reference/attach_static_covariates.md)
   : Attach static covariates to an event log
-- [`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)
+- [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
   : Compute endogenous event-network statistics
 - [`cpp_supported_stats`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)
   : Endogenous statistics with a compiled fast path
@@ -72,7 +72,7 @@
   : Activity counter for hyperedge subsets
 - [`hyperedge_subrep()`](https://franciscorichter.github.io/amorem/reference/hyperedge_subrep.md)
   : Subset repetition statistic for a hyperedge event log
-- [`compute_hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/compute_hyperedge_features.md)
+- [`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md)
   : Endogenous features for a hyperedge event log
 
 ## Data

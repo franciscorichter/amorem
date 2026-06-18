@@ -13,7 +13,7 @@ One case-control sample is drawn from event_log with
 n_controls = 1 (paired event / non-event design).
 For every requested statistic, both the case (event) and the
 control (non-event) features are computed via
-compute_endogenous_features().
+endogenous_features().
 The mgcv design uses the case-vs-control matrix trick:
 linear -&amp;gt; a single coefficient on case - control (column d_stat).
 tv    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
@@ -44,7 +44,7 @@ One case-control sample is drawn from event_log with
 n_controls = 1 (paired event / non-event design).
 For every requested statistic, both the case (event) and the
 control (non-event) features are computed via
-compute_endogenous_features().
+endogenous_features().
 The mgcv design uses the case-vs-control matrix trick:
 linear -&amp;gt; a single coefficient on case - control (column d_stat).
 tv    -&amp;gt; s(time, by = d_stat) — smooth in time, multiplied by d_stat.
@@ -124,7 +124,7 @@ is documented in their Section 3.3.</p>
 <code>n_controls = 1</code> (paired event / non-event design).</p></li>
 <li><p>For every requested statistic, both the case (event) and the
 control (non-event) features are computed via
-<code><a href="compute_endogenous_features.html">compute_endogenous_features()</a></code>.</p></li>
+<code><a href="endogenous_features.html">endogenous_features()</a></code>.</p></li>
 <li><p>The mgcv design uses the case-vs-control matrix trick:</p><ul><li><p>linear -&gt; a single coefficient on <code>case - control</code> (column <code>d_stat</code>).</p></li>
 <li><p>tv    -&gt; <code>s(time, by = d_stat)</code> — smooth in time, multiplied by <code>d_stat</code>.</p></li>
 <li><p>nl    -&gt; <code>s(stat_mat, by = I_mat)</code> where <code>stat_mat</code> is a

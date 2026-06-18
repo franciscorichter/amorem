@@ -73,10 +73,10 @@ summary(fit)
   — exact Gillespie or τ-leap; composes exogenous, endogenous, and
   time-varying global covariates; with `wide = TRUE` emits a
   ready-to-fit case-1-control table.
-- **[`compute_endogenous_features()`](https://franciscorichter.github.io/amorem/reference/compute_endogenous_features.md)**
-  — the endogenous catalogue computed post-hoc from any
-  `(sender, receiver, time)` log; via `history_log` it scores sampled
-  non-events without polluting the event history.
+- **`compute_endogenous_features()`** — the endogenous catalogue
+  computed post-hoc from any `(sender, receiver, time)` log; via
+  `history_log` it scores sampled non-events without polluting the event
+  history.
 - **[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)**
   — nested case-control sampling with appearance / citation / remove
   risk-set rules.

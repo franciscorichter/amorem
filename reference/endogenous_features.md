@@ -10,7 +10,7 @@ receiving balance. All definitions use the *continuous* convention
 ## Usage
 
 ``` r
-compute_endogenous_features(
+endogenous_features(
   event_log,
   stats = c("sender_outdegree", "receiver_indegree", "reciprocity", "recency"),
   half_life = NULL,
@@ -230,7 +230,7 @@ history.
 
 ``` r
 data(classroom_events)
-feats <- compute_endogenous_features(classroom_events,
+feats <- endogenous_features(classroom_events,
                                      stats = c("reciprocity", "recency"))
 head(feats)
 #>    time sender receiver interaction_type weight reciprocity recency
