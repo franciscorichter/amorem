@@ -1,5 +1,23 @@
 # Changelog
 
+## amorem (development version)
+
+- **torch training engine for `rem(method = "nn")`.**
+  `nn_control(engine = "torch")` trains the same model and
+  conditional-logistic loss as the built-in pure-R engine using
+  (libtorch autograd + Adam), markedly faster and, with `batch_strata`,
+  scaling to large event logs (optionally on GPU). The fitted object is
+  interchangeable with the R engine. `torch` is a *Suggests* dependency;
+  the torch engine requires equal-sized strata.
+- **[`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)**
+  quantifies uncertainty for a neural fit by a stratum bootstrap,
+  returning partial-dependence uncertainty bands and a concordance
+  confidence interval (with
+  [`print()`](https://rdrr.io/r/base/print.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods) —
+  the inferential counterpart the point-prediction `nn` backend
+  otherwise lacks.
+
 ## amorem 1.0.0
 
 First CRAN release, under the name **amorem**. The package was renamed

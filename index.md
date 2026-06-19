@@ -1,8 +1,8 @@
-## amore ![](reference/figures/logo.png)
+## amorem ![](reference/figures/amorem.png)
 
-**Augmented Modelling of Relational Events** — end-to-end **simulation,
-sampling, feature engineering, model selection, and inference** for
-relational event models (REMs) in R, in one consistent API.
+**amorem** — end-to-end **simulation, sampling, feature engineering,
+model selection, and inference** for relational event models (REMs) in
+R, in one consistent API.
 
 The package consolidates four lines of recent methodological work:
 
@@ -26,14 +26,14 @@ The package consolidates four lines of recent methodological work:
 ``` r
 
 # install.packages("remotes")
-remotes::install_github("franciscorichter/amore")
+remotes::install_github("franciscorichter/amorem")
 ```
 
 ## 30-second tour
 
 ``` r
 
-library(amore)
+library(amorem)
 
 # 1. Bundled datasets, ready to load
 data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)

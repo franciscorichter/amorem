@@ -35,6 +35,7 @@ nn_control(
   validation = 0.2,
   patience = 25L,
   standardize = TRUE,
+  engine = c("r", "torch"),
   seed = NULL,
   verbose = FALSE
 )
@@ -79,7 +80,8 @@ nn_control(
 
 - l2:
 
-  L2 penalty (weight decay) on the weights (not the biases).
+  L2 penalty (weight decay). The pure-R engine penalises the weights
+  only; the torch engine applies it via Adam's `weight_decay`.
 
 - validation:
 
@@ -96,6 +98,19 @@ nn_control(
   Z-score the features before training (recommended; the scaling is
   stored and re-applied by
   [`predict()`](https://rdrr.io/r/stats/predict.html)).
+
+- engine:
+
+  Training engine: `"r"` (default) uses the built-in pure-R
+  implementation with hand-derived gradients; `"torch"` trains the
+  *same* model and loss with the torch package (libtorch / autograd),
+  which is markedly faster and, with `batch_strata`, scales to large
+  event logs (optionally on GPU). The two engines fit identical model
+  classes and return interchangeable objects. `"torch"` requires the
+  suggested torch package (run
+  [`torch::install_torch()`](https://torch.mlverse.org/docs/reference/install_torch.html)
+  once) and equal-sized strata (the usual case-control layout with a
+  fixed number of controls).
 
 - seed:
 

@@ -48,6 +48,13 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="amorem-development-version">amorem (development version)<a class="anchor" aria-label="anchor" href="#amorem-development-version"></a></h2>
+<ul><li>
+<strong>torch training engine for <code>rem(method = "nn")</code>.</strong> <code>nn_control(engine = "torch")</code> trains the same model and conditional-logistic loss as the built-in pure-R engine using  (libtorch autograd + Adam), markedly faster and, with <code>batch_strata</code>, scaling to large event logs (optionally on GPU). The fitted object is interchangeable with the R engine. <code>torch</code> is a <em>Suggests</em> dependency; the torch engine requires equal-sized strata.</li>
+<li>
+<strong><code><a href="../reference/nn_uncertainty.html">nn_uncertainty()</a></code></strong> quantifies uncertainty for a neural fit by a stratum bootstrap, returning partial-dependence uncertainty bands and a concordance confidence interval (with <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods) — the inferential counterpart the point-prediction <code>nn</code> backend otherwise lacks.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.0" id="amorem-100">amorem 1.0.0<a class="anchor" aria-label="anchor" href="#amorem-100"></a></h2>
 <p>First CRAN release, under the name <strong>amorem</strong>. The package was renamed from the working name <code>amore</code>, which collided (case-insensitively) with the archived CRAN package <code>AMORE</code>. This release consolidates the 0.9.0 development line into the first stable, installable version: the unified <code><a href="../reference/rem.html">rem()</a></code> front-end (the <code>clogit</code>, <code>gam</code>, and <code>nn</code> backends, including the additive-spline architecture), the Gillespie / tau-leap simulation engine, the endogenous-statistics catalogue, and the martingale-residual goodness-of-fit family. Relative to 0.9.0 the package was renamed to <strong>amorem</strong> and the exported feature functions dropped their <code>compute_</code> prefix — <code>compute_endogenous_features()</code> and <code>compute_hyperedge_features()</code> became <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> and <code><a href="../reference/hyperedge_features.html">hyperedge_features()</a></code>; the rest of the API is unchanged.</p>
 </div>

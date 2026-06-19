@@ -123,6 +123,7 @@ in-memory smooth fit can hold.</p></dd>
 <span>  validation <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  patience <span class="op">=</span> <span class="fl">25L</span>,</span>
 <span>  standardize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  engine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"r"</span>, <span class="st">"torch"</span><span class="op">)</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -170,7 +171,8 @@ training strata).</p></dd>
 
 
 <dt id="arg-l-">l2<a class="anchor" aria-label="anchor" href="#arg-l-"></a></dt>
-<dd><p>L2 penalty (weight decay) on the weights (not the biases).</p></dd>
+<dd><p>L2 penalty (weight decay). The pure-R engine penalises the weights
+only; the torch engine applies it via Adam's <code>weight_decay</code>.</p></dd>
 
 
 <dt id="arg-validation">validation<a class="anchor" aria-label="anchor" href="#arg-validation"></a></dt>
@@ -187,6 +189,17 @@ are restored.</p></dd>
 <dt id="arg-standardize">standardize<a class="anchor" aria-label="anchor" href="#arg-standardize"></a></dt>
 <dd><p>Z-score the features before training (recommended; the
 scaling is stored and re-applied by <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>).</p></dd>
+
+
+<dt id="arg-engine">engine<a class="anchor" aria-label="anchor" href="#arg-engine"></a></dt>
+<dd><p>Training engine: <code>"r"</code> (default) uses the built-in pure-R
+implementation with hand-derived gradients; <code>"torch"</code> trains the <em>same</em>
+model and loss with the <span class="pkg">torch</span> package (libtorch / autograd), which is
+markedly faster and, with <code>batch_strata</code>, scales to large event logs
+(optionally on GPU). The two engines fit identical model classes and return
+interchangeable objects. <code>"torch"</code> requires the suggested <span class="pkg">torch</span>
+package (run <code><a href="https://torch.mlverse.org/docs/reference/install_torch.html" class="external-link">torch::install_torch()</a></code> once) and equal-sized strata (the
+usual case-control layout with a fixed number of controls).</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>

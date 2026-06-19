@@ -38,6 +38,10 @@
   data
 - [`nn_control()`](https://franciscorichter.github.io/amorem/reference/nn_control.md)
   : Control parameters for the neural-network backend of rem()
+- [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  : Bootstrap uncertainty for the neural rem() backend
+- [`plot(`*`<nn_uncertainty>`*`)`](https://franciscorichter.github.io/amorem/reference/plot.nn_uncertainty.md)
+  : Plot partial-dependence uncertainty bands
 - [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
   : Compare candidate endogenous specifications by AIC
 - [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
