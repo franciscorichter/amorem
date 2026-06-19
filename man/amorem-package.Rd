@@ -4,11 +4,11 @@
 \name{amorem-package}
 \alias{amorem}
 \alias{amorem-package}
-\title{amorem: Augmented Modelling of Relational Events}
+\title{amorem}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Utilities for simulating and prototyping relational event models, including helpers to generate dynamic event sequences and covariate processes for sender and receiver sets. The endogenous-effect and case-control estimation machinery follows Juozaitiene and Wit (2024) \doi{10.1093/jrsssa/qnae132}.
+Utilities for simulating and fittin relational event models, including helpers to generate dynamic event sequences and covariate processes for sender and receiver sets. The endogenous-effect and case-control estimation machinery follows Juozaitiene and Wit (2024) \doi{10.1093/jrsssa/qnae132}.
 }
 \seealso{
 Useful links:

@@ -1,7 +1,6 @@
 ## Submission
 
-This is a new submission of **amorem** (Augmented Modelling of Relational
-Events), version 1.0.0 — tools for simulating, fitting, and checking
+This is a new submission of **amorem**, version 1.0.0 — tools for simulating, fitting, and checking
 relational event models.
 
 ## Test environments
@@ -23,8 +22,7 @@ for the following reasons:
 * **AMORE** ("A MORE flexible neural network package") was **archived** on
   CRAN and is no longer an active package.
 * It is unrelated in scope: AMORE concerned feed-forward neural networks,
-  whereas **amorem** provides relational event models for dynamic network data
-  ("Augmented Modelling Of Relational Events").
+  whereas **amorem** provides relational event models for dynamic network data.
 * The names differ in case, and the package namespaces, exported objects, and
   documentation do not overlap.
 

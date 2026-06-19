@@ -1,19 +1,15 @@
 # amorem
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="man/figures/logo-github-dark.png">
-    <img src="man/figures/logo-github-white.png" width="220" alt="amorem logo" />
-  </picture>
+  <img src="man/figures/amorem.png" width="220" alt="amorem logo" />
 </p>
-
 <p align="center">
   <a href="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml"><img src="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check" /></a>
   <a href="https://franciscorichter.github.io/amorem/"><img src="https://img.shields.io/badge/docs-pkgdown-blue" alt="pkgdown docs" /></a>
   <img src="https://img.shields.io/badge/status-prototype-blue" alt="status prototype" />
 </p>
 
-**amorem** (Augmented Modelling of Relational Events) is an R package for
+**amorem** is an R package for
 simulation and inference in relational event models (REMs) and relational
 *hyper* event models (RHEMs) — dynamic network data in continuous time.
 
