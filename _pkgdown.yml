@@ -74,6 +74,7 @@ reference:
       - rem
       - nn_control
       - nn_uncertainty
+      - plot.nn_uncertainty  # Added this line
       - compare_models
       - compare_models_smooth
       - compare_models_global
