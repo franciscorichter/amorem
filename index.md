@@ -1,5 +1,5 @@
 <!-- pkgdown home page. Edit here, not on the GitHub wiki. -->
-
+<br>
 ## amorem <img src="man/figures/amorem.png" align="right" height="118" alt="" />
 
 **amorem** — end-to-end **simulation,
