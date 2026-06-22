@@ -126,7 +126,7 @@ Statistical Society Series A* 188(4), 1246-1262.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 data(classroom_events)
 compare_models(
   classroom_events,
@@ -137,5 +137,9 @@ compare_models(
     interrupted = c("reciprocity_time_recent_interrupted",
                     "transitivity_time_recent_interrupted")),
   seed = 11)
-} # }
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1       count       2   691 -305.5233 615.0466    0.0000
+#> 2  continuous       2   691 -421.1231 846.2462  231.1996
+#> 3 interrupted       2   691 -439.6904 883.3809  268.3343
+# }
 ```

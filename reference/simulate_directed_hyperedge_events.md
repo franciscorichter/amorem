@@ -95,7 +95,7 @@ Non-Linear Effects*. arXiv:2509.05289, Section 5.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 hl <- simulate_directed_hyperedge_events(
   n_events  = 40,
   senders   = paste0("a", 1:4),
@@ -104,5 +104,5 @@ hl <- simulate_directed_hyperedge_events(
   baseline_rate = 0.3,
   endogenous_stats   = c("subrep_1_1", "size_I"),
   endogenous_effects = c(subrep_1_1 = 0.8, size_I = -0.4))
-} # }
+# }
 ```

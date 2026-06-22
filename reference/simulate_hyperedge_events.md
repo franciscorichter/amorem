@@ -87,7 +87,7 @@ Non-Linear Effects*. arXiv:2509.05289.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 # Five-actor meetings of size up to 3, with weak attractor on
 # repeated triads and a size penalty:
 hl <- simulate_hyperedge_events(
@@ -97,5 +97,5 @@ hl <- simulate_hyperedge_events(
   baseline_rate = 0.2,
   endogenous_stats   = c("subrep_2", "size"),
   endogenous_effects = c(subrep_2 = 0.5, size = -0.3))
-} # }
+# }
 ```

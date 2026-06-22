@@ -75,7 +75,7 @@ for survival models*. Biometrika 77(1), 147–160.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 data(classroom_events)
 res <- martingale_residuals(
   classroom_events,
@@ -86,5 +86,6 @@ plot(res$time, res$residual,
      col = ifelse(res$role == "case", "red", "grey60"),
      ylab = "Martingale residual", xlab = "Event time")
 abline(h = 0)
-} # }
+
+# }
 ```

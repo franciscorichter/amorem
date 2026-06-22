@@ -147,7 +147,7 @@ of the Royal Statistical Society, Series C.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 data(classroom_events)
 # Hourly temperature track on the same time axis:
 g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),
@@ -163,5 +163,9 @@ compare_models_global(
                     time                     = "global_time")),
   global_covariates = g,
   seed = 11, k = 5)
-} # }
+#> Warning: compare_models_global: spec 'with_global' failed (NA/NaN/Inf in foreign function call (arg 3))
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1 dyadic_only       2   691 -305.5233 615.0466         0
+#> 2 with_global       4   691        NA       NA        NA
+# }
 ```

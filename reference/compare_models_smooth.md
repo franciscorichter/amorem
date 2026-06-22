@@ -128,7 +128,7 @@ for the linear-only variant.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
 data(classroom_events)
 compare_models_smooth(
   classroom_events,
@@ -140,5 +140,9 @@ compare_models_smooth(
     tvnl  = c(reciprocity_time_recent  = "tvnl",
                transitivity_time_recent = "tvnl")),
   seed = 11)
-} # }
+#>    model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1     nl       2   691 -418.0982 845.8892 0.0000000
+#> 2 linear       2   691 -421.1231 846.2462 0.3570575
+#> 3   tvnl       2   691 -417.4186 848.6513 2.7620675
+# }
 ```
