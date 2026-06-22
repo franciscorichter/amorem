@@ -90,7 +90,7 @@
 #'   [compare_models_smooth()] (smooth dyadic effects, no globals).
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(classroom_events)
 #' # Hourly temperature track on the same time axis:
 #' g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),

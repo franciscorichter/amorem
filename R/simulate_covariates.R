@@ -42,16 +42,9 @@ simulate_actor_covariates <- function(
     seed = NULL) {
   stopifnot(sd >= 0)
   if (!is.null(seed)) {
-    old_seed <- get0(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-    on.exit({
-      if (is.null(old_seed)) {
-        if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
-          rm(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-        }
-      } else {
-        assign(".Random.seed", old_seed, envir = .GlobalEnv)
-      }
-    })
+    # Preserve and restore the caller's RNG state without writing to the
+    # global environment (CRAN policy: do not modify .GlobalEnv).
+    withr::local_preserve_seed()
     set.seed(seed)
   }
 

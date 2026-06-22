@@ -18,7 +18,8 @@ Imports:
     splines,
     stats,
     Rcpp,
-    survival
+    survival,
+    withr
 LinkingTo:
     Rcpp
 Suggests:

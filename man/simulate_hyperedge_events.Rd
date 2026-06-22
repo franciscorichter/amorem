@@ -66,7 +66,7 @@ C(|V|, s))}; practical for small actor counts (e.g. \eqn{|V| \le 20}{|V| <= 20},
 \code{max_size <= 4}).
 }
 \examples{
-\dontrun{
+\donttest{
 # Five-actor meetings of size up to 3, with weak attractor on
 # repeated triads and a size penalty:
 hl <- simulate_hyperedge_events(

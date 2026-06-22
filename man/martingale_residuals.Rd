@@ -56,7 +56,7 @@ fits the case-vs-control matrix design used by
 martingale interpretation.
 }
 \examples{
-\dontrun{
+\donttest{
 data(classroom_events)
 res <- martingale_residuals(
   classroom_events,

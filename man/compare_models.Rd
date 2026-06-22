@@ -92,7 +92,7 @@ that correctly handles multiple controls per stratum. The
 \code{n_controls > 1}.
 }
 \examples{
-\dontrun{
+\donttest{
 data(classroom_events)
 compare_models(
   classroom_events,

@@ -77,7 +77,7 @@ Candidate-space size is exponential in
 limited to small actor / item universes.
 }
 \examples{
-\dontrun{
+\donttest{
 hl <- simulate_directed_hyperedge_events(
   n_events  = 40,
   senders   = paste0("a", 1:4),

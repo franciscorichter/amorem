@@ -39,7 +39,7 @@
 #' residuals for survival models*. Biometrika 77(1), 147--160.
 #' @seealso [compare_models()], [compare_models_smooth()].
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(classroom_events)
 #' res <- martingale_residuals(
 #'   classroom_events,

@@ -113,7 +113,7 @@ the residual time effect \eqn{g_0(t)}{g_0(t)} of paper eq. 3.
 }
 }
 \examples{
-\dontrun{
+\donttest{
 data(classroom_events)
 # Hourly temperature track on the same time axis:
 g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),

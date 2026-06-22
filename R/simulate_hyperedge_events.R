@@ -42,7 +42,7 @@
 #' Time-Homogeneity: Relational Hyper Event Models with Time-Varying
 #' Non-Linear Effects*. arXiv:2509.05289.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Five-actor meetings of size up to 3, with weak attractor on
 #' # repeated triads and a size penalty:
 #' hl <- simulate_hyperedge_events(

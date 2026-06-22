@@ -49,7 +49,7 @@
 #' Time-Homogeneity: Relational Hyper Event Models with Time-Varying
 #' Non-Linear Effects*. arXiv:2509.05289, Section 5.
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' hl <- simulate_directed_hyperedge_events(
 #'   n_events  = 40,
 #'   senders   = paste0("a", 1:4),

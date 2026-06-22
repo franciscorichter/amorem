@@ -1,3 +1,16 @@
+## Resubmission
+
+This is a resubmission of **amorem** 1.0.0 addressing the two points raised in the
+CRAN manual review:
+
+* **Examples no longer use `\dontrun{}`.** All seven affected examples now use
+  `\donttest{}` instead, per the reviewer's request.
+* **The package no longer modifies `.GlobalEnv`.** The four functions that
+  temporarily set a seed previously saved and restored `.Random.seed` via
+  `assign(..., envir = .GlobalEnv)`. They now use `withr::local_preserve_seed()`,
+  which preserves and restores the caller's RNG state without writing to the
+  global environment. (`withr` added to Imports.)
+
 ## Submission
 
 This is a new submission of **amorem**, version 1.0.0 — tools for simulating, fitting, and checking

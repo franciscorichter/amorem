@@ -124,7 +124,7 @@
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(classroom_events)
 #' gof_univariate(classroom_events,
 #'   model = c(reciprocity_count  = "linear",
@@ -251,8 +251,7 @@ gof_multivariate <- function(event_log, model, covariate,
 # Z^0 is a q-dim standard Brownian bridge, evaluated on an n-grid.
 .gof_simulate_BB_supnorm2 <- function(n, q, n_sim, seed = NULL) {
   if (!is.null(seed)) {
-    old <- .Random.seed
-    on.exit(assign(".Random.seed", old, envir = .GlobalEnv), add = TRUE)
+    withr::local_preserve_seed()
     set.seed(seed)
   }
   u <- seq_len(n) / n
@@ -376,8 +375,7 @@ gof_auxiliary <- function(event_log, model, auxiliary,
   # Simulation under the fitted null: replicate G_k^* = N_k · G_k where
   # N_k ~ N(0, 1) i.i.d. (paper's eq. 20 multiplier construction).
   if (!is.null(seed)) {
-    old <- .Random.seed
-    on.exit(assign(".Random.seed", old, envir = .GlobalEnv), add = TRUE)
+    withr::local_preserve_seed()
     set.seed(seed + 17L)
   }
   T_star <- numeric(n_sim)

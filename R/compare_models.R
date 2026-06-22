@@ -72,7 +72,7 @@
 #' \doi{10.1093/jrsssa/qnae132}.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(classroom_events)
 #' compare_models(
 #'   classroom_events,

@@ -88,7 +88,7 @@ fit uses the same case-control sample. Returns the same tidy
 \code{data.frame} as \code{\link[=compare_models]{compare_models()}}.
 }
 \examples{
-\dontrun{
+\donttest{
 data(classroom_events)
 compare_models_smooth(
   classroom_events,

@@ -11,6 +11,7 @@
 ^amore\.Rcheck$
 ^pkgdown$
 ^\.vscode$
+^\.claude$
 ^AUDIT\.md$
 ^data-raw$
 ^doc$

@@ -69,7 +69,7 @@
 #' @seealso [compare_models()] for the linear-only variant.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' data(classroom_events)
 #' compare_models_smooth(
 #'   classroom_events,

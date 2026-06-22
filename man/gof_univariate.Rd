@@ -39,7 +39,7 @@ Kolmogorov-Smirnov distribution
 \eqn{2 \sum_{k\ge 1} (-1)^{k-1} e^{-2 k^2 t^2}}{2 sum (-1)^(k-1) exp(-2 k^2 t^2)}.
 }
 \examples{
-\dontrun{
+\donttest{
 data(classroom_events)
 gof_univariate(classroom_events,
   model = c(reciprocity_count  = "linear",
