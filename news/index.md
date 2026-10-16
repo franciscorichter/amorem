@@ -1,6 +1,6 @@
 # Changelog
 
-## amorem (development version)
+## amorem 1.1.0
 
 ### Bug fixes
 
