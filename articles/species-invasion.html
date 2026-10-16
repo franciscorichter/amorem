@@ -92,160 +92,220 @@
 directed event: source country <code>s</code> “invades” target country
 <code>r</code> at some time <code>t</code>. Once <code>s</code> has
 reached <code>r</code>, the dyad <code>(s, r)</code> is removed from the
-at-risk set — it cannot fire again. This is a textbook
-<strong>relational event process</strong> with a one-shot
-<code>risk = "remove"</code> rule.</p>
-<p>We sketch a minimal end-to-end workflow in <code>amorem</code>:</p>
+at-risk set — it cannot fire again. This is a <strong>relational event
+process</strong> with a one-shot <code>risk = "remove"</code> rule.</p>
+<p>Invasions unfold over centuries, so their rate can also follow the
+climate: a covariate such as the El Niño/Southern Oscillation takes one
+value per year for every dyad. This vignette builds an end-to-end
+workflow in <code>amorem</code>:</p>
 <ol style="list-style-type: decimal">
-<li>Build a synthetic invasion log with known drivers (distance and
-propagule pressure).</li>
-<li>Use the <code>risk = "remove"</code> simulator with case-control
-sampling.</li>
-<li>Recover the drivers from the case-control output with a smooth
-GAM.</li>
+<li>Simulate five centuries of invasions driven by distance, an
+endogenous neighbour pressure, and the reconstructed ENSO index.</li>
+<li>Draw a time-shifted case-control sample, which is what makes the
+ENSO effect estimable.</li>
+<li>Recover all three drivers with <code><a href="../reference/rem.html">rem()</a></code>.</li>
 </ol>
 </div>
 <div class="section level2">
-<h2 id="a-synthetic-invasion-process">A synthetic invasion process<a class="anchor" aria-label="anchor" href="#a-synthetic-invasion-process"></a>
+<h2 id="ingredients">Ingredients<a class="anchor" aria-label="anchor" href="#ingredients"></a>
 </h2>
 <p>We use the 56 × 56 US-state distance matrix shipped with
-<code>amorem</code> as a stand-in for inter-country distances and treat
+<code>amorem</code> as a stand-in for inter-country distances, and treat
 the states as the country universe.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dist_matrix"</span>, package <span class="op">=</span> <span class="st">"amorem"</span><span class="op">)</span></span>
-<span></span>
 <span><span class="va">states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">dist_matrix</span><span class="op">)</span></span>
-<span><span class="va">n_states</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">states</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Convert metres → log-units, scaled to a usable range.</span></span>
+<span><span class="co"># Convert metres to log-units, scaled to a usable range.</span></span>
 <span><span class="va">dist_log</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">dist_matrix</span> <span class="op">/</span> <span class="fl">1e5</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p>The true intensity for an invasion from <code>s</code> to
-<code>r</code> is</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mspace width="0.278em"></mspace><msub><mi>λ</mi><mn>0</mn></msub><mspace width="0.278em"></mspace><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">(</mo><msub><mi>β</mi><mi>d</mi></msub><mspace width="0.167em"></mspace><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>h</mi></msub><mspace width="0.167em"></mspace><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(\beta_d\,f(d_{sr})
-+ \beta_h\,h_{sr}(t)\bigr),</annotation></semantics></math></p>
+<p>The global covariate is <code>enso_nino34</code>, the tree-ring
+reconstruction of the winter Niño3.4 sea-surface temperature anomaly by
+Li et al. (2013), one value per year from 1301 to 2005. We keep
+1500–2005 and hold each winter’s value through the calendar year it
+opens:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"enso_nino34"</span>, package <span class="op">=</span> <span class="st">"amorem"</span><span class="op">)</span></span>
+<span><span class="va">enso</span> <span class="op">&lt;-</span> <span class="va">enso_nino34</span><span class="op">[</span><span class="va">enso_nino34</span><span class="op">$</span><span class="va">year</span> <span class="op">&gt;=</span> <span class="fl">1500</span>, <span class="op">]</span></span>
+<span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time_start <span class="op">=</span> <span class="va">enso</span><span class="op">$</span><span class="va">year</span>, nino34 <span class="op">=</span> <span class="va">enso</span><span class="op">$</span><span class="va">nino34</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">enso</span><span class="op">$</span><span class="va">year</span>, <span class="va">enso</span><span class="op">$</span><span class="va">nino34</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"grey30"</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"year"</span>, ylab <span class="op">=</span> <span class="st">"Niño3.4 anomaly (°C)"</span>,</span>
+<span>     main <span class="op">=</span> <span class="st">"Reconstructed ENSO index (Li et al. 2013)"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey60"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="species-invasion_files/figure-html/enso-1.png" class="r-plt" alt="reconstructed Nino3.4 anomaly, 1500 to 2005" width="576"></p>
+</div>
+<div class="section level2">
+<h2 id="a-simulated-invasion-record">A simulated invasion record<a class="anchor" aria-label="anchor" href="#a-simulated-invasion-record"></a>
+</h2>
+<p>The intensity of an invasion from <code>s</code> to <code>r</code>
+is</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mspace width="0.278em"></mspace><msub><mi>λ</mi><mn>0</mn></msub><mspace width="0.278em"></mspace><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">(</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>h</mi></msub><mspace width="0.167em"></mspace><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>g</mi></msub><mspace width="0.167em"></mspace><mi>x</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(f(d_{sr})
++ \beta_h\,h_{sr}(t) + \beta_g\,x(t)\bigr),</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Y_{sr}(t)</annotation></semantics></math>
 is the at-risk indicator (1 until <code>s</code> invades <code>r</code>,
 0 thereafter),
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">d_{sr}</annotation></semantics></math>
-is the (log) distance,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>
-is the smooth shape
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>−</mi><mi>d</mi><mi>/</mi><mn>1.5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\sin(-d/1.5)</annotation></semantics></math>,
-and
+is the log-distance with smooth effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>−</mi><mi>d</mi><mi>/</mi><mn>1.5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d) = \sin(-d/1.5)</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">h_{sr}(t)</annotation></semantics></math>
-is an endogenous “neighbour pressure” term that grows whenever a country
-related to <code>s</code> has recently invaded <code>r</code>.</p>
-<p>For this short example we use just the distance term and a
-half-life-decayed reciprocity proxy as the endogenous neighbour
-pressure, then turn <code>risk = "remove"</code> on so each dyad fires
-at most once.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">true_dist_effect</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="op">-</span><span class="va">dist_log</span> <span class="op">/</span> <span class="fl">1.5</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+is a neighbour pressure — here the half-life-decayed count of past
+invasions in the reverse direction (<code>reciprocity_exp_decay</code>,
+half-life 50 years) — and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">x(t)</annotation></semantics></math>
+is the ENSO index. We set
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mi>h</mi></msub><mo>=</mo><mn>0.4</mn></mrow><annotation encoding="application/x-tex">\beta_h = 0.4</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mi>g</mi></msub><mo>=</mo><mn>0.6</mn></mrow><annotation encoding="application/x-tex">\beta_g = 0.6</annotation></semantics></math>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events            <span class="op">=</span> <span class="fl">600</span>,</span>
 <span>  senders             <span class="op">=</span> <span class="va">states</span>,</span>
 <span>  receivers           <span class="op">=</span> <span class="va">states</span>,</span>
-<span>  contribution_logits <span class="op">=</span> <span class="va">true_dist_effect</span>,</span>
-<span>  baseline_rate       <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  contribution_logits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="op">-</span><span class="va">dist_log</span> <span class="op">/</span> <span class="fl">1.5</span><span class="op">)</span>,</span>
+<span>  baseline_rate       <span class="op">=</span> <span class="fl">8e-4</span>,</span>
+<span>  start_time          <span class="op">=</span> <span class="fl">1500</span>,</span>
+<span>  horizon             <span class="op">=</span> <span class="fl">2005</span>,</span>
 <span>  allow_loops         <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  n_controls          <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  endogenous_stats    <span class="op">=</span> <span class="st">"reciprocity_exp_decay"</span>,</span>
 <span>  endogenous_effects  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_exp_decay <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span>,</span>
-<span>  half_life           <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  half_life           <span class="op">=</span> <span class="fl">50</span>,</span>
+<span>  global_covariates   <span class="op">=</span> <span class="va">g</span>,</span>
+<span>  global_effects      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>nino34 <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span>,</span>
 <span>  risk                <span class="op">=</span> <span class="st">"remove"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1200</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   stratum event         sender             receiver         time</span></span>
-<span><span class="co">#&gt; 1       1     1       Kentucky             Michigan 0.0002410257</span></span>
-<span><span class="co">#&gt; 2       1     0       Maryland         South Dakota 0.0002410257</span></span>
-<span><span class="co">#&gt; 3       2     1     California       South Carolina 0.0007482291</span></span>
-<span><span class="co">#&gt; 4       2     0           Ohio District of Columbia 0.0007482291</span></span>
-<span><span class="co">#&gt; 5       3     1        Montana         Rhode Island 0.0012749978</span></span>
-<span><span class="co">#&gt; 6       3     0 American Samoa                 Guam 0.0012749978</span></span>
-<span><span class="co">#&gt;   reciprocity_exp_decay</span></span>
-<span><span class="co">#&gt; 1                     0</span></span>
-<span><span class="co">#&gt; 2                     0</span></span>
-<span><span class="co">#&gt; 3                     0</span></span>
-<span><span class="co">#&gt; 4                     0</span></span>
-<span><span class="co">#&gt; 5                     0</span></span>
-<span><span class="co">#&gt; 6                     0</span></span></code></pre></div>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="va">ev</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sender"</span>, <span class="st">"receiver"</span>, <span class="st">"time"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ev</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 580</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 1500.129 2004.800</span></span></code></pre></div>
 <p><code>risk = "remove"</code> guarantees the realized dyads are all
 distinct:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">events_only</span> <span class="op">&lt;-</span> <span class="va">cc</span><span class="op">[</span><span class="va">cc</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1L</span>, <span class="op">]</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">events_only</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 600</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">events_only</span><span class="op">$</span><span class="va">sender</span>, <span class="va">events_only</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">sender</span>, <span class="va">ev</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="why-ordinary-case-control-sampling-cannot-see-enso">Why ordinary case-control sampling cannot see ENSO<a class="anchor" aria-label="anchor" href="#why-ordinary-case-control-sampling-cannot-see-enso"></a>
+</h2>
+<p>Standard nested case-control sampling gives each control its event’s
+time. ENSO then takes the same value for the event and its control, so
+its event-minus-control difference is zero in every stratum and the
+effect drops out of the partial likelihood:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cc0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">ev</span>, mode <span class="op">=</span> <span class="st">"one"</span>, risk <span class="op">=</span> <span class="st">"remove"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">cc0</span><span class="op">$</span><span class="va">nino34</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">nino34</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/findInterval.html" class="external-link">findInterval</a></span><span class="op">(</span><span class="va">cc0</span><span class="op">$</span><span class="va">time</span>, <span class="va">g</span><span class="op">$</span><span class="va">time_start</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">w0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc0</span>, covariates <span class="op">=</span> <span class="st">"nino34"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">w0</span><span class="op">$</span><span class="va">d_nino34</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="time-shifted-sampling">Time-shifted sampling<a class="anchor" aria-label="anchor" href="#time-shifted-sampling"></a>
+</h2>
+<p>Lembo, Juozaitienė, Vinciotti &amp; Wit (2025) sample the controls
+from a time-shifted copy of the process instead. Every dyad draws one
+shift
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">h_{sr}</annotation></semantics></math>;
+event
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>
+moves to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>k</mi></msub><mo>+</mo><msub><mi>h</mi><mrow><msub><mi>s</mi><mi>k</mi></msub><msub><mi>r</mi><mi>k</mi></msub></mrow></msub></mrow><annotation encoding="application/x-tex">t_k + h_{s_k r_k}</annotation></semantics></math>,
+and its control is drawn among the dyads whose back-shifted time
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>t</mi><mo>*</mo></msup><mo>=</mo><msub><mi>t</mi><mi>k</mi></msub><mo>+</mo><msub><mi>h</mi><mrow><msub><mi>s</mi><mi>k</mi></msub><msub><mi>r</mi><mi>k</mi></msub></mrow></msub><mo>−</mo><msub><mi>h</mi><mrow><msup><mi>s</mi><mo>*</mo></msup><msup><mi>r</mi><mo>*</mo></msup></mrow></msub></mrow><annotation encoding="application/x-tex">t^* = t_k + h_{s_k r_k} - h_{s^* r^*}</annotation></semantics></math>
+lies in the observation window. The control is evaluated at its own time
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>t</mi><mo>*</mo></msup><annotation encoding="application/x-tex">t^*</annotation></semantics></math>,
+where the ENSO index takes a different value. With
+<code>risk = "remove"</code>, a dyad that has already fired before
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>t</mi><mo>*</mo></msup><annotation encoding="application/x-tex">t^*</annotation></semantics></math>
+is not a valid control.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">ev</span>, mode <span class="op">=</span> <span class="st">"one"</span>, risk <span class="op">=</span> <span class="st">"remove"</span>, seed <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                        shift <span class="op">=</span> <span class="st">"exponential"</span>, window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1500</span>, <span class="fl">2005</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cc</span>, <span class="st">"shift"</span><span class="op">)</span><span class="op">$</span><span class="va">mean</span>            <span class="co"># mean shift, in years</span></span>
+<span><span class="co">#&gt; [1] 259.6609</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cc</span>, <span class="st">"shift"</span><span class="op">)</span><span class="op">$</span><span class="va">uninformative</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<p>Every covariate of a control is then evaluated at its own time. The
+neighbour pressure comes from the real invasions before
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>t</mi><mo>*</mo></msup><annotation encoding="application/x-tex">t^*</annotation></semantics></math>
+(<code>history_log</code>), distance is static, and ENSO is read at each
+row’s year:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="st">"reciprocity_exp_decay"</span>,</span>
+<span>                          half_life <span class="op">=</span> <span class="fl">50</span>, history_log <span class="op">=</span> <span class="va">ev</span><span class="op">)</span></span>
+<span><span class="va">cc</span><span class="op">$</span><span class="va">dist</span>   <span class="op">&lt;-</span> <span class="va">dist_log</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">sender</span>, <span class="va">states</span><span class="op">)</span>,</span>
+<span>                            <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">receiver</span>, <span class="va">states</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">cc</span><span class="op">$</span><span class="va">nino34</span> <span class="op">&lt;-</span> <span class="va">g</span><span class="op">$</span><span class="va">nino34</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/findInterval.html" class="external-link">findInterval</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">time</span>, <span class="va">g</span><span class="op">$</span><span class="va">time_start</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc</span>, covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dist"</span>, <span class="st">"reciprocity_exp_decay"</span>,</span>
+<span>                                           <span class="st">"nino34"</span>, <span class="st">"time"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">w</span><span class="op">$</span><span class="va">d_nino34</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt; -3.3750 -0.3703  0.4470  0.5155  1.3320  4.8370</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="recovering-the-drivers">Recovering the drivers<a class="anchor" aria-label="anchor" href="#recovering-the-drivers"></a>
 </h2>
-<p>Attach the log-distance for every (sender, receiver) pair in the
-case-control table, then fit a conditional logistic model via GAM on the
-within-stratum differences.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">get_dist</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">s</span>, <span class="va">r</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">dist_log</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">s</span>, <span class="va">states</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">states</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="op">}</span></span>
-<span><span class="va">cc</span><span class="op">$</span><span class="va">dist_val</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mapply.html" class="external-link">mapply</a></span><span class="op">(</span><span class="va">get_dist</span>, <span class="va">cc</span><span class="op">$</span><span class="va">sender</span>, <span class="va">cc</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cases</span>    <span class="op">&lt;-</span> <span class="va">cc</span><span class="op">[</span><span class="va">cc</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">1L</span>, <span class="op">]</span></span>
-<span><span class="va">controls</span> <span class="op">&lt;-</span> <span class="va">cc</span><span class="op">[</span><span class="va">cc</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0L</span>, <span class="op">]</span></span>
-<span><span class="va">cases</span>    <span class="op">&lt;-</span> <span class="va">cases</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">cases</span><span class="op">$</span><span class="va">stratum</span><span class="op">)</span>, <span class="op">]</span></span>
-<span><span class="va">controls</span> <span class="op">&lt;-</span> <span class="va">controls</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">controls</span><span class="op">$</span><span class="va">stratum</span><span class="op">)</span>, <span class="op">]</span></span>
-<span></span>
-<span><span class="va">fit_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  y          <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  delta_dist <span class="op">=</span> <span class="va">cases</span><span class="op">$</span><span class="va">dist_val</span> <span class="op">-</span> <span class="va">controls</span><span class="op">$</span><span class="va">dist_val</span>,</span>
-<span>  delta_r    <span class="op">=</span> <span class="va">cases</span><span class="op">$</span><span class="va">reciprocity_exp_decay</span> <span class="op">-</span> <span class="va">controls</span><span class="op">$</span><span class="va">reciprocity_exp_decay</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"mgcv"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">mgcv</span><span class="op">)</span></span>
-<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/gam.html" class="external-link">gam</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">s</a></span><span class="op">(</span><span class="va">delta_dist</span><span class="op">)</span> <span class="op">+</span> <span class="va">delta_r</span> <span class="op">-</span> <span class="fl">1</span>, family <span class="op">=</span> <span class="va">binomial</span>, data <span class="op">=</span> <span class="va">fit_df</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span></span>
-<span>  <span class="va">x_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">fit_df</span><span class="op">$</span><span class="va">delta_dist</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">fit_df</span><span class="op">$</span><span class="va">delta_dist</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
-<span>  <span class="va">pred</span>   <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>,</span>
-<span>                    newdata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>delta_dist <span class="op">=</span> <span class="va">x_grid</span>, delta_r <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
-<span>                    type <span class="op">=</span> <span class="st">"link"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x_grid</span>, <span class="va">pred</span>, type <span class="op">=</span> <span class="st">"l"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>       xlab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Delta</span> <span class="op">~</span> <span class="st">"log-distance"</span><span class="op">)</span>,</span>
-<span>       ylab <span class="op">=</span> <span class="st">"estimated effect"</span>,</span>
-<span>       main <span class="op">=</span> <span class="st">"GAM smooth for distance (event - control)"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey60"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt; Loading required package: nlme</span></span>
-<span><span class="co">#&gt; This is mgcv 1.9-4. For overview type '?mgcv'.</span></span></code></pre></div>
-<p><img src="species-invasion_files/figure-html/recovery-1.png" class="r-plt" alt="recovered smooth distance effect" width="576"></p>
-<p>The smooth recovers the underlying
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>−</mi><mi>d</mi><mi>/</mi><mn>1.5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\sin(-d/1.5)</annotation></semantics></math>
-pattern, and the linear coefficient on <code>delta_r</code> should be
-close to the true 0.4 used in the simulation.</p>
+<p><code><a href="../reference/rem.html">rem()</a></code> fits the degenerate logistic additive model on the
+wide case–control table. <code>nl(dist)</code> is the smooth distance
+effect, contributing
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>e</mi><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>n</mi><mi>v</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d_{ev}) - f(d_{nv})</annotation></semantics></math>;
+the other two terms are linear.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">nl</span><span class="op">(</span><span class="va">dist</span><span class="op">)</span> <span class="op">+</span> <span class="va">reciprocity_exp_decay</span> <span class="op">+</span> <span class="va">nino34</span>,</span>
+<span>           data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span><span class="op">)</span></span>
+<span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">p.table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimate"</span>, <span class="st">"Std. Error"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">est</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                       Estimate Std. Error</span></span>
+<span><span class="co">#&gt; reciprocity_exp_decay    0.904      0.514</span></span>
+<span><span class="co">#&gt; nino34                   0.595      0.075</span></span></code></pre></div>
+<p>The ENSO coefficient is 0.60 (standard error 0.08) against the true
+0.6. The neighbour pressure, 0.90 against the true 0.4, has a standard
+error of 0.51, 7 times larger: few invasions are preceded by one in the
+opposite direction, so the data hold little information about it. The
+two estimates lie 0.1 and 1.0 standard errors from their true values.
+The smooth recovers the shape of the distance effect, up to the additive
+constant that cancels in event-minus-control differences:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">1</span>, shade <span class="op">=</span> <span class="cn">TRUE</span>, rug <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"log-distance"</span>, ylab <span class="op">=</span> <span class="st">"f(log-distance)"</span>,</span>
+<span>     main <span class="op">=</span> <span class="st">"Distance effect: estimate and truth"</span><span class="op">)</span></span>
+<span><span class="va">d_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">dist_log</span><span class="op">[</span><span class="va">dist_log</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">dist_log</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span><span class="va">f_true</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="op">-</span><span class="va">d_grid</span> <span class="op">/</span> <span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">d_grid</span>, <span class="va">f_true</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">f_true</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"firebrick"</span>, lwd <span class="op">=</span> <span class="fl">2</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"topright"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"estimate"</span>, <span class="st">"truth (centred)"</span><span class="op">)</span>,</span>
+<span>       col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"black"</span>, <span class="st">"firebrick"</span><span class="op">)</span>, lty <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, bty <span class="op">=</span> <span class="st">"n"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="species-invasion_files/figure-html/distance-smooth-1.png" class="r-plt" alt="recovered smooth distance effect against the true curve" width="576"></p>
 </div>
 <div class="section level2">
 <h2 id="where-to-go-from-here">Where to go from here<a class="anchor" aria-label="anchor" href="#where-to-go-from-here"></a>
 </h2>
 <ul>
 <li>Real data: replace <code>dist_matrix</code> with a
-country-by-country distance table and the simulated event log with a
-curated invasion record.</li>
-<li>Additional covariates: trade flows or climatic similarity enter via
-<code>contribution_logits</code> or sender/receiver covariates.</li>
-<li>Time-varying global covariates (policy regimes, seasonality) attach
-through <code>global_covariates</code> /
-<code>global_effects</code>.</li>
+country-by-country distance table and the simulated log with a curated
+invasion record of first establishments.</li>
+<li>Baseline trend: on real data the background rate changes over the
+centuries (trade, shipping, survey effort). It is a global effect too,
+and enters as <code>nl(time)</code> on the same shifted design.</li>
+<li>Timing: <code>shift_scale</code> sets the mean shift as a multiple
+of the average event time. Larger shifts carry more information about
+ENSO but leave more events with no valid control
+(<code>attr(cc, "shift")$uninformative</code>).</li>
 <li>For large state spaces or high invasion rates, switch to the
 approximate <code>method = "tau_leap"</code> simulator with a small
-<code>tau</code> to cut wall-clock cost; the
-<code>risk = "remove"</code> rule is honoured under both
-algorithms.</li>
+<code>tau</code>; the <code>risk = "remove"</code> rule is honoured
+under both algorithms.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
+<p>Li J, Xie S-P, Cook ER, et al. (2013). El Niño modulations over the
+past seven centuries. <em>Nature Climate Change</em> 3, 822–826. <a href="https://doi.org/10.1038/nclimate1936" class="external-link uri">https://doi.org/10.1038/nclimate1936</a></p>
+<p>Lembo M, Juozaitienė R, Vinciotti V, Wit EC (2025). Relational event
+models with global covariates: an application to bike sharing.
+<em>Journal of the Royal Statistical Society, Series C</em>. <a href="https://doi.org/10.1093/jrsssc/qlaf058" class="external-link uri">https://doi.org/10.1093/jrsssc/qlaf058</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

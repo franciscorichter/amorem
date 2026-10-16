@@ -99,3 +99,5 @@
   : CollegeMsg: private messages on a university online community
 - [`email_eu_core`](https://franciscorichter.github.io/amorem/reference/email_eu_core.md)
   : Email-Eu-Core temporal (single-department subset)
+- [`enso_nino34`](https://franciscorichter.github.io/amorem/reference/enso_nino34.md)
+  : Reconstructed Niño3.4 ENSO index, 1301–2005 (Li et al. 2013)

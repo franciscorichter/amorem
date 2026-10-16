@@ -234,6 +234,10 @@ Panzarasa, Opsahl &amp; Carley (2009).</li>
 <strong>Email-EU-Core</strong> — SNAP,
 <code>email-Eu-core-temporal-Dept3</code>. Paranjape, Benson &amp;
 Leskovec (2017). Self-loops removed.</li>
+<li>
+<strong>ENSO Niño3.4 reconstruction</strong> — NOAA NCEI World Data
+Service for Paleoclimatology, study 14632 (<a href="doi:10.25921/jfqm-9178" class="uri">doi:10.25921/jfqm-9178</a>),
+file <code>enso-li2013.txt</code>. Li et al. (2013).</li>
 </ul>
 <p>The fourth dataset analysed by Juozaitienė &amp; Wit (2024) — Enron —
 is intentionally not bundled because the only publicly archived version
@@ -268,6 +272,14 @@ friendship-survey event log accompanying their main event tables.</li>
 <li>
 <code>dist_matrix</code> — a 56 × 56 matrix of inter-state
 geographic distances; used by Experiment 2 in <a href="validation-experiments.html">Validation experiments</a>.</li>
+<li>
+<code>enso_nino34</code> — a global covariate: the tree-ring
+reconstruction of the winter Niño3.4 sea-surface temperature anomaly,
+one value per year from 1301 to 2005. It takes the same value for every
+dyad, so its effect is estimated with time-shifted sampling
+(<code>sample_non_events(shift = "exponential")</code>); the
+<code><a href="../articles/species-invasion.html">vignette("species-invasion")</a></code> simulates five centuries of
+invasions driven by it.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -290,6 +302,9 @@ online community.</em> Journal of the American Society for Information
 Science and Technology 60(5), 911–932.</li>
 <li>Paranjape, A., Benson, A.R., Leskovec, J. (2017). <em>Motifs in
 temporal networks.</em> WSDM ’17, 601–610.</li>
+<li>Li, J., Xie, S.-P., Cook, E.R., et al. (2013). <em>El Niño
+modulations over the past seven centuries.</em> Nature Climate Change 3,
+822–826.</li>
 <li>Juozaitienė R., Wit E.C. (2024). <em>It’s about time: revisiting
 reciprocity and triadicity in relational event analysis.</em> JRSS-A
 188(4), 1246–1262.</li>

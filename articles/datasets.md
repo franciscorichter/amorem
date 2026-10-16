@@ -77,6 +77,9 @@ sender frailty is added).
   (2009).
 - **Email-EU-Core** — SNAP, `email-Eu-core-temporal-Dept3`. Paranjape,
   Benson & Leskovec (2017). Self-loops removed.
+- **ENSO Niño3.4 reconstruction** — NOAA NCEI World Data Service for
+  Paleoclimatology, study 14632 (<doi:10.25921/jfqm-9178>), file
+  `enso-li2013.txt`. Li et al. (2013).
 
 The fourth dataset analysed by Juozaitienė & Wit (2024) — Enron — is
 intentionally not bundled because the only publicly archived version is
@@ -109,6 +112,13 @@ attr(college_msg, "unix_origin")
 - `dist_matrix` — a 56 × 56 matrix of inter-state geographic distances;
   used by Experiment 2 in [Validation
   experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md).
+- `enso_nino34` — a global covariate: the tree-ring reconstruction of
+  the winter Niño3.4 sea-surface temperature anomaly, one value per year
+  from 1301 to 2005. It takes the same value for every dyad, so its
+  effect is estimated with time-shifted sampling
+  (`sample_non_events(shift = "exponential")`); the
+  [`vignette("species-invasion")`](https://franciscorichter.github.io/amorem/articles/species-invasion.md)
+  simulates five centuries of invasions driven by it.
 
 ### Citing the datasets
 
@@ -129,6 +139,8 @@ original source in addition to citing `amorem`:
   and Technology 60(5), 911–932.
 - Paranjape, A., Benson, A.R., Leskovec, J. (2017). *Motifs in temporal
   networks.* WSDM ’17, 601–610.
+- Li, J., Xie, S.-P., Cook, E.R., et al. (2013). *El Niño modulations
+  over the past seven centuries.* Nature Climate Change 3, 822–826.
 - Juozaitienė R., Wit E.C. (2024). *It’s about time: revisiting
   reciprocity and triadicity in relational event analysis.* JRSS-A
   188(4), 1246–1262.
