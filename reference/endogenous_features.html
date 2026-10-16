@@ -111,9 +111,7 @@ of <code>event_log</code> whose <code>(sender, receiver, time)</code> triple app
 sampled non-events / controls) have their statistics computed against
 that history but never enter it. This makes it possible to evaluate
 endogenous statistics for non-events without those non-events polluting
-the history. Defaults to <code>NULL</code> (every row is treated as an event).
-Currently supported only for statistics handled by the C++ engine
-(see <code><a href="cpp_supported_stats.html">cpp_supported_stats()</a></code>).</p></dd>
+the history. Defaults to <code>NULL</code> (every row is treated as an event).</p></dd>
 
 
 <dt id="arg-prior-log">prior_log<a class="anchor" aria-label="anchor" href="#arg-prior-log"></a></dt>
@@ -123,8 +121,7 @@ state. Its rows always update the running state but never appear in the
 returned data.frame. This separates warm-starting from the non-event
 masking role of <code>history_log</code>: pass earlier history through <code>prior_log</code>
 and use <code>history_log</code> purely to mark which rows of <code>event_log</code> are real
-events. Defaults to <code>NULL</code>. Like <code>history_log</code>, it is currently supported
-only for statistics handled by the C++ engine (see <code><a href="cpp_supported_stats.html">cpp_supported_stats()</a></code>).</p></dd>
+events. Defaults to <code>NULL</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -56,8 +56,11 @@ rem(
 
 - stratum:
 
-  Name of the column grouping each case with its controls (required by
-  `clogit`).
+  Name of the column grouping each case with its controls, for `clogit`
+  and `nn`. When `NULL`, a column named `stratum` (as written by
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md))
+  is used if present; otherwise the strata are derived as
+  `cumsum(case == 1)`.
 
 - time:
 

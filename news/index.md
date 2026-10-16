@@ -4,9 +4,40 @@
 
 ### Bug fixes
 
+- **[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
+  now uses the paper’s time-shifted design.** It drew one shift per
+  control row, never shifted the event, never checked the observation
+  window (control times could precede the data), evaluated the controls’
+  dyadic statistics at the event time, and let sampled controls enter
+  the network history. On simulated data with a global effect of 1 it
+  returned estimates of -1.74, 2.63 and -2.12 over three datasets. It
+  now draws its sample with `sample_non_events(shift = "exponential")`,
+  computes dyadic statistics against the real history at each row’s own
+  time, evaluates `tv` / `tvnl` terms at each row’s own time, and drops
+  events with no control; the same three datasets give 0.85, 1.02 and
+  1.01. The shift mean is now `shift_scale` times the average event time
+  (it was times the average inter-arrival time), and a `window` argument
+  is passed through. Results of earlier
+  [`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
+  fits change and should be re-run.
+
+- [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
+  and the `clogit` / `nn` backends of
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  use the `stratum` column written by
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  when `stratum = NULL`, instead of rebuilding strata as
+  `cumsum(case == 1)`. The rebuilt strata assumed each case was followed
+  by its controls, which stops holding once
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  re-sorts rows by time with ties, or with shifted controls, and then
+  paired cases with the wrong controls. Data without a `stratum` column
+  (eventnet output) is handled as before.
+
 - **[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
   risk-set edge cases
   ([\#102](https://github.com/franciscorichter/amorem/issues/102)).**
+
   - `exclude_pairs` and, under `risk = "remove"`, same-time events are
     now part of the check for whether any valid control exists, so a
     stratum whose every alternative is excluded gets no controls instead
@@ -27,6 +58,26 @@
     removed.
 
 ### New features
+
+- **Time-shifted case-control sampling for global covariates
+  ([\#101](https://github.com/franciscorichter/amorem/issues/101)).**
+  `sample_non_events(shift = "exponential")` implements Section 4 of
+  Lembo, Juozaitienė, Vinciotti & Wit (2025, JRSS-C): one exponential
+  shift per dyad, each control drawn uniformly from the dyads whose
+  back-shifted time lies in the observation `window` and stored at that
+  time, so covariates that depend only on time no longer cancel within
+  strata. `shift_scale` sets the mean shift as a multiple of the average
+  event time, as in the paper. Risk-set rules (`exclude_pairs`,
+  `risk = "remove"`, `scope = "appearance"`) are evaluated at the
+  control’s own time; events with no other dyad in their shifted risk
+  set get no control and are listed in `attr(, "shift")$uninformative`.
+  The attribute also holds the shift mean, the window and the per-dyad
+  shifts.
+
+- `endogenous_features(history_log = )` and `prior_log` now work for
+  every statistic, including `reciprocity_exp_decay`,
+  `reciprocity_time_recent` and `reciprocity_time_first`, which the
+  compiled engine does not cover.
 
 - **Per-term basis settings in
   [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)

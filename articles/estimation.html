@@ -440,24 +440,55 @@ case-control sample.</p>
 <hr>
 </div>
 <div class="section level3">
-<h3 id="compare_models_global-global-covariate-effects">
-<code>compare_models_global()</code> · global covariate effects<a class="anchor" aria-label="anchor" href="#compare_models_global-global-covariate-effects"></a>
+<h3 id="global-covariate-effects">Global covariate effects<a class="anchor" aria-label="anchor" href="#global-covariate-effects"></a>
 </h3>
 <p>A <em>global</em> covariate varies in time but is constant across all
 interacting pairs at any given instant — temperature, time-of-day, the
 residual baseline hazard <code>g_0(t)</code>. Standard case-control
-partial likelihood structurally cannot identify a global effect because
-it cancels in the focal-vs-control rate ratio (both pairs are evaluated
-at the same time). The fix of <a href="https://doi.org/10.1093/jrsssc/qlaf058" class="external-link">Lembo, Juozaitienė,
-Vinciotti &amp; Wit (2025)</a> is a random per-dyad time shift
-<code>H_sr ~ Exp(rate)</code>, so the focal event and the sampled
-non-event are evaluated at <em>different</em> times. With one non-event
-per event the partial likelihood collapses to a degenerate logistic GAM
-that <code>mgcv</code> fits directly:</p>
+partial likelihood cannot identify a global effect, because the focal
+event and its controls are evaluated at the same time and the effect
+cancels in their rate ratio. The fix of <a href="https://doi.org/10.1093/jrsssc/qlaf058" class="external-link">Lembo, Juozaitienė,
+Vinciotti &amp; Wit (2025)</a> samples controls from a time-shifted copy
+of the event process: every dyad draws one shift
+<code>h_sr ~ Exp</code>, event <code>k</code> on <code>(s, r)</code>
+moves to <code>t_e = t_k + h_sr</code>, and its control is drawn from
+the dyads whose back-shifted time <code>t* = t_e - h_s*r*</code> lies in
+the observation window. The control is then evaluated at
+<code>t*</code>, so global effects stay in the likelihood. With one
+control per event the partial likelihood is a degenerate logistic
+GAM.</p>
+<p><code>sample_non_events(shift = "exponential")</code> draws this
+sample; each control carries its own <code>time</code>. Compute
+endogenous statistics against the real history
+(<code>history_log</code>), evaluate the global covariate at each row’s
+time, widen, and fit with <code><a href="../reference/rem.html">rem()</a></code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time        <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>, length <span class="op">=</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span>                temperature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span>, length <span class="op">=</span> <span class="fl">50</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/compare_models_global.html">compare_models_global</a></span><span class="op">(</span></span>
+<span><span class="va">at</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">t</span><span class="op">)</span> <span class="va">g</span><span class="op">$</span><span class="va">temperature</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/findInterval.html" class="external-link">findInterval</a></span><span class="op">(</span><span class="va">t</span>, <span class="va">g</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">]</span></span>
+<span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>, mode <span class="op">=</span> <span class="st">"one"</span>, seed <span class="op">=</span> <span class="fl">11</span>,</span>
+<span>                        shift <span class="op">=</span> <span class="st">"exponential"</span><span class="op">)</span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="st">"reciprocity_count"</span>,</span>
+<span>                          history_log <span class="op">=</span> <span class="va">classroom_events</span><span class="op">)</span></span>
+<span><span class="va">cc</span><span class="op">$</span><span class="va">temperature</span> <span class="op">&lt;-</span> <span class="fu">at</span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc</span>, covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>,</span>
+<span>                                           <span class="st">"temperature"</span>, <span class="st">"time"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="va">reciprocity_count</span> <span class="op">+</span> <span class="fu">nl</span><span class="op">(</span><span class="va">temperature</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span> <span class="fu">nl</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
+<span>           data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span><span class="op">)</span></span></code></pre></div>
+<p><code>nl(time)</code> is the residual baseline <code>g_0(t)</code>.
+The shifts have mean <code>shift_scale</code> (default <code>1</code>,
+the paper’s choice) times the average event time, measured from the
+start of <code>window</code>. Larger shifts carry more information about
+the global effects but leave more events with no dyad in their shifted
+risk set; those events get no control and drop out (their strata are
+listed in <code>attr(cc, "shift")$uninformative</code>). The paper
+reports no effect of <code>shift_scale</code> on the estimates between
+0.1 and 100.</p>
+<p><code><a href="../reference/compare_models_global.html">compare_models_global()</a></code> runs the same design for a list
+of specifications and ranks them by AIC:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models_global.html">compare_models_global</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    dyadic_only <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="st">"linear"</span>,</span>
@@ -495,13 +526,8 @@ that <code>mgcv</code> fits directly:</p>
 </tr>
 </tbody>
 </table>
-<p><code>shift_scale</code> (default <code>1</code>) multiplies the mean
-inter-event time used to set the exponential rate of <code>H_sr</code>.
-Larger values widen the shifts and improve identifiability of slow
-global signals at the cost of bias under fast-varying <code>g_0</code>.
-The <code>global_time</code> spec can produce a degenerate fit on small
-/ uninformative data — when this happens the result is <code>NA</code>
-rather than a hard error.</p>
+<p>A specification whose fit fails returns <code>NA</code> in the table
+rather than an error.</p>
 <div class="section level4">
 <h4 id="recency-preprocessing">Recency preprocessing<a class="anchor" aria-label="anchor" href="#recency-preprocessing"></a>
 </h4>
@@ -523,7 +549,7 @@ step for global / exogenous covariates fed into
 <code>G[γ̂, u]</code>. After normalisation,
 <code>Ŵ[γ̂, u] = Ĵ^{-1/2} · n^{-1/2} · G[γ̂, u]</code> converges to a
 standard (multivariate) Brownian bridge under correct specification.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="st">"linear"</span>,</span>
 <span>       transitivity_count <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span></span>
 <span></span>
@@ -605,7 +631,7 @@ observation with the residual <code>M_i = y_i − π_i</code> where
 <code>π_i = exp(η_i) / (exp(η_case) + exp(η_ctrl))</code> is the fitted
 probability that observation <code>i</code> is the case in its
 two-element risk set:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/martingale_residuals.html">martingale_residuals</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="st">"linear"</span>,</span>
@@ -660,7 +686,7 @@ keeps GAM-style interpretability (per-feature curves via
 <code>plot(type = "pdp")</code>) while <code>batch_strata</code>
 mini-batching scales to event logs far beyond what an in-memory smooth
 fit can hold:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_add</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">IS_OBSERVED</span> <span class="op">~</span> <span class="va">individual.activity</span> <span class="op">+</span> <span class="va">dyadic.activity</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lesmis</span>, method <span class="op">=</span> <span class="st">"nn"</span>, stratum <span class="op">=</span> <span class="st">"EVENT_INTERVAL"</span>,</span>
 <span>               nn <span class="op">=</span> <span class="fu"><a href="../reference/nn_control.html">nn_control</a></span><span class="op">(</span>architecture <span class="op">=</span> <span class="st">"additive_spline"</span>,</span>

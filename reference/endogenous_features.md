@@ -52,9 +52,7 @@ endogenous_features(
   history but never enter it. This makes it possible to evaluate
   endogenous statistics for non-events without those non-events
   polluting the history. Defaults to `NULL` (every row is treated as an
-  event). Currently supported only for statistics handled by the C++
-  engine (see
-  [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)).
+  event).
 
 - prior_log:
 
@@ -64,10 +62,7 @@ endogenous_features(
   the returned data.frame. This separates warm-starting from the
   non-event masking role of `history_log`: pass earlier history through
   `prior_log` and use `history_log` purely to mark which rows of
-  `event_log` are real events. Defaults to `NULL`. Like `history_log`,
-  it is currently supported only for statistics handled by the C++
-  engine (see
-  [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)).
+  `event_log` are real events. Defaults to `NULL`.
 
 ## Value
 

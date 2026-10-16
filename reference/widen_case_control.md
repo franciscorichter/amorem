@@ -37,8 +37,11 @@ widen_case_control(
 - stratum:
 
   Optional name of the column grouping each case with its controls. When
-  `NULL`, the stratum is derived as `cumsum(case == 1)` (assuming each
-  case is immediately followed by its controls).
+  `NULL`, a column named `stratum` (as written by
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md))
+  is used if present, so rows may be in any order; otherwise the stratum
+  is derived as `cumsum(case == 1)` (assuming each case is immediately
+  followed by its controls).
 
 - covariates:
 

@@ -22,14 +22,17 @@ Per the paper's equations 11-13: \$\$ \mathcal{L}^{PS}(f, g) =
 x_k)\\} {1 + \exp\\\Delta_k(f; x\_{s_k r_k}) + \Delta_k(g; x_k)\\} \$\$
 where each \\\Delta_k\\ is the difference between the (smooth) function
 evaluated at the focal event time and at the sampled non-event's
-*shifted* time \\t^\*\_k = t_k - h\_{s^\* r^\*}\\.
+*back-shifted* time \\t^\*\_k = t_k + h\_{s_k r_k} - h\_{s^\* r^\*}\\.
 
-Shift distribution. Per-dyad shifts \\H\_{sr}\\ are drawn independently
-from an exponential distribution with mean \\\nu \cdot \bar{\Delta t}\\
-where \\\bar{\Delta t}\\ is the average inter-arrival time in
-`event_log`. The paper's simulation studies find that \\\nu = 1\\ works
-in practice and that the estimates are robust to choices in \\\[0.1,
-10\]\\.
+Shift distribution. The case-control sample is drawn by
+[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+with `shift = "exponential"`: one shift per dyad, \\H\_{sr} \sim
+\mathrm{Exp}\\ with mean \\\nu\\ times the average event time (measured
+from the start of `window`), the control drawn from the dyads whose
+back-shifted time lies in `window`, and events with no such dyad
+dropped. Dyadic statistics of each control are computed from the events
+before its own time \\t^\*\_k\\. The paper uses \\\nu = 1\\ and reports
+no effect of \\\nu\\ on the estimates for \\\nu \in \[0.1, 100\]\\.
 
 Specification format. Each entry of `models` is a named character vector
 mapping a covariate name (a statistic in
@@ -65,6 +68,7 @@ compare_models_global(
   mode = c("one", "two"),
   half_life = NULL,
   shift_scale = 1,
+  window = NULL,
   k = NULL,
   k_cyclic = 10,
   seed = NULL,
@@ -98,10 +102,13 @@ compare_models_global(
 
   Required when any dyadic spec uses an exp-decay stat.
 
-- shift_scale:
+- shift_scale, window:
 
-  Multiplier on the average inter-arrival time for the exponential shift
-  distribution. Defaults to 1.
+  Passed to
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md):
+  the shift mean is `shift_scale` times the average event time, and
+  `window` is the observation window (default
+  `c(min(time), max(time))`).
 
 - k:
 
@@ -163,9 +170,8 @@ compare_models_global(
                     time                     = "global_time")),
   global_covariates = g,
   seed = 11, k = 5)
-#> Warning: Fitting terminated with step failure - check results carefully
-#>         model n_terms n_obs       log_lik      AIC delta_AIC
-#> 1 with_global       4   691 -8.210987e-11   8.0000    0.0000
-#> 2 dyadic_only       2   691 -3.055233e+02 615.0466  607.0466
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1 with_global       4   690 -304.2789 622.4462   0.00000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  88.54363
 # }
 ```

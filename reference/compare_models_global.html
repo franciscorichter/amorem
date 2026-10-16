@@ -21,15 +21,17 @@ $$
 $$
 where each \(\Delta_k\) is the difference between the
 (smooth) function evaluated at the focal event time and at the
-sampled non-event's shifted time
-\(t^*_k = t_k - h_{s^* r^*}\).
-Shift distribution. Per-dyad shifts \(H_{sr}\) are drawn
-independently from an exponential distribution with mean
-\(\nu \cdot \bar{\Delta t}\) where
-\(\bar{\Delta t}\) is the average inter-arrival time
-in event_log. The paper's simulation studies find that
-\(\nu = 1\) works in practice and that the estimates
-are robust to choices in \([0.1, 10]\).
+sampled non-event's back-shifted time
+\(t^*_k = t_k + h_{s_k r_k} - h_{s^* r^*}\).
+Shift distribution. The case-control sample is drawn by
+sample_non_events() with shift = &quot;exponential&quot;: one shift per dyad,
+\(H_{sr} \sim \mathrm{Exp}\) with mean \(\nu\) times
+the average event time (measured from the start of window), the control
+drawn from the dyads whose back-shifted time lies in window, and events
+with no such dyad dropped. Dyadic statistics of each control are computed
+from the events before its own time \(t^*_k\). The
+paper uses \(\nu = 1\) and reports no effect of
+\(\nu\) on the estimates for \(\nu \in [0.1, 100]\).
 Specification format. Each entry of models is a named character
 vector mapping a covariate name (a statistic in
 endogenous_features() or a column of
@@ -68,15 +70,17 @@ $$
 $$
 where each \(\Delta_k\) is the difference between the
 (smooth) function evaluated at the focal event time and at the
-sampled non-event's shifted time
-\(t^*_k = t_k - h_{s^* r^*}\).
-Shift distribution. Per-dyad shifts \(H_{sr}\) are drawn
-independently from an exponential distribution with mean
-\(\nu \cdot \bar{\Delta t}\) where
-\(\bar{\Delta t}\) is the average inter-arrival time
-in event_log. The paper's simulation studies find that
-\(\nu = 1\) works in practice and that the estimates
-are robust to choices in \([0.1, 10]\).
+sampled non-event's back-shifted time
+\(t^*_k = t_k + h_{s_k r_k} - h_{s^* r^*}\).
+Shift distribution. The case-control sample is drawn by
+sample_non_events() with shift = &quot;exponential&quot;: one shift per dyad,
+\(H_{sr} \sim \mathrm{Exp}\) with mean \(\nu\) times
+the average event time (measured from the start of window), the control
+drawn from the dyads whose back-shifted time lies in window, and events
+with no such dyad dropped. Dyadic statistics of each control are computed
+from the events before its own time \(t^*_k\). The
+paper uses \(\nu = 1\) and reports no effect of
+\(\nu\) on the estimates for \(\nu \in [0.1, 100]\).
 Specification format. Each entry of models is a named character
 vector mapping a covariate name (a statistic in
 endogenous_features() or a column of
@@ -165,15 +169,17 @@ $$
 $$
 where each \(\Delta_k\) is the difference between the
 (smooth) function evaluated at the focal event time and at the
-sampled non-event's <em>shifted</em> time
-\(t^*_k = t_k - h_{s^* r^*}\).</p>
-<p>Shift distribution. Per-dyad shifts \(H_{sr}\) are drawn
-independently from an exponential distribution with mean
-\(\nu \cdot \bar{\Delta t}\) where
-\(\bar{\Delta t}\) is the average inter-arrival time
-in <code>event_log</code>. The paper's simulation studies find that
-\(\nu = 1\) works in practice and that the estimates
-are robust to choices in \([0.1, 10]\).</p>
+sampled non-event's <em>back-shifted</em> time
+\(t^*_k = t_k + h_{s_k r_k} - h_{s^* r^*}\).</p>
+<p>Shift distribution. The case-control sample is drawn by
+<code><a href="sample_non_events.html">sample_non_events()</a></code> with <code>shift = "exponential"</code>: one shift per dyad,
+\(H_{sr} \sim \mathrm{Exp}\) with mean \(\nu\) times
+the average event time (measured from the start of <code>window</code>), the control
+drawn from the dyads whose back-shifted time lies in <code>window</code>, and events
+with no such dyad dropped. Dyadic statistics of each control are computed
+from the events before its own time \(t^*_k\). The
+paper uses \(\nu = 1\) and reports no effect of
+\(\nu\) on the estimates for \(\nu \in [0.1, 100]\).</p>
 <p>Specification format. Each entry of <code>models</code> is a named character
 vector mapping a covariate name (a statistic in
 <code><a href="endogenous_features.html">endogenous_features()</a></code> <strong>or</strong> a column of
@@ -200,6 +206,7 @@ the residual time effect \(g_0(t)\) of paper eq. 3.</p></li>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"one"</span>, <span class="st">"two"</span><span class="op">)</span>,</span>
 <span>  half_life <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  shift_scale <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  window <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  k <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  k_cyclic <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -237,9 +244,10 @@ the <code>time</code> axis).</p></dd>
 stat.</p></dd>
 
 
-<dt id="arg-shift-scale">shift_scale<a class="anchor" aria-label="anchor" href="#arg-shift-scale"></a></dt>
-<dd><p>Multiplier on the average inter-arrival time
-for the exponential shift distribution. Defaults to 1.</p></dd>
+<dt id="arg-shift-scale-window">shift_scale, window<a class="anchor" aria-label="anchor" href="#arg-shift-scale-window"></a></dt>
+<dd><p>Passed to <code><a href="sample_non_events.html">sample_non_events()</a></code>: the shift mean
+is <code>shift_scale</code> times the average event time, and <code>window</code> is the
+observation window (default <code>c(min(time), max(time))</code>).</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
@@ -301,10 +309,9 @@ Series C. <a href="https://doi.org/10.1093/jrsssc/qlaf058" class="external-link"
 <span class="r-in"><span>                    time                     <span class="op">=</span> <span class="st">"global_time"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  global_covariates <span class="op">=</span> <span class="va">g</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Fitting terminated with step failure - check results carefully</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         model n_terms n_obs       log_lik      AIC delta_AIC</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 with_global       4   691 -8.210987e-11   8.0000    0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 dyadic_only       2   691 -3.055233e+02 615.0466  607.0466</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         model n_terms n_obs   log_lik      AIC delta_AIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 with_global       4   690 -304.2789 622.4462   0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 dyadic_only       2   690 -353.4949 710.9898  88.54363</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

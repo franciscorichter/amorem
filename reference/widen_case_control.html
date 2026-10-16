@@ -93,8 +93,10 @@ produced by <code><a href="sample_non_events.html">sample_non_events()</a></code
 
 <dt id="arg-stratum">stratum<a class="anchor" aria-label="anchor" href="#arg-stratum"></a></dt>
 <dd><p>Optional name of the column grouping each case with its
-controls. When <code>NULL</code>, the stratum is derived as <code>cumsum(case == 1)</code>
-(assuming each case is immediately followed by its controls).</p></dd>
+controls. When <code>NULL</code>, a column named <code>stratum</code> (as written by
+<code><a href="sample_non_events.html">sample_non_events()</a></code>) is used if present, so rows may be in any order;
+otherwise the stratum is derived as <code>cumsum(case == 1)</code> (assuming each
+case is immediately followed by its controls).</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
