@@ -21,6 +21,7 @@ rem(
   stratum = NULL,
   time = NULL,
   k = NULL,
+  bs = NULL,
   gam_method = NULL,
   nn = nn_control(),
   ...
@@ -64,7 +65,13 @@ rem(
 
 - k:
 
-  Optional integer basis dimension passed to `s()` / `te()`.
+  Optional basis dimension passed to every `s()` / `te()` smooth that
+  does not set its own `k` (see *Formula syntax*).
+
+- bs:
+
+  Optional basis type (e.g. `"tp"`, `"cr"`, `"ps"`) passed to every
+  `s()` / `te()` smooth that does not set its own `bs`.
 
 - gam_method:
 
@@ -150,6 +157,19 @@ effect; wrap a name to request a smooth effect (`gam` method only):
   species-invasiveness term). Falls back to a single column `x` when
   `x_ev` / `x_nv` are absent. Identified only when the event and control
   differ on `x`.
+
+Smooth terms take the basis settings of
+[`mgcv::s()`](https://rdrr.io/pkg/mgcv/man/s.html) /
+[`mgcv::te()`](https://rdrr.io/pkg/mgcv/man/te.html) as named arguments
+after the covariate, so each term can use its own basis dimension and
+type: `tv(x, k = 20, bs = "cr") + nl(y, k = 5, bs = "ps")`. Any `s()` /
+`te()` argument other than `by` is accepted (e.g. `m`, `fx`, `sp`,
+`xt`); for `tvnl` a vector `k` or `bs` gives one value per margin, time
+first (`tvnl(x, k = c(5, 8))`). Argument values are evaluated in the
+formula's environment. A term without its own `k` / `bs` uses the global
+`k` / `bs` arguments of `rem()`, and mgcv's defaults when those are
+`NULL`. `re()` takes no further arguments (its basis is fixed to
+`bs = "re"`).
 
 For the `gam` method the left-hand side is ignored (the response is the
 constant case indicator); for `clogit` the left-hand side names the 0/1

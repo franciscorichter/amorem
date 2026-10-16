@@ -64,8 +64,8 @@
 </ul></div>
 <div class="section level3">
 <h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
-<ul><li>
-<code>sample_non_events(exclude_concurrent = )</code> controls whether dyads with an event at the focal event’s own time can be controls. The default keeps the existing behaviour: excluded under <code>risk = "remove"</code>, at risk under <code>risk = "standard"</code> (the Breslow convention).</li>
+<ul><li><p><strong>Per-term basis settings in <code><a href="../reference/rem.html">rem()</a></code> formulas (<a href="https://github.com/franciscorichter/amorem/issues/91" class="external-link">#91</a>).</strong> Smooth terms take the basis arguments of <code><a href="https://rdrr.io/pkg/mgcv/man/s.html" class="external-link">mgcv::s()</a></code> / <code><a href="https://rdrr.io/pkg/mgcv/man/te.html" class="external-link">mgcv::te()</a></code> after the covariate, so terms in one model can use different basis dimensions and types: <code>tv(x, k = 20, bs = "cr") + nl(y, k = 5, bs = "ps")</code>. <code>tvnl()</code> takes one value per margin (<code>tvnl(x, k = c(5, 8))</code>). A new global <code>bs</code> argument joins the global <code>k</code> as the default for terms that set neither; existing formulas give the same model as before.</p></li>
+<li><p><code>sample_non_events(exclude_concurrent = )</code> controls whether dyads with an event at the focal event’s own time can be controls. The default keeps the existing behaviour: excluded under <code>risk = "remove"</code>, at risk under <code>risk = "standard"</code> (the Breslow convention).</p></li>
 </ul></div>
 </div>
     <div class="section level2">
