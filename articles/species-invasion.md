@@ -1,7 +1,6 @@
 # Species invasions as a relational event process
 
 ``` r
-
 library(amorem)
 ```
 
@@ -32,7 +31,6 @@ stand-in for inter-country distances, and treat the states as the
 country universe.
 
 ``` r
-
 data("dist_matrix", package = "amorem")
 states <- rownames(dist_matrix)
 
@@ -46,7 +44,6 @@ one value per year from 1301 to 2005. We keep 1500–2005 and hold each
 winter’s value through the calendar year it opens:
 
 ``` r
-
 data("enso_nino34", package = "amorem")
 enso <- enso_nino34[enso_nino34$year >= 1500, ]
 g <- data.frame(time_start = enso$year, nino34 = enso$nino34)
@@ -77,7 +74,6 @@ the half-life-decayed count of past invasions in the reverse direction
 index. We set $`\beta_h = 0.4`$ and $`\beta_g = 0.6`$.
 
 ``` r
-
 set.seed(4)
 ev <- simulate_relational_events(
   n_events            = 600,
@@ -105,7 +101,6 @@ range(ev$time)
 `risk = "remove"` guarantees the realized dyads are all distinct:
 
 ``` r
-
 any(duplicated(paste(ev$sender, ev$receiver)))
 #> [1] FALSE
 ```
@@ -118,7 +113,6 @@ its event-minus-control difference is zero in every stratum and the
 effect drops out of the partial likelihood:
 
 ``` r
-
 cc0 <- sample_non_events(ev, mode = "one", risk = "remove", seed = 1)
 cc0$nino34 <- g$nino34[findInterval(cc0$time, g$time_start)]
 w0 <- widen_case_control(cc0, covariates = "nino34")
@@ -138,7 +132,6 @@ index takes a different value. With `risk = "remove"`, a dyad that has
 already fired before $`t^*`$ is not a valid control.
 
 ``` r
-
 cc <- sample_non_events(ev, mode = "one", risk = "remove", seed = 1,
                         shift = "exponential", window = c(1500, 2005))
 attr(cc, "shift")$mean            # mean shift, in years
@@ -153,7 +146,6 @@ neighbour pressure comes from the real invasions before $`t^*`$
 year:
 
 ``` r
-
 cc <- endogenous_features(cc, stats = "reciprocity_exp_decay",
                           half_life = 50, history_log = ev)
 cc$dist   <- dist_log[cbind(match(cc$sender, states),
@@ -175,7 +167,6 @@ table. `nl(dist)` is the smooth distance effect, contributing
 $`f(d_{ev}) - f(d_{nv})`$; the other two terms are linear.
 
 ``` r
-
 fit <- rem(~ nl(dist) + reciprocity_exp_decay + nino34,
            data = w, method = "gam")
 est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
@@ -194,7 +185,6 @@ The smooth recovers the shape of the distance effect, up to the additive
 constant that cancels in event-minus-control differences:
 
 ``` r
-
 plot(fit, select = 1, shade = TRUE, rug = FALSE,
      xlab = "log-distance", ylab = "f(log-distance)",
      main = "Distance effect: estimate and truth")

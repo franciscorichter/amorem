@@ -1,7 +1,6 @@
 # Exogenous dyadic covariates
 
 ``` r
-
 library(amorem)
 ```
 
@@ -17,7 +16,6 @@ The package ships a 56 × 56 distance matrix (in metres) between US
 states and territories. We load it and transform to a log-scale:
 
 ``` r
-
 data("dist_matrix", package = "amorem")
 
 # log-transform to compress the range
@@ -36,14 +34,12 @@ f(d) = \sin\!\bigl(-d / 1.5\bigr)
 where $`d`$ is the log-transformed distance.
 
 ``` r
-
 true_effect <- sin(-dist_log / 1.5)
 ```
 
 We can visualise this curve:
 
 ``` r
-
 d_seq <- seq(0, max(dist_log), length.out = 200)
 plot(d_seq, sin(-d_seq / 1.5),
     type = "l", lwd = 2, col = "red",
@@ -61,7 +57,6 @@ Gillespie algorithm uses these values to weight which dyad fires next.
 We also request one control per event for downstream inference:
 
 ``` r
-
 set.seed(42)
 
 states <- rownames(dist_matrix)
@@ -92,8 +87,8 @@ log-distance. A GAM with a smooth term `s(delta_dist)` should recover
 the true curve.
 
 ``` r
-
 library(mgcv)
+#> Warning: package 'mgcv' was built under R version 4.4.1
 #> Loading required package: nlme
 #> This is mgcv 1.9-4. For overview type '?mgcv'.
 
@@ -126,14 +121,13 @@ summary(fit)
 #>               edf Ref.df Chi.sq p-value
 #> s(delta_dist)   1      1      0       1
 #> 
-#> R-sq.(adj) =   -Inf   Deviance explained = -Inf%
+#> R-sq.(adj) =    NaN   Deviance explained = -Inf%
 #> UBRE = 0.38879  Scale est. = 1         n = 800
 ```
 
 ## Plotting estimated vs true effect
 
 ``` r
-
 x_grid <- seq(min(fit_df$delta_dist), max(fit_df$delta_dist), length.out = 300)
 pred <- predict(fit, newdata = data.frame(delta_dist = x_grid), type = "link")
 

@@ -20,7 +20,6 @@ on the sender absorbs a large part of that advantage — but on this
 stream it does not overturn it.
 
 ``` r
-
 data(classroom_events)
 specs <- list(
   count       = c("reciprocity_count", "transitivity_count"),
@@ -72,7 +71,6 @@ the interrupted variants of each), fit on the first 30 days of the
 per case:
 
 ``` r
-
 data(radoslaw_email)
 re30 <- radoslaw_email[radoslaw_email$time < 30, ]
 re30 <- re30[re30$sender != re30$receiver, ]
@@ -123,7 +121,6 @@ users, 193 days; see
 The first 30 days alone hold 22,265 messages across 1,086 users:
 
 ``` r
-
 data(college_msg)
 cm30 <- college_msg[college_msg$time < 30, ]
 compare_models(cm30, specs, n_controls = 1, seed = 11)

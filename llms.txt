@@ -26,7 +26,6 @@ The package consolidates four lines of recent methodological work:
 ## Installation
 
 ``` r
-
 # install.packages("remotes")
 remotes::install_github("franciscorichter/amorem")
 ```
@@ -34,7 +33,6 @@ remotes::install_github("franciscorichter/amorem")
 ## 30-second tour
 
 ``` r
-
 library(amorem)
 
 # 1. Bundled datasets, ready to load

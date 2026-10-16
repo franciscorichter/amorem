@@ -78,7 +78,8 @@ sender frailty is added).
 - **Email-EU-Core** — SNAP, `email-Eu-core-temporal-Dept3`. Paranjape,
   Benson & Leskovec (2017). Self-loops removed.
 - **ENSO Niño3.4 reconstruction** — NOAA NCEI World Data Service for
-  Paleoclimatology, study 14632 (<doi:10.25921/jfqm-9178>), file
+  Paleoclimatology, study 14632
+  ([doi:10.25921/jfqm-9178](https://doi.org/10.25921/jfqm-9178)), file
   `enso-li2013.txt`. Li et al. (2013).
 
 The fourth dataset analysed by Juozaitienė & Wit (2024) — Enron — is
@@ -94,7 +95,6 @@ original Unix-epoch timestamps are preserved as a `unix_origin`
 attribute on each event frame where the source provided them:
 
 ``` r
-
 data(radoslaw_email)
 attr(radoslaw_email, "unix_origin")
 #> [1] "2010-01-02 14:45:35 UTC"

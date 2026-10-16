@@ -74,7 +74,6 @@ compare_models_smooth(
   vector (or named list) mapping statistic names to effect types:
   `"linear"`, `"tv"`, `"nl"`, or `"tvnl"`. Example:
 
-
           list(
             linear = c(reciprocity_count   = "linear",
                        transitivity_count  = "linear"),
@@ -142,7 +141,7 @@ compare_models_smooth(
   seed = 11)
 #>    model n_terms n_obs   log_lik      AIC delta_AIC
 #> 1     nl       2   691 -418.0982 845.8892 0.0000000
-#> 2 linear       2   691 -421.1231 846.2462 0.3570575
-#> 3   tvnl       2   691 -417.4186 848.6513 2.7620675
+#> 2 linear       2   691 -421.1231 846.2462 0.3570373
+#> 3   tvnl       2   691 -417.4186 848.6513 2.7620472
 # }
 ```

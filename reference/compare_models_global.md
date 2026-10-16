@@ -171,7 +171,7 @@ compare_models_global(
   global_covariates = g,
   seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       4   690 -304.2789 622.4462   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  88.54363
+#> 1 with_global       4   690 -290.6806 599.8110    0.0000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  111.1788
 # }
 ```

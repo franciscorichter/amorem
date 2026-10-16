@@ -26,7 +26,6 @@ stress row), 30 replicates each — 150 fits.
 **Code.**
 
 ``` r
-
 library(amorem)
 actors <- paste0("a", 1:15); betas <- c(-0.4, 0, 0.4, 0.8, 1.2); n_reps <- 30
 res <- do.call(rbind, lapply(seq_along(betas), function(bi){
@@ -94,7 +93,6 @@ partial smooth on a 150-point grid.
 **Code.**
 
 ``` r
-
 library(amorem); library(survival)
 
 f_true <- function(x) sin(x) - 0.3 * (x - 3)        # true non-linear effect
@@ -157,7 +155,6 @@ On each replicate: naive
 **Code.**
 
 ``` r
-
 library(amorem); library(survival)
 B <- 0.5; NA_ <- 20; A <- paste0("a", 1:NA_)
 run_one <- function(ne, act, seed){ set.seed(seed)
@@ -224,7 +221,6 @@ scaling shape and ratios are what transfer.
 **Code.**
 
 ``` r
-
 library(amorem)
 sim_time <- function(na, ne, method, tau=NULL, seed=1) {
   act <- paste0("a", seq_len(na)); set.seed(20260613L + seed)
@@ -306,7 +302,6 @@ at tied timestamps).
 **Code.**
 
 ``` r
-
 library(amorem)
 set.seed(505)
 actors <- sprintf("a%02d", 1:15)
@@ -390,7 +385,6 @@ when effects interact in a way an additive model cannot represent.
 **Code.**
 
 ``` r
-
 library(amorem)
 
 # one event + one control per stratum; the event is drawn by a softmax
@@ -479,7 +473,6 @@ recording wall-clock and peak R memory.
 **Code.**
 
 ``` r
-
 library(amorem)
 f1 <- function(x) sin(2*x); f2 <- function(x) 0.8*x          # f3 is the null
 eta <- function(x) f1(x[1]) + f2(x[2]) + 0*x[3]

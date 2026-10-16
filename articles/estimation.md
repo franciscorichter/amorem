@@ -42,7 +42,6 @@ Throughout this page we use the bundled `classroom_events` log — any
 event log with `time`, `sender`, `receiver` columns will do.
 
 ``` r
-
 library(amorem)
 data(classroom_events)
 
@@ -66,7 +65,6 @@ now treated as a concurrent event (not a valid non-event at that
 instant) and excluded from its control pool:
 
 ``` r
-
 cc <- sample_non_events(event_log,
                         scope         = "all",
                         mode          = "two",
@@ -98,7 +96,6 @@ Downstream, you join it to an external lookup to build the actual
 covariate:
 
 ``` r
-
 feats <- endogenous_features(cc, stats = "sender_receivers_set",
                                      history_log = event_log)
 feats$invaded <- Map(setdiff, feats$sender_receivers_set, native_range(feats$sender))
@@ -141,7 +138,6 @@ from feature computation. It has three backends:
   differ on `x`).
 
 ``` r
-
 # case-20-control conditional logit (e.g. an eventnet-preprocessed log)
 fit20 <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
              data = lesmis, method = "clogit", stratum = "EVENT_INTERVAL")
@@ -197,7 +193,6 @@ A single call evaluates a list of candidate specifications on a shared
 case-control sample:
 
 ``` r
-
 data(classroom_events)
 compare_models(
   classroom_events,
@@ -247,7 +242,6 @@ attaches the fitted model objects — one per spec, named by model — as
 plotting its estimated effects:
 
 ``` r
-
 res <- compare_models_smooth(event_log, models, keep_fits = TRUE)
 plot(attr(res, "fits")[["nl"]])     # the chosen spec's smooth panel
 ```
@@ -282,7 +276,6 @@ follows [Boschi, Lerner & Wit (2025)](https://arxiv.org/abs/2509.05289)
 Section 3.3:
 
 ``` r
-
 compare_models_smooth(
   classroom_events,
   models = list(
@@ -348,7 +341,6 @@ row’s time, widen, and fit with
 [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md):
 
 ``` r
-
 g <- data.frame(time        = seq(0, max(classroom_events$time), length = 50),
                 temperature = sin(seq(0, 2 * pi, length = 50)))
 at <- function(t) g$temperature[findInterval(t, g$time)]
@@ -377,7 +369,6 @@ and 100.
 runs the same design for a list of specifications and ranks them by AIC:
 
 ``` r
-
 compare_models_global(
   classroom_events,
   models = list(
@@ -418,7 +409,6 @@ martingale residual process `G[γ̂, u]`. After normalisation,
 (multivariate) Brownian bridge under correct specification.
 
 ``` r
-
 m <- c(reciprocity_count  = "linear",
        transitivity_count = "linear")
 
@@ -479,7 +469,6 @@ is the fitted probability that observation `i` is the case in its
 two-element risk set:
 
 ``` r
-
 res <- martingale_residuals(
   classroom_events,
   model = c(reciprocity_count  = "linear",
@@ -540,7 +529,6 @@ via `plot(type = "pdp")`) while `batch_strata` mini-batching scales to
 event logs far beyond what an in-memory smooth fit can hold:
 
 ``` r
-
 fit_add <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
                data = lesmis, method = "nn", stratum = "EVENT_INTERVAL",
                nn = nn_control(architecture = "additive_spline",
