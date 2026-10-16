@@ -167,7 +167,7 @@ res2
 - Juozaitienė R, Wit EC (2024). It's about time: revisiting
   reciprocity and triadicity in relational event analysis.
   *Journal of the Royal Statistical Society Series A* 188(4),
-  1246–1262. doi:10.1093/jrsssa/qnae132.
+  1246–1262. [doi:10.1093/jrsssa/qnae132](https://doi.org/10.1093/jrsssa/qnae132).
 - Vu D, Pattison P, Robins G (2017). Relational event models for
   social learning in MOOCs. *Social Networks* 43, 121–135.
 - McFarland D (2001). Student resistance. *AJS* 107(3), 612–678.

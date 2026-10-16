@@ -140,7 +140,7 @@ intended for the first CRAN release.
   "additive_spline", batch_strata = )` fits per-covariate B-spline effects by
   (mini-batch) stochastic gradient on the exact case-control partial
   likelihood — the construction of Filippi-Mazzola & Wit (2024, JRSS-C,
-  <doi:10.1093/jrsssc/qlae023>) — giving interpretable additive smooth
+  [doi:10.1093/jrsssc/qlae023](https://doi.org/10.1093/jrsssc/qlae023)) — giving interpretable additive smooth
   curves on the same objective as `clogit`, with mini-batching for large
   event logs.
 * **New `rem(method = "nn")` backend:** a multilayer perceptron scores every
