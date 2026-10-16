@@ -27,16 +27,18 @@
 #' }
 #' where each \eqn{\Delta_k}{Delta_k} is the difference between the
 #' (smooth) function evaluated at the focal event time and at the
-#' sampled non-event's *shifted* time
-#' \eqn{t^*_k = t_k - h_{s^* r^*}}{t*_k = t_k - h_{s*r*}}.
+#' sampled non-event's *back-shifted* time
+#' \eqn{t^*_k = t_k + h_{s_k r_k} - h_{s^* r^*}}{t*_k = t_k + h_{s_k r_k} - h_{s*r*}}.
 #'
-#' Shift distribution. Per-dyad shifts \eqn{H_{sr}}{H_sr} are drawn
-#' independently from an exponential distribution with mean
-#' \eqn{\nu \cdot \bar{\Delta t}}{nu * mean_dt} where
-#' \eqn{\bar{\Delta t}}{mean_dt} is the average inter-arrival time
-#' in `event_log`. The paper's simulation studies find that
-#' \eqn{\nu = 1}{nu = 1} works in practice and that the estimates
-#' are robust to choices in \eqn{[0.1, 10]}{[0.1, 10]}.
+#' Shift distribution. The case-control sample is drawn by
+#' [sample_non_events()] with `shift = "exponential"`: one shift per dyad,
+#' \eqn{H_{sr} \sim \mathrm{Exp}}{H_sr ~ Exp} with mean \eqn{\nu}{nu} times
+#' the average event time (measured from the start of `window`), the control
+#' drawn from the dyads whose back-shifted time lies in `window`, and events
+#' with no such dyad dropped. Dyadic statistics of each control are computed
+#' from the events before its own time \eqn{t^*_k}{t*_k}. The
+#' paper uses \eqn{\nu = 1}{nu = 1} and reports no effect of
+#' \eqn{\nu}{nu} on the estimates for \eqn{\nu \in [0.1, 100]}{nu in [0.1, 100]}.
 #'
 #' Specification format. Each entry of `models` is a named character
 #' vector mapping a covariate name (a statistic in
@@ -67,8 +69,9 @@
 #' @param scope,mode Passed through to [sample_non_events()].
 #' @param half_life Required when any dyadic spec uses an exp-decay
 #'   stat.
-#' @param shift_scale Multiplier on the average inter-arrival time
-#'   for the exponential shift distribution. Defaults to 1.
+#' @param shift_scale,window Passed to [sample_non_events()]: the shift mean
+#'   is `shift_scale` times the average event time, and `window` is the
+#'   observation window (default `c(min(time), max(time))`).
 #' @param k Optional knot count for smooth terms (see
 #'   [mgcv::s()]). Defaults to `mgcv`'s automatic choice.
 #' @param k_cyclic Knot count for `global_cyclic` smooths
@@ -113,7 +116,7 @@ compare_models_global <- function(event_log,
                                    scope = c("all", "appearance", "citation"),
                                    mode  = c("one", "two"),
                                    half_life = NULL,
-                                   shift_scale = 1,
+                                   shift_scale = 1, window = NULL,
                                    k = NULL, k_cyclic = 10,
                                    seed = NULL,
                                    keep_fits = FALSE) {
@@ -173,41 +176,36 @@ compare_models_global <- function(event_log,
     lapply(models, function(s) names(s)[!unname(s) %in% global_effects]),
     use.names = FALSE))
 
-  # 1. One shared case-control draw (paired event / non-event design,
-  # n_controls = 1). The case-control table will be re-used across specs.
+  # 1. One shared time-shifted case-control draw (paper Section 4; one
+  # non-event per event), re-used across specs. Each control carries its own
+  # back-shifted time t*_k, and events whose shifted risk set holds no other
+  # dyad get no control and drop out.
   cc <- sample_non_events(event_log, n_controls = 1L,
-                          scope = scope, mode = mode, seed = seed)
+                          scope = scope, mode = mode, seed = seed,
+                          shift = "exponential", shift_scale = shift_scale,
+                          window = window)
+  # Dyadic statistics of every row, events and controls alike, against the
+  # real events strictly before that row's own time.
+  history <- event_log[, c("sender", "receiver", "time")]
   cc_feat <- if (length(all_dyad_stats)) {
-    endogenous_features(cc, stats = all_dyad_stats,
-                                 half_life = half_life)
+    endogenous_features(cc, stats = all_dyad_stats, half_life = half_life,
+                        history_log = history)
   } else cc
   if (length(all_dyad_stats)) {
     for (st in all_dyad_stats) {
       v <- cc_feat[[st]]; if (anyNA(v)) v[is.na(v)] <- 0; cc_feat[[st]] <- v
     }
   }
-  cases <- cc_feat[cc_feat$event == 1L, , drop = FALSE]
   ctrls <- cc_feat[cc_feat$event == 0L, , drop = FALSE]
+  cases <- cc_feat[cc_feat$event == 1L & cc_feat$stratum %in% ctrls$stratum, ,
+                   drop = FALSE]
   cases <- cases[order(cases$stratum), , drop = FALSE]
   ctrls <- ctrls[order(ctrls$stratum), , drop = FALSE]
-  if (nrow(cases) != nrow(ctrls)) {
-    stop("Internal: case and control counts disagree after stratum sort.")
-  }
   n <- nrow(cases)
+  if (!n) stop("No event has a control in the shifted risk set; lower `shift_scale`.")
 
-  # 2. Per-dyad time shift H_{sr}. The paper draws H_{sr} ~ Exp(rate)
-  # with mean = shift_scale * mean(inter-arrival times); we treat the
-  # control row as the "non-event dyad" and assign it an independent
-  # shift, then the focal event's time stays at t_k while the
-  # non-event's time used in the design is t_k - h_{s*r*}.
-  if (!is.null(seed)) set.seed(seed)
-  ev_times <- sort(event_log$time)
-  mean_dt  <- if (length(ev_times) > 1L) {
-    mean(diff(ev_times))
-  } else 1
-  rate <- 1 / max(shift_scale * mean_dt, .Machine$double.eps)
-  h_shifts <- stats::rexp(n, rate = rate)
-  ctrl_shifted_time <- cases$time - h_shifts
+  # 2. The non-event's time in the design is its back-shifted time.
+  ctrl_shifted_time <- ctrls$time
 
   # 3. Global-covariate evaluation by LOCF lookup on the time axis.
   eval_global <- function(name, t) {
@@ -225,7 +223,7 @@ compare_models_global <- function(event_log,
     spec <- models[[i]]
     cov_names <- names(spec); eff_names <- unname(spec)
 
-    df <- list(one = rep(1, n), .time = cases$time)
+    df <- list(one = rep(1, n))
     rhs_terms <- character(0)
     k_arg     <- if (is.null(k)) "" else sprintf(", k = %d", k)
 
@@ -251,19 +249,23 @@ compare_models_global <- function(event_log,
                                   X_col, I_col, k_cyclic),
           global_time   = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg)))
       } else {
-        # Dyadic / node-level stat: same as compare_models_smooth().
+        # Dyadic / node-level stat. Event and control sit at different times,
+        # so time-varying terms evaluate the smooth at each row's own time:
+        # tv contributes f(t_k) x_ev - f(t*_k) x_nv.
         xc <- cases[[cov]]; xn <- ctrls[[cov]]
         dx <- xc - xn
         stat_mat <- cbind(case = xc, ctrl = xn)
         I_mat    <- cbind(case = rep(1, n), ctrl = rep(-1, n))
-        T_mat    <- cbind(case = cases$time, ctrl = cases$time)
-        d_col <- paste0("d_", cov);  df[[d_col]] <- dx
-        X_col <- paste0("X_", cov);  df[[X_col]] <- stat_mat
-        I_col <- paste0("I_", cov);  df[[I_col]] <- I_mat
-        T_col <- paste0("T_", cov);  df[[T_col]] <- T_mat
+        T_mat    <- cbind(case = cases$time, ctrl = ctrl_shifted_time)
+        XI_mat   <- cbind(case = xc, ctrl = -xn)
+        d_col  <- paste0("d_", cov);  df[[d_col]]  <- dx
+        X_col  <- paste0("X_", cov);  df[[X_col]]  <- stat_mat
+        I_col  <- paste0("I_", cov);  df[[I_col]]  <- I_mat
+        T_col  <- paste0("T_", cov);  df[[T_col]]  <- T_mat
+        XI_col <- paste0("XI_", cov); df[[XI_col]] <- XI_mat
         rhs_terms <- c(rhs_terms, switch(eff,
           linear = d_col,
-          tv    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
+          tv    = sprintf("s(%s, by = %s%s)", T_col, XI_col, k_arg),
           nl    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
           tvnl  = sprintf("te(%s, %s, by = %s%s)",
                             T_col, X_col, I_col, k_arg)))

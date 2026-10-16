@@ -12,6 +12,7 @@ compare_models_global(
   mode = c("one", "two"),
   half_life = NULL,
   shift_scale = 1,
+  window = NULL,
   k = NULL,
   k_cyclic = 10,
   seed = NULL,
@@ -35,8 +36,9 @@ the \code{time} axis).}
 \item{half_life}{Required when any dyadic spec uses an exp-decay
 stat.}
 
-\item{shift_scale}{Multiplier on the average inter-arrival time
-for the exponential shift distribution. Defaults to 1.}
+\item{shift_scale, window}{Passed to \code{\link[=sample_non_events]{sample_non_events()}}: the shift mean
+is \code{shift_scale} times the average event time, and \code{window} is the
+observation window (default \code{c(min(time), max(time))}).}
 
 \item{k}{Optional knot count for smooth terms (see
 \code{\link[mgcv:s]{mgcv::s()}}). Defaults to \code{mgcv}'s automatic choice.}
@@ -83,16 +85,18 @@ Per the paper's equations 11-13:
 }
 where each \eqn{\Delta_k}{Delta_k} is the difference between the
 (smooth) function evaluated at the focal event time and at the
-sampled non-event's \emph{shifted} time
-\eqn{t^*_k = t_k - h_{s^* r^*}}{t*_k = t_k - h_{s*r*}}.
+sampled non-event's \emph{back-shifted} time
+\eqn{t^*_k = t_k + h_{s_k r_k} - h_{s^* r^*}}{t*_k = t_k + h_{s_k r_k} - h_{s*r*}}.
 
-Shift distribution. Per-dyad shifts \eqn{H_{sr}}{H_sr} are drawn
-independently from an exponential distribution with mean
-\eqn{\nu \cdot \bar{\Delta t}}{nu * mean_dt} where
-\eqn{\bar{\Delta t}}{mean_dt} is the average inter-arrival time
-in \code{event_log}. The paper's simulation studies find that
-\eqn{\nu = 1}{nu = 1} works in practice and that the estimates
-are robust to choices in \eqn{[0.1, 10]}{[0.1, 10]}.
+Shift distribution. The case-control sample is drawn by
+\code{\link[=sample_non_events]{sample_non_events()}} with \code{shift = "exponential"}: one shift per dyad,
+\eqn{H_{sr} \sim \mathrm{Exp}}{H_sr ~ Exp} with mean \eqn{\nu}{nu} times
+the average event time (measured from the start of \code{window}), the control
+drawn from the dyads whose back-shifted time lies in \code{window}, and events
+with no such dyad dropped. Dyadic statistics of each control are computed
+from the events before its own time \eqn{t^*_k}{t*_k}. The
+paper uses \eqn{\nu = 1}{nu = 1} and reports no effect of
+\eqn{\nu}{nu} on the estimates for \eqn{\nu \in [0.1, 100]}{nu in [0.1, 100]}.
 
 Specification format. Each entry of \code{models} is a named character
 vector mapping a covariate name (a statistic in

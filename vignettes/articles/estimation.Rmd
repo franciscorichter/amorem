@@ -290,23 +290,57 @@ shares the same case-control sample.
 
 ---
 
-## `compare_models_global()` · global covariate effects
+## Global covariate effects
 
 A *global* covariate varies in time but is constant across all
 interacting pairs at any given instant — temperature, time-of-day,
 the residual baseline hazard `g_0(t)`. Standard case-control
-partial likelihood structurally cannot identify a global effect
-because it cancels in the focal-vs-control rate ratio (both pairs
-are evaluated at the same time). The fix of
+partial likelihood cannot identify a global effect, because the focal
+event and its controls are evaluated at the same time and the effect
+cancels in their rate ratio. The fix of
 [Lembo, Juozaitienė, Vinciotti & Wit (2025)](https://doi.org/10.1093/jrsssc/qlaf058)
-is a random per-dyad time shift `H_sr ~ Exp(rate)`, so the focal
-event and the sampled non-event are evaluated at *different* times.
-With one non-event per event the partial likelihood collapses to a
-degenerate logistic GAM that `mgcv` fits directly:
+samples controls from a time-shifted copy of the event process: every
+dyad draws one shift `h_sr ~ Exp`, event `k` on `(s, r)` moves to
+`t_e = t_k + h_sr`, and its control is drawn from the dyads whose
+back-shifted time `t* = t_e - h_s*r*` lies in the observation window.
+The control is then evaluated at `t*`, so global effects stay in the
+likelihood. With one control per event the partial likelihood is a
+degenerate logistic GAM.
+
+`sample_non_events(shift = "exponential")` draws this sample; each
+control carries its own `time`. Compute endogenous statistics against
+the real history (`history_log`), evaluate the global covariate at each
+row's time, widen, and fit with `rem()`:
 
 ```r
 g <- data.frame(time        = seq(0, max(classroom_events$time), length = 50),
                 temperature = sin(seq(0, 2 * pi, length = 50)))
+at <- function(t) g$temperature[findInterval(t, g$time)]
+
+cc <- sample_non_events(classroom_events, mode = "one", seed = 11,
+                        shift = "exponential")
+cc <- endogenous_features(cc, stats = "reciprocity_count",
+                          history_log = classroom_events)
+cc$temperature <- at(cc$time)
+w <- widen_case_control(cc, covariates = c("reciprocity_count",
+                                           "temperature", "time"))
+fit <- rem(~ reciprocity_count + nl(temperature, k = 5) + nl(time, k = 5),
+           data = w, method = "gam")
+```
+
+`nl(time)` is the residual baseline `g_0(t)`. The shifts have mean
+`shift_scale` (default `1`, the paper's choice) times the average event
+time, measured from the start of `window`. Larger shifts carry more
+information about the global effects but leave more events with no
+dyad in their shifted risk set; those events get no control and drop
+out (their strata are listed in `attr(cc, "shift")$uninformative`). The
+paper reports no effect of `shift_scale` on the estimates between 0.1
+and 100.
+
+`compare_models_global()` runs the same design for a list of
+specifications and ranks them by AIC:
+
+```r
 compare_models_global(
   classroom_events,
   models = list(
@@ -323,12 +357,8 @@ compare_models_global(
 | `global_cyclic` | `s(x_global, bs = "cc")` | periodic axes (time-of-day) |
 | `global_time`   | smooth on time itself | recovers residual `g_0(t)` |
 
-`shift_scale` (default `1`) multiplies the mean inter-event time
-used to set the exponential rate of `H_sr`. Larger values widen
-the shifts and improve identifiability of slow global signals at
-the cost of bias under fast-varying `g_0`. The `global_time` spec
-can produce a degenerate fit on small / uninformative data — when
-this happens the result is `NA` rather than a hard error.
+A specification whose fit fails returns `NA` in the table rather than
+an error.
 
 ### Recency preprocessing
 

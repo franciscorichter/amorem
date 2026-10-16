@@ -2,6 +2,21 @@
 
 ## Bug fixes
 
+* **`compare_models_global()` now uses the paper's time-shifted design.** It
+  drew one shift per control row, never shifted the event, never checked the
+  observation window (control times could precede the data), evaluated the
+  controls' dyadic statistics at the event time, and let sampled controls
+  enter the network history. On simulated data with a global effect of 1 it
+  returned estimates of -1.74, 2.63 and -2.12 over three datasets. It now
+  draws its sample with `sample_non_events(shift = "exponential")`, computes
+  dyadic statistics against the real history at each row's own time,
+  evaluates `tv` / `tvnl` terms at each row's own time, and drops events with
+  no control; the same three datasets give 0.85, 1.02 and 1.01. The shift
+  mean is now `shift_scale` times the average event time (it was times the
+  average inter-arrival time), and a `window` argument is passed through.
+  Results of earlier `compare_models_global()` fits change and should be
+  re-run.
+
 * `widen_case_control()` and the `clogit` / `nn` backends of `rem()` use the
   `stratum` column written by `sample_non_events()` when `stratum = NULL`,
   instead of rebuilding strata as `cumsum(case == 1)`. The rebuilt strata
