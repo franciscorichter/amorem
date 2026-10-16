@@ -12,6 +12,7 @@ rem(
   stratum = NULL,
   time = NULL,
   k = NULL,
+  bs = NULL,
   gam_method = NULL,
   nn = nn_control(),
   ...
@@ -37,7 +38,11 @@ formula's left-hand side (e.g. \code{event ~ x}). Ignored by the \code{gam} meth
 
 \item{time}{Name of the time column, required for \code{tv} / \code{tvnl} terms.}
 
-\item{k}{Optional integer basis dimension passed to \code{s()} / \code{te()}.}
+\item{k}{Optional basis dimension passed to every \code{s()} / \code{te()} smooth
+that does not set its own \code{k} (see \emph{Formula syntax}).}
+
+\item{bs}{Optional basis type (e.g. \code{"tp"}, \code{"cr"}, \code{"ps"}) passed to every
+\code{s()} / \code{te()} smooth that does not set its own \code{bs}.}
 
 \item{gam_method}{Smoothness-selection method for the \code{gam} backend,
 passed to \code{\link[mgcv:gam]{mgcv::gam()}}. Defaults to \code{NULL}, which uses mgcv's own default
@@ -104,6 +109,16 @@ species-invasiveness term). Falls back to a single column \code{x} when
 \code{x_ev} / \code{x_nv} are absent. Identified only when the event and control
 differ on \code{x}.
 }
+Smooth terms take the basis settings of \code{\link[mgcv:s]{mgcv::s()}} / \code{\link[mgcv:te]{mgcv::te()}} as
+named arguments after the covariate, so each term can use its own basis
+dimension and type: \code{tv(x, k = 20, bs = "cr") + nl(y, k = 5, bs = "ps")}.
+Any \code{s()} / \code{te()} argument other than \code{by} is accepted (e.g. \code{m}, \code{fx},
+\code{sp}, \code{xt}); for \code{tvnl} a vector \code{k} or \code{bs} gives one value per margin,
+time first (\code{tvnl(x, k = c(5, 8))}). Argument values are evaluated in the
+formula's environment. A term without its own \code{k} / \code{bs} uses the global
+\code{k} / \code{bs} arguments of \code{rem()}, and mgcv's defaults when those are \code{NULL}.
+\code{re()} takes no further arguments (its basis is fixed to \code{bs = "re"}).
+
 For the \code{gam} method the left-hand side is ignored (the response is the
 constant case indicator); for \code{clogit} the left-hand side names the 0/1 event
 indicator column (e.g. \code{event ~ x}), unless \code{case} is given explicitly.

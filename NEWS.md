@@ -20,6 +20,14 @@
 
 ## New features
 
+* **Per-term basis settings in `rem()` formulas (#91).** Smooth terms take the
+  basis arguments of `mgcv::s()` / `mgcv::te()` after the covariate, so terms
+  in one model can use different basis dimensions and types:
+  `tv(x, k = 20, bs = "cr") + nl(y, k = 5, bs = "ps")`. `tvnl()` takes one
+  value per margin (`tvnl(x, k = c(5, 8))`). A new global `bs` argument joins
+  the global `k` as the default for terms that set neither; existing formulas
+  give the same model as before.
+
 * `sample_non_events(exclude_concurrent = )` controls whether dyads with an
   event at the focal event's own time can be controls. The default keeps the
   existing behaviour: excluded under `risk = "remove"`, at risk under

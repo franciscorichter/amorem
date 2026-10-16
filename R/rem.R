@@ -46,6 +46,16 @@
 #'     `x_ev` / `x_nv` are absent. Identified only when the event and control
 #'     differ on `x`.
 #' }
+#' Smooth terms take the basis settings of [mgcv::s()] / [mgcv::te()] as
+#' named arguments after the covariate, so each term can use its own basis
+#' dimension and type: `tv(x, k = 20, bs = "cr") + nl(y, k = 5, bs = "ps")`.
+#' Any `s()` / `te()` argument other than `by` is accepted (e.g. `m`, `fx`,
+#' `sp`, `xt`); for `tvnl` a vector `k` or `bs` gives one value per margin,
+#' time first (`tvnl(x, k = c(5, 8))`). Argument values are evaluated in the
+#' formula's environment. A term without its own `k` / `bs` uses the global
+#' `k` / `bs` arguments of `rem()`, and mgcv's defaults when those are `NULL`.
+#' `re()` takes no further arguments (its basis is fixed to `bs = "re"`).
+#'
 #' For the `gam` method the left-hand side is ignored (the response is the
 #' constant case indicator); for `clogit` the left-hand side names the 0/1 event
 #' indicator column (e.g. `event ~ x`), unless `case` is given explicitly.
@@ -83,7 +93,10 @@
 #' @param stratum Name of the column grouping each case with its controls
 #'   (required by `clogit`).
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
-#' @param k Optional integer basis dimension passed to `s()` / `te()`.
+#' @param k Optional basis dimension passed to every `s()` / `te()` smooth
+#'   that does not set its own `k` (see *Formula syntax*).
+#' @param bs Optional basis type (e.g. `"tp"`, `"cr"`, `"ps"`) passed to every
+#'   `s()` / `te()` smooth that does not set its own `bs`.
 #' @param gam_method Smoothness-selection method for the `gam` backend,
 #'   passed to [mgcv::gam()]. Defaults to `NULL`, which uses mgcv's own default
 #'   (`"GCV.Cp"`) and reproduces the Intro-to-REM tutorial parameterization.
@@ -116,7 +129,7 @@
 rem <- function(formula, data,
                 method = c("gam", "clogit", "nn"),
                 case = NULL, stratum = NULL, time = NULL,
-                k = NULL, gam_method = NULL, nn = nn_control(), ...) {
+                k = NULL, bs = NULL, gam_method = NULL, nn = nn_control(), ...) {
   method <- match.arg(method)
   if (!inherits(formula, "formula")) stop("`formula` must be a formula.")
   if (!is.data.frame(data)) stop("`data` must be a data.frame.")
@@ -125,12 +138,8 @@ rem <- function(formula, data,
   if (!length(term_labels)) {
     stop("`formula` must have at least one term on the right-hand side.")
   }
-  parse_term <- function(lbl) {
-    m <- regmatches(lbl, regexec("^(tvnl|tv|nl|re)\\((.+)\\)$", lbl))[[1]]
-    if (length(m) == 3L) list(type = m[2], var = trimws(m[3]))
-    else list(type = "linear", var = lbl)
-  }
-  terms_info <- lapply(term_labels, parse_term)
+  terms_info <- lapply(term_labels, .parse_rem_term,
+                       env = environment(formula))
 
   if (method == "clogit") {
     if (!requireNamespace("survival", quietly = TRUE)) {
@@ -271,7 +280,15 @@ rem <- function(formula, data,
   reserved <- c("one", ".I", ".time", ".T")
   df <- list(one = rep(1, n), .I = cbind(case = rep(1, n), ctrl = rep(-1, n)))
   rhs <- character(0)
-  k_arg <- if (is.null(k)) "" else sprintf(", k = %d", k)
+  # Basis arguments for one smooth term: the term's own, then the global k/bs.
+  smooth_args <- function(ti) {
+    a <- ti$args
+    if (is.null(a$k) && !is.null(k)) a$k <- k
+    if (is.null(a$bs) && !is.null(bs)) a$bs <- bs
+    if (!length(a)) return("")
+    paste0(", ", paste(names(a), vapply(a, .deparse_arg, character(1)),
+                       sep = " = ", collapse = ", "))
+  }
   need_time <- FALSE; need_ttrans <- FALSE
   bt <- function(x) paste0("`", x, "`")            # backtick for formula safety
   for (ti in terms_info) {
@@ -287,14 +304,14 @@ rem <- function(formula, data,
       rhs <- c(rhs, bt(v))
     } else if (ti$type == "tv") {
       df[[v]] <- get_diff(v); need_time <- TRUE
-      rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".time"), bt(v), k_arg))
+      rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".time"), bt(v), smooth_args(ti)))
     } else if (ti$type == "nl") {
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v)
-      rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(xc), bt(".I"), k_arg))
+      rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(xc), bt(".I"), smooth_args(ti)))
     } else if (ti$type == "tvnl") {
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v); need_ttrans <- TRUE
       rhs <- c(rhs, sprintf("te(%s, %s, by = %s%s)",
-                            bt(".T"), bt(xc), bt(".I"), k_arg))
+                            bt(".T"), bt(xc), bt(".I"), smooth_args(ti)))
     } else if (ti$type == "re") {
       # Actor (or other grouping) random effect, matching the matched
       # case-control construction of the REM tutorial (Intro-to-REM, 3.4): an
@@ -358,6 +375,42 @@ logLik.rem <- function(object, ...) stats::logLik(object$fit)
 
 #' @export
 predict.rem <- function(object, ...) stats::predict(object$fit, ...)
+
+# Parse one formula term label. `tv(x, ...)`, `nl(x, ...)`, `tvnl(x, ...)` and
+# `re(x)` become list(type, var, args), where `args` holds the named basis
+# arguments evaluated in `env`; anything else is a linear term named by its label.
+.parse_rem_term <- function(lbl, env = parent.frame()) {
+  linear <- list(type = "linear", var = lbl, args = list())
+  expr <- tryCatch(str2lang(lbl), error = function(e) NULL)
+  if (!is.call(expr) || !is.name(expr[[1L]])) return(linear)
+  type <- as.character(expr[[1L]])
+  if (!type %in% c("tv", "nl", "tvnl", "re")) return(linear)
+
+  call_args <- as.list(expr)[-1L]
+  nms <- names(call_args)
+  if (is.null(nms)) nms <- rep("", length(call_args))
+  unnamed <- which(!nzchar(nms))
+  if (length(unnamed) != 1L || unnamed != 1L) {
+    stop("`", lbl, "`: give the covariate as the first argument and any ",
+         "basis settings as named arguments, e.g. ", type, "(x, k = 10).")
+  }
+  v <- call_args[[1L]]
+  if (!(is.name(v) || (is.character(v) && length(v) == 1L))) {
+    stop("`", lbl, "`: the first argument must be a column name.")
+  }
+  args <- call_args[-1L]
+  if (type == "re" && length(args)) {
+    stop("`", lbl, "`: re() takes no further arguments (its basis is bs = \"re\").")
+  }
+  if ("by" %in% names(args)) {
+    stop("`", lbl, "`: `by` is set by rem() and cannot be given in the term.")
+  }
+  args <- lapply(args, eval, envir = env)
+  list(type = type, var = as.character(v), args = args)
+}
+
+# Render an evaluated argument value back into formula source.
+.deparse_arg <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = " ")
 
 # Derive the case-control stratum vector aligned to data's rows.
 # If `stratum` names a column, use it (forward-filling blanks, since eventnet
