@@ -383,11 +383,16 @@ test_that("sample_non_events supports scope/mode combinations", {
     seed = 321
   )
 
+  # The first event has no prior events, so it gets no controls; every later
+  # event gets one, drawn from prior senders x prior receivers.
   controls_two <- subset(sampled_two, event == 0)
-  expect_equal(nrow(controls_two), 4)
+  expect_equal(nrow(controls_two), 3)
+  expect_false(1 %in% controls_two$stratum)
   expect_true(all(controls_two$sender %in% c("a", "b", "c")))
   expect_true(all(controls_two$receiver %in% c("a", "b", "c")))
+  expect_equal(controls_two$sender[controls_two$stratum == 2], "a")
+  expect_equal(controls_two$receiver[controls_two$stratum == 2], "b")
 
   by_stratum <- aggregate(event ~ stratum, sampled_two, length)
-  expect_true(all(by_stratum$event == 2))
+  expect_equal(by_stratum$event, c(1, 2, 2, 2))
 })

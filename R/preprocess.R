@@ -1041,12 +1041,17 @@ endogenous_features <- function(
 #'   event.
 #' @param scope Candidate set definition. `"all"` uses every actor observed in
 #'   the data; `"appearance"` restricts to actors that have appeared in prior
-#'   events; `"citation"` matches citation networks where senders are restricted
+#'   events (so the first event, with no prior events, gets no controls);
+#'   `"citation"` matches citation networks where senders are restricted
 #'   to the papers that debut at the current time and receivers must have
 #'   appeared earlier.
 #' @param mode `"one"` draws both sender and receiver from the same candidate
-#'   pool (single-mode). `"two"` samples sender and receiver from separate pools
-#'   (two-mode).
+#'   pool (single-mode): every actor seen in either role can be a control
+#'   sender or receiver. `"two"` samples sender and receiver from separate pools
+#'   (two-mode): an actor seen only as a receiver is never a control sender,
+#'   and vice versa. For a network whose senders and receivers are one node set
+#'   (e.g. bike stations, e-mail users), use `"one"`; `"two"` is for genuinely
+#'   bipartite networks.
 #' @param risk Strategy governing the risk set. `"standard"` (default) keeps all
 #'   unrealized dyads available across strata, whereas `"remove"` deletes a dyad
 #'   from the candidate pool after it has occurred (useful for processes such as
@@ -1058,6 +1063,10 @@ endogenous_features <- function(
 #'   must never be sampled (e.g. an alien species' native range, or any dyad
 #'   forbidden in advance). Columns named `sender`/`receiver` are used if
 #'   present, otherwise the first two columns.
+#' @param exclude_concurrent Logical; keep dyads with an event at the focal
+#'   event's own timestamp out of its control pool? Defaults to `TRUE` under
+#'   `risk = "remove"` and `FALSE` under `risk = "standard"`, where a tied event
+#'   is still at risk at that instant (the Breslow convention).
 #' @param allow_loops Logical; can sampled non-events have identical sender and
 #'   receiver?
 #' @param seed Optional seed for reproducibility.
@@ -1078,6 +1087,7 @@ sample_non_events <- function(
     mode = c("two", "one"),
     risk = c("standard", "remove"),
     exclude_pairs = NULL,
+    exclude_concurrent = NULL,
     allow_loops = FALSE,
     seed = NULL,
     max_attempts = 1000) {
@@ -1089,6 +1099,10 @@ sample_non_events <- function(
   if (length(missing_cols)) {
     stop("Event log is missing required column(s): ", paste(missing_cols, collapse = ", "))
   }
+  # Factor actors would mix factor and character columns when events and
+  # controls are bound together; work in character throughout.
+  event_log$sender <- as.character(event_log$sender)
+  event_log$receiver <- as.character(event_log$receiver)
 
   if (!is.numeric(n_controls) || length(n_controls) != 1 || n_controls < 1) {
     stop("`n_controls` must be a positive integer.")
@@ -1098,6 +1112,11 @@ sample_non_events <- function(
   scope <- match.arg(scope)
   mode <- match.arg(mode)
   risk <- match.arg(risk)
+  if (is.null(exclude_concurrent)) exclude_concurrent <- risk == "remove"
+  if (!is.logical(exclude_concurrent) || length(exclude_concurrent) != 1L ||
+      is.na(exclude_concurrent)) {
+    stop("`exclude_concurrent` must be TRUE, FALSE or NULL.")
+  }
 
   # G1: structurally ineligible (sender, receiver) pairs that must never be
   # sampled as controls (e.g. an alien species' native range). Keys match the
@@ -1171,10 +1190,11 @@ sample_non_events <- function(
     }
 
     if (use_scope == "appearance") {
-      senders <- if (length(appearance_senders)) appearance_senders else sender_all
-      receivers <- if (length(appearance_receivers)) appearance_receivers else receiver_all
-      combined <- if (length(appearance_combined)) appearance_combined else combined_all
-      return(list(senders = senders, receivers = receivers, combined = combined))
+      # Only actors from prior events; before any have appeared the pool is
+      # empty and the event gets no controls.
+      return(list(senders = appearance_senders,
+                  receivers = appearance_receivers,
+                  combined = appearance_combined))
     }
 
     senders <- get_citation_senders(time_val)
@@ -1201,40 +1221,36 @@ sample_non_events <- function(
 
   removed_dyads <- new.env(parent = emptyenv())
 
+  # Only called once has_viable_pair() has confirmed a valid pair exists, so
+  # the candidate pools are never too small here.
   choose_pair <- function(cands, mode_choice) {
     if (mode_choice == "one") {
-      needed <- if (allow_loops) 1L else 2L
-      if (length(cands$combined) < needed && scope != "citation") {
-        cands$combined <- combined_all
-      }
       pair <- sample(cands$combined, size = 2, replace = allow_loops)
       list(sender = pair[1], receiver = pair[2])
     } else {
-      if ((!length(cands$senders) || !length(cands$receivers)) && scope != "citation") {
-        cands$senders <- sender_all
-        cands$receivers <- receiver_all
-      }
-      s <- sample(cands$senders, size = 1)
-      r <- sample(cands$receivers, size = 1)
-      list(sender = s, receiver = r)
+      list(sender = sample(cands$senders, size = 1),
+           receiver = sample(cands$receivers, size = 1))
     }
   }
 
-  has_viable_pair <- function(cands, mode_choice, current_sender, current_receiver) {
+  # A pair is a valid control iff it passes every rejection rule applied by
+  # the sampling loop below; keeping the two in one function means a stratum
+  # with no valid pair is skipped rather than exhausting `max_attempts`.
+  is_valid_control <- function(s, r, current_sender, current_receiver, concurrent) {
+    if (is.na(s) || is.na(r)) return(FALSE)
+    if (!allow_loops && identical(s, r)) return(FALSE)
+    if (identical(s, current_sender) && identical(r, current_receiver)) return(FALSE)
+    key <- dyad_key(s, r)
+    if (n_exclude_pairs && !is.null(exclude_pairs_env[[key]])) return(FALSE)
+    if (risk == "remove" && !is.null(removed_dyads[[key]])) return(FALSE)
+    if (length(concurrent) && key %in% concurrent) return(FALSE)
+    TRUE
+  }
+
+  has_viable_pair <- function(cands, mode_choice, current_sender, current_receiver,
+                              concurrent) {
     check_pair <- function(s, r) {
-      if (!allow_loops && identical(s, r)) {
-        return(FALSE)
-      }
-      if (is.na(s) || is.na(r)) {
-        return(FALSE)
-      }
-      if (identical(s, current_sender) && identical(r, current_receiver)) {
-        return(FALSE)
-      }
-      if (risk == "remove" && !is.null(removed_dyads[[dyad_key(s, r)]])) {
-        return(FALSE)
-      }
-      TRUE
+      is_valid_control(s, r, current_sender, current_receiver, concurrent)
     }
 
     if (mode_choice == "one") {
@@ -1295,11 +1311,12 @@ sample_non_events <- function(
     }
   }
 
-  # G1b: under risk = "remove", a dyad firing at the focal event's own time is
-  # a concurrent event, not a valid non-event at that instant. Precompute, per
-  # event, the set of event-dyad keys firing at the same time (grouped by exact
-  # time so float formatting is irrelevant).
-  if (risk == "remove" && n_events > 0L) {
+  # G1b: with exclude_concurrent (the default under risk = "remove"), a dyad
+  # firing at the focal event's own time is a concurrent event, not a valid
+  # non-event at that instant. Precompute, per event, the set of event-dyad
+  # keys firing at the same time (grouped by exact time so float formatting is
+  # irrelevant).
+  if (exclude_concurrent) {
     .ev_keys <- dyad_key(events_df$sender, events_df$receiver)
     .tg <- match(events_df$time, unique(events_df$time))
     concurrent_keys <- unname(split(.ev_keys, .tg)[as.character(.tg)])
@@ -1311,8 +1328,9 @@ sample_non_events <- function(
 
   for (i in seq_len(n_events)) {
     cand_sets <- get_candidates(scope, events_df$time[i], events_df$sender[i], events_df$receiver[i])
-    viable <- has_viable_pair(cand_sets, mode, events_df$sender[i], events_df$receiver[i])
     concurrent_keys_i <- concurrent_keys[[i]]
+    viable <- has_viable_pair(cand_sets, mode, events_df$sender[i], events_df$receiver[i],
+                              concurrent_keys_i)
 
     if (viable) {
       for (j in seq_len(n_controls)) {
@@ -1322,27 +1340,12 @@ sample_non_events <- function(
           if (attempts > max_attempts) {
             stop("Unable to sample a valid non-event after ", max_attempts, " attempts.")
           }
-
           sampled <- choose_pair(cand_sets, mode)
-          if (!allow_loops && sampled$sender == sampled$receiver) {
-            next
+          if (is_valid_control(sampled$sender, sampled$receiver,
+                               events_df$sender[i], events_df$receiver[i],
+                               concurrent_keys_i)) {
+            break
           }
-          if (sampled$sender == events_df$sender[i] && sampled$receiver == events_df$receiver[i]) {
-            next
-          }
-          cand_key <- dyad_key(sampled$sender, sampled$receiver)
-          if (n_exclude_pairs && !is.null(exclude_pairs_env[[cand_key]])) {
-            next                                   # G1: structural exclusion
-          }
-          if (risk == "remove") {
-            if (!is.null(removed_dyads[[cand_key]])) {
-              next                                 # historical: already fired
-            }
-            if (cand_key %in% concurrent_keys_i) {
-              next                                 # G1b: concurrent event
-            }
-          }
-          break
         }
 
         ctrl_index <- ctrl_index + 1L

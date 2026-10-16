@@ -1,3 +1,30 @@
+# amorem (development version)
+
+## Bug fixes
+
+* **`sample_non_events()` risk-set edge cases (#102).**
+  - `exclude_pairs` and, under `risk = "remove"`, same-time events are now part
+    of the check for whether any valid control exists, so a stratum whose every
+    alternative is excluded gets no controls instead of stopping with "Unable
+    to sample a valid non-event after `max_attempts` attempts".
+  - `scope = "appearance"` no longer falls back to all actors when no actor
+    has appeared yet: the first event gets no controls, and controls are only
+    ever drawn from actors seen in prior events, as documented. Results change
+    for the first stratum(s) of `scope = "appearance"` fits.
+  - Factor `sender` / `receiver` columns are coerced to character, so the
+    output columns are character whatever the input type.
+  - The documentation of `mode` states which risk set each mode gives: `"two"`
+    never draws a receiver-only actor as a control sender (or vice versa), so
+    networks with one node set should use `mode = "one"`.
+  - The unreachable empty-pool fallbacks in the pair sampler were removed.
+
+## New features
+
+* `sample_non_events(exclude_concurrent = )` controls whether dyads with an
+  event at the focal event's own time can be controls. The default keeps the
+  existing behaviour: excluded under `risk = "remove"`, at risk under
+  `risk = "standard"` (the Breslow convention).
+
 # amorem 1.0.1
 
 ## Bug fixes
