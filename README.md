@@ -50,10 +50,12 @@ all there.
 devtools::document()        # regenerate man/ and NAMESPACE
 devtools::test()            # tests/testthat
 devtools::check(cran = TRUE)
-pkgdown::build_site()       # docs site; deployed to the gh-pages branch
+pkgdown::build_site()       # local preview of the docs site
 ```
 
-CI runs `R CMD check` on GitHub Actions (`.github/workflows/R-CMD-check.yaml`).
+CI runs `R CMD check` on GitHub Actions (`.github/workflows/R-CMD-check.yaml`)
+and, on every push to `main`, builds the pkgdown site and deploys it to the
+`gh-pages` branch, so the site needs no manual deploy.
 Web-only guides live in `vignettes/articles/` and are excluded from the CRAN
 build.
 
