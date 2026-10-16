@@ -14,7 +14,6 @@ knitr::opts_chunk$set(
   fig.width = 6,
   fig.height = 4
 )
-set.seed(2026)
 ```
 
 ```{r setup}
@@ -26,129 +25,206 @@ library(amorem)
 A non-native species establishing in a new country is a one-shot
 directed event: source country `s` "invades" target country `r` at some
 time `t`. Once `s` has reached `r`, the dyad `(s, r)` is removed from
-the at-risk set — it cannot fire again. This is a textbook **relational
-event process** with a one-shot `risk = "remove"` rule.
+the at-risk set — it cannot fire again. This is a **relational event
+process** with a one-shot `risk = "remove"` rule.
 
-We sketch a minimal end-to-end workflow in `amorem`:
+Invasions unfold over centuries, so their rate can also follow the
+climate: a covariate such as the El Niño/Southern Oscillation takes one
+value per year for every dyad. This vignette builds an end-to-end
+workflow in `amorem`:
 
-1. Build a synthetic invasion log with known drivers (distance and
-   propagule pressure).
-2. Use the `risk = "remove"` simulator with case-control sampling.
-3. Recover the drivers from the case-control output with a smooth GAM.
+1. Simulate five centuries of invasions driven by distance, an
+   endogenous neighbour pressure, and the reconstructed ENSO index.
+2. Draw a time-shifted case-control sample, which is what makes the
+   ENSO effect estimable.
+3. Recover all three drivers with `rem()`.
 
-## A synthetic invasion process
+## Ingredients
 
 We use the 56 × 56 US-state distance matrix shipped with `amorem` as a
-stand-in for inter-country distances and treat the states as the
+stand-in for inter-country distances, and treat the states as the
 country universe.
 
 ```{r data}
 data("dist_matrix", package = "amorem")
-
 states <- rownames(dist_matrix)
-n_states <- length(states)
 
-# Convert metres → log-units, scaled to a usable range.
+# Convert metres to log-units, scaled to a usable range.
 dist_log <- log(dist_matrix / 1e5 + 1)
 ```
 
-The true intensity for an invasion from `s` to `r` is
+The global covariate is `enso_nino34`, the tree-ring reconstruction of the
+winter Niño3.4 sea-surface temperature anomaly by Li et al. (2013), one
+value per year from 1301 to 2005. We keep 1500–2005 and hold each winter's
+value through the calendar year it opens:
 
-$$\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(\beta_d\,f(d_{sr})
-+ \beta_h\,h_{sr}(t)\bigr),$$
+```{r enso, fig.alt = "reconstructed Nino3.4 anomaly, 1500 to 2005"}
+data("enso_nino34", package = "amorem")
+enso <- enso_nino34[enso_nino34$year >= 1500, ]
+g <- data.frame(time_start = enso$year, nino34 = enso$nino34)
+
+plot(enso$year, enso$nino34, type = "l", col = "grey30",
+     xlab = "year", ylab = "Niño3.4 anomaly (°C)",
+     main = "Reconstructed ENSO index (Li et al. 2013)")
+abline(h = 0, lty = 2, col = "grey60")
+```
+
+## A simulated invasion record
+
+The intensity of an invasion from `s` to `r` is
+
+$$\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(f(d_{sr})
++ \beta_h\,h_{sr}(t) + \beta_g\,x(t)\bigr),$$
 
 where $Y_{sr}(t)$ is the at-risk indicator (1 until `s` invades `r`,
-0 thereafter), $d_{sr}$ is the (log) distance, $f$ is the smooth shape
-$\sin(-d/1.5)$, and $h_{sr}(t)$ is an endogenous "neighbour pressure"
-term that grows whenever a country related to `s` has recently invaded
-`r`.
-
-For this short example we use just the distance term and a
-half-life-decayed reciprocity proxy as the endogenous neighbour
-pressure, then turn `risk = "remove"` on so each dyad fires at most
-once.
+0 thereafter), $d_{sr}$ is the log-distance with smooth effect
+$f(d) = \sin(-d/1.5)$, $h_{sr}(t)$ is a neighbour pressure — here the
+half-life-decayed count of past invasions in the reverse direction
+(`reciprocity_exp_decay`, half-life 50 years) — and $x(t)$ is the ENSO
+index. We set $\beta_h = 0.4$ and $\beta_g = 0.6$.
 
 ```{r simulate}
-true_dist_effect <- sin(-dist_log / 1.5)
-
-cc <- simulate_relational_events(
+set.seed(4)
+ev <- simulate_relational_events(
   n_events            = 600,
   senders             = states,
   receivers           = states,
-  contribution_logits = true_dist_effect,
-  baseline_rate       = 1,
+  contribution_logits = sin(-dist_log / 1.5),
+  baseline_rate       = 8e-4,
+  start_time          = 1500,
+  horizon             = 2005,
   allow_loops         = FALSE,
-  n_controls          = 1,
   endogenous_stats    = "reciprocity_exp_decay",
   endogenous_effects  = c(reciprocity_exp_decay = 0.4),
-  half_life           = 2,
+  half_life           = 50,
+  global_covariates   = g,
+  global_effects      = c(nino34 = 0.6),
   risk                = "remove"
 )
-nrow(cc)
-head(cc)
+ev <- ev[, c("sender", "receiver", "time")]
+nrow(ev)
+range(ev$time)
 ```
 
 `risk = "remove"` guarantees the realized dyads are all distinct:
 
 ```{r unique-check}
-events_only <- cc[cc$event == 1L, ]
-nrow(events_only)
-any(duplicated(paste(events_only$sender, events_only$receiver)))
+any(duplicated(paste(ev$sender, ev$receiver)))
+```
+
+## Why ordinary case-control sampling cannot see ENSO
+
+Standard nested case-control sampling gives each control its event's
+time. ENSO then takes the same value for the event and its control, so
+its event-minus-control difference is zero in every stratum and the
+effect drops out of the partial likelihood:
+
+```{r no-shift}
+cc0 <- sample_non_events(ev, mode = "one", risk = "remove", seed = 1)
+cc0$nino34 <- g$nino34[findInterval(cc0$time, g$time_start)]
+w0 <- widen_case_control(cc0, covariates = "nino34")
+all(w0$d_nino34 == 0)
+```
+
+## Time-shifted sampling
+
+Lembo, Juozaitienė, Vinciotti & Wit (2025) sample the controls from a
+time-shifted copy of the process instead. Every dyad draws one shift
+$h_{sr}$; event $k$ moves to $t_k + h_{s_k r_k}$, and its control is
+drawn among the dyads whose back-shifted time
+$t^* = t_k + h_{s_k r_k} - h_{s^* r^*}$ lies in the observation window.
+The control is evaluated at its own time $t^*$, where the ENSO index
+takes a different value. With `risk = "remove"`, a dyad that has
+already fired before $t^*$ is not a valid control.
+
+```{r shift}
+cc <- sample_non_events(ev, mode = "one", risk = "remove", seed = 1,
+                        shift = "exponential", window = c(1500, 2005))
+attr(cc, "shift")$mean            # mean shift, in years
+length(attr(cc, "shift")$uninformative)
+```
+
+Every covariate of a control is then evaluated at its own time. The
+neighbour pressure comes from the real invasions before $t^*$
+(`history_log`), distance is static, and ENSO is read at each row's
+year:
+
+```{r covariates}
+cc <- endogenous_features(cc, stats = "reciprocity_exp_decay",
+                          half_life = 50, history_log = ev)
+cc$dist   <- dist_log[cbind(match(cc$sender, states),
+                            match(cc$receiver, states))]
+cc$nino34 <- g$nino34[findInterval(cc$time, g$time_start)]
+
+w <- widen_case_control(cc, covariates = c("dist", "reciprocity_exp_decay",
+                                           "nino34", "time"))
+summary(w$d_nino34)
 ```
 
 ## Recovering the drivers
 
-Attach the log-distance for every (sender, receiver) pair in the
-case-control table, then fit a conditional logistic model via GAM on
-the within-stratum differences.
+`rem()` fits the degenerate logistic additive model on the wide
+case–control table. `nl(dist)` is the smooth distance effect,
+contributing $f(d_{ev}) - f(d_{nv})$; the other two terms are linear.
 
-```{r recovery, fig.alt = "recovered smooth distance effect"}
-get_dist <- function(s, r) {
-  dist_log[cbind(match(s, states), match(r, states))]
-}
-cc$dist_val <- mapply(get_dist, cc$sender, cc$receiver)
-
-cases    <- cc[cc$event == 1L, ]
-controls <- cc[cc$event == 0L, ]
-cases    <- cases[order(cases$stratum), ]
-controls <- controls[order(controls$stratum), ]
-
-fit_df <- data.frame(
-  y          = 1,
-  delta_dist = cases$dist_val - controls$dist_val,
-  delta_r    = cases$reciprocity_exp_decay - controls$reciprocity_exp_decay
-)
-
-if (requireNamespace("mgcv", quietly = TRUE)) {
-  library(mgcv)
-  fit <- gam(y ~ s(delta_dist) + delta_r - 1, family = binomial, data = fit_df)
-  summary(fit)
-
-  x_grid <- seq(min(fit_df$delta_dist), max(fit_df$delta_dist), length.out = 200)
-  pred   <- predict(fit,
-                    newdata = data.frame(delta_dist = x_grid, delta_r = 0),
-                    type = "link")
-  plot(x_grid, pred, type = "l", lwd = 2,
-       xlab = expression(Delta ~ "log-distance"),
-       ylab = "estimated effect",
-       main = "GAM smooth for distance (event - control)")
-  abline(h = 0, lty = 2, col = "grey60")
-}
+```{r recovery}
+fit <- rem(~ nl(dist) + reciprocity_exp_decay + nino34,
+           data = w, method = "gam")
+est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
+round(est, 3)
 ```
 
-The smooth recovers the underlying $\sin(-d/1.5)$ pattern, and the
-linear coefficient on `delta_r` should be close to the true 0.4 used in
-the simulation.
+```{r recovery-numbers, include = FALSE}
+b  <- est[, "Estimate"]
+se <- est[, "Std. Error"]
+z  <- (b - c(0.4, 0.6)) / se
+```
+
+The ENSO coefficient is `r sprintf("%.2f", b[["nino34"]])` (standard error
+`r sprintf("%.2f", se[["nino34"]])`) against the true 0.6. The neighbour
+pressure, `r sprintf("%.2f", b[["reciprocity_exp_decay"]])` against the true 0.4,
+has a standard error of `r sprintf("%.2f", se[["reciprocity_exp_decay"]])`,
+`r sprintf("%.0f", se[["reciprocity_exp_decay"]] / se[["nino34"]])` times larger:
+few invasions are preceded by one in the opposite direction, so the data
+hold little information about it. The two estimates lie
+`r sprintf("%.1f", abs(z[["nino34"]]))` and
+`r sprintf("%.1f", abs(z[["reciprocity_exp_decay"]]))` standard errors from their
+true values. The smooth recovers the shape of the distance effect, up to
+the additive constant that cancels in event-minus-control differences:
+
+```{r distance-smooth, fig.alt = "recovered smooth distance effect against the true curve"}
+plot(fit, select = 1, shade = TRUE, rug = FALSE,
+     xlab = "log-distance", ylab = "f(log-distance)",
+     main = "Distance effect: estimate and truth")
+d_grid <- seq(min(dist_log[dist_log > 0]), max(dist_log), length.out = 200)
+f_true <- sin(-d_grid / 1.5)
+lines(d_grid, f_true - mean(f_true), col = "firebrick", lwd = 2, lty = 2)
+legend("topright", c("estimate", "truth (centred)"),
+       col = c("black", "firebrick"), lty = c(1, 2), lwd = c(1, 2), bty = "n")
+```
 
 ## Where to go from here
 
 - Real data: replace `dist_matrix` with a country-by-country distance
-  table and the simulated event log with a curated invasion record.
-- Additional covariates: trade flows or climatic similarity enter via
-  `contribution_logits` or sender/receiver covariates.
-- Time-varying global covariates (policy regimes, seasonality) attach
-  through `global_covariates` / `global_effects`.
+  table and the simulated log with a curated invasion record of first
+  establishments.
+- Baseline trend: on real data the background rate changes over the
+  centuries (trade, shipping, survey effort). It is a global effect too,
+  and enters as `nl(time)` on the same shifted design.
+- Timing: `shift_scale` sets the mean shift as a multiple of the average
+  event time. Larger shifts carry more information about ENSO but leave
+  more events with no valid control (`attr(cc, "shift")$uninformative`).
 - For large state spaces or high invasion rates, switch to the
-  approximate `method = "tau_leap"` simulator with a small `tau` to
-  cut wall-clock cost; the `risk = "remove"` rule is honoured under
-  both algorithms.
+  approximate `method = "tau_leap"` simulator with a small `tau`; the
+  `risk = "remove"` rule is honoured under both algorithms.
+
+## References
+
+Li J, Xie S-P, Cook ER, et al. (2013). El Niño modulations over the past
+seven centuries. *Nature Climate Change* 3, 822–826.
+<https://doi.org/10.1038/nclimate1936>
+
+Lembo M, Juozaitienė R, Vinciotti V, Wit EC (2025). Relational event
+models with global covariates: an application to bike sharing. *Journal
+of the Royal Statistical Society, Series C*.
+<https://doi.org/10.1093/jrsssc/qlaf058>

@@ -43,6 +43,19 @@
 
 ## New features
 
+* **New dataset `enso_nino34`:** the tree-ring reconstruction of the
+  November–January Niño3.4 sea-surface temperature anomaly by Li et al.
+  (2013), one value per year from 1301 to 2005 (NOAA NCEI study 14632), as a
+  global covariate on a yearly clock. The raw NOAA file ships in
+  `inst/extdata/enso_nino34/`, and `data-raw/enso_nino34.R` rebuilds the
+  object.
+
+* `vignette("species-invasion")` now simulates five centuries of invasions
+  (1500–2005) driven by distance, a neighbour pressure and ENSO. It shows
+  that ordinary case-control sampling gives an ENSO difference of zero in
+  every stratum, and recovers all three effects with time-shifted sampling
+  and `rem()`, reporting standard errors.
+
 * **Time-shifted case-control sampling for global covariates (#101).**
   `sample_non_events(shift = "exponential")` implements Section 4 of Lembo,
   Juozaitienė, Vinciotti & Wit (2025, JRSS-C): one exponential shift per dyad,
