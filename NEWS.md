@@ -2,6 +2,14 @@
 
 ## Bug fixes
 
+* `widen_case_control()` and the `clogit` / `nn` backends of `rem()` use the
+  `stratum` column written by `sample_non_events()` when `stratum = NULL`,
+  instead of rebuilding strata as `cumsum(case == 1)`. The rebuilt strata
+  assumed each case was followed by its controls, which stops holding once
+  `endogenous_features()` re-sorts rows by time with ties, or with shifted
+  controls, and then paired cases with the wrong controls. Data without a
+  `stratum` column (eventnet output) is handled as before.
+
 * **`sample_non_events()` risk-set edge cases (#102).**
   - `exclude_pairs` and, under `risk = "remove"`, same-time events are now part
     of the check for whether any valid control exists, so a stratum whose every
@@ -19,6 +27,23 @@
   - The unreachable empty-pool fallbacks in the pair sampler were removed.
 
 ## New features
+
+* **Time-shifted case-control sampling for global covariates (#101).**
+  `sample_non_events(shift = "exponential")` implements Section 4 of Lembo,
+  Juozaitienė, Vinciotti & Wit (2025, JRSS-C): one exponential shift per dyad,
+  each control drawn uniformly from the dyads whose back-shifted time lies in
+  the observation `window` and stored at that time, so covariates that depend
+  only on time no longer cancel within strata. `shift_scale` sets the mean
+  shift as a multiple of the average event time, as in the paper. Risk-set
+  rules (`exclude_pairs`, `risk = "remove"`, `scope = "appearance"`) are
+  evaluated at the control's own time; events with no other dyad in their
+  shifted risk set get no control and are listed in
+  `attr(, "shift")$uninformative`. The attribute also holds the shift mean,
+  the window and the per-dyad shifts.
+
+* `endogenous_features(history_log = )` and `prior_log` now work for every
+  statistic, including `reciprocity_exp_decay`, `reciprocity_time_recent` and
+  `reciprocity_time_first`, which the compiled engine does not cover.
 
 * **Per-term basis settings in `rem()` formulas (#91).** Smooth terms take the
   basis arguments of `mgcv::s()` / `mgcv::te()` after the covariate, so terms

@@ -33,9 +33,7 @@ of \code{event_log} whose \verb{(sender, receiver, time)} triple appears in
 sampled non-events / controls) have their statistics computed against
 that history but never enter it. This makes it possible to evaluate
 endogenous statistics for non-events without those non-events polluting
-the history. Defaults to \code{NULL} (every row is treated as an event).
-Currently supported only for statistics handled by the C++ engine
-(see \code{\link[=cpp_supported_stats]{cpp_supported_stats()}}).}
+the history. Defaults to \code{NULL} (every row is treated as an event).}
 
 \item{prior_log}{Optional data.frame of events that precede the study window
 (columns \code{sender}, \code{receiver}, \code{time}), used to \strong{warm-start} the network
@@ -43,8 +41,7 @@ state. Its rows always update the running state but never appear in the
 returned data.frame. This separates warm-starting from the non-event
 masking role of \code{history_log}: pass earlier history through \code{prior_log}
 and use \code{history_log} purely to mark which rows of \code{event_log} are real
-events. Defaults to \code{NULL}. Like \code{history_log}, it is currently supported
-only for statistics handled by the C++ engine (see \code{\link[=cpp_supported_stats]{cpp_supported_stats()}}).}
+events. Defaults to \code{NULL}.}
 }
 \value{
 The event log with added columns, one per requested statistic

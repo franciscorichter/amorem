@@ -90,8 +90,10 @@
 #' @param case Optional name of the 0/1 event-indicator column for the `clogit`
 #'   and `nn` backends. If `NULL` (default), the indicator is taken from the
 #'   formula's left-hand side (e.g. `event ~ x`). Ignored by the `gam` method.
-#' @param stratum Name of the column grouping each case with its controls
-#'   (required by `clogit`).
+#' @param stratum Name of the column grouping each case with its controls,
+#'   for `clogit` and `nn`. When `NULL`, a column named `stratum` (as written
+#'   by [sample_non_events()]) is used if present; otherwise the strata are
+#'   derived as `cumsum(case == 1)`.
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
 #' @param k Optional basis dimension passed to every `s()` / `te()` smooth
 #'   that does not set its own `k` (see *Formula syntax*).
@@ -414,9 +416,14 @@ predict.rem <- function(object, ...) stats::predict(object$fit, ...)
 
 # Derive the case-control stratum vector aligned to data's rows.
 # If `stratum` names a column, use it (forward-filling blanks, since eventnet
-# leaves the stratum id empty on control rows); otherwise derive it as
-# cumsum(case == 1), which labels each case-then-controls block.
+# leaves the stratum id empty on control rows). With `stratum = NULL`, use the
+# `stratum` column that sample_non_events() writes when there is one -- rows
+# reordered by time (endogenous_features() sorts them, and shifted controls
+# have their own times) no longer keep each case next to its controls --
+# and otherwise derive it as cumsum(case == 1), which labels each
+# case-then-controls block.
 .derive_stratum <- function(data, case, stratum) {
+  if (is.null(stratum) && "stratum" %in% names(data)) stratum <- "stratum"
   if (!is.null(stratum)) {
     if (is.null(data[[stratum]])) {
       stop("stratum column '", stratum, "' not found in `data`.")

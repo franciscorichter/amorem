@@ -22,8 +22,10 @@ produced by \code{\link[=sample_non_events]{sample_non_events()}}) or eventnet's
 \code{event} when both are present.}
 
 \item{stratum}{Optional name of the column grouping each case with its
-controls. When \code{NULL}, the stratum is derived as \code{cumsum(case == 1)}
-(assuming each case is immediately followed by its controls).}
+controls. When \code{NULL}, a column named \code{stratum} (as written by
+\code{\link[=sample_non_events]{sample_non_events()}}) is used if present, so rows may be in any order;
+otherwise the stratum is derived as \code{cumsum(case == 1)} (assuming each
+case is immediately followed by its controls).}
 
 \item{covariates}{Character vector of covariate columns to widen. When
 \code{NULL}, all numeric columns are used except the case indicator, the

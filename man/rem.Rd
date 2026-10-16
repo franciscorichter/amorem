@@ -33,8 +33,10 @@ indicator with control rows) is detected and widened automatically via
 and \code{nn} backends. If \code{NULL} (default), the indicator is taken from the
 formula's left-hand side (e.g. \code{event ~ x}). Ignored by the \code{gam} method.}
 
-\item{stratum}{Name of the column grouping each case with its controls
-(required by \code{clogit}).}
+\item{stratum}{Name of the column grouping each case with its controls,
+for \code{clogit} and \code{nn}. When \code{NULL}, a column named \code{stratum} (as written
+by \code{\link[=sample_non_events]{sample_non_events()}}) is used if present; otherwise the strata are
+derived as \code{cumsum(case == 1)}.}
 
 \item{time}{Name of the time column, required for \code{tv} / \code{tvnl} terms.}
 

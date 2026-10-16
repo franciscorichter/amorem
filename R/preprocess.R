@@ -240,16 +240,13 @@ attach_static_covariates <- function(
 #'   that history but never enter it. This makes it possible to evaluate
 #'   endogenous statistics for non-events without those non-events polluting
 #'   the history. Defaults to `NULL` (every row is treated as an event).
-#'   Currently supported only for statistics handled by the C++ engine
-#'   (see [cpp_supported_stats()]).
 #' @param prior_log Optional data.frame of events that precede the study window
 #'   (columns `sender`, `receiver`, `time`), used to **warm-start** the network
 #'   state. Its rows always update the running state but never appear in the
 #'   returned data.frame. This separates warm-starting from the non-event
 #'   masking role of `history_log`: pass earlier history through `prior_log`
 #'   and use `history_log` purely to mark which rows of `event_log` are real
-#'   events. Defaults to `NULL`. Like `history_log`, it is currently supported
-#'   only for statistics handled by the C++ engine (see [cpp_supported_stats()]).
+#'   events. Defaults to `NULL`.
 #'
 #' @details All statistics are evaluated immediately **before** the event is
 #'   logged.  They are grouped into five families.
@@ -570,14 +567,6 @@ endogenous_features <- function(
     }
     if (srs_requested) log_df[["sender_receivers_set"]] <- srs_col
     return(log_df)
-  }
-
-  # The pure-R fallback below does not yet honour history_log. It is only
-  # reached for statistics outside the C++ engine; guard the combination
-  # rather than silently ignoring the history.
-  if (!is.null(history_log)) {
-    stop("history_log is currently supported only for statistics handled by ",
-         "the C++ engine (see cpp_supported_stats()).")
   }
 
   n <- nrow(log_df)
@@ -995,6 +984,9 @@ endogenous_features <- function(
     }
 
     # --- Update state ---
+    # Rows that are not in `history_log` (sampled non-events) read the history
+    # but never enter it.
+    if (length(is_event_mask) && !is_event_mask[i]) next
     sender_counts[s]  <- get_count(sender_counts, s) + 1
     receiver_counts[r] <- get_count(receiver_counts, r) + 1
     dyad_last_time[[key_sr]] <- ti
@@ -1071,10 +1063,61 @@ endogenous_features <- function(
 #'   receiver?
 #' @param seed Optional seed for reproducibility.
 #' @param max_attempts Maximum resampling attempts per control before giving up
-#'   (prevents infinite loops when candidate sets are small).
+#'   (prevents infinite loops when candidate sets are small). With
+#'   `shift = "exponential"` it is the number of rejection draws tried before
+#'   the valid candidates are enumerated, so sampling never fails there.
+#' @param shift `"none"` (default) gives every control its event's time, so a
+#'   global covariate (a function of time only, e.g. weather or time of day)
+#'   takes the same value within each stratum and cancels from the partial
+#'   likelihood. `"exponential"` samples controls from a time-shifted copy of
+#'   the event process (Lembo, Juozaitienė, Vinciotti & Wit 2025, Section 4),
+#'   so controls carry their own times and global effects stay estimable; see
+#'   *Time-shifted sampling*.
+#' @param shift_scale Positive number \eqn{\nu}{nu}: the shifts have mean
+#'   \eqn{\nu}{nu} times the average event time, measured from the start of
+#'   `window` (the paper uses \eqn{\nu = 1}{nu = 1}). Larger shifts carry more
+#'   information about global effects, but leave more events with no control.
+#'   Used only with `shift = "exponential"`.
+#' @param window Observation window `c(start, end)` for
+#'   `shift = "exponential"`. Defaults to `c(min(time), max(time))`; pass the
+#'   true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known.
+#'
+#' @section Time-shifted sampling:
+#' With `shift = "exponential"`, every dyad of the risk set (all sender
+#' \eqn{\times}{x} receiver pairs for `mode = "two"`, all ordered actor pairs for
+#' `mode = "one"`) draws one shift \eqn{h_{sr} \sim \mathrm{Exp}}{h_sr ~ Exp},
+#' reused for every event on that dyad. Event \eqn{k} on dyad \eqn{(s, r)} moves
+#' to \eqn{t^e = t_k + h_{sr}}{t_e = t_k + h_sr}; its control is drawn
+#' uniformly from the other dyads whose back-shifted time
+#' \eqn{t^* = t^e - h_{s^*r^*}}{t* = t_e - h_s*r*} lies in `window`, and is
+#' stored with `time` \eqn{t^*}{t*}. The risk-set rules are evaluated at
+#' \eqn{t^*}{t*}: `exclude_pairs` always applies; under `risk = "remove"` a
+#' dyad that has fired before \eqn{t^*}{t*} is not at risk; under
+#' `scope = "appearance"` both actors must have appeared in an event before
+#' \eqn{t^*}{t*}. An event whose shifted risk set holds no other valid dyad
+#' carries no information and gets no controls. `scope = "citation"` is not
+#' supported, and `exclude_concurrent` is not used (control times are
+#' continuous).
+#'
+#' Covariates for a control must then be evaluated at its own time: compute
+#' endogenous statistics with
+#' `endogenous_features(cc, stats, history_log = event_log)`, which evaluates
+#' each row against the events strictly before it, and evaluate global
+#' covariates at each row's `time`. [widen_case_control()] then gives
+#' `time_ev` / `time_nv` and `<cov>_ev` / `<cov>_nv`, and a global effect is
+#' fitted with `rem(~ nl(<cov>))`, the baseline with `rem(~ nl(time))`.
+#'
+#' @references
+#' Lembo M, Juozaitienė R, Vinciotti V, Wit EC (2025). Relational event models
+#' with global covariates: an application to bike sharing. *Journal of the
+#' Royal Statistical Society, Series C*, 75, 583--600.
+#' \doi{10.1093/jrsssc/qlaf058}.
 #'
 #' @return A data.frame containing the original events (`event = 1`) and the
-#'   sampled controls (`event = 0`), grouped by `stratum` identifiers.
+#'   sampled controls (`event = 0`), grouped by `stratum` identifiers. With
+#'   `shift = "exponential"` it carries `attr(, "shift")`: a list with the
+#'   shift `mean`, the `window`, the per-dyad `shifts` (named
+#'   `"sender->receiver"`) and the `uninformative` strata that got no control.
 #' @examples
 #' data(classroom_events)
 #' cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
@@ -1090,7 +1133,10 @@ sample_non_events <- function(
     exclude_concurrent = NULL,
     allow_loops = FALSE,
     seed = NULL,
-    max_attempts = 1000) {
+    max_attempts = 1000,
+    shift = c("none", "exponential"),
+    shift_scale = 1,
+    window = NULL) {
   if (!is.data.frame(event_log)) {
     stop("`event_log` must be a data.frame.")
   }
@@ -1112,6 +1158,25 @@ sample_non_events <- function(
   scope <- match.arg(scope)
   mode <- match.arg(mode)
   risk <- match.arg(risk)
+  shift <- match.arg(shift)
+  if (shift == "exponential") {
+    if (scope == "citation") {
+      stop("shift = \"exponential\" does not support scope = \"citation\".")
+    }
+    if (!is.numeric(shift_scale) || length(shift_scale) != 1L ||
+        !is.finite(shift_scale) || shift_scale <= 0) {
+      stop("`shift_scale` must be a positive number.")
+    }
+    ev_time <- as.numeric(event_log$time)
+    if (is.null(window)) window <- range(ev_time)
+    if (!is.numeric(window) || length(window) != 2L || any(!is.finite(window)) ||
+        window[1] >= window[2]) {
+      stop("`window` must be c(start, end) with start < end.")
+    }
+    if (any(ev_time < window[1] | ev_time > window[2])) {
+      stop("Every event time must lie inside `window`.")
+    }
+  }
   if (is.null(exclude_concurrent)) exclude_concurrent <- risk == "remove"
   if (!is.logical(exclude_concurrent) || length(exclude_concurrent) != 1L ||
       is.na(exclude_concurrent)) {
@@ -1296,6 +1361,27 @@ sample_non_events <- function(
   events_df$event <- 1L
   events_df <- events_df[, c("stratum", "event", required_cols, extra_cols), drop = FALSE]
 
+  if (shift == "exponential") {
+    if (mode == "one") {
+      pool_s <- combined_all; pool_r <- combined_all
+    } else {
+      pool_s <- sender_all; pool_r <- receiver_all
+    }
+    sh <- .shifted_controls(
+      events_df, n_controls = n_controls, mode = mode, scope = scope,
+      risk = risk, senders = pool_s, receivers = pool_r,
+      allow_loops = allow_loops, excluded = ls(exclude_pairs_env),
+      shift_mean = shift_scale * mean(events_df$time - window[1]),
+      window = window, max_attempts = max_attempts)
+    control_df <- sh$controls
+    for (col in extra_cols) control_df[[col]] <- NA
+    out <- rbind(events_df, control_df)
+    out <- out[order(out$stratum, -out$event), , drop = FALSE]
+    rownames(out) <- NULL
+    attr(out, "shift") <- sh$info
+    return(out)
+  }
+
   total_controls <- n_events * n_controls
   control_df <- data.frame(
     stratum = integer(total_controls),
@@ -1374,6 +1460,122 @@ sample_non_events <- function(
   out <- out[order(out$stratum, -out$event), , drop = FALSE]
   rownames(out) <- NULL
   out
+}
+
+# Time-shifted nested case-control sampling (Lembo, Juozaitiene, Vinciotti &
+# Wit 2025, Section 4), the shift = "exponential" branch of sample_non_events().
+# Every dyad of senders x receivers draws one shift h ~ Exp(mean = shift_mean).
+# Event k on dyad d moves to t_e = t_k + h_d; the dyads whose back-shifted time
+# t_e - h lies in `window` are exactly those with h in [t_e - end, t_e - start],
+# a contiguous run of the sorted shifts. Controls are drawn uniformly from the
+# valid dyads in that run and stored at their back-shifted time.
+.shifted_controls <- function(events, n_controls, mode, scope, risk, senders,
+                              receivers, allow_loops, excluded, shift_mean,
+                              window, max_attempts) {
+  if (!is.finite(shift_mean) || shift_mean <= 0) {
+    stop("The shift mean is not positive: every event time equals the start ",
+         "of `window`.")
+  }
+  ev_s <- events$sender; ev_r <- events$receiver; ev_t <- as.numeric(events$time)
+  ev_key <- paste0(ev_s, "->", ev_r)
+
+  d_s <- rep(senders, times = length(receivers))
+  d_r <- rep(receivers, each = length(senders))
+  if (!allow_loops) {
+    keep <- d_s != d_r
+    d_s <- d_s[keep]; d_r <- d_r[keep]
+  }
+  d_key <- paste0(d_s, "->", d_r)
+  # Event dyads outside the grid (a loop with allow_loops = FALSE) still need a
+  # shift for their own event; they are never drawn as controls.
+  extra <- which(!duplicated(ev_key) & !ev_key %in% d_key)
+  d_control_ok <- c(rep(TRUE, length(d_key)), rep(FALSE, length(extra)))
+  d_s <- c(d_s, ev_s[extra]); d_r <- c(d_r, ev_r[extra])
+  d_key <- c(d_key, ev_key[extra])
+  d_control_ok <- d_control_ok & !d_key %in% excluded
+
+  h <- stats::rexp(length(d_key), rate = 1 / shift_mean)
+  names(h) <- d_key
+  ord <- order(h)
+  h_sorted <- h[ord]
+  ev_d <- match(ev_key, d_key)
+
+  # Time from which each dyad stops being at risk (risk = "remove") and from
+  # which each dyad's actors are present (scope = "appearance").
+  first_of <- function(t, key, at) {
+    f <- tapply(t, key, min)[at]
+    f[is.na(f)] <- Inf
+    unname(f)
+  }
+  fired_at <- if (risk == "remove") first_of(ev_t, ev_key, d_key) else NULL
+  if (scope == "appearance") {
+    if (mode == "one") {
+      s_from <- first_of(c(ev_t, ev_t), c(ev_s, ev_r), d_s)
+      r_from <- first_of(c(ev_t, ev_t), c(ev_s, ev_r), d_r)
+    } else {
+      s_from <- first_of(ev_t, ev_s, d_s)
+      r_from <- first_of(ev_t, ev_r, d_r)
+    }
+  }
+  is_valid <- function(j, t_star, own) {
+    ok <- d_control_ok[j] & j != own
+    if (!is.null(fired_at)) ok <- ok & !(fired_at[j] < t_star)
+    if (scope == "appearance") ok <- ok & s_from[j] < t_star & r_from[j] < t_star
+    ok
+  }
+
+  n_events <- nrow(events)
+  out_stratum <- vector("list", n_events)
+  out_d <- vector("list", n_events)
+  out_t <- vector("list", n_events)
+  uninformative <- integer(0)
+  for (k in seq_len(n_events)) {
+    own <- ev_d[k]
+    t_e <- ev_t[k] + h[[own]]
+    lo <- findInterval(t_e - window[2], h_sorted, left.open = TRUE) + 1L
+    hi <- findInterval(t_e - window[1], h_sorted)
+    pool <- NULL                    # valid candidates, once enumerated
+    picks <- integer(0)
+    if (hi >= lo) {
+      for (j in seq_len(n_controls)) {
+        pick <- NA_integer_
+        if (is.null(pool)) {
+          for (a in seq_len(max_attempts)) {
+            cand <- ord[lo + sample.int(hi - lo + 1L, 1L) - 1L]
+            if (is_valid(cand, t_e - h[[cand]], own)) { pick <- cand; break }
+          }
+          if (is.na(pick)) {
+            run <- ord[lo:hi]
+            pool <- run[is_valid(run, t_e - h[run], own)]
+          }
+        }
+        if (is.na(pick)) {
+          if (!length(pool)) break
+          pick <- pool[sample.int(length(pool), 1L)]
+        }
+        picks <- c(picks, pick)
+      }
+    }
+    if (!length(picks)) {
+      uninformative <- c(uninformative, events$stratum[k])
+      next
+    }
+    out_stratum[[k]] <- rep(events$stratum[k], length(picks))
+    out_d[[k]] <- picks
+    out_t[[k]] <- t_e - unname(h[picks])
+  }
+
+  d <- unlist(out_d, use.names = FALSE)
+  controls <- data.frame(
+    stratum = as.integer(unlist(out_stratum, use.names = FALSE)),
+    event = rep(0L, length(d)),
+    sender = d_s[d],
+    receiver = d_r[d],
+    time = unlist(out_t, use.names = FALSE),
+    stringsAsFactors = FALSE)
+  list(controls = controls,
+       info = list(mean = shift_mean, window = window, shifts = h,
+                   uninformative = uninformative))
 }
 
 #' Endogenous statistics with a compiled fast path

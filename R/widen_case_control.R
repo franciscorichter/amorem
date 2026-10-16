@@ -16,8 +16,10 @@
 #'   produced by [sample_non_events()]) or eventnet's `IS_OBSERVED`, preferring
 #'   `event` when both are present.
 #' @param stratum Optional name of the column grouping each case with its
-#'   controls. When `NULL`, the stratum is derived as `cumsum(case == 1)`
-#'   (assuming each case is immediately followed by its controls).
+#'   controls. When `NULL`, a column named `stratum` (as written by
+#'   [sample_non_events()]) is used if present, so rows may be in any order;
+#'   otherwise the stratum is derived as `cumsum(case == 1)` (assuming each
+#'   case is immediately followed by its controls).
 #' @param covariates Character vector of covariate columns to widen. When
 #'   `NULL`, all numeric columns are used except the case indicator, the
 #'   stratum, and the standard eventnet bookkeeping columns (`EVENT`,
@@ -65,6 +67,7 @@ widen_case_control <- function(data, case = NULL, stratum = NULL,
   ci <- data[[case]]
   if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
   ci <- as.integer(ci)
+  if (is.null(stratum) && "stratum" %in% names(data)) stratum <- "stratum"
   strat <- .derive_stratum(data, case, stratum)
 
   if (is.null(covariates)) {
