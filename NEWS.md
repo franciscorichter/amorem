@@ -2,6 +2,25 @@
 
 ## Bug fixes
 
+* **Endogenous statistics on case-control data no longer count the sampled
+  controls as events.** `endogenous_features()` on the output of
+  `sample_non_events()` (a 0/1 `event` column with control rows) now builds
+  the network history from the `event == 1` rows only; the controls read it
+  but never enter it. Before, every row updated the history, so each
+  statistic also counted hypothetical dyads. This was the default path inside
+  `compare_models()`, `compare_models_smooth()`, `gof()`,
+  `martingale_residuals()` and the vignettes. On six simulated datasets with
+  a reciprocity effect of 0.3, the estimate moved from 0.20 to 0.31 on
+  average. Results of those functions change and should be re-run. Pass
+  `history_log = event_log` to treat every row as an event.
+
+* **`rem()` evaluates `tv()` and `tvnl()` terms at each row's own time.**
+  When `data` has `time_ev` / `time_nv` instead of a single time column (the
+  wide form of `sample_non_events(shift = "exponential")`), `tv(x)`
+  contributes `beta(t) x_ev - beta(t*) x_nv` and `tvnl()` uses both times.
+  Before, the event time was used for both rows. Models with a single time
+  column give the same formula and fit as before.
+
 * **`compare_models_global()` now uses the paper's time-shifted design.** It
   drew one shift per control row, never shifted the event, never checked the
   observation window (control times could precede the data), evaluated the
@@ -40,6 +59,14 @@
     never draws a receiver-only actor as a control sender (or vice versa), so
     networks with one node set should use `mode = "one"`.
   - The unreachable empty-pool fallbacks in the pair sampler were removed.
+
+## Changes in behaviour
+
+* `sample_non_events()` now defaults to `mode = "one"`, the risk set of
+  networks whose senders and receivers are one node set, and the default of
+  `compare_models()`, `compare_models_smooth()`, `compare_models_global()`,
+  `gof()` and `martingale_residuals()`. Calls that relied on the old default
+  `mode = "two"` (bipartite networks) must now pass it.
 
 ## New features
 

@@ -126,7 +126,7 @@ test_that("exclude_pairs are never controls, and an empty risk set skips the str
   expect_false(any(ctrl_keys %in% c("a->b", "b->c")))
   # Two actors in mode "two": each event's only alternative is excluded.
   two <- data.frame(sender = c("a", "b"), receiver = c("b", "a"), time = c(1, 2))
-  cc2 <- sample_non_events(two, seed = 1, shift = "exponential",
+  cc2 <- sample_non_events(two, mode = "two", seed = 1, shift = "exponential",
                            exclude_pairs = two[, 1:2], max_attempts = 20)
   expect_equal(sum(cc2$event == 0L), 0L)
   expect_setequal(attr(cc2, "shift")$uninformative, 1:2)

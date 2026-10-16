@@ -239,7 +239,11 @@ attach_static_covariates <- function(
 #'   sampled non-events / controls) have their statistics computed against
 #'   that history but never enter it. This makes it possible to evaluate
 #'   endogenous statistics for non-events without those non-events polluting
-#'   the history. Defaults to `NULL` (every row is treated as an event).
+#'   the history. When `NULL` (default) and `event_log` is case-control data
+#'   -- a 0/1 `event` column with control rows, as written by
+#'   [sample_non_events()] -- only the `event == 1` rows update the history;
+#'   otherwise every row is treated as an event. Pass
+#'   `history_log = event_log` to treat every row as an event regardless.
 #' @param prior_log Optional data.frame of events that precede the study window
 #'   (columns `sender`, `receiver`, `time`), used to **warm-start** the network
 #'   state. Its rows always update the running state but never appear in the
@@ -362,6 +366,12 @@ endogenous_features <- function(
          paste(missing_cols, collapse = ", "))
   }
 
+  # Case-control input: the sampled controls are hypothetical dyads, not
+  # events, so by default only the observed events build the network history.
+  # Counting the controls as past events biases every statistic (on simulated
+  # data, reciprocity 0.20 instead of 0.31 against a true 0.3).
+  controls_only_read <- is.null(history_log) && .has_control_rows(event_log)
+
   # Warm-start support (issue #94). `prior_log` holds events that precede the
   # study window: they must update the running network state but never appear
   # in the output. We internalize the documented prepend-and-trim recipe ---
@@ -394,7 +404,9 @@ endogenous_features <- function(
     # Effective history: prior rows always update state; among event_log rows,
     # those that update state are the ones history_log already designates
     # (every row, when history_log is NULL).
-    base_hist <- if (is.null(history_log)) event_log else history_log
+    base_hist <- if (!is.null(history_log)) history_log
+                 else if (controls_only_read) event_log[as.integer(event_log$event) == 1L, , drop = FALSE]
+                 else event_log
     eff_hist <- rbind(
       data.frame(sender = as.character(prior_log$sender),
                  receiver = as.character(prior_log$receiver),
@@ -517,7 +529,9 @@ endogenous_features <- function(
   # no history_log is supplied, which the C++ engine reads as "all rows are
   # events" (the original, history-free behaviour).
   is_event_mask <- logical(0)
-  if (!is.null(history_log)) {
+  if (controls_only_read) {
+    is_event_mask <- as.integer(log_df$event) == 1L
+  } else if (!is.null(history_log)) {
     history_keys <- paste(as.character(history_log$sender),
                           as.character(history_log$receiver),
                           as.numeric(history_log$time), sep = "\r")
@@ -1023,6 +1037,14 @@ endogenous_features <- function(
   log_df
 }
 
+# TRUE when `x` is case-control data: a 0/1 `event` column holding at least
+# one control row.
+.has_control_rows <- function(x) {
+  if (!"event" %in% names(x)) return(FALSE)
+  ev <- suppressWarnings(as.integer(x$event))
+  !anyNA(ev) && all(ev %in% c(0L, 1L)) && any(ev == 0L)
+}
+
 #' Sample non-events for inference
 #'
 #' Given an observed event log, generate nested case-control data by sampling
@@ -1037,13 +1059,13 @@ endogenous_features <- function(
 #'   `"citation"` matches citation networks where senders are restricted
 #'   to the papers that debut at the current time and receivers must have
 #'   appeared earlier.
-#' @param mode `"one"` draws both sender and receiver from the same candidate
-#'   pool (single-mode): every actor seen in either role can be a control
-#'   sender or receiver. `"two"` samples sender and receiver from separate pools
-#'   (two-mode): an actor seen only as a receiver is never a control sender,
-#'   and vice versa. For a network whose senders and receivers are one node set
-#'   (e.g. bike stations, e-mail users), use `"one"`; `"two"` is for genuinely
-#'   bipartite networks.
+#' @param mode `"one"` (default) draws both sender and receiver from the same
+#'   candidate pool (single-mode): every actor seen in either role can be a
+#'   control sender or receiver, as in networks whose senders and receivers are
+#'   one node set (e.g. bike stations, e-mail users). `"two"` samples sender and
+#'   receiver from separate pools (two-mode): an actor seen only as a receiver
+#'   is never a control sender, and vice versa, as in bipartite networks (e.g.
+#'   species invading regions).
 #' @param risk Strategy governing the risk set. `"standard"` (default) keeps all
 #'   unrealized dyads available across strata, whereas `"remove"` deletes a dyad
 #'   from the candidate pool after it has occurred (useful for processes such as
@@ -1127,7 +1149,7 @@ sample_non_events <- function(
     event_log,
     n_controls = 1,
     scope = c("all", "appearance", "citation"),
-    mode = c("two", "one"),
+    mode = c("one", "two"),
     risk = c("standard", "remove"),
     exclude_pairs = NULL,
     exclude_concurrent = NULL,

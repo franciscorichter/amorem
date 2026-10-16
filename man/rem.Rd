@@ -38,7 +38,13 @@ for \code{clogit} and \code{nn}. When \code{NULL}, a column named \code{stratum}
 by \code{\link[=sample_non_events]{sample_non_events()}}) is used if present; otherwise the strata are
 derived as \code{cumsum(case == 1)}.}
 
-\item{time}{Name of the time column, required for \code{tv} / \code{tvnl} terms.}
+\item{time}{Name of the time column, required for \code{tv} / \code{tvnl} terms.
+A single column \code{time} gives the event and its control the same time.
+When it is absent and \code{time_ev} / \code{time_nv} are present (the wide form of
+time-shifted sampling, \code{\link[=sample_non_events]{sample_non_events()}} with
+\code{shift = "exponential"}), each row is evaluated at its own time: \code{tv(x)}
+contributes \eqn{\beta(t)x_{ev} - \beta(t^*)x_{nv}}{beta(t) x_ev - beta(t*) x_nv}
+and needs \code{x_ev} / \code{x_nv}.}
 
 \item{k}{Optional basis dimension passed to every \code{s()} / \code{te()} smooth
 that does not set its own \code{k} (see \emph{Formula syntax}).}

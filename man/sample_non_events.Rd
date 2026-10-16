@@ -8,7 +8,7 @@ sample_non_events(
   event_log,
   n_controls = 1,
   scope = c("all", "appearance", "citation"),
-  mode = c("two", "one"),
+  mode = c("one", "two"),
   risk = c("standard", "remove"),
   exclude_pairs = NULL,
   exclude_concurrent = NULL,
@@ -33,13 +33,13 @@ events (so the first event, with no prior events, gets no controls);
 to the papers that debut at the current time and receivers must have
 appeared earlier.}
 
-\item{mode}{\code{"one"} draws both sender and receiver from the same candidate
-pool (single-mode): every actor seen in either role can be a control
-sender or receiver. \code{"two"} samples sender and receiver from separate pools
-(two-mode): an actor seen only as a receiver is never a control sender,
-and vice versa. For a network whose senders and receivers are one node set
-(e.g. bike stations, e-mail users), use \code{"one"}; \code{"two"} is for genuinely
-bipartite networks.}
+\item{mode}{\code{"one"} (default) draws both sender and receiver from the same
+candidate pool (single-mode): every actor seen in either role can be a
+control sender or receiver, as in networks whose senders and receivers are
+one node set (e.g. bike stations, e-mail users). \code{"two"} samples sender and
+receiver from separate pools (two-mode): an actor seen only as a receiver
+is never a control sender, and vice versa, as in bipartite networks (e.g.
+species invading regions).}
 
 \item{risk}{Strategy governing the risk set. \code{"standard"} (default) keeps all
 unrealized dyads available across strata, whereas \code{"remove"} deletes a dyad

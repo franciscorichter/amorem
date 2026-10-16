@@ -33,7 +33,11 @@ of \code{event_log} whose \verb{(sender, receiver, time)} triple appears in
 sampled non-events / controls) have their statistics computed against
 that history but never enter it. This makes it possible to evaluate
 endogenous statistics for non-events without those non-events polluting
-the history. Defaults to \code{NULL} (every row is treated as an event).}
+the history. When \code{NULL} (default) and \code{event_log} is case-control data
+-- a 0/1 \code{event} column with control rows, as written by
+\code{\link[=sample_non_events]{sample_non_events()}} -- only the \code{event == 1} rows update the history;
+otherwise every row is treated as an event. Pass
+\code{history_log = event_log} to treat every row as an event regardless.}
 
 \item{prior_log}{Optional data.frame of events that precede the study window
 (columns \code{sender}, \code{receiver}, \code{time}), used to \strong{warm-start} the network

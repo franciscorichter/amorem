@@ -95,6 +95,12 @@
 #'   by [sample_non_events()]) is used if present; otherwise the strata are
 #'   derived as `cumsum(case == 1)`.
 #' @param time Name of the time column, required for `tv` / `tvnl` terms.
+#'   A single column `time` gives the event and its control the same time.
+#'   When it is absent and `time_ev` / `time_nv` are present (the wide form of
+#'   time-shifted sampling, [sample_non_events()] with
+#'   `shift = "exponential"`), each row is evaluated at its own time: `tv(x)`
+#'   contributes \eqn{\beta(t)x_{ev} - \beta(t^*)x_{nv}}{beta(t) x_ev - beta(t*) x_nv}
+#'   and needs `x_ev` / `x_nv`.
 #' @param k Optional basis dimension passed to every `s()` / `te()` smooth
 #'   that does not set its own `k` (see *Formula syntax*).
 #' @param bs Optional basis type (e.g. `"tp"`, `"cr"`, `"ps"`) passed to every
@@ -269,17 +275,31 @@ rem <- function(formula, data,
     stop("Cannot find ev/nv columns for non-linear term '", v, "' ",
          "(looked for '[transform_]", v, "_ev'/'_nv').")
   }
+  # Event and control times as an n x 2 matrix. One `time` column gives both
+  # rows of a stratum the same time; `<time>_ev` / `<time>_nv` (wide output of
+  # time-shifted sampling) give the control its own time.
+  time_pair <- function(col) {
+    one <- data[[col]]
+    if (!is.null(one)) return(cbind(case = as.numeric(one), ctrl = as.numeric(one)))
+    ev <- data[[paste0(col, "_ev")]]; nv <- data[[paste0(col, "_nv")]]
+    if (!is.null(ev) && !is.null(nv)) return(cbind(case = as.numeric(ev), ctrl = as.numeric(nv)))
+    NULL
+  }
   get_time <- function() {
     if (is.null(time)) stop("`time` (a column name) is required for tv/tvnl terms.")
-    if (is.null(data[[time]])) stop("time column '", time, "' not found in `data`.")
-    as.numeric(data[[time]])
+    tp <- time_pair(time)
+    if (is.null(tp)) {
+      stop("time column '", time, "' not found in `data` (looked for '", time,
+           "' and '", time, "_ev'/'", time, "_nv').")
+    }
+    tp
   }
   get_time_trans <- function() {
-    if (!is.null(data[["transformed_time"]])) as.numeric(data[["transformed_time"]])
-    else get_time()
+    tp <- time_pair("transformed_time")
+    if (is.null(tp)) get_time() else tp
   }
 
-  reserved <- c("one", ".I", ".time", ".T")
+  reserved <- c("one", ".I", ".time", ".T", ".TP")
   df <- list(one = rep(1, n), .I = cbind(case = rep(1, n), ctrl = rep(-1, n)))
   rhs <- character(0)
   # Basis arguments for one smooth term: the term's own, then the global k/bs.
@@ -305,8 +325,24 @@ rem <- function(formula, data,
       df[[v]] <- get_diff(v)
       rhs <- c(rhs, bt(v))
     } else if (ti$type == "tv") {
-      df[[v]] <- get_diff(v); need_time <- TRUE
-      rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".time"), bt(v), smooth_args(ti)))
+      tp <- get_time()
+      if (all(tp[, 1] == tp[, 2])) {
+        # Shared time: beta(t) * (x_ev - x_nv).
+        df[[v]] <- get_diff(v); need_time <- TRUE
+        rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".time"), bt(v), smooth_args(ti)))
+      } else {
+        # Shifted control: beta(t) * x_ev - beta(t*) * x_nv, a by-matrix smooth
+        # over the event and control times.
+        ev <- data[[paste0(v, "_ev")]]; nv <- data[[paste0(v, "_nv")]]
+        if (is.null(ev) || is.null(nv)) {
+          stop("tv(", v, ") with different event and control times needs '",
+               v, "_ev' and '", v, "_nv' columns.")
+        }
+        xi <- paste0(".XI_", v)
+        df[[xi]] <- cbind(case = as.numeric(ev), ctrl = -as.numeric(nv))
+        df[[".TP"]] <- tp
+        rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(".TP"), bt(xi), smooth_args(ti)))
+      }
     } else if (ti$type == "nl") {
       xc <- paste0(".X_", v); df[[xc]] <- get_evnv(v)
       rhs <- c(rhs, sprintf("s(%s, by = %s%s)", bt(xc), bt(".I"), smooth_args(ti)))
@@ -336,8 +372,8 @@ rem <- function(formula, data,
       rhs <- c(rhs, sprintf("s(%s, by = %s, bs = \"re\")", bt(rc), bt(".I")))
     }
   }
-  if (need_time)   df[[".time"]] <- get_time()
-  if (need_ttrans) { tt <- get_time_trans(); df[[".T"]] <- cbind(tt, tt) }
+  if (need_time)   df[[".time"]] <- get_time()[, 1]
+  if (need_ttrans) df[[".T"]] <- get_time_trans()
 
   fm <- stats::as.formula(paste("one ~ -1 +", paste(rhs, collapse = " + ")))
   # Smoothness-selection method passed to mgcv::gam(). Default NULL lets mgcv

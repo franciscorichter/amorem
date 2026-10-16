@@ -5,8 +5,8 @@ test_that("exclude_pairs that remove every valid pair skip the stratum instead o
                    stringsAsFactors = FALSE)
   # mode = "two": the only alternative to each event is the other event's dyad.
   forbidden <- data.frame(sender = c("a", "b"), receiver = c("b", "a"))
-  cc <- sample_non_events(el, n_controls = 1, exclude_pairs = forbidden,
-                          max_attempts = 50, seed = 1)
+  cc <- sample_non_events(el, n_controls = 1, mode = "two",
+                          exclude_pairs = forbidden, max_attempts = 50, seed = 1)
   expect_equal(sum(cc$event == 0L), 0L)
   expect_equal(sum(cc$event == 1L), 2L)
 })
@@ -16,7 +16,7 @@ test_that("a stratum whose only alternatives are concurrent events is skipped", 
   # only alternative, and both are concurrent under risk = "remove".
   el <- data.frame(sender = c("a", "b"), receiver = c("b", "a"), time = c(1, 1),
                    stringsAsFactors = FALSE)
-  cc <- sample_non_events(el, n_controls = 1, risk = "remove",
+  cc <- sample_non_events(el, n_controls = 1, mode = "two", risk = "remove",
                           max_attempts = 50, seed = 1)
   expect_equal(sum(cc$event == 0L), 0L)
 })
