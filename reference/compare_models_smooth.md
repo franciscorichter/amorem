@@ -141,8 +141,8 @@ compare_models_smooth(
                transitivity_time_recent = "tvnl")),
   seed = 11)
 #>    model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1     nl       2   691 -418.0982 845.8892 0.0000000
-#> 2 linear       2   691 -421.1231 846.2462 0.3570575
-#> 3   tvnl       2   691 -417.4186 848.6513 2.7620675
+#> 1   tvnl       2   691 -397.8663 828.2393   0.00000
+#> 2     nl       2   691 -409.6023 841.8418  13.60260
+#> 3 linear       2   691 -438.9000 881.8000  53.56072
 # }
 ```

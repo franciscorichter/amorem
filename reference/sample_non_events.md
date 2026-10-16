@@ -11,7 +11,7 @@ sample_non_events(
   event_log,
   n_controls = 1,
   scope = c("all", "appearance", "citation"),
-  mode = c("two", "one"),
+  mode = c("one", "two"),
   risk = c("standard", "remove"),
   exclude_pairs = NULL,
   exclude_concurrent = NULL,
@@ -45,13 +45,13 @@ sample_non_events(
 
 - mode:
 
-  `"one"` draws both sender and receiver from the same candidate pool
-  (single-mode): every actor seen in either role can be a control sender
-  or receiver. `"two"` samples sender and receiver from separate pools
-  (two-mode): an actor seen only as a receiver is never a control
-  sender, and vice versa. For a network whose senders and receivers are
-  one node set (e.g. bike stations, e-mail users), use `"one"`; `"two"`
-  is for genuinely bipartite networks.
+  `"one"` (default) draws both sender and receiver from the same
+  candidate pool (single-mode): every actor seen in either role can be a
+  control sender or receiver, as in networks whose senders and receivers
+  are one node set (e.g. bike stations, e-mail users). `"two"` samples
+  sender and receiver from separate pools (two-mode): an actor seen only
+  as a receiver is never a control sender, and vice versa, as in
+  bipartite networks (e.g. species invading regions).
 
 - risk:
 
@@ -169,9 +169,9 @@ cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
 head(cc)
 #>   stratum event sender receiver  time interaction_type weight
 #> 1       1     1     14       12 0.125           social      1
-#> 2       1     0      1        3 0.125             <NA>     NA
+#> 2       1     0     12       15 0.125             <NA>     NA
 #> 3       2     1     12       14 0.250           social      1
-#> 4       2     0     20       10 0.250             <NA>     NA
+#> 4       2     0      1       10 0.250             <NA>     NA
 #> 5       3     1     18       12 0.375         sanction      1
-#> 6       3     0      6       19 0.375             <NA>     NA
+#> 6       3     0     19        3 0.375             <NA>     NA
 ```

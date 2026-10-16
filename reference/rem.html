@@ -115,7 +115,13 @@ derived as <code>cumsum(case == 1)</code>.</p></dd>
 
 
 <dt id="arg-time">time<a class="anchor" aria-label="anchor" href="#arg-time"></a></dt>
-<dd><p>Name of the time column, required for <code>tv</code> / <code>tvnl</code> terms.</p></dd>
+<dd><p>Name of the time column, required for <code>tv</code> / <code>tvnl</code> terms.
+A single column <code>time</code> gives the event and its control the same time.
+When it is absent and <code>time_ev</code> / <code>time_nv</code> are present (the wide form of
+time-shifted sampling, <code><a href="sample_non_events.html">sample_non_events()</a></code> with
+<code>shift = "exponential"</code>), each row is evaluated at its own time: <code>tv(x)</code>
+contributes \(\beta(t)x_{ev} - \beta(t^*)x_{nv}\)
+and needs <code>x_ev</code> / <code>x_nv</code>.</p></dd>
 
 
 <dt id="arg-k">k<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>

@@ -51,8 +51,13 @@ endogenous_features(
   non-events / controls) have their statistics computed against that
   history but never enter it. This makes it possible to evaluate
   endogenous statistics for non-events without those non-events
-  polluting the history. Defaults to `NULL` (every row is treated as an
-  event).
+  polluting the history. When `NULL` (default) and `event_log` is
+  case-control data – a 0/1 `event` column with control rows, as written
+  by
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  – only the `event == 1` rows update the history; otherwise every row
+  is treated as an event. Pass `history_log = event_log` to treat every
+  row as an event regardless.
 
 - prior_log:
 

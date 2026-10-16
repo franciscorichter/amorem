@@ -138,8 +138,8 @@ compare_models(
                     "transitivity_time_recent_interrupted")),
   seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -305.5233 615.0466    0.0000
-#> 2  continuous       2   691 -421.1231 846.2462  231.1996
-#> 3 interrupted       2   691 -439.6904 883.3809  268.3343
+#> 1       count       2   691 -280.8221 565.6442    0.0000
+#> 2 interrupted       2   691 -412.7271 829.4541  263.8099
+#> 3  continuous       2   691 -438.9000 881.8000  316.1557
 # }
 ```

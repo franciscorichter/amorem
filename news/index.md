@@ -4,6 +4,33 @@
 
 ### Bug fixes
 
+- **Endogenous statistics on case-control data no longer count the
+  sampled controls as events.**
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  on the output of
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  (a 0/1 `event` column with control rows) now builds the network
+  history from the `event == 1` rows only; the controls read it but
+  never enter it. Before, every row updated the history, so each
+  statistic also counted hypothetical dyads. This was the default path
+  inside
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md),
+  `gof()`,
+  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md)
+  and the vignettes. On six simulated datasets with a reciprocity effect
+  of 0.3, the estimate moved from 0.20 to 0.31 on average. Results of
+  those functions change and should be re-run. Pass
+  `history_log = event_log` to treat every row as an event.
+
+- **[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  evaluates `tv()` and `tvnl()` terms at each row’s own time.** When
+  `data` has `time_ev` / `time_nv` instead of a single time column (the
+  wide form of `sample_non_events(shift = "exponential")`), `tv(x)`
+  contributes `beta(t) x_ev - beta(t*) x_nv` and `tvnl()` uses both
+  times. Before, the event time was used for both rows. Models with a
+  single time column give the same formula and fit as before.
+
 - **[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
   now uses the paper’s time-shifted design.** It drew one shift per
   control row, never shifted the event, never checked the observation
@@ -56,6 +83,19 @@
     `mode = "one"`.
   - The unreachable empty-pool fallbacks in the pair sampler were
     removed.
+
+### Changes in behaviour
+
+- [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  now defaults to `mode = "one"`, the risk set of networks whose senders
+  and receivers are one node set, and the default of
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md),
+  [`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md),
+  `gof()` and
+  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md).
+  Calls that relied on the old default `mode = "two"` (bipartite
+  networks) must now pass it.
 
 ### New features
 

@@ -68,9 +68,9 @@ timing).
 res <- compare_models(classroom_events, specs, seed = 11)
 res
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -305.5233 615.0466    0.0000
-#> 2  continuous       2   691 -421.1231 846.2462  231.1996
-#> 3 interrupted       2   691 -439.6904 883.3809  268.3343
+#> 1       count       2   691 -280.8221 565.6442    0.0000
+#> 2 interrupted       2   691 -412.7271 829.4541  263.8099
+#> 3  continuous       2   691 -438.9000 881.8000  316.1557
 ```
 
 The helper draws one case-control sample (default `n_controls = 1`)
@@ -100,9 +100,9 @@ right tool when you want more controls per case for tighter inference:
 compare_models(classroom_events, specs,
                n_controls = 3, seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -730.3872 1464.774    0.0000
-#> 2  continuous       2   691 -850.2339 1704.468  239.6934
-#> 3 interrupted       2   691 -931.9619 1867.924  403.1494
+#> 1       count       2   691 -653.3589 1310.718    0.0000
+#> 2 interrupted       2   691 -864.9598 1733.920  423.2017
+#> 3  continuous       2   691 -919.1762 1842.352  531.6345
 ```
 
 The `n_obs` column now reports the number of strata (one per case). AIC
@@ -135,9 +135,9 @@ df <- data.frame(
 
 fit <- glm(one ~ d_rec + d_trans - 1, family = "binomial", data = df)
 summary(fit)$coefficients
-#>           Estimate Std. Error   z value     Pr(>|z|)
-#> d_rec   -0.1008825 0.01912790 -5.274104 1.334064e-07
-#> d_trans -0.1319044 0.02943224 -4.481630 7.407511e-06
+#>            Estimate Std. Error    z value     Pr(>|z|)
+#> d_rec    0.01707064 0.01832493  0.9315532 3.515675e-01
+#> d_trans -0.16703689 0.01846586 -9.0457142 1.486900e-19
 ```
 
 The same recipe scales to any subset of the statistics in the catalogue.
@@ -178,10 +178,10 @@ sim <- simulate_relational_events(
 res2 <- compare_models(sim, specs, seed = 7)
 #> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 res2
-#>         model n_terms n_obs    log_lik      AIC delta_AIC
-#> 1       count       2   600  -60.15295 124.3059    0.0000
-#> 2  continuous       2   600 -378.42664 760.8533  636.5474
-#> 3 interrupted       2   600 -407.21051 818.4210  694.1151
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1       count       2   600  -57.1382 118.2764    0.0000
+#> 2 interrupted       2   600 -242.3602 488.7204  370.4440
+#> 3  continuous       2   600 -276.6789 557.3578  439.0814
 ```
 
 ## References

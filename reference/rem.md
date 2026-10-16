@@ -64,7 +64,14 @@ rem(
 
 - time:
 
-  Name of the time column, required for `tv` / `tvnl` terms.
+  Name of the time column, required for `tv` / `tvnl` terms. A single
+  column `time` gives the event and its control the same time. When it
+  is absent and `time_ev` / `time_nv` are present (the wide form of
+  time-shifted sampling,
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  with `shift = "exponential"`), each row is evaluated at its own time:
+  `tv(x)` contributes \\\beta(t)x\_{ev} - \beta(t^\*)x\_{nv}\\ and needs
+  `x_ev` / `x_nv`.
 
 - k:
 
