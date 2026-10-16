@@ -9,7 +9,7 @@ counterfactual sender–receiver pairs according to predefined strategies."><met
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,6 +64,7 @@ counterfactual sender–receiver pairs according to predefined strategies.</p>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"two"</span>, <span class="st">"one"</span><span class="op">)</span>,</span>
 <span>  risk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"remove"</span><span class="op">)</span>,</span>
 <span>  exclude_pairs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exclude_concurrent <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  allow_loops <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_attempts <span class="op">=</span> <span class="fl">1000</span></span>
@@ -86,15 +87,20 @@ event.</p></dd>
 <dt id="arg-scope">scope<a class="anchor" aria-label="anchor" href="#arg-scope"></a></dt>
 <dd><p>Candidate set definition. <code>"all"</code> uses every actor observed in
 the data; <code>"appearance"</code> restricts to actors that have appeared in prior
-events; <code>"citation"</code> matches citation networks where senders are restricted
+events (so the first event, with no prior events, gets no controls);
+<code>"citation"</code> matches citation networks where senders are restricted
 to the papers that debut at the current time and receivers must have
 appeared earlier.</p></dd>
 
 
 <dt id="arg-mode">mode<a class="anchor" aria-label="anchor" href="#arg-mode"></a></dt>
 <dd><p><code>"one"</code> draws both sender and receiver from the same candidate
-pool (single-mode). <code>"two"</code> samples sender and receiver from separate pools
-(two-mode).</p></dd>
+pool (single-mode): every actor seen in either role can be a control
+sender or receiver. <code>"two"</code> samples sender and receiver from separate pools
+(two-mode): an actor seen only as a receiver is never a control sender,
+and vice versa. For a network whose senders and receivers are one node set
+(e.g. bike stations, e-mail users), use <code>"one"</code>; <code>"two"</code> is for genuinely
+bipartite networks.</p></dd>
 
 
 <dt id="arg-risk">risk<a class="anchor" aria-label="anchor" href="#arg-risk"></a></dt>
@@ -112,6 +118,13 @@ pool (concurrent events are not valid non-events at that instant).</p></dd>
 must never be sampled (e.g. an alien species' native range, or any dyad
 forbidden in advance). Columns named <code>sender</code>/<code>receiver</code> are used if
 present, otherwise the first two columns.</p></dd>
+
+
+<dt id="arg-exclude-concurrent">exclude_concurrent<a class="anchor" aria-label="anchor" href="#arg-exclude-concurrent"></a></dt>
+<dd><p>Logical; keep dyads with an event at the focal
+event's own timestamp out of its control pool? Defaults to <code>TRUE</code> under
+<code>risk = "remove"</code> and <code>FALSE</code> under <code>risk = "standard"</code>, where a tied event
+is still at risk at that instant (the Breslow convention).</p></dd>
 
 
 <dt id="arg-allow-loops">allow_loops<a class="anchor" aria-label="anchor" href="#arg-allow-loops"></a></dt>

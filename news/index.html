@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,6 +47,27 @@
       <small>Source: <a href="https://github.com/franciscorichter/amorem/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="amorem-development-version">amorem (development version)<a class="anchor" aria-label="anchor" href="#amorem-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<strong><code><a href="../reference/sample_non_events.html">sample_non_events()</a></code> risk-set edge cases (<a href="https://github.com/franciscorichter/amorem/issues/102" class="external-link">#102</a>).</strong>
+<ul><li>
+<code>exclude_pairs</code> and, under <code>risk = "remove"</code>, same-time events are now part of the check for whether any valid control exists, so a stratum whose every alternative is excluded gets no controls instead of stopping with “Unable to sample a valid non-event after <code>max_attempts</code> attempts”.</li>
+<li>
+<code>scope = "appearance"</code> no longer falls back to all actors when no actor has appeared yet: the first event gets no controls, and controls are only ever drawn from actors seen in prior events, as documented. Results change for the first stratum(s) of <code>scope = "appearance"</code> fits.</li>
+<li>Factor <code>sender</code> / <code>receiver</code> columns are coerced to character, so the output columns are character whatever the input type.</li>
+<li>The documentation of <code>mode</code> states which risk set each mode gives: <code>"two"</code> never draws a receiver-only actor as a control sender (or vice versa), so networks with one node set should use <code>mode = "one"</code>.</li>
+<li>The unreachable empty-pool fallbacks in the pair sampler were removed.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li>
+<code>sample_non_events(exclude_concurrent = )</code> controls whether dyads with an event at the focal event’s own time can be controls. The default keeps the existing behaviour: excluded under <code>risk = "remove"</code>, at risk under <code>risk = "standard"</code> (the Breslow convention).</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.0.1" id="amorem-101">amorem 1.0.1<a class="anchor" aria-label="anchor" href="#amorem-101"></a></h2>
 <div class="section level3">

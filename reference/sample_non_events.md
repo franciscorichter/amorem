@@ -14,6 +14,7 @@ sample_non_events(
   mode = c("two", "one"),
   risk = c("standard", "remove"),
   exclude_pairs = NULL,
+  exclude_concurrent = NULL,
   allow_loops = FALSE,
   seed = NULL,
   max_attempts = 1000
@@ -34,15 +35,20 @@ sample_non_events(
 
   Candidate set definition. `"all"` uses every actor observed in the
   data; `"appearance"` restricts to actors that have appeared in prior
-  events; `"citation"` matches citation networks where senders are
-  restricted to the papers that debut at the current time and receivers
-  must have appeared earlier.
+  events (so the first event, with no prior events, gets no controls);
+  `"citation"` matches citation networks where senders are restricted to
+  the papers that debut at the current time and receivers must have
+  appeared earlier.
 
 - mode:
 
   `"one"` draws both sender and receiver from the same candidate pool
-  (single-mode). `"two"` samples sender and receiver from separate pools
-  (two-mode).
+  (single-mode): every actor seen in either role can be a control sender
+  or receiver. `"two"` samples sender and receiver from separate pools
+  (two-mode): an actor seen only as a receiver is never a control
+  sender, and vice versa. For a network whose senders and receivers are
+  one node set (e.g. bike stations, e-mail users), use `"one"`; `"two"`
+  is for genuinely bipartite networks.
 
 - risk:
 
@@ -61,6 +67,13 @@ sample_non_events(
   (e.g. an alien species' native range, or any dyad forbidden in
   advance). Columns named `sender`/`receiver` are used if present,
   otherwise the first two columns.
+
+- exclude_concurrent:
+
+  Logical; keep dyads with an event at the focal event's own timestamp
+  out of its control pool? Defaults to `TRUE` under `risk = "remove"`
+  and `FALSE` under `risk = "standard"`, where a tied event is still at
+  risk at that instant (the Breslow convention).
 
 - allow_loops:
 
