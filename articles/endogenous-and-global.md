@@ -1,6 +1,7 @@
 # Endogenous mechanisms and time-varying global covariates
 
 ``` r
+
 library(amorem)
 ```
 
@@ -21,6 +22,7 @@ statistic at candidate dyad `(s, r)` is the number of past events
 of its reverse dyad.
 
 ``` r
+
 set.seed(2024)
 actors <- as.character(1:10)
 true_beta <- 0.6
@@ -49,6 +51,7 @@ Recover the coefficient with a one-parameter conditional logit fit on
 the within-stratum statistic difference:
 
 ``` r
+
 library(mgcv)
 cases    <- cc[cc$event == 1L, ]
 controls <- cc[cc$event == 0L, ]
@@ -76,6 +79,7 @@ uses a boundary-aware Gillespie scheme that redraws the next waiting
 time whenever the proposed event would jump into the next interval.
 
 ``` r
+
 set.seed(2024)
 gc <- data.frame(
   time_start = seq(0, 10, by = 1),
@@ -107,6 +111,7 @@ by the global multiplier. The output frame carries one column per
 endogenous statistic and one column per global covariate.
 
 ``` r
+
 set.seed(7)
 actors <- letters[1:5]
 gc <- data.frame(time_start = c(0, 2, 4, 6), weekday = c(1, 0, 1, 0))

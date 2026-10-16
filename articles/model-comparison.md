@@ -8,6 +8,7 @@ one-call
 helper.
 
 ``` r
+
 library(amorem)
 ```
 
@@ -19,6 +20,7 @@ interactions among 20 students and one instructor, recorded on 16
 October 1996.
 
 ``` r
+
 data(classroom_events)
 data(classroom_actors)
 nrow(classroom_events)
@@ -45,6 +47,7 @@ specification; the vector contents are the endogenous statistic names.
 Here we compare three minimal specifications:
 
 ``` r
+
 specs <- list(
   count        = c("reciprocity_count",
                    "transitivity_count"),
@@ -61,6 +64,7 @@ timing).
 ## 3. Compare by AIC
 
 ``` r
+
 res <- compare_models(classroom_events, specs, seed = 11)
 res
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
@@ -92,6 +96,7 @@ stratified conditional logistic regression via
 right tool when you want more controls per case for tighter inference:
 
 ``` r
+
 compare_models(classroom_events, specs,
                n_controls = 3, seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
@@ -111,6 +116,7 @@ returns AIC summaries. To inspect coefficients for a single spec, build
 the case-control sample once and fit directly:
 
 ``` r
+
 stat_set <- specs$interrupted
 cc <- sample_non_events(classroom_events, n_controls = 1,
                         scope = "all", mode = "one", seed = 11)
@@ -156,6 +162,7 @@ using known effects and use
 to confirm the ranking.
 
 ``` r
+
 set.seed(2026)
 sim <- simulate_relational_events(
   n_events = 600,

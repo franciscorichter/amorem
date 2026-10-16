@@ -18,6 +18,7 @@ Driver script for the experiments below:
 ### Data model
 
 ``` r
+
 hl <- hyperedge_log(
   I    = list(c("alice", "bob"), c("alice", "carol"), c("bob", "carol")),
   J    = list(c("paperA"),        c("paperA", "paperB"), c("paperB")),
@@ -49,6 +50,7 @@ For **undirected hyperevents** (e.g. multi-actor meetings), pass
 The canonical hyperedge-native covariates from the paper (eq. 3-4):
 
 ``` r
+
 hyperedge_activity(hl, I = c("alice", "bob"), J = "paperA", t = 5)
 #> [1] 1                # one past event contains {alice, bob} and {paperA}
 
@@ -68,6 +70,7 @@ is the hyperedge analogue of
 [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md):
 
 ``` r
+
 feat <- hyperedge_features(hl,
   stats = c("activity", "subrep_1_1", "subrep_2_1"))
 ```
@@ -86,6 +89,7 @@ feat <- hyperedge_features(hl,
 For citation-style data (Boschi et al. 2025 Section 5):
 
 ``` r
+
 hl <- simulate_directed_hyperedge_events(
   n_events  = 50,
   senders   = paste0("author", 1:5),
@@ -138,6 +142,7 @@ universes (≤ ~10 each side, `max_size ≤ 3`).
 For undirected multi-actor meetings (Section 4 of the paper):
 
 ``` r
+
 hl <- simulate_hyperedge_events(
   n_events           = 150,
   actors             = LETTERS[1:5],

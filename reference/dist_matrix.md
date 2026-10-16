@@ -2,7 +2,7 @@
 
 A 56 × 56 matrix of pairwise geographic distances (in metres) between US
 states and territories, computed from boundary geometries via
-[`sf::st_distance`](https://r-spatial.github.io/sf/reference/geos_measures.html).
+`sf::st_distance`.
 
 ## Usage
 

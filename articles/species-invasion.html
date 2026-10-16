@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
@@ -38,7 +38,7 @@
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../articles/quick-start.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
+<li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><h6 class="dropdown-header" data-toc-skip>Guides</h6></li>
@@ -77,7 +77,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>Species invasions as a relational event process</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/HEAD/vignettes/species-invasion.Rmd" class="external-link"><code>vignettes/species-invasion.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/species-invasion.Rmd" class="external-link"><code>vignettes/species-invasion.Rmd</code></a></small>
       <div class="d-none name"><code>species-invasion.Rmd</code></div>
     </div>
 
@@ -139,7 +139,7 @@ opens:</p>
 </h2>
 <p>The intensity of an invasion from <code>s</code> to <code>r</code>
 is</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mspace width="0.278em"></mspace><msub><mi>λ</mi><mn>0</mn></msub><mspace width="0.278em"></mspace><mrow><mi>exp</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">(</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>h</mi></msub><mspace width="0.167em"></mspace><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>g</mi></msub><mspace width="0.167em"></mspace><mi>x</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(f(d_{sr})
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>λ</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mspace width="0.278em"></mspace><msub><mi>λ</mi><mn>0</mn></msub><mspace width="0.278em"></mspace><mrow><mi mathvariant="normal">exp</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mo minsize="120%" maxsize="120%" stretchy="true" form="prefix">(</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>h</mi></msub><mspace width="0.167em"></mspace><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><msub><mi>β</mi><mi>g</mi></msub><mspace width="0.167em"></mspace><mi>x</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo><mo minsize="120%" maxsize="120%" stretchy="true" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">\lambda_{sr}(t) = Y_{sr}(t)\;\lambda_0\;\exp\!\bigl(f(d_{sr})
 + \beta_h\,h_{sr}(t) + \beta_g\,x(t)\bigr),</annotation></semantics></math></p>
 <p>where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Y_{sr}(t)</annotation></semantics></math>
@@ -147,7 +147,7 @@ is the at-risk indicator (1 until <code>s</code> invades <code>r</code>,
 0 thereafter),
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><annotation encoding="application/x-tex">d_{sr}</annotation></semantics></math>
 is the log-distance with smooth effect
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow><mi>sin</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>−</mi><mi>d</mi><mi>/</mi><mn>1.5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d) = \sin(-d/1.5)</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>d</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>−</mi><mi>d</mi><mi>/</mi><mn>1.5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">f(d) = \sin(-d/1.5)</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mrow><mi>s</mi><mi>r</mi></mrow></msub><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">h_{sr}(t)</annotation></semantics></math>
 is a neighbour pressure — here the half-life-decayed count of past
 invasions in the reverse direction (<code>reciprocity_exp_decay</code>,
@@ -318,7 +318,7 @@ models with global covariates: an application to bike sharing.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

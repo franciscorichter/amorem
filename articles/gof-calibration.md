@@ -24,6 +24,7 @@ replicates per cell unless stated, and a single control per case (the
 `m = 2` design the GoF uses).
 
 ``` r
+
 library(amorem)
 actors <- paste0("a", 1:20)
 
@@ -90,6 +91,7 @@ matched moderate effect (β = 0.2, negligible separation):
 | `reciprocity_count`     | unbounded accumulating count |        0.147 |
 
 ``` r
+
 type_I(0.2, stat = "recency")
 type_I(0.2, stat = "reciprocity_exp_decay", half_life = 5)
 type_I(0.2, stat = "reciprocity_count")

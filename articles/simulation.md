@@ -44,6 +44,7 @@ bottom of this page.
 #### Minimal Gillespie
 
 ``` r
+
 ev <- simulate_relational_events(
   n_events      = 500,
   senders       = LETTERS[1:6],
@@ -54,6 +55,7 @@ ev <- simulate_relational_events(
 #### Endogenous structure
 
 ``` r
+
 ev <- simulate_relational_events(
   n_events           = 1000,
   senders            = letters[1:10],
@@ -71,6 +73,7 @@ drawn from the non-event risk set at that moment, sharing a `stratum`
 id.
 
 ``` r
+
 cc <- simulate_relational_events(
   n_events           = 1200,
   senders            = paste0("a", 1:20),
@@ -83,6 +86,7 @@ cc <- simulate_relational_events(
 #### Time-varying global covariates
 
 ``` r
+
 g <- data.frame(time_start = c(0, 2, 5),
                 weekend    = c(0, 1, 0))
 ev <- simulate_relational_events(

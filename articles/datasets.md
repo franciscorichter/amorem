@@ -95,6 +95,7 @@ original Unix-epoch timestamps are preserved as a `unix_origin`
 attribute on each event frame where the source provided them:
 
 ``` r
+
 data(radoslaw_email)
 attr(radoslaw_email, "unix_origin")
 #> [1] "2010-01-02 14:45:35 UTC"

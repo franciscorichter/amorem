@@ -13,6 +13,7 @@ Numbers shown below are actual output, re-run on every release.
 From GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("franciscorichter/amorem")
 ```
@@ -27,6 +28,7 @@ A 20-actor network, 1200 events, with a single endogenous mechanism —
 *reciprocity* at strength `β = 0.6`:
 
 ``` r
+
 library(amorem)
 suppressPackageStartupMessages(library(survival))
 
