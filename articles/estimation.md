@@ -222,9 +222,9 @@ compare_models(
 `*_count` statistics also carry sender and receiver activity: an actor
 who sends a lot accumulates large counts, so part of a count
 specification’s advantage reflects who is active rather than how the
-dyad’s history drives its rate. [Real-data
-analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)
-repeats this comparison with a sender frailty.
+dyad’s history drives its rate. The [analyses of bundled event
+logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md)
+repeat this comparison with a sender frailty.
 
 | Argument | Meaning |
 |----|----|

@@ -48,7 +48,7 @@
     <li><a class="dropdown-item" href="../articles/estimation.html">Estimation</a></li>
     <li><a class="dropdown-item" href="../articles/hyperedge-models.html">Hyperedge models</a></li>
     <li><a class="dropdown-item" href="../articles/datasets.html">Datasets</a></li>
-    <li><a class="dropdown-item" href="../articles/real-data-analysis.html">Real-data analysis</a></li>
+    <li><a class="dropdown-item" href="../articles/bundled-log-analyses.html">Analyses of bundled event logs</a></li>
     <li><a class="dropdown-item" href="../articles/validation-experiments.html">Validation experiments</a></li>
     <li><a class="dropdown-item" href="../articles/gof-calibration.html">GoF calibration</a></li>
     <li><hr class="dropdown-divider"></li>
@@ -414,10 +414,10 @@ the simulator call and the conditional-logit estimate
 <span>                <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tab</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               beta_mean beta_sd seconds</span></span>
-<span><span class="co">#&gt; Gillespie         0.563   0.086   0.574</span></span>
-<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.202</span></span>
+<span><span class="co">#&gt; Gillespie         0.563   0.086   0.566</span></span>
+<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.204</span></span>
 <span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.175</span></span>
-<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.184</span></span></code></pre></div>
+<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.185</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4.5</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html" class="external-link">hat</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span>,</span>

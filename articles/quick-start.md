@@ -71,6 +71,6 @@ see
 | [Endogenous catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md) | The 68-stat dyadic table plus hyperedge-native subset repetition |
 | [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md) | Case-control sampling, linear/smooth/global-covariate model comparison, GOF tests |
 | [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | RHEMs with set-valued sender/receiver hyperedges |
-| [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | Classroom, Manufacturing, frailty, smooth effects |
+| [Analyses of bundled event logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md) | Classroom, Manufacturing, CollegeMsg: frailty, smooth effects |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | Parity tests + MLE recovery + scaling |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | The three bundled REM datasets and their provenance |

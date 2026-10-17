@@ -210,12 +210,13 @@ curve](species-invasion_files/figure-html/distance-smooth-1.png)
 
 ## Where to go from here
 
-- Real data: replace `dist_matrix` with a country-by-country distance
-  table and the simulated log with a curated invasion record of first
-  establishments.
-- Baseline trend: on real data the background rate changes over the
-  centuries (trade, shipping, survey effort). It is a global effect too,
-  and enters as `nl(time)` on the same shifted design.
+- Observed records: `alien_invasions` ships with amorem (first records
+  of alien species by region, 1880-2005); use it in place of the
+  simulated log, with a country-by-country distance table in place of
+  `dist_matrix`.
+- Baseline trend: in observed records the background rate changes over
+  the centuries (trade, shipping, survey effort). It is a global effect
+  too, and enters as `nl(time)` on the same shifted design.
 - Timing: `shift_scale` sets the mean shift as a multiple of the average
   event time. Larger shifts carry more information about ENSO but leave
   more events with no valid control (`attr(cc, "shift")$uninformative`).

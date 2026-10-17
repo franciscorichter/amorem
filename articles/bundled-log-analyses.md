@@ -1,6 +1,6 @@
-# Real-data analysis
+# Analyses of bundled event logs
 
-## Real-data analysis
+## Analyses of bundled event logs
 
 Three analyses on the bundled datasets. The code below runs when this
 page is built, so every table, figure and number in the text comes from
@@ -56,7 +56,7 @@ for (tab in list(no_re, with_re)) {
 ```
 
 ![Delta AIC of the three specifications without and with a sender
-frailty](real-data-analysis_files/figure-html/classroom-figure-1.png)
+frailty](bundled-log-analyses_files/figure-html/classroom-figure-1.png)
 
 ``` r
 
@@ -141,7 +141,7 @@ for (j in seq_along(stat_names)) {
 ```
 
 ![Smooth partial log-hazard contributions of the four timing
-statistics](real-data-analysis_files/figure-html/manufacturing-figure-1.png)
+statistics](bundled-log-analyses_files/figure-html/manufacturing-figure-1.png)
 
 ``` r
 

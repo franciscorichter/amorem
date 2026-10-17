@@ -16,8 +16,8 @@ End-to-end walkthroughs of the package.
   models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md):
 - [Bundled
   datasets](https://franciscorichter.github.io/amorem/articles/datasets.md):
-- [Real-data
-  analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md):
+- [Analyses of bundled event
+  logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md):
 - [Validation
   experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md):
 - [GoF

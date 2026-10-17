@@ -258,8 +258,9 @@ equally active):
 | `alien_invasions`             | 62.7%                             | 0.70 |
 
 Logs with highly concentrated activity are where count statistics carry
-sender and receiver activity rather than dyadic history; see [Real-data
-analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)
+sender and receiver activity rather than dyadic history; see [Analyses
+of bundled event
+logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md)
 for a comparison with and without a sender frailty.
 
 ### Global covariates
