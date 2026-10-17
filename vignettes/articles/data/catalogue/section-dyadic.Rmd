@@ -1,0 +1,30 @@
+
+### {{title}}
+
+`r source_block("{{id}}")`
+
+```{r fig-{{id}}, fig.width = 11, fig.height = 2.9, fig.alt = "{{title}}: activity over time, inter-event times, partners per actor, daily cycle or actor activity", echo = FALSE}
+p <- load_profile("{{id}}")
+plot_dyadic(p)
+```
+
+`r describe_dyadic(load_profile("{{id}}"))` `r load_profile("{{id}}")$note`
+
+```{r fit-{{id}}, echo = FALSE, results = "asis"}
+ft <- fit_table(load_profile("{{id}}"))
+if (!is.null(ft)) {
+  cat(sprintf("A conditional logit on the first %s events (one sampled control per event) gives:\n\n",
+              fmt_n(load_profile("{{id}}")$fit$n_events[1])))
+  print(knitr::kable(ft, col.names = c("term", "estimate", "s.e.")))
+}
+```
+
+<details><summary>Get the data</summary>
+
+```{r get-{{id}}, echo = FALSE, results = "asis"}
+dl <- downloads[downloads$id == "{{id}}", ]
+cat("```r\n", paste(sprintf('download.file("%s", "%s", mode = "wb")', dl$url, basename(dl$file)), collapse = "\n"), "\n```\n", sep = "")
+cat("\nA reader that turns these files into a `(sender, receiver, time)` table is `readers[[\"{{id}}\"]]` in [`data-raw/catalogue/readers.R`](https://github.com/franciscorichter/amorem/blob/main/data-raw/catalogue/readers.R).\n")
+```
+
+</details>

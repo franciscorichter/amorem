@@ -1,0 +1,143 @@
+# Builds licences.csv: one row per downloaded dataset folder in data-raw/raw/.
+# verdict: bundle | gpl-only | sharealike | noncommercial | no-licence
+import csv, os
+B, G, S, N, X = "bundle", "gpl-only", "sharealike", "noncommercial", "no-licence"
+SP = ("CC BY-NC-SA", "https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/",
+      "The data are distributed to the public under a Creative Commons Attribution-NonCommercial-ShareAlike license.", N)
+SNAP = ("none stated", "https://snap.stanford.edu/data/",
+        "We encourage you to cite our datasets if you have used them in your work.", X)
+NR = ("CC BY-SA", "https://networkrepository.com/policy.php",
+      "All data are licensed under a Creative Commons Attribution-ShareAlike License.", S)
+KON = ("unknown (site unreachable 2026-10-17)", "http://konect.cc/", "", X)
+CC0DV = lambda doi: ("CC0 1.0", "https://doi.org/" + doi, "Harvard Dataverse dataset licence: CC0 1.0", B)
+BYDV = lambda doi: ("CC BY 4.0", "https://doi.org/" + doi, "Harvard Dataverse dataset licence: CC BY 4.0", B)
+GPL = lambda url: ("GPL-3.0 (source repository/package)", url, "repository/package licence GPL-3", G)
+rows = {
+ # id: (title, kind, licence-tuple)
+ "sp-baboons": ("SocioPatterns: baboon proximity and observations (Rousset)", "events", SP),
+ "sp-colocation": ("SocioPatterns: co-location data, several settings", "events", SP),
+ "sp-highschool-2011-2012": ("SocioPatterns: high school contacts 2011 and 2012 (Marseille)", "events", SP),
+ "sp-highschool-2013": ("SocioPatterns: high school contacts, diaries, friendship, Facebook 2013", "events", SP),
+ "sp-hospital-lyon": ("SocioPatterns: hospital ward contacts (Lyon)", "events", SP),
+ "sp-ht2009": ("SocioPatterns: ACM Hypertext 2009 conference contacts", "events", SP),
+ "sp-infectious-dublin": ("SocioPatterns: Infectious exhibition contacts (Dublin)", "events", SP),
+ "sp-kenya-households": ("SocioPatterns: household contacts in rural Kenya", "events", SP),
+ "sp-malawi-village": ("SocioPatterns: village contacts in rural Malawi", "events", SP),
+ "sp-primaryschool": ("SocioPatterns: primary school contacts (Lyon)", "events", SP),
+ "sp-sfhh-conference": ("SocioPatterns: SFHH conference contacts (Nice)", "events", SP),
+ "sp-workplace-invs13": ("SocioPatterns: workplace contacts 2013 (InVS)", "events", SP),
+ "sp-workplace-invs15": ("SocioPatterns: workplace contacts 2015 (InVS)", "events", SP),
+ "snap-act-mooc": ("SNAP: MOOC user actions", "events", SNAP),
+ "snap-bitcoin-alpha": ("SNAP: Bitcoin Alpha trust ratings", "events", SNAP),
+ "snap-bitcoin-otc": ("SNAP: Bitcoin OTC trust ratings", "events", SNAP),
+ "snap-cit-hepph": ("SNAP: arXiv hep-ph citations with dates", "events", SNAP),
+ "snap-cit-hepth": ("SNAP: arXiv hep-th citations with dates", "events", SNAP),
+ "snap-collegemsg": ("SNAP: CollegeMsg (UC Irvine messages)", "events", SNAP),
+ "snap-comm-f2f-resistance": ("SNAP: face-to-face interactions in Resistance games", "events", SNAP),
+ "snap-email-eu-core-temporal": ("SNAP: email-Eu-core temporal (four departments)", "events", SNAP),
+ "snap-sx-askubuntu": ("SNAP: Ask Ubuntu interactions", "events", SNAP),
+ "snap-sx-mathoverflow": ("SNAP: MathOverflow interactions", "events", SNAP),
+ "snap-sx-superuser": ("SNAP: Super User interactions", "events", SNAP),
+ "snap-wiki-rfa": ("SNAP: Wikipedia requests for adminship votes", "events", SNAP),
+ "snap-wiki-talk-temporal": ("SNAP: Wikipedia talk-page messages", "events", SNAP),
+ "konect-chess": ("KONECT: chess games", "events", KON),
+ "konect-dutch-college": ("KONECT: Dutch college friendship waves (van de Bunt)", "events", KON),
+ "konect-haggle": ("KONECT: Haggle device contacts", "events", KON),
+ "nr-fb-forum": ("Network Repository: Facebook-like forum", "events", NR),
+ "nr-ia-enron-employees": ("Network Repository: Enron employees email", "events", NR),
+ "radoslaw-email-dataverse": ("Manufacturing company email metadata and corporate hierarchy", "events", CC0DV("10.7910/DVN/6Z3CGX")),
+ "copenhagen-networks-study": ("Copenhagen Networks Study interaction data", "events",
+   ("MIT", "https://doi.org/10.6084/m9.figshare.7267433.v1", "Figshare record licence: MIT", B)),
+ "covid-bucharest-transmission": ("COVID-19 transmission chains, Bucharest", "events",
+   ("CC BY 4.0", "https://doi.org/10.5281/zenodo.6899738", "Zenodo record licence: CC BY 4.0", B)),
+ "fourpcan-alter-nominations": ("4PCAN alter nominations", "events",
+   ("CC BY 4.0", "https://doi.org/10.5281/zenodo.21409040", "Zenodo record licence: CC BY 4.0", B)),
+ "alien-species-first-records-rem": ("Alien species first records prepared for REMs (Juozaitienė et al.)", "events",
+   ("CC0 1.0", "https://doi.org/10.5281/zenodo.8096819", "Zenodo mirror of Dryad doi:10.5061/dryad.x69p8czpv; CC0 1.0", B)),
+ "alien-first-records-v4": ("Alien Species First Records Database v4.0 (Seebens et al.)", "events",
+   ("CC BY 4.0", "https://zenodo.org/records/18759840", "Zenodo record licence: CC BY 4.0", B)),
+ "honeybee-trophallaxis-gernat2018": ("Honeybee trophallaxis interactions (Gernat et al. 2018)", "events",
+   ("none stated for data (software AGPL-3)", "https://beemonitoring.igb.illinois.edu/", "We distribute our software under the GNU Affero General Public License v3 license.", X)),
+ "goldfish-datasets": ("goldfish package data: fisheries treaties, RFID validity, Social Evolution", "events", GPL("https://github.com/snlab-ch/goldfish")),
+ "networkdynamicdata-cran": ("networkDynamicData package data", "events", GPL("https://cran.r-project.org/package=networkDynamicData")),
+ "statnet-relevent-workshop": ("statnet relevent workshop data (WTC radio, classroom)", "events", GPL("https://github.com/statnet/Workshops----OBSOLETE")),
+ "eventnet-rhem-data": ("eventnet example data (Enron, Apache, Wikipedia hyperevents)", "hyperevents", GPL("https://github.com/juergenlerner/eventnet")),
+ "enron-perry-wolfe": ("Enron email with recipient lists (Perry & Wolfe)", "hyperevents",
+   ("none stated", "https://github.com/patperry/interaction-proc", "If you use the data in a publication, please cite the references below.", X)),
+ "benson-drive": ("Benson higher-order data: email-Enron, email-Eu, congress-bills", "hyperevents",
+   ("none stated", "https://www.cs.cornell.edu/~arb/data/", "pages ask only for citation", X)),
+ "benson-scholp": ("Benson ScHoLP timestamped simplices", "hyperevents",
+   ("none stated", "https://github.com/arbenson/ScHoLP-Data", "pages ask only for citation", X)),
+ "xgi-data": ("XGI-DATA: email-enron, senate-bills, sfhh-conference hypergraphs", "hyperevents",
+   ("CC BY 4.0 per Zenodo record (sfhh-conference derives from SocioPatterns CC BY-NC-SA)", "https://zenodo.org/communities/xgi", "per-record Zenodo licence; upstream terms apply", "per-dataset")),
+ "govinfo-billstatus-118": ("US Congress bill status, 118th Congress (sponsors, cosponsors)", "hyperevents",
+   ("public domain (17 U.S.C. 105)", "https://www.govinfo.gov/bulkdata/BILLSTATUS", "US Government work", B)),
+ "openalex-social-networks-journal": ("OpenAlex: works of the journal Social Networks", "hyperevents",
+   ("CC0 1.0", "https://openalex.org/", "OpenAlex data is CC0", B)),
+ "stackexchange-or-2024-04": ("Stack Exchange data dump: Operations Research site", "hyperevents",
+   ("CC BY-SA 4.0", "https://archive.org/details/stackexchange", "Stack Exchange content licensed CC BY-SA", S)),
+ "kddcup2003-hepth": ("KDD Cup 2003 arXiv hep-th papers, citations, dates", "hyperevents",
+   ("none stated", "https://www.cs.cornell.edu/projects/kddcup/datasets.html", "", X)),
+ "nber-patent-citations": ("NBER US patent citations 1975-1999", "events",
+   ("none stated (freely available; cite Hall, Jaffe & Trajtenberg 2001)", "https://www.nber.org/research/data/us-patents", "ALL USERS OF THESE DATA SHOULD READ THIS PAPER, AND SHOULD CITE IT AS THE SOURCE OF THE DATA", X)),
+ "gharchive-sample": ("GH Archive: one hour of public GitHub events", "events",
+   ("none stated", "https://www.gharchive.org/", "", X)),
+ "gdelt": ("GDELT event database (1979 file and one daily file)", "events",
+   ("unrestricted use and redistribution with citation", "https://www.gdeltproject.org/about.html", "You may redistribute, rehost, republish, and mirror any of the GDELT datasets in any form.", B)),
+ "polecat": ("POLECAT weekly event data 2024", "events", CC0DV("10.7910/DVN/AJGVIT")),
+ "phoenix-cline": ("Cline Center Phoenix NYT event data 1945-2005", "events",
+   ("unknown (databank page returned 403)", "https://databank.illinois.edu/", "", X)),
+ "ucdp": ("UCDP conflict data (GED, dyadic, actor, interstate onsets)", "events",
+   ("CC BY 4.0", "https://ucdp.uu.se/downloads/", "All datasets are free of charge and licensed under CC BY 4.0", B)),
+ "atop": ("ATOP alliance treaty obligations 5.1", "events",
+   ("none stated", "http://www.atopdata.org/data.html", "We ask users of the ATOP data to employ the following citation", X)),
+ "africa-mfa-visits": ("Africa's diplomatic visits (foreign ministers) 2010-2022", "events", BYDV("10.7910/DVN/QXOUAR")),
+ "italy-diplomatic-visits": ("Italy's diplomatic visits 2000-2023", "events", BYDV("10.7910/DVN/CY7Y8Z")),
+ "russia-ukraine-mfa-visits": ("Diplomatic visits of the foreign ministers of Russia and Ukraine 2021-2024", "events", CC0DV("10.7910/DVN/0HQS45")),
+ "us-leader-visits": ("US leader-to-leader diplomatic visits 1946-2019", "events", CC0DV("10.7910/DVN/2ZNR5R")),
+ "unga-votes-1946-2013": ("UN General Assembly roll-call votes 1946-2013", "events", CC0DV("10.7910/DVN/7UBUUI")),
+ "unga-ideal-points": ("UN General Assembly ideal points", "covariate", CC0DV("10.7910/DVN/LEJUQZ")),
+ "unhcr-refugees": ("UNHCR refugee population statistics (refugees R package)", "events",
+   ("CC BY 4.0", "https://cran.r-project.org/package=refugees", "package DESCRIPTION License: CC BY 4.0", B)),
+ "opensky-covid-flightlist-2020-04": ("OpenSky COVID-19 flight list, April 2020", "events",
+   ("CC BY 4.0", "https://doi.org/10.5281/zenodo.4088205", "Zenodo record 4088205 licence: CC BY 4.0", B)),
+ "tfl-cycle-hire-2026-02": ("TfL Santander Cycles journeys, February 2026", "events",
+   ("Open Government Licence v2.0 (TfL)", "https://tfl.gov.uk/corporate/terms-and-conditions/transport-data-service", "TfL Transport Data Service licence (OGL v2.0 with TfL amendments)", B)),
+ "lichess-2013-01": ("Lichess rated standard games, January 2013", "events",
+   ("CC0", "https://database.lichess.org/", "Database exports are released under the Creative Commons CC0 license.", B)),
+ "international-football-results": ("International football results 1872-present", "events",
+   ("CC0 1.0", "https://github.com/martj42/international_results", "LICENSE file: CC0 1.0 Universal", B)),
+ "retrosheet-gamelogs": ("Retrosheet MLB game logs 1871-2024", "events",
+   ("free use with required notice", "https://www.retrosheet.org/", "Recipients of Retrosheet data are free to make any desired use of the information", B)),
+ "noaa-ghcnd-weather": ("NOAA GHCN-Daily weather for the bundled logs' periods", "covariate",
+   ("public domain (US Government work)", "https://www.ncei.noaa.gov/", "NCEI open data policy", B)),
+ "noaa-enso": ("NOAA CPC ENSO indices (ONI, SST indices)", "covariate",
+   ("public domain (US Government work)", "https://www.cpc.ncep.noaa.gov/", "US Government work", B)),
+ "open-meteo-weather": ("Open-Meteo historical weather, London 2026 and Warsaw 2010", "covariate",
+   ("CC BY 4.0", "https://open-meteo.com/en/licence", "Open-Meteo data licensed CC BY 4.0", B)),
+ "imgw-synop-daily-2010": ("IMGW daily synoptic weather, Poland 2010", "covariate",
+   ("Polish public-sector open data re-use", "https://danepubliczne.imgw.pl/", "Re-use under the Polish open-data act; attribution to IMGW-PIB", B)),
+ "eia-oil-prices": ("EIA daily Brent and WTI spot prices", "covariate",
+   ("public domain (US Government work)", "https://www.eia.gov/about/copyrights_reuse.php", "US Government work", B)),
+ "worldbank-pinksheet": ("World Bank commodity prices (Pink Sheet)", "covariate",
+   ("CC BY 4.0", "https://www.worldbank.org/en/research/commodity-markets", "World Bank data terms: CC BY 4.0", B)),
+ "nager-date-holidays": ("Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026", "covariate",
+   ("facts (holiday dates); API terms not recorded", "https://date.nager.at/", "", B)),
+ "pl-statutory-holidays": ("Polish statutory holidays (Dziennik Ustaw)", "covariate",
+   ("public domain (Polish normative acts, Art. 4 copyright act)", "https://api.sejm.gov.pl/", "", B)),
+ "uci-academic-calendars": ("UC Irvine academic calendars 2003-2005", "covariate",
+   ("facts (dates); pages (c) UC Regents", "https://www.reg.uci.edu/calendars/", "", B)),
+}
+raw = os.path.expanduser("~/System/Research/REM/data-raw/raw")
+folders = sorted(d for d in os.listdir(raw) if os.path.isdir(os.path.join(raw, d)))
+missing = [f for f in folders if f not in rows]
+assert not missing, missing
+out = os.path.expanduser("~/System/Research/REM/data-raw/catalogue/licences.csv")
+with open(out, "w", newline="") as fh:
+    w = csv.writer(fh)
+    w.writerow(["id", "title", "kind", "licence", "licence_url", "evidence", "verdict", "checked"])
+    for f in folders:
+        t, k, (lic, url, ev, verdict) = rows[f]
+        w.writerow([f, t, k, lic, url, ev, verdict, "2026-10-17"])
+from collections import Counter
+print(len(folders), "datasets;", Counter(r[2][3] for r in rows.values()))

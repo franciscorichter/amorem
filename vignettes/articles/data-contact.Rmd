@@ -1,0 +1,48 @@
+---
+title: "Data: face-to-face and proximity contacts"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("sp-highschool-2013", "sp-highschool-2011-2012", "sp-primaryschool", "sp-hospital-lyon",
+         "sp-workplace-invs13", "sp-workplace-invs15", "sp-ht2009", "sp-sfhh-conference",
+         "sp-infectious-dublin", "sp-malawi-village", "sp-kenya-households", "sp-baboons",
+         "konect-haggle")
+ids <- ids[file.exists(file.path(cat_dir, paste0(ids, ".rds")))]
+```
+
+Wearable sensors record when two people (or animals, or devices) are close to
+each other. Each record is an undirected contact between a pair at a time
+stamp, usually at a resolution of 20 seconds, so these logs are dense in time
+and repeat the same pairs many times. They suit models of repeated contact,
+triadic closure and daily rhythms, with `mode = "one"` and undirected
+statistics.
+
+None of these datasets ships with amorem: the SocioPatterns collection is
+released under a Creative Commons Attribution-NonCommercial-ShareAlike licence,
+which an MIT-licensed package cannot carry, and KONECT states no licence. The
+figures and numbers below are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+rows <- lapply(ids, function(id) {
+  p <- load_profile(id); s <- p$stats
+  data.frame(dataset = licences$title[licences$id == id],
+             contacts = fmt_n(s[["events"]]), actors = fmt_n(s[["actors"]]),
+             days = fmt_n(s[["span"]] / 86400, 1), repetition = fmt_p(s[["repetition"]]),
+             burstiness = formatC(s[["burstiness"]], format = "f", digits = 2))
+})
+knitr::kable(do.call(rbind, rows), row.names = FALSE,
+             col.names = c("dataset", "contacts", "actors", "days", "repeated pairs", "burstiness"))
+```
+
+```{r sections, results = "asis"}
+tmpl <- paste(readLines("data/catalogue/section-dyadic.Rmd"), collapse = "\n")
+for (id in ids) {
+  sec <- gsub("{{id}}", id, tmpl, fixed = TRUE)
+  sec <- gsub("{{title}}", licences$title[licences$id == id], sec, fixed = TRUE)
+  cat(knitr::knit_child(text = sec, quiet = TRUE, envir = environment()), sep = "\n")
+}
+```
