@@ -2,6 +2,13 @@
 title: "Simulation"
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4, warning = FALSE, message = FALSE)
+library(amorem)
+fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
+```
+
 # Simulation
 
 `amorem` exposes a single front-door simulator,
@@ -9,7 +16,7 @@ title: "Simulation"
 top of an event-by-event inner loop. Two algorithms drive the loop:
 **Gillespie** (exact, per-event) and **τ-leap** (approximate,
 fixed time slices). The two are compared at the bottom of this
-page.
+page. The examples on this page run when the page is built.
 
 ## The five mechanisms
 
@@ -36,7 +43,7 @@ page.
 | Endogenous | `endogenous_stats`, `endogenous_effects` | any stat from the catalogue |
 | Exp-decay half-life | `half_life` | required when any `*_exp_decay` stat is active |
 | Time-varying global | `global_covariates`, `global_effects` | piecewise constant on `time_start` intervals |
-| Case–control output | `n_controls` | ≥ 1 activates stratified output |
+| Case–control output | `n_controls`, `wide` | ≥ 1 activates stratified output; `wide = TRUE` gives one row per event |
 | Algorithm | `method`, `tau` | `"gillespie"` (exact) or `"tau_leap"` |
 | Risk-set rule | `risk` | `"standard"` or `"remove"` |
 
@@ -44,25 +51,94 @@ page.
 
 ### Minimal Gillespie
 
-```r
+```{r minimal}
+set.seed(1)
 ev <- simulate_relational_events(
   n_events      = 500,
   senders       = LETTERS[1:6],
   receivers     = LETTERS[1:6],
   baseline_rate = 1)
+head(ev)
 ```
+
+With a homogeneous rate every one of the `r 6 * 5` admissible dyads
+(no loops) is equally likely, so each dyad fires about
+`r fmt(500 / 30, 1)` times on average; here the counts range from
+`r min(table(paste(ev$sender, ev$receiver)))` to
+`r max(table(paste(ev$sender, ev$receiver)))`. Waiting times are
+exponential with rate `r 6 * 5` (baseline 1 per dyad), so the log
+spans `r fmt(max(ev$time))` time units.
+
+### Per-dyad contribution logits
+
+A static matrix shifts the log-rate of each dyad. Here dyads whose
+sender and receiver share a group get a log-rate bonus of 1.5:
+
+```{r logits}
+actors <- paste0("a", 1:8)
+group  <- rep(c("x", "y"), each = 4)
+logits <- outer(group, group, function(a, b) ifelse(a == b, 1.5, 0))
+dimnames(logits) <- list(actors, actors)
+set.seed(2)
+ev_g <- simulate_relational_events(
+  n_events = 1000, senders = actors, receivers = actors,
+  contribution_logits = logits)
+within_share <- mean(group[match(ev_g$sender, actors)] ==
+                     group[match(ev_g$receiver, actors)])
+within_share
+```
+
+```{r logits-expected, include = FALSE}
+n_within <- 2 * 4 * 3; n_between <- 2 * 4 * 4
+expected_within <- n_within * exp(1.5) / (n_within * exp(1.5) + n_between)
+```
+
+Within-group dyads make up `r n_within` of the `r n_within + n_between`
+admissible dyads; with weight `exp(1.5)` they should carry a share of
+`r fmt(expected_within, 3)` of the events, and the simulated share is
+`r fmt(within_share, 3)`.
+
+### Exogenous sender covariates
+
+Per-actor covariates enter through a numeric table with one row per
+sender and a vector of effects:
+
+```{r exogenous}
+actors <- paste0("a", 1:10)
+set.seed(3)
+activity <- data.frame(activity = seq(-1, 1, length.out = 10))
+ev_x <- simulate_relational_events(
+  n_events = 2000, senders = actors, receivers = actors,
+  sender_covariates = activity, sender_effects = c(activity = 1))
+sent <- as.vector(table(factor(ev_x$sender, levels = actors)))
+cbind(activity, sent)
+```
+
+The sender with the highest covariate value sends
+`r sent[10]` events and the one with the lowest `r sent[1]`; their ratio,
+`r fmt(sent[10] / sent[1])`, compares with `exp(2)` =
+`r fmt(exp(2))` implied by an effect of 1 over a covariate range of 2.
 
 ### Endogenous structure
 
-```r
-ev <- simulate_relational_events(
+```{r endogenous}
+set.seed(4)
+ev_e <- simulate_relational_events(
   n_events           = 1000,
   senders            = letters[1:10],
   receivers          = letters[1:10],
   endogenous_stats   = c("reciprocity_count", "transitivity_count"),
-  endogenous_effects = c(reciprocity_count = 0.4,
-                          transitivity_count = 0.3))
+  endogenous_effects = c(reciprocity_count  = 0.4,
+                         transitivity_count = 0.3))
+feats <- endogenous_features(ev_e, stats = c("reciprocity_count",
+                                            "transitivity_count"))
+summary(feats[, c("reciprocity_count", "transitivity_count")])
 ```
+
+`endogenous_features()` recomputes the statistics from the timestamps
+alone; the simulator applies the same definitions while it generates the
+events (the [Validation experiments](validation-experiments.html), E5,
+compare the two row for row).
 
 ### Case–control output
 
@@ -71,7 +147,8 @@ directly: each fired event becomes one *case* row paired with `k`
 *control* rows drawn from the non-event risk set at that moment,
 sharing a `stratum` id.
 
-```r
+```{r case-control}
+set.seed(5)
 cc <- simulate_relational_events(
   n_events           = 1200,
   senders            = paste0("a", 1:20),
@@ -79,86 +156,145 @@ cc <- simulate_relational_events(
   endogenous_stats   = "reciprocity_count",
   endogenous_effects = c(reciprocity_count = 0.6),
   n_controls         = 1)
+head(cc[order(cc$stratum, -cc$event), ], 4)
+library(survival)   # clogit() and strata()
+fit <- clogit(event ~ reciprocity_count + strata(stratum), data = cc)
+coef(fit)
 ```
+
+The conditional-logit estimate from this one sample is
+`r fmt(coef(fit)[[1]], 3)` against the generating value 0.6. With
+`wide = TRUE` (and `n_controls = 1`) the same output comes as one row per
+event, ready for `rem(method = "gam")`.
 
 ### Time-varying global covariates
 
-```r
+```{r global}
 g <- data.frame(time_start = c(0, 2, 5),
                 weekend    = c(0, 1, 0))
-ev <- simulate_relational_events(
+set.seed(6)
+ev_w <- simulate_relational_events(
   n_events          = 800,
   senders           = LETTERS[1:8],
   receivers         = LETTERS[1:8],
   baseline_rate     = 1,
   global_covariates = g,
   global_effects    = c(weekend = -1.5))
+in_weekend <- ev_w$time >= 2 & ev_w$time < 5
+rate_weekend <- sum(in_weekend) / 3
+rate_week    <- sum(!in_weekend) / (max(ev_w$time) - 3)
+c(events_per_unit_weekend = rate_weekend, events_per_unit_otherwise = rate_week)
 ```
 
 A boundary-aware Gillespie scheme advances the clock across each
-`time_start` boundary without artificially recording or losing
-events.
+`time_start` boundary without recording or losing events. The event rate
+during the "weekend" interval `[2, 5)` is
+`r fmt(rate_weekend, 1)` per time unit against `r fmt(rate_week, 1)`
+outside it, a ratio of `r fmt(rate_weekend / rate_week, 3)`; the effect
+of −1.5 implies `exp(-1.5)` = `r fmt(exp(-1.5), 3)`. Each row also
+carries the covariate value at its time (`weekend` column).
+
+---
+
+## Engines and the statistic catalogue
+
+Both algorithms update the endogenous state from the realized events.
+The post-hoc `endogenous_features()` evaluates a statistic in compiled
+code when it is listed by `cpp_supported_stats()`, and in R otherwise:
+
+```{r cpp}
+supported <- cpp_supported_stats()
+length(supported)
+head(supported, 10)
+```
 
 ---
 
 ## Gillespie vs τ-leap
 
-Same scenario in both algorithms: 50-actor network, 2,000 events,
-reciprocity at β = 0.6, one control per case, 15 replicates per
-method. For each replicate we record the wall-clock of the
-simulator call and the recovered β̂ from
-`clogit(event ~ reciprocity_count + strata(stratum))`.
+Same scenario in both algorithms: 50 actors, 2,000 events, a
+`reciprocity_binary` effect of 0.6, one control per case, 10
+replicates per method. For each replicate we record the wall-clock
+of the simulator call and the conditional-logit estimate
+`clogit(event ~ reciprocity_binary + strata(stratum))`.
 
-### Statistical equivalence
+```{r methods}
+one_run <- function(seed, method, tau = NULL) {
+  set.seed(seed)
+  a <- paste0("a", 1:50)
+  secs <- system.time(
+    cc <- simulate_relational_events(
+      n_events = 2000, senders = a, receivers = a, baseline_rate = 1,
+      endogenous_stats = "reciprocity_binary",
+      endogenous_effects = c(reciprocity_binary = 0.6),
+      n_controls = 1, method = method, tau = tau)
+  )[["elapsed"]]
+  fit <- clogit(event ~ reciprocity_binary + strata(stratum),
+                          data = cc)
+  c(beta = coef(fit)[[1]], seconds = secs)
+}
+configs <- list(
+  "Gillespie"      = list(method = "gillespie", tau = NULL),
+  "tau-leap 0.01"  = list(method = "tau_leap",  tau = 0.01),
+  "tau-leap 0.05"  = list(method = "tau_leap",  tau = 0.05),
+  "tau-leap 0.20"  = list(method = "tau_leap",  tau = 0.20))
+runs <- lapply(configs, function(cfg)
+  t(vapply(1:10, one_run, numeric(2), method = cfg$method, tau = cfg$tau)))
+tab <- t(vapply(runs, function(r) c(beta_mean = mean(r[, "beta"]),
+                                    beta_sd   = stats::sd(r[, "beta"]),
+                                    seconds   = mean(r[, "seconds"])),
+                numeric(3)))
+round(tab, 3)
+```
 
-| Method | β̂ mean | β̂ SD | wall-clock (s) | successes / 15 |
-|---|---:|---:|---:|---:|
-| Gillespie | 0.613 | 0.050 | 0.37 | 15 |
-| τ-leap @ τ = 0.01 | 0.591 | 0.057 | 0.32 | **8** |
-| τ-leap @ τ = 0.05 | 0.589 | 0.041 | 0.11 | 14 |
-| τ-leap @ τ = 0.20 | 0.590 | 0.066 | 0.11 | 15 |
+```{r methods-figure, fig.alt = "Estimated reciprocity effect by simulation algorithm, with the generating value"}
+op <- par(mar = c(4, 4.5, 1, 1))
+boxplot(lapply(runs, function(r) r[, "beta"]), ylab = expression(hat(beta)),
+        col = "grey90")
+abline(h = 0.6, lty = 2, col = "firebrick")
+par(op)
+```
 
-On the successful replicates, all four methods recover β within
-~0.02 of the truth (Gillespie's mean of 0.613 sits slightly above,
-the τ-leap means slightly below). At this scale the differences
-are within Monte Carlo noise. **τ-leap with τ ≥ 0.05 is
-statistically equivalent to Gillespie** on the reciprocity-only
-generator while running ≈ 3× faster. τ = 0.01 is too small for
-this regime — only 8 of 15 runs completed within a 30 s timeout
-budget.
+```{r methods-numbers, include = FALSE}
+bias <- tab[, "beta_mean"] - 0.6
+```
 
-![Recovery by method](figures/sim-methods-recovery.png)
-
-### Wall-clock cost
-
-τ-leap at τ ≥ 0.05 runs **about 3× faster** than Gillespie at 50
-actors. The crossover grows with the actor universe: in the full
-scaling sweep ([Validation experiments / E3](validation-experiments.html)),
-τ-leap is 20×–70× faster than Gillespie at 100 actors.
-
-![Wall-clock by method](figures/sim-methods-time.png)
-
-Driver: `paper/wiki/experiments/sim_methods.R`.
+The dashed line marks the generating value 0.6; at these settings the four
+distributions overlap. Across the ten replicates
+the mean estimate is `r fmt(tab["Gillespie", "beta_mean"], 3)` for
+Gillespie and `r fmt(tab["tau-leap 0.01", "beta_mean"], 3)`,
+`r fmt(tab["tau-leap 0.05", "beta_mean"], 3)` and
+`r fmt(tab["tau-leap 0.20", "beta_mean"], 3)` for τ = 0.01, 0.05 and 0.20.
+With 50 actors the baseline alone produces about `r 50 * 49` events per
+time unit, so a step of τ = 0.20 contains roughly `r round(50 * 49 * 0.2)`
+events that all share the start-of-step state; within a step, a dyad whose
+reverse fires earlier in the same step does not yet see it. Mean simulator
+time per run is `r fmt(tab["Gillespie", "seconds"])` s for Gillespie and
+`r fmt(min(tab[-1, "seconds"]))`–`r fmt(max(tab[-1, "seconds"]))` s for
+τ-leap.
 
 ### When to pick which
 
 | Use Gillespie when | Use τ-leap when |
 |---|---|
-| ≤ ~30 actors | ≥ ~50 actors |
-| You need every event to react to every prior event | Bias from intra-step reactions is acceptable |
-| τ-leap returns "no risk dyads" failures (small / dense regimes) | Wall-clock matters and you can verify τ via a small Gillespie run |
+| Every event must react to every prior event | Events within a step may share the start-of-step state |
+| The model has effects that grow without bound (e.g. a large `reciprocity_count` effect), which τ-leap draws in large batches | Wall-clock matters and τ has been checked against a small Gillespie run |
 
-A 15-actor sweep on this same scenario was noticeably unstable
-under τ-leap (timeouts and silent failures); the comparison
-above uses 50 actors, where τ-leap is well-behaved. Treat τ as
-a tunable bias / cost knob and validate it once at the start of
-each project.
+When a single step would draw more than ten million events,
+`simulate_relational_events()` stops with a message instead. Choose τ so that
+the expected number of events per step is small relative to the size of the
+process, and check it against a Gillespie run of the
+same model; the [Validation experiments](validation-experiments.html)
+report the wall-clock scaling with the number of actors.
 
 ---
 
 ## Related pages
 
 - [Validation experiments](validation-experiments.html) — the full
-  wall-clock scaling grid (4 × 5 × 2) and parity tests.
+  wall-clock scaling grid and parity tests.
+- [Sampling options](sampling-options.html) — the risk-set options of
+  `sample_non_events()` for case-control samples drawn from an observed
+  log.
 - [Estimation](estimation.html) — how to use the case-control output
   produced by `n_controls ≥ 1`.

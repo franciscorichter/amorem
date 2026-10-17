@@ -89,13 +89,17 @@ summary(fit)
 |---|---|
 | [Quick start](articles/quick-start.html) | install + simulate-and-recover in a few lines |
 | [Simulation](articles/simulation.html) | the dyadic mechanisms, Gillespie vs τ-leap |
+| [Sampling options](articles/sampling-options.html) | the risk-set options of `sample_non_events()`: `n_controls`, `mode`, `scope`, `risk = "remove"`, `exclude_concurrent`, `exclude_pairs`, `shift` |
 | [Endogenous catalogue](articles/endogenous-catalogue.html) | the statistic catalogue and its variant axes |
 | [Estimation](articles/estimation.html) | case-control sampling, the three `rem()` backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
-| [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model and RHEM simulators |
+| [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](articles/datasets.html) | the bundled REM datasets |
 | [Real-data analysis](articles/real-data-analysis.html) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](articles/gof-calibration.html) | type-I error of the martingale-residual GoF tests under correct specification |
+| [Case study: email and the clock](articles/case-email-global.html) | time of day and day of week as global covariates in the Manufacturing e-mail log, time-shifted sampling, cyclic smooths, `tv()` on shifted data, `gof_rem()`, `gof_multivariate()`, `gof_auxiliary()` |
+| [Case study: Social Evolution](articles/case-social-evolution.html) | data intake, actor attributes and survey friendship as covariates, `rem(method = "clogit")`, a sender random effect with `re()` |
+| [Case study: estimation backends](articles/case-email-eu-models.html) | `clogit`, neural (`nn`, MLP and additive splines, `nn_uncertainty()`) and `gam` with `tv()` / `tvnl()` on Email-EU-core, compared on held-out e-mails |
 | [Species invasions](articles/species-invasion.html) | a one-shot (`risk = "remove"`) process with ENSO as a global driver, fitted by time-shifted sampling |
 
 Full per-function documentation is under [Reference](reference/index.html).

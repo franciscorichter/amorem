@@ -112,6 +112,7 @@ articles:
     contents:
       - articles/quick-start
       - articles/simulation
+      - articles/sampling-options
       - articles/endogenous-catalogue
       - articles/estimation
       - articles/hyperedge-models
@@ -119,6 +120,12 @@ articles:
       - articles/real-data-analysis
       - articles/validation-experiments
       - articles/gof-calibration
+  - title: "Case studies"
+    desc: "Analyses of the bundled datasets, run when the site is built."
+    contents:
+      - articles/case-email-global
+      - articles/case-social-evolution
+      - articles/case-email-eu-models
   - title: "Worked examples"
     desc: "Focused, executable vignettes."
     contents:

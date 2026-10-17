@@ -1,0 +1,220 @@
+---
+title: "Case study: time of day and day of week in company email"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
+                      fig.height = 4.2, warning = FALSE, message = FALSE)
+library(amorem)
+fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
+pfmt <- function(p) if (p < 0.001) "< 0.001" else paste("=", fmt(p, 3))
+```
+
+# Time of day and day of week in company email
+
+`radoslaw_email` records the internal email of a manufacturing company
+(Michalski et al. 2014, a company in Poland). Email is sent during working
+hours and on working days, so the rate of every dyad depends on the clock. Time
+of day and day of week are **global covariates**: at any instant they take the
+same value for every sender–receiver pair. This case study estimates their
+effect next to an endogenous reciprocity effect, using time-shifted
+case-control sampling, and checks the fitted model with `gof_rem()`,
+`gof_multivariate()` and `gof_auxiliary()`.
+
+## Data and clock time
+
+`time` counts days since the first email; `attr(radoslaw_email, "unix_origin")`
+holds that instant as a Unix time. We use the first 30 days and convert each
+time to Central European clock time.
+
+```{r data}
+data(radoslaw_email)
+origin <- attr(radoslaw_email, "unix_origin")
+ev <- radoslaw_email[radoslaw_email$time < 30 &
+                     radoslaw_email$sender != radoslaw_email$receiver,
+                     c("sender", "receiver", "time")]
+
+clock <- function(t) as.POSIXlt(origin + t * 86400, origin = "1970-01-01",
+                                tz = "Europe/Warsaw")
+tod <- function(t) { p <- clock(t); p$hour + p$min / 60 + p$sec / 3600 }  # hours
+dow <- function(t) { p <- clock(t); (p$wday + 6) %% 7 + tod(t) / 24 }     # 0 = Monday 00:00
+
+c(events = nrow(ev), actors = length(unique(c(ev$sender, ev$receiver))),
+  first = format(clock(min(ev$time))), last = format(clock(max(ev$time))))
+```
+
+```{r clock-figure, fig.alt = "Number of emails by hour of day and by day of week"}
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 2.5, 1))
+hist(tod(ev$time), breaks = 0:24, col = "#9ecae1", border = "white",
+     xlab = "hour of day", main = "emails by hour")
+barplot(table(factor(floor(dow(ev$time)), levels = 0:6,
+                     labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))),
+        col = "#9ecae1", border = "white", main = "emails by day of week",
+        cex.names = 0.8, las = 2)
+par(op)
+```
+
+```{r clock-numbers, include = FALSE}
+h <- floor(tod(ev$time))
+work <- mean(h >= 7 & h < 16)
+wkend <- mean(floor(dow(ev$time)) >= 5)
+```
+
+`r fmt(100 * work, 1)`% of the emails are sent between 07:00 and 16:00, and
+`r fmt(100 * wkend, 1)`% on Saturday or Sunday.
+
+## Ordinary sampling cannot see a global covariate
+
+With ordinary nested case-control sampling each control gets its event's time,
+so a covariate that depends on time alone takes the same value for the event
+and its control:
+
+```{r no-shift}
+cc0 <- sample_non_events(ev, seed = 1)
+cc0$tod <- tod(cc0$time)
+w0 <- widen_case_control(cc0, covariates = "tod")
+summary(w0$d_tod)
+```
+
+Every event-minus-control difference is zero, so the time-of-day effect drops
+out of the partial likelihood.
+
+## Time-shifted sampling
+
+`shift = "exponential"` draws one exponential shift per dyad and samples each
+control from the dyads whose back-shifted time falls in the observation window
+(here the 30 days of the slice). Each control is stored at its own time.
+
+```{r shift}
+cc <- sample_non_events(ev, seed = 1, shift = "exponential", window = c(0, 30))
+sh <- attr(cc, "shift")
+c(mean_shift_days = sh$mean, uninformative_events = length(sh$uninformative))
+```
+
+The endogenous covariate is reciprocity timing: the time since the receiver last
+emailed the sender, mapped to a recency weight with `transform_recency()`
+(1 when the receiver emailed the sender a moment ago, falling towards 0 as the
+gap grows, and 0 when the receiver has not emailed the sender). On case-control data `endogenous_features()`
+builds the history from the observed emails only, and each control is scored
+at its own time. Time of day and day of week are read from each row's clock
+time.
+
+```{r covariates}
+cc <- endogenous_features(cc, stats = "reciprocity_time_recent")
+cc$recip <- transform_recency(cc$reciprocity_time_recent)
+cc$recip[is.na(cc$recip)] <- 0
+cc$tod <- tod(cc$time)
+cc$dow <- dow(cc$time)
+w <- widen_case_control(cc, covariates = c("recip", "tod", "dow", "time"))
+summary(w$d_tod)
+```
+
+## Model
+
+Time of day and day of week enter as cyclic smooths (`bs = "cc"`), the
+residual trend over the 30 days as `nl(time)`, and reciprocity as a
+time-varying effect `tv(recip)`. Because the controls carry their own times,
+`tv(recip)` contributes \(\beta(t)\,x_{ev} - \beta(t^*)\,x_{nv}\), with \(t\)
+the event time and \(t^*\) the control's time.
+
+```{r fit}
+fit <- rem(~ nl(tod, bs = "cc", k = 12) + nl(dow, bs = "cc", k = 8) +
+             nl(time, k = 5) + tv(recip, k = 5),
+           data = w, method = "gam", time = "time")
+summary(fit)$s.table
+```
+
+```{r fit-figure, fig.height = 6.5, fig.alt = "Estimated smooth effects of time of day, day of week, the trend and time-varying reciprocity"}
+op <- par(mfrow = c(2, 2), mar = c(4, 4, 2.5, 1))
+plot(fit, select = 1, scale = 0, xlab = "hour of day", ylab = "f(hour)",
+     main = "time of day")
+plot(fit, select = 2, scale = 0, xlab = "days since Monday 00:00",
+     ylab = "f(day)", main = "day of week")
+plot(fit, select = 3, scale = 0, xlab = "day of the slice", ylab = "f(t)",
+     main = "trend")
+plot(fit, select = 4, scale = 0, xlab = "day of the slice",
+     ylab = expression(beta(t)), main = "reciprocity effect over time")
+par(op)
+```
+
+```{r fit-numbers, include = FALSE}
+st <- summary(fit)$s.table
+curve_of <- function(j, grid, var, by) {
+  sm <- fit$fit$smooth[[j]]
+  nd <- data.frame(grid, 1); names(nd) <- c(var, by)
+  as.vector(mgcv::PredictMat(sm, nd) %*% coef(fit$fit)[sm$first.para:sm$last.para])
+}
+hg <- seq(0, 24, length.out = 241)
+f_tod <- curve_of(1, hg, ".X_tod", ".I")
+dg <- seq(0, 7, length.out = 701)
+f_dow <- curve_of(2, dg, ".X_dow", ".I")
+tg <- seq(min(w$time_ev), max(w$time_ev), length.out = 200)
+b_rec <- curve_of(4, tg, ".TP", ".XI_recip")
+work_hours <- hg >= 8 & hg <= 16
+```
+
+In the `mgcv` summary the largest p-value of the four smooth terms is
+`r formatC(max(st[, "p-value"]), format = "e", digits = 1)`. The time-of-day
+curve is lowest at about `r fmt(hg[which.min(f_tod)], 1)` h and ranges from
+`r fmt(min(f_tod[work_hours]))` to `r fmt(max(f_tod[work_hours]))` between
+08:00 and 16:00. The day-of-week curve averages `r fmt(mean(f_dow[dg < 5]))`
+from Monday to Friday and `r fmt(mean(f_dow[dg >= 5]))` on Saturday and Sunday
+(log-rate scale, each curve centred by `mgcv`). Over the 30 days the
+reciprocity coefficient \(\beta(t)\) ranges from `r fmt(min(b_rec))` to
+`r fmt(max(b_rec))`. Dashed lines in the figure are ±2 standard errors.
+
+## Goodness of fit of the fitted model
+
+`gof_rem()` tests the fitted model directly. The functional-form test orders
+the residuals by the covariate's value, and the time test cumulates the
+residuals of a term over event time; both use a multiplier bootstrap that
+accounts for the estimated coefficients.
+
+```{r gof-rem}
+g_tod  <- gof_rem(fit, "tod", test = "functional_form", n_sim = 1000, seed = 1)
+g_dow  <- gof_rem(fit, "dow", test = "functional_form", n_sim = 1000, seed = 1)
+g_time <- gof_rem(fit, "recip", test = "time", data = w, n_sim = 1000, seed = 1)
+g_tod; g_dow; g_time
+```
+
+```{r gof-rem-figure, fig.height = 3.6, fig.alt = "Observed GoF processes against bootstrap processes"}
+op <- par(mfrow = c(1, 3), mar = c(4, 4, 2.5, 1))
+plot(g_tod, main = "time of day: functional form")
+plot(g_dow, main = "day of week: functional form")
+plot(g_time, main = "reciprocity: time")
+par(op)
+```
+
+The functional-form test gives p `r pfmt(g_tod$p_value)` for time of day and
+p `r pfmt(g_dow$p_value)` for day of week; the time test for the reciprocity
+term gives p `r pfmt(g_time$p_value)`.
+
+## Linear-model diagnostics on one week
+
+`gof_multivariate()` and `gof_auxiliary()` take an event log and a linear
+model, draw their own case-control sample and refit. Here they run on the first
+week of the slice with count statistics: `gof_multivariate()` tests whether
+`reciprocity_count` needs a smooth instead of a linear effect, and
+`gof_auxiliary()` tests whether an unmodelled statistic carries signal the
+model misses.
+
+```{r gof-linear}
+ev7 <- ev[ev$time < 7, ]
+m <- c(reciprocity_count = "linear", transitivity_count = "linear")
+gm <- gof_multivariate(ev7, m, covariate = "reciprocity_count", k_basis = 5,
+                       n_sim = 1000, seed = 1)
+ga <- gof_auxiliary(ev7, m, auxiliary = "sender_outdegree", n_sim = 1000,
+                    seed = 1)
+rbind(multivariate_reciprocity = c(statistic = gm$statistic, p_value = gm$p_value),
+      auxiliary_sender_outdegree = c(statistic = ga$statistic, p_value = ga$p_value))
+```
+
+On the `r nrow(ev7)` emails of the first week, the multivariate test gives
+p `r pfmt(gm$p_value)` for a non-linear reciprocity-count effect, and the
+auxiliary test gives p `r pfmt(ga$p_value)` for the sender's out-degree.
+
+## Reference
+
+Michalski R, Palus S, Kazienko P (2014). Matching organizational structure and
+social network extracted from email communication. *New Generation Computing*
+32, 213–235.

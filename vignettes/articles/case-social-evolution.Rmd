@@ -1,0 +1,245 @@
+---
+title: "Case study: Social Evolution"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
+                      fig.height = 4.2, warning = FALSE, message = FALSE)
+library(amorem)
+fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
+```
+
+# Case study: Social Evolution
+
+The Social Evolution study (Madan et al. 2011) recorded phone calls among
+undergraduates in an MIT residence hall, together with each student's floor and
+grade and two waves of a friendship survey. This page models who calls whom from
+three kinds of information:
+
+- the calling history itself (endogenous statistics),
+- actor attributes shared by caller and callee (homophily),
+- friendship nominations reported in the survey before the call.
+
+The code runs when this page is built.
+
+## Data intake
+
+```{r intake}
+data(social_evolution_calls)
+data(social_evolution_actors)
+data(social_evolution_friendship)
+
+calls <- standardize_event_log(social_evolution_calls, drop_loops = TRUE)
+c(calls = nrow(calls), callers = length(unique(c(calls$sender, calls$receiver))),
+  days = max(calls$time))
+head(social_evolution_actors)
+table(social_evolution_friendship$time)
+```
+
+`standardize_event_log()` checks and sorts the log: it removes loops, rows with
+missing values and duplicated `(sender, receiver, time)` triples, of which this
+log has `r nrow(social_evolution_calls) - nrow(calls)`. The
+`r nrow(calls)` calls involve `r length(unique(c(calls$sender, calls$receiver)))`
+of the `r nrow(social_evolution_actors)` students in the actor table. In that
+table `r sum(social_evolution_actors$present)` of the
+`r nrow(social_evolution_actors)` students are recorded as present, so no dyad
+has to be removed from the risk set for absence. The risk set below is the set of
+dyads among the students who appear in the calls.
+
+The friendship survey has two waves, on day
+`r fmt(min(social_evolution_friendship$time))` and day
+`r fmt(max(social_evolution_friendship$time))`. The second wave comes after the
+last call (day `r fmt(max(calls$time))`), so only the first wave can inform a
+call.
+
+## Case-control sample and covariates
+
+Each call is matched with five non-events, dyads drawn uniformly among the
+students who appear in the calls (`sample_non_events()` with its defaults,
+`scope = "all"` and `mode = "one"`).
+Endogenous statistics are computed against the history of calls only (the
+sampled non-events never enter it). The time since the dyad's last call is
+mapped to a weight in (0, 1] with `transform_recency()`, with weight 0 for a
+dyad that has not called before.
+
+```{r case-control}
+cc <- sample_non_events(calls, n_controls = 5, seed = 2008)
+cc <- endogenous_features(cc, stats = c("recency", "reciprocity_binary",
+                                        "sender_outdegree", "receiver_indegree"))
+cc$recency_w <- transform_recency(cc$recency)
+cc$recency_w[is.na(cc$recency_w)] <- 0
+for (s in c("reciprocity_binary", "sender_outdegree", "receiver_indegree")) {
+  cc[[s]][is.na(cc[[s]])] <- 0
+}
+```
+
+Actor attributes are attached to both ends of every row with
+`attach_static_covariates()` and turned into homophily indicators. Students with
+no recorded grade do not count as sharing a grade.
+
+```{r attributes}
+actors <- social_evolution_actors[, c("id", "floor", "gradeType")]
+cc <- attach_static_covariates(cc, sender_covariates = actors,
+                               receiver_covariates = actors, actor_col = "id")
+cc$same_floor <- as.integer(cc$sender_floor == cc$receiver_floor)
+cc$same_grade <- as.integer(!is.na(cc$sender_gradeType) &
+                            !is.na(cc$receiver_gradeType) &
+                            cc$sender_gradeType == cc$receiver_gradeType)
+```
+
+Friendship is a time-varying dyadic covariate: for each row, the latest survey
+record for the dyad with a time strictly before the row's time.
+`friend` is the caller's nomination of the callee, `friend_back` the callee's
+nomination of the caller.
+
+```{r friendship}
+fr <- social_evolution_friendship
+friend_at <- function(s, r, t) {
+  k <- fr$sender == s & fr$receiver == r & fr$time < t
+  if (!any(k)) 0L else fr$replace[k][which.max(fr$time[k])]
+}
+cc$friend      <- mapply(friend_at, cc$sender,   cc$receiver, cc$time)
+cc$friend_back <- mapply(friend_at, cc$receiver, cc$sender,   cc$time)
+
+prop <- function(v) tapply(cc[[v]], cc$event, mean)
+rbind(friend = prop("friend"), same_floor = prop("same_floor"),
+      same_grade = prop("same_grade"))   # columns: controls (0), calls (1)
+```
+
+```{r shares, include = FALSE}
+pf <- prop("friend"); pfl <- prop("same_floor")
+```
+
+`r fmt(100 * pf[["1"]], 0)`% of calls go to a student the caller had nominated
+as a friend, against `r fmt(100 * pf[["0"]], 0)`% of sampled non-events;
+`r fmt(100 * pfl[["1"]], 0)`% of calls and `r fmt(100 * pfl[["0"]], 0)`% of
+non-events stay on the caller's floor.
+
+## Conditional logistic regression
+
+`rem(method = "clogit")` fits the case-5-control design. Four specifications
+share the same sample:
+
+```{r clogit}
+specs <- list(
+  endogenous = event ~ recency_w + reciprocity_binary + sender_outdegree +
+                       receiver_indegree,
+  homophily  = event ~ recency_w + reciprocity_binary + sender_outdegree +
+                       receiver_indegree + same_floor + same_grade,
+  friendship = event ~ recency_w + reciprocity_binary + sender_outdegree +
+                       receiver_indegree + friend + friend_back,
+  full       = event ~ recency_w + reciprocity_binary + sender_outdegree +
+                       receiver_indegree + same_floor + same_grade +
+                       friend + friend_back)
+fits <- lapply(specs, rem, data = cc, method = "clogit", stratum = "stratum")
+aic <- sapply(fits, function(f) stats::AIC(logLik(f)))
+data.frame(AIC = round(aic, 1), delta_AIC = round(aic - min(aic), 1))
+```
+
+```{r clogit-numbers, include = FALSE}
+best <- names(which.min(aic))
+ct <- summary(fits$full$fit)$coefficients
+hr <- function(v) fmt(exp(ct[v, "coef"]))
+ci <- function(v) paste(fmt(exp(ct[v, "coef"] - 1.96 * ct[v, "se(coef)"])),
+                        fmt(exp(ct[v, "coef"] + 1.96 * ct[v, "se(coef)"])), sep = "–")
+```
+
+The `r best` specification has the lowest AIC. Adding friendship to the
+endogenous model lowers the AIC by `r fmt(aic[["endogenous"]] - aic[["friendship"]], 1)`;
+adding the two homophily indicators lowers it by
+`r fmt(aic[["endogenous"]] - aic[["homophily"]], 1)`.
+
+```{r clogit-figure, fig.alt = "Log hazard ratios of the full conditional logistic model with 95% intervals"}
+est <- ct[, "coef"]; se <- ct[, "se(coef)"]
+o <- rev(seq_along(est))
+op <- par(mar = c(4, 10, 1, 1))
+plot(est[o], seq_along(est), xlim = range(est - 2 * se, est + 2 * se, 0),
+     yaxt = "n", pch = 16, xlab = "log hazard ratio (95% interval)", ylab = "")
+segments(est[o] - 1.96 * se[o], seq_along(est), est[o] + 1.96 * se[o], seq_along(est))
+axis(2, at = seq_along(est), labels = names(est)[o], las = 1, cex.axis = 0.85)
+abline(v = 0, col = "grey60", lty = 2)
+par(op)
+```
+
+The recency weight runs from 0 (no earlier call on the dyad) to 1 (a call
+just before), so its coefficient compares those two extremes: hazard ratio
+`r fmt(exp(ct["recency_w", "coef"]), 0)` (95% interval `r ci("recency_w")`),
+which sets the scale of the figure. In the full model, a call to a nominated
+friend has hazard ratio
+`r hr("friend")` (95% interval `r ci("friend")`), and a call that reciprocates an
+earlier call in the other direction `r hr("reciprocity_binary")`
+(`r ci("reciprocity_binary")`). The interval for `same_floor` is
+`r ci("same_floor")` and for `same_grade` `r ci("same_grade")`.
+
+## Sender random effect
+
+Some students call far more than others. A sender random effect absorbs these
+differences without a statistic for them. The `re()` term needs the one-control
+(degenerate logistic) design of `rem(method = "gam")`, so a case-1-control
+sample is drawn and widened with `widen_case_control()`, which keeps the
+sender of each call and of its control (`sender_ev`, `sender_nv`).
+
+```{r gam-data}
+cc1 <- sample_non_events(calls, n_controls = 1, seed = 2008)
+cc1 <- endogenous_features(cc1, stats = "sender_outdegree")
+cc1$sender_outdegree[is.na(cc1$sender_outdegree)] <- 0
+cc1 <- attach_static_covariates(cc1, sender_covariates = actors,
+                                receiver_covariates = actors, actor_col = "id")
+cc1$same_floor <- as.integer(cc1$sender_floor == cc1$receiver_floor)
+cc1$friend <- mapply(friend_at, cc1$sender, cc1$receiver, cc1$time)
+w <- widen_case_control(cc1, covariates = c("same_floor", "friend",
+                                            "sender_outdegree"))
+```
+
+With a single control per call, the history statistics separate calls from
+controls almost perfectly (a sampled dyad has rarely called before), so the
+models below use the friendship and floor indicators. The sender effect enters
+either as the sender's number of earlier calls or as a random effect:
+
+```{r gam}
+g_base <- rem(~ same_floor + friend, data = w, method = "gam", gam_method = "REML")
+g_out  <- rem(~ same_floor + friend + sender_outdegree, data = w,
+              method = "gam", gam_method = "REML")
+g_re   <- rem(~ same_floor + friend + re(sender), data = w,
+              method = "gam", gam_method = "REML")
+gaic <- c(base = stats::AIC(g_base$fit), outdegree = stats::AIC(g_out$fit),
+          random_effect = stats::AIC(g_re$fit))
+round(gaic, 1)
+summary(g_re)$s.table
+```
+
+```{r gam-numbers, include = FALSE}
+st <- summary(g_re)$s.table
+```
+
+The random effect has `r fmt(st[1, "edf"], 1)` effective degrees of freedom for
+`r length(unique(c(w$sender_ev, w$sender_nv)))` senders, and the model with it
+has an AIC `r fmt(gaic[["base"]] - gaic[["random_effect"]], 1)` lower than the
+model without a sender term and `r fmt(gaic[["outdegree"]] - gaic[["random_effect"]], 1)`
+lower than the one with the sender's earlier calls.
+
+```{r re-figure, fig.alt = "Estimated sender random effects against the number of calls each student made"}
+b <- stats::coef(g_re)
+b <- b[grep("RE_sender", names(b))]
+lev <- levels(factor(c(w$sender_ev, w$sender_nv)))
+n_sent <- table(factor(calls$sender, levels = lev))
+plot(as.integer(n_sent) + 1, b, log = "x", pch = 16,
+     col = grDevices::adjustcolor("#1d4e89", 0.7),
+     xlab = "calls made + 1 (log scale)", ylab = "sender random effect")
+abline(h = 0, col = "grey60", lty = 2)
+```
+
+```{r re-numbers, include = FALSE}
+r_sp <- stats::cor(as.integer(n_sent), b, method = "spearman")
+```
+
+Each point is a student. Students who made no calls appear only as senders of
+sampled non-events, which places their effects below zero. The Spearman
+correlation between a student's random
+effect and the number of calls the student made is `r fmt(r_sp)`.
+
+## References
+
+Madan A, Cebrian M, Moturu S, Farrahi K, Pentland A (2011). Sensing the
+"health state" of a community. *IEEE Pervasive Computing* 11(1), 36–45.
+<https://doi.org/10.1109/MPRV.2011.79>
