@@ -16,7 +16,8 @@ for (id in ids) {
     saveRDS(p, file.path(out, paste0(id, ".rds")), compress = "xz")
     sprintf("%-32s ok  %8s events  %5.1fs  fit: %s", id, format(p$stats[[1]], big.mark = ","),
             as.numeric(difftime(Sys.time(), t0, units = "secs")),
-            if (is.data.frame(p$fit)) paste(sprintf("%s=%.2f", p$fit$term, p$fit$estimate), collapse = " ") else as.character(p$fit))
+            if (is.data.frame(p$fit)) paste(sprintf("%s=%.2f", p$fit$term, p$fit$estimate), collapse = " ")
+            else if (is.character(p$fit)) p$fit else "none")
   }, error = function(e) sprintf("%-32s FAIL %s", id, conditionMessage(e)))
   cat(res, "\n")
 }

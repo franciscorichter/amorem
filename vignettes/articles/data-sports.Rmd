@@ -1,0 +1,24 @@
+---
+title: "Data: games and sports"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("lichess-2013-01", "konect-chess", "international-football-results", "retrosheet-gamelogs")
+```
+
+Contests between players or teams: online chess games, historical chess results, men's international football and Major League Baseball. Each game is a directed event (white to black, home to away, visitor to home); repeated pairings and seasonal schedules shape the rate.
+
+The [data catalogue](data-catalogue.html) lists every dataset with its licence. Figures
+and numbers on this page are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+summary_table(ids)
+```
+
+```{r sections, results = "asis"}
+render_group(ids)
+```

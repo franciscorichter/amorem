@@ -126,6 +126,19 @@ articles:
       - articles/case-email-global
       - articles/case-social-evolution
       - articles/case-email-eu-models
+  - title: "Data catalogue"
+    desc: "Relational event data and global covariates: sources, licences and profiles."
+    contents:
+      - articles/data-catalogue
+      - articles/data-contact
+      - articles/data-communication
+      - articles/data-online
+      - articles/data-citations
+      - articles/data-political
+      - articles/data-mobility-ecology
+      - articles/data-sports
+      - articles/data-hyperevents
+      - articles/data-covariates
   - title: "Worked examples"
     desc: "Focused, executable vignettes."
     contents:

@@ -1,0 +1,24 @@
+---
+title: "Data: hyperevents"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("enron-perry-wolfe", "benson-drive", "benson-scholp", "xgi-data", "govinfo-billstatus-118", "openalex-social-networks-journal")
+```
+
+Events with a set of senders and a set of receivers: an email to several recipients, a bill with a sponsor and cosponsors, a question thread with its participants, a paper's authors citing a set of references. They are the input of relational hyperevent models; see the [hyperedge article](hyperedge-models.html) for the data model.
+
+The [data catalogue](data-catalogue.html) lists every dataset with its licence. Figures
+and numbers on this page are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+summary_table(ids)
+```
+
+```{r sections, results = "asis"}
+render_group(ids)
+```

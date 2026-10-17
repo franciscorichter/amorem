@@ -20,6 +20,8 @@ verdict_text <- c(
 # Time axis in readable units
 .time_axis <- function(p, t) {
   u <- p$time_unit
+  if (u == "days" && is.null(p$origin))   # readers store days as days since 1970-01-01
+    return(list(x = as.Date(t, origin = "1970-01-01"), lab = "date"))
   if (!is.null(p$origin) && u %in% c("seconds", "days")) {
     sec <- if (u == "seconds") 1 else 86400
     return(list(x = as.POSIXct(p$origin + t * sec), lab = "date"))
@@ -43,7 +45,7 @@ plot_dyadic <- function(p) {
   op <- graphics::par(mfrow = c(1, 4), mar = c(4, 5.4, 2.6, 0.8), mgp = c(2.4, 0.7, 0), cex = 0.8)
   on.exit(graphics::par(op))
   ta <- .time_axis(p, p$rate$t)
-  graphics::plot(ta$x, p$rate$n, type = "h", col = col_main, lwd = 2, xlab = "", ylab = "",
+  graphics::plot(ta$x, p$rate$n, type = "h", col = col_main, lwd = 2, xlab = "", ylab = "", ylim = c(0, max(p$rate$n)),
                  main = "activity over time", las = 1, bty = "l")
   .titles(ta$lab, "events per bin")
   .loglog(p$iet_ccdf, sprintf("pair gap (%s)", p$time_unit), "P(gap > x)", "repeat-contact gaps")
@@ -105,4 +107,139 @@ source_block <- function(id) {
   l <- licences[licences$id == id, ]
   sprintf("*Source:* <%s> · *Licence:* %s · *Status in amorem:* %s.",
           l$licence_url, l$licence, verdict_text[[l$verdict]])
+}
+
+# --- hyperevents ---------------------------------------------------------------
+plot_hyper <- function(p) {
+  op <- graphics::par(mfrow = c(1, 3), mar = c(4, 5.4, 2.6, 0.8), mgp = c(2.4, 0.7, 0), cex = 0.8)
+  on.exit(graphics::par(op))
+  ta <- .time_axis(p, p$rate$t)
+  graphics::plot(ta$x, p$rate$n, type = "h", col = col_main, lwd = 2, xlab = "", ylab = "", ylim = c(0, max(p$rate$n)),
+                 main = "activity over time", las = 1, bty = "l")
+  .titles(ta$lab, "events per bin")
+  si <- p$size_I; si$size <- as.numeric(as.character(si$size))
+  if (nrow(si) == 1) {
+    graphics::plot.new(); graphics::title(if (p$directed) "sender-set size" else "set size")
+    graphics::text(0.5, 0.5, sprintf("every event has %s\n%s", si$size, if (si$size == 1) "member" else "members"), cex = 1.1)
+  } else {
+    graphics::plot(si$size, si$Freq / sum(si$Freq), log = "xy", pch = 16, cex = 0.7, col = col_main,
+                   xlab = "", ylab = "", main = if (p$directed) "sender-set size" else "set size",
+                   las = 1, bty = "l")
+    .titles("actors in the set", "share of events")
+  }
+  if (p$directed) {
+    sj <- p$size_J; sj$size <- as.numeric(as.character(sj$size)); sj <- sj[sj$size > 0, ]
+    graphics::plot(sj$size, sj$Freq / sum(sj$Freq), log = "xy", pch = 16, cex = 0.7, col = col_ref,
+                   xlab = "", ylab = "", main = "receiver-set size", las = 1, bty = "l")
+    .titles("actors in the set", "share of events")
+  } else {
+    .loglog(p$iet_ccdf, sprintf("gap between events (%s)", p$time_unit), "P(gap > x)", "inter-event times")
+  }
+}
+
+describe_hyper <- function(p) {
+  s <- p$stats
+  sprintf(paste0("**%s** hyperevents involving **%s** distinct actors%s. ",
+                 "%s have on average %s members (largest %s)%s. ",
+                 "%s of events repeat an earlier event with exactly the same %s."),
+          fmt_n(s[["events"]]), fmt_n(s[["actors"]]),
+          if (p$directed) " (senders and receivers together)" else "",
+          if (p$directed) "Sender sets" else "Sets", formatC(s[["mean_I"]], format = "f", digits = 2), fmt_n(s[["max_I"]]),
+          if (p$directed) sprintf(", receiver sets %s (largest %s)", formatC(s[["mean_J"]], format = "f", digits = 2), fmt_n(s[["max_J"]])) else "",
+          fmt_p(s[["exact_repetition"]]), if (p$directed) "sender and receiver sets" else "set")
+}
+
+# --- series --------------------------------------------------------------------
+plot_series <- function(p) {
+  d <- p$series
+  num <- names(d)[vapply(d, is.numeric, logical(1)) & names(d) != "time"]
+  grp <- names(d)[!vapply(d, is.numeric, logical(1))][1]
+  tx <- if (p$time_unit == "days") as.Date(d$time, origin = "1970-01-01") else d$time
+  xl <- if (p$time_unit == "days") "date" else p$time_unit
+  if (!length(num)) {   # entries without values (e.g. holidays): counts per group
+    op <- graphics::par(mar = c(4, 8, 2.6, 0.8), cex = 0.8); on.exit(graphics::par(op))
+    graphics::barplot(table(d[[grp]]), horiz = TRUE, las = 1, col = col_soft, border = NA, main = "entries per group")
+    return(invisible())
+  }
+  g <- if (!is.na(grp)) factor(d[[grp]]) else NULL
+  if (!is.null(g) && nlevels(g) <= 6) {
+    # one panel per group; the first two variables together when they share a unit suffix
+    v <- num[1]; v2 <- if (length(num) > 1 && sub(".*_", "", num[2]) == sub(".*_", "", num[1])) num[2] else NA
+    op <- graphics::par(mfrow = c(1, nlevels(g)), mar = c(4, 5.4, 2.6, 0.8), mgp = c(2.4, 0.7, 0), cex = 0.8)
+    on.exit(graphics::par(op))
+    yr <- range(d[[v]], if (!is.na(v2)) d[[v2]], na.rm = TRUE)
+    for (k in levels(g)) {
+      ix <- g == k; o <- order(d$time[ix])
+      graphics::plot(tx[ix][o], d[[v]][ix][o], type = "l", col = col_ref, ylim = yr, xlab = "", ylab = "",
+                     main = substr(k, 1, 28), las = 1, bty = "l")
+      if (!is.na(v2)) {
+        graphics::lines(tx[ix][o], d[[v2]][ix][o], col = col_main)
+        if (k == levels(g)[1]) graphics::legend("bottomleft", c(v, v2), col = c(col_ref, col_main), lwd = 1.5, bty = "n", cex = 0.75)
+      }
+      .titles(xl, if (is.na(v2)) v else paste(v, "/", v2))
+    }
+    return(invisible())
+  }
+  num <- head(num, 3)
+  op <- graphics::par(mfrow = c(1, length(num)), mar = c(4, 5.4, 2.6, 0.8), mgp = c(2.4, 0.7, 0), cex = 0.8)
+  on.exit(graphics::par(op))
+  for (v in num) {
+    if (is.null(g)) {
+      o <- order(d$time)
+      graphics::plot(tx[o], d[[v]][o], type = "l", col = col_main, xlab = "", ylab = "", main = v, las = 1, bty = "l")
+    } else {   # many groups (e.g. countries): every value as a faint point
+      graphics::plot(tx, d[[v]], pch = 16, cex = 0.3, col = grDevices::adjustcolor(col_main, 0.25),
+                     xlab = "", ylab = "", main = v, las = 1, bty = "l")
+    }
+    .titles(xl, v)
+  }
+}
+
+describe_series <- function(p) {
+  sm <- p$summary
+  sm <- sm[is.finite(sm$mean), ]
+  if (!nrow(sm)) return(sprintf("**%s** entries.", fmt_n(p$stats[["points"]])))
+  paste0(sprintf("**%s** observations. ", fmt_n(p$stats[["points"]])),
+         paste(sprintf("`%s`: mean %s, sd %s, range %s to %s, %s missing", sm$variable,
+                       formatC(sm$mean, format = "fg", digits = 3), formatC(sm$sd, format = "fg", digits = 3),
+                       formatC(sm$min, format = "fg", digits = 3), formatC(sm$max, format = "fg", digits = 3),
+                       fmt_p(sm$missing)), collapse = "; "), ".")
+}
+
+# --- page assembly -------------------------------------------------------------
+# Fits whose pattern is built into the data rather than estimated from behaviour.
+structural_fit <- c(
+  "snap-cit-hepth" = "a paper makes all its citations at once, so the sender's past activity is 0 at its own events",
+  "snap-cit-hepph" = "a paper makes all its citations at once, so the sender's past activity is 0 at its own events",
+  "kddcup2003-hepth" = "a paper makes all its citations at once, so the sender's past activity is 0 at its own events",
+  "nber-patent-citations" = "a patent makes all its citations at once; the first events have no history",
+  "snap-act-mooc" = "users act on course items, so reciprocity is impossible",
+  "gharchive-sample" = "users act on repositories, so reciprocity is impossible",
+  "alien-species-first-records-rem" = "species reach regions, so reciprocity is impossible and each pair fires once",
+  "alien-first-records-v4" = "species reach regions, so reciprocity is impossible and each pair fires once",
+  "covid-bucharest-transmission" = "each person is infected once, so the receiver's past events are 0 at every event",
+  "ucdp" = "a conflict dyad-year repeats every year the conflict is active")
+
+render_group <- function(ids, envir = parent.frame()) {
+  ids <- ids[file.exists(file.path(cat_dir, paste0(ids, ".rds")))]
+  for (id in ids) {
+    kind <- load_profile(id)$kind
+    tmpl <- paste(readLines(file.path(cat_dir, sprintf("section-%s.tmpl", kind))), collapse = "\n")
+    sec <- gsub("{{id}}", id, tmpl, fixed = TRUE)
+    sec <- gsub("{{title}}", licences$title[licences$id == id], sec, fixed = TRUE)
+    cat(knitr::knit_child(text = sec, quiet = TRUE, envir = envir), sep = "\n")
+  }
+}
+
+summary_table <- function(ids) {
+  ids <- ids[file.exists(file.path(cat_dir, paste0(ids, ".rds")))]
+  rows <- lapply(ids, function(id) {
+    p <- load_profile(id); s <- p$stats; l <- licences[licences$id == id, ]
+    data.frame(dataset = sprintf("[%s](#%s)", l$title, gsub("[^a-z0-9]+", "-", tolower(l$title))),
+               events = fmt_n(s[[1]]), actors = if (!is.null(s["actors"]) && !is.na(s["actors"])) fmt_n(s[["actors"]]) else "",
+               licence = l$licence, amorem = c(bundle = "can bundle", "gpl-only" = "GPL only", sharealike = "share-alike",
+                                               noncommercial = "obtain from source", "no-licence" = "obtain from source",
+                                               "per-dataset" = "per dataset")[[l$verdict]])
+  })
+  knitr::kable(do.call(rbind, rows), row.names = FALSE)
 }

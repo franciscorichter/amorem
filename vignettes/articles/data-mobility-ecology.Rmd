@@ -1,0 +1,24 @@
+---
+title: "Data: mobility, ecology and epidemics"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("tfl-cycle-hire-2026-02", "opensky-covid-flightlist-2020-04", "alien-species-first-records-rem", "alien-first-records-v4", "covid-bucharest-transmission")
+```
+
+Movements between places (bike stations, airports), species reaching new regions, and transmission between people. Bike and flight data have strong daily cycles and suit global covariates such as weather; invasion records are one-shot species-to-region events for `risk = "remove"`; transmission chains are trees.
+
+The [data catalogue](data-catalogue.html) lists every dataset with its licence. Figures
+and numbers on this page are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+summary_table(ids)
+```
+
+```{r sections, results = "asis"}
+render_group(ids)
+```

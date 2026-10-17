@@ -1,0 +1,20 @@
+
+### {{title}}
+
+`r source_block("{{id}}")`
+
+```{r fig-{{id}}, fig.width = 10, fig.height = 3, fig.alt = "{{title}}: series over time", echo = FALSE}
+plot_series(load_profile("{{id}}"))
+```
+
+`r describe_series(load_profile("{{id}}"))` `r load_profile("{{id}}")$note`
+
+<details><summary>Get the data</summary>
+
+```{r get-{{id}}, echo = FALSE, results = "asis"}
+dl <- downloads[downloads$id == "{{id}}", ]
+cat("```r\n", paste(sprintf('download.file("%s", "%s", mode = "wb")', dl$url, basename(dl$file)), collapse = "\n"), "\n```\n", sep = "")
+cat("\nThe reader is `readers[[\"{{id}}\"]]` in [`data-raw/catalogue/readers.R`](https://github.com/franciscorichter/amorem/blob/main/data-raw/catalogue/readers.R).\n")
+```
+
+</details>

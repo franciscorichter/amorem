@@ -1,0 +1,107 @@
+---
+title: "Data catalogue"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+pages <- c(
+  "data-contact" = "face-to-face and proximity contacts", "data-communication" = "email, messages, calls and radio",
+  "data-online" = "online platforms", "data-citations" = "citations", "data-political" = "international relations and conflict",
+  "data-mobility-ecology" = "mobility, ecology and epidemics", "data-sports" = "games and sports",
+  "data-hyperevents" = "hyperevents", "data-covariates" = "global covariates")
+page_of <- function(id) {
+  for (pg in names(pages)) {
+    src <- readLines(paste0(pg, ".Rmd"), warn = FALSE)
+    if (any(grepl(sprintf('"%s"', id), src, fixed = TRUE))) return(pg)
+  }
+  NA_character_
+}
+licences$page <- vapply(licences$id, page_of, "")
+profiled <- file.exists(file.path(cat_dir, paste0(licences$id, ".rds")))
+vt <- table(licences$verdict)
+```
+
+This catalogue documents the relational event data and global covariates
+collected for amorem: what each dataset is, where it comes from, what its
+licence allows, and a profile of its structure. It covers
+`r nrow(licences)` datasets.
+
+## What the licences allow
+
+Each licence was read on the publisher's own page (Harvard Dataverse, Zenodo
+and Figshare records, the providers' terms pages, or the licence file shipped
+with the data) on `r unique(licences$checked)`. amorem is released under the MIT
+licence, so a dataset can be bundled with it only when its terms allow
+redistribution without conditions that the MIT licence cannot carry.
+
+```{r verdicts}
+lab <- c(bundle = "public domain, CC0, CC BY, MIT, Open Government Licence or explicitly unrestricted: may be bundled with attribution",
+         "no-licence" = "no licence stated (only a request to cite): not redistributed",
+         noncommercial = "non-commercial licence (SocioPatterns, CC BY-NC-SA): not redistributed",
+         "gpl-only" = "GPL-3: compatible only with a GPL-licensed package",
+         sharealike = "share-alike (CC BY-SA): compatible only with a package under the same terms",
+         "per-dataset" = "licence differs between datasets of the collection")
+knitr::kable(data.frame(verdict = lab[names(vt)], datasets = as.integer(vt), row.names = NULL)[order(-as.integer(vt)), ],
+             row.names = FALSE)
+```
+
+Datasets that cannot be redistributed are documented here with code that
+downloads them from their source; the figures and numbers on the topic pages
+are aggregates, not the data.
+
+## Topic pages
+
+```{r pages, results = "asis"}
+for (pg in names(pages)) {
+  n <- sum(licences$page == pg, na.rm = TRUE)
+  cat(sprintf("- [%s](%s.html): %d datasets\n", tools::toTitleCase(pages[[pg]]), pg, n))
+}
+```
+
+## All datasets
+
+```{r all}
+reason <- c("sp-colocation" = "repackages the SocioPatterns sets above",
+            "snap-comm-f2f-resistance" = "many small game networks rather than one log",
+            "stackexchange-or-2024-04" = "7z archive, not read here",
+            "pl-statutory-holidays" = "legal texts (holiday statutes)",
+            "uci-academic-calendars" = "calendar web pages")
+tab <- data.frame(
+  dataset = ifelse(!is.na(licences$page), sprintf("[%s](%s.html)", licences$title, licences$page), licences$title),
+  kind = licences$kind, licence = licences$licence,
+  amorem = c(bundle = "can bundle", "gpl-only" = "GPL only", sharealike = "share-alike", noncommercial = "obtain from source",
+             "no-licence" = "obtain from source", "per-dataset" = "per dataset")[licences$verdict],
+  profile = ifelse(profiled, "yes", paste0("no: ", reason[licences$id])),
+  row.names = NULL)
+knitr::kable(tab[order(licences$verdict, licences$title), ], row.names = FALSE)
+```
+
+## How the profiles are built
+
+Every dataset is read from its files as downloaded by a reader in
+[`data-raw/catalogue/readers.R`](https://github.com/franciscorichter/amorem/blob/main/data-raw/catalogue/readers.R)
+into a table of `(sender, receiver, time)` events, of hyperevents with sender
+and receiver sets, or of a time series.
+[`profile.R`](https://github.com/franciscorichter/amorem/blob/main/data-raw/catalogue/profile.R)
+then computes the same statistics for every dataset:
+
+- **repetition**: the share of events whose pair occurred before, next to the share
+  expected if every event picked a pair uniformly at random among all pairs of
+  the actors present;
+- **reciprocity** (directed data): the share of events answering an earlier event
+  in the opposite direction;
+- **burstiness**: \(B = (\sigma - \mu)/(\sigma + \mu)\) of the gaps between
+  successive events of the same pair, 0 for a Poisson process and close to 1 when
+  events of a pair come in bursts;
+- **concentration**: the Gini coefficient of actor activity and the share of events
+  involving the most active tenth of the actors;
+- **daily cycle**, when the time stamps carry clock time;
+- for directed logs, a conditional logit on the first 4,000 events with one control
+  per event and three log-count statistics (sender activity, receiver popularity,
+  past reciprocating events), using the case-control history of
+  `endogenous_features()`.
+
+Licences, sources and checksums are recorded in
+[`licences.csv`](https://github.com/franciscorichter/amorem/blob/main/data-raw/catalogue/licences.csv)
+and in the `SOURCES` and `SHA256SUMS` files of each download.

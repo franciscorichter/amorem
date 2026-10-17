@@ -1,0 +1,24 @@
+---
+title: "Data: online platforms"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("snap-wiki-talk-temporal", "snap-wiki-rfa", "snap-sx-mathoverflow", "snap-sx-askubuntu", "snap-sx-superuser", "nr-fb-forum", "snap-bitcoin-otc", "snap-bitcoin-alpha", "snap-act-mooc", "gharchive-sample")
+```
+
+Interactions recorded by online platforms: Wikipedia talk pages and adminship votes, question-and-answer sites, a forum, trust ratings between Bitcoin traders, actions in a course, and GitHub activity. They are large (up to millions of events), with heavy-tailed activity and strong concentration on a few actors, and several are bipartite (users acting on items).
+
+The [data catalogue](data-catalogue.html) lists every dataset with its licence. Figures
+and numbers on this page are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+summary_table(ids)
+```
+
+```{r sections, results = "asis"}
+render_group(ids)
+```

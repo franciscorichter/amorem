@@ -16,6 +16,8 @@ if (!is.null(ft)) {
   cat(sprintf("A conditional logit on the first %s events (one sampled control per event) gives:\n\n",
               fmt_n(load_profile("{{id}}")$fit$n_events[1])))
   print(knitr::kable(ft, col.names = c("term", "estimate", "s.e.")))
+  if ("{{id}}" %in% names(structural_fit))
+    cat(sprintf("\nThese coefficients reflect how the data are built, not behaviour: %s.\n", structural_fit[["{{id}}"]]))
 }
 ```
 

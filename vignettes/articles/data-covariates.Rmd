@@ -1,0 +1,24 @@
+---
+title: "Data: global covariates"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("data/catalogue/helpers.R")
+downloads <- utils::read.csv("data/catalogue/downloads.csv", stringsAsFactors = FALSE)
+ids <- c("noaa-ghcnd-weather", "open-meteo-weather", "imgw-synop-daily-2010", "noaa-enso", "eia-oil-prices", "worldbank-pinksheet", "nager-date-holidays", "unga-ideal-points", "unga-votes-1946-2013")
+```
+
+Time series that take one value at a time for every pair: weather at the places and periods of the bundled event logs, the El Nino index, oil and commodity prices, public holidays, and UN General Assembly voting. They enter relational event models as global covariates through time-shifted sampling (`sample_non_events(shift = "exponential")`).
+
+The [data catalogue](data-catalogue.html) lists every dataset with its licence. Figures
+and numbers on this page are aggregates computed from the files as published;
+each section links the source and the code that reads it.
+
+```{r summary-table}
+summary_table(ids)
+```
+
+```{r sections, results = "asis"}
+render_group(ids)
+```

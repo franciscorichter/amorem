@@ -94,6 +94,7 @@ summary(fit)
 | [Estimation](articles/estimation.html) | case-control sampling, the three `rem()` backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](articles/datasets.html) | the bundled REM datasets |
+| [Data catalogue](articles/data-catalogue.html) | 78 relational event datasets and covariates: sources, licences, which can be bundled, profiles, and code to download the rest |
 | [Real-data analysis](articles/real-data-analysis.html) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](articles/gof-calibration.html) | type-I error of the martingale-residual GoF tests under correct specification |
