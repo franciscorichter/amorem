@@ -19,7 +19,8 @@
 #' @param case,stratum Event-indicator and stratum columns, resolved exactly as
 #'   in [rem()] (defaults: the formula's left-hand side, and
 #'   `cumsum(case == 1)`).
-#' @param n_grid Grid resolution for the partial-dependence curves.
+#' @param n_grid Number of grid points of each partial-dependence curve, which
+#'   spans the 1st to 99th percentile of the feature in `data`.
 #' @param level Confidence level for the bands and the concordance interval.
 #' @param seed Optional integer seed for the resampling.
 #'
@@ -49,8 +50,10 @@ nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
   strata <- unique(strat)
 
   mu <- colMeans(X); sdv <- apply(X, 2L, stats::sd); sdv[sdv == 0] <- 1
-  grids <- lapply(seq_along(vars), function(j)
-    seq(mu[j] - 2 * sdv[j], mu[j] + 2 * sdv[j], length.out = n_grid))
+  grids <- lapply(seq_along(vars), function(j) {
+    r <- stats::quantile(X[, j], c(0.01, 0.99), names = FALSE)
+    seq(r[1], r[2], length.out = n_grid)
+  })
   names(grids) <- vars
 
   pdp_of <- function(f) vapply(seq_along(vars), function(j) {
@@ -62,12 +65,13 @@ nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
   }, numeric(n_grid))
 
   concord_of <- function(f) {
-    sc <- stats::predict(f, as.data.frame(X))
-    top <- tapply(seq_along(sc), strat, function(ix) ix[which.max(sc[ix])])
-    mean(is_event[as.integer(top)])
+    .nn_concordance(stats::predict(f, as.data.frame(X)), strat, is_event)
   }
 
-  if (!is.null(seed)) set.seed(seed)
+  if (!is.null(seed)) {
+    withr::local_preserve_seed()
+    set.seed(seed)
+  }
   curves <- array(NA_real_, c(n_grid, length(vars), B))
   conc <- rep(NA_real_, B)
   for (b in seq_len(B)) {

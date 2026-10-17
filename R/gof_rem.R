@@ -49,8 +49,10 @@
 #'   the bootstrap suprema `statistic_sim`, the observed process `process`, the
 #'   bootstrap processes `process_sim` (grid points x replicates), the grid
 #'   (`x`, and `u` on the quantile scale), `test` and `term`. It has `print()`
-#'   and `plot()` methods; `plot(x, n_show = 20, main = NULL)` draws the
-#'   observed process against `n_show` bootstrap processes.
+#'   and `plot()` methods; `plot(x, n_show = 20, main = NULL, legend =
+#'   "topright")` draws the observed process against `n_show` bootstrap
+#'   processes, with the legend at a [graphics::legend()] position or none
+#'   (`legend = NULL`).
 #'
 #' @references
 #' Boschi M, Wit EC (2025). Goodness-of-fit tests for relational event models
@@ -253,17 +255,18 @@ print.rem_gof <- function(x, ...) {
 }
 
 #' @export
-plot.rem_gof <- function(x, n_show = 20, main = NULL, ...) {
+plot.rem_gof <- function(x, n_show = 20, main = NULL, legend = "topright", ...) {
   if (is.null(main)) main <- sprintf("%s: %s", x$term, x$test)
   k <- seq_len(min(n_show, ncol(x$process_sim)))
   xs <- if (x$test == "time") x$x else x$u
   xlab <- if (x$test == "time") "event time" else "quantile of the covariate"
   graphics::matplot(xs, x$process_sim[, k, drop = FALSE], type = "l", lty = 1,
-                    col = "grey80", ylim = range(x$process, x$process_sim[, k]),
+                    col = "grey80",
+                    ylim = c(0, 1.3 * max(x$process, x$process_sim[, k])),
                     xlab = xlab, ylab = "|cumulative residual process|",
                     main = main, ...)
   graphics::lines(xs, x$process, lwd = 2)
-  graphics::legend("topright", bty = "n",
+  if (!is.null(legend)) graphics::legend(legend, bty = "n",
                    legend = c("observed", "bootstrap", sprintf("p = %.3f", x$p_value)),
                    col = c("black", "grey70", NA), lwd = c(2, 1, NA))
   invisible(x)

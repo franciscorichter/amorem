@@ -205,3 +205,14 @@ test_that("recovered reciprocity beta via case-control GAM is consistent under t
   expect_true(est > 0.2 && est < 0.9,
               info = sprintf("estimated reciprocity effect (tau-leap) = %.3f", est))
 })
+
+test_that("tau-leap stops with a message when the rates outgrow the step", {
+  set.seed(1)
+  a <- paste0("a", 1:50)
+  expect_error(
+    simulate_relational_events(n_events = 2000, senders = a, receivers = a,
+                               endogenous_stats = "reciprocity_count",
+                               endogenous_effects = c(reciprocity_count = 0.6),
+                               method = "tau_leap", tau = 0.05),
+    "smaller tau")
+})

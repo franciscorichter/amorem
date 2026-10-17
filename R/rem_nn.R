@@ -306,7 +306,12 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
 # X: numeric feature matrix [n_rows, p]; strat_id: stratum of each row;
 # is_event: logical event indicator per row.
 .rem_nn_fit <- function(X, strat_id, is_event, control, feature_names) {
+  # A seed makes the fit reproducible; the caller's random-number state is
+  # restored on exit (CRAN policy: do not change the user's RNG stream).
+  if (!is.null(control$seed)) withr::local_preserve_seed()
   strat_id <- as.integer(factor(strat_id))
+  # Range of the data, on the original scale, for partial-dependence grids.
+  x_range <- apply(X, 2L, stats::quantile, probs = c(0.01, 0.99), names = FALSE)
   scaler <- NULL
   if (control$standardize) {
     mu <- colMeans(X); sdv <- apply(X, 2L, stats::sd); sdv[sdv == 0] <- 1
@@ -393,15 +398,14 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   n_strata <- length(unique(strat_id))
   concord <- function(rows) {
     if (!length(rows)) return(NA_real_)
-    sid <- strat_id[rows]; sc <- fa$scores[rows]; ev <- is_event[rows]
-    top <- tapply(seq_along(sc), sid, function(ix) ix[which.max(sc[ix])])
-    mean(ev[as.integer(top)])
+    .nn_concordance(fa$scores[rows], strat_id[rows], is_event[rows])
   }
   n_par <- sum(vapply(layers, function(l) length(l$W) + length(l$b), numeric(1)))
 
   structure(list(
     layers = layers, activation = control$activation, scaler = scaler,
-    expansion = expansion, features = feature_names, control = control,
+    expansion = expansion, features = feature_names, x_range = x_range,
+    control = control,
     history = history,
     logLik = -all_loss$loss * n_strata, n_strata = n_strata, n_par = n_par,
     concordance = list(all = concord(seq_along(is_event)),
@@ -487,8 +491,7 @@ plot.rem_nn_fit <- function(x, type = c("loss", "pdp"), n_grid = 50L, ...) {
     old <- graphics::par(mfrow = grDevices::n2mfrow(p)); on.exit(graphics::par(old))
     mu <- if (is.null(x$scaler)) rep(0, p) else x$scaler$mean
     for (j in seq_len(p)) {
-      sdj <- if (is.null(x$scaler)) 1 else x$scaler$sd[j]
-      grid <- seq(mu[j] - 2 * sdj, mu[j] + 2 * sdj, length.out = n_grid)
+      grid <- .nn_pdp_grid(x, j, n_grid)
       nd <- as.data.frame(matrix(rep(mu, each = n_grid), n_grid, p,
                                  dimnames = list(NULL, x$features)))
       nd[[x$features[j]]] <- grid
@@ -497,4 +500,27 @@ plot.rem_nn_fit <- function(x, type = c("loss", "pdp"), n_grid = 50L, ...) {
     }
   }
   invisible(x)
+}
+
+# Share of strata in which the event has the highest score; when k candidates
+# tie for the highest score and the event is one of them, the stratum counts
+# 1/k.
+.nn_concordance <- function(scores, strata, is_event) {
+  per <- tapply(seq_along(scores), strata, function(ix) {
+    sc <- scores[ix]; top <- sc == max(sc)
+    if (any(top & is_event[ix])) 1 / sum(top) else 0
+  })
+  mean(as.numeric(per))
+}
+
+# Grid for a partial-dependence curve of feature j: the 1st to 99th
+# percentile of the training data (mean +/- 2 sd for fits made before the
+# range was recorded).
+.nn_pdp_grid <- function(fit, j, n_grid) {
+  if (!is.null(fit$x_range)) {
+    return(seq(fit$x_range[1, j], fit$x_range[2, j], length.out = n_grid))
+  }
+  mu <- if (is.null(fit$scaler)) 0 else fit$scaler$mean[j]
+  sdj <- if (is.null(fit$scaler)) 1 else fit$scaler$sd[j]
+  seq(mu - 2 * sdj, mu + 2 * sdj, length.out = n_grid)
 }

@@ -44,8 +44,9 @@ An object of class \code{"rem_gof"}: a list with \code{p_value}, \code{statistic
 the bootstrap suprema \code{statistic_sim}, the observed process \code{process}, the
 bootstrap processes \code{process_sim} (grid points x replicates), the grid
 (\code{x}, and \code{u} on the quantile scale), \code{test} and \code{term}. It has \code{print()}
-and \code{plot()} methods; \code{plot(x, n_show = 20, main = NULL)} draws the
-observed process against \code{n_show} bootstrap processes.
+and \code{plot()} methods; \code{plot(x, n_show = 20, main = NULL, legend = "topright")} draws the observed process against \code{n_show} bootstrap
+processes, with the legend at a \code{\link[graphics:legend]{graphics::legend()}} position or none
+(\code{legend = NULL}).
 }
 \description{
 Cumulative martingale-residual tests for a model fitted with

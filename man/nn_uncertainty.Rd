@@ -26,7 +26,8 @@ nn_uncertainty(
 in \code{\link[=rem]{rem()}} (defaults: the formula's left-hand side, and
 \code{cumsum(case == 1)}).}
 
-\item{n_grid}{Grid resolution for the partial-dependence curves.}
+\item{n_grid}{Number of grid points of each partial-dependence curve, which
+spans the 1st to 99th percentile of the feature in \code{data}.}
 
 \item{level}{Confidence level for the bands and the concordance interval.}
 

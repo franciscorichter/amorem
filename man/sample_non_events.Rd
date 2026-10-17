@@ -31,7 +31,8 @@ the data; \code{"appearance"} restricts to actors that have appeared in prior
 events (so the first event, with no prior events, gets no controls);
 \code{"citation"} matches citation networks where senders are restricted
 to the papers that debut at the current time and receivers must have
-appeared earlier.}
+appeared earlier; it always draws senders and receivers from these two
+separate pools, whatever \code{mode} says.}
 
 \item{mode}{\code{"one"} (default) draws both sender and receiver from the same
 candidate pool (single-mode): every actor seen in either role can be a

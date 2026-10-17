@@ -1058,7 +1058,8 @@ endogenous_features <- function(
 #'   events (so the first event, with no prior events, gets no controls);
 #'   `"citation"` matches citation networks where senders are restricted
 #'   to the papers that debut at the current time and receivers must have
-#'   appeared earlier.
+#'   appeared earlier; it always draws senders and receivers from these two
+#'   separate pools, whatever `mode` says.
 #' @param mode `"one"` (default) draws both sender and receiver from the same
 #'   candidate pool (single-mode): every actor seen in either role can be a
 #'   control sender or receiver, as in networks whose senders and receivers are
@@ -1181,6 +1182,8 @@ sample_non_events <- function(
   mode <- match.arg(mode)
   risk <- match.arg(risk)
   shift <- match.arg(shift)
+  # Citation sampling pairs a citing paper with earlier papers: two pools.
+  if (scope == "citation") mode <- "two"
   if (shift == "exponential") {
     if (scope == "citation") {
       stop("shift = \"exponential\" does not support scope = \"citation\".")

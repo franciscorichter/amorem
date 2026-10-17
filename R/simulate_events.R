@@ -1234,6 +1234,15 @@ simulate_relational_events <- function(
 
       step <- min(tau, horizon - current_time)
       expected <- weights * g_mult * step
+      # Rates that grow without bound can make one step expect more events
+      # than can be drawn in memory; stop with a message instead.
+      if (sum(expected) > 1e7) {
+        stop(sprintf(paste0(
+          "tau-leap step at time %.4g expects %.3g events: the rates have ",
+          "grown too fast for tau = %g. Use a smaller tau or ",
+          "method = \"gillespie\"."),
+          current_time, sum(expected), tau), call. = FALSE)
+      }
       if (risk == "remove") {
         # One-shot dyads: at most one event per dyad per step. Use a
         # Bernoulli with success probability 1 - exp(-lambda*tau) rather

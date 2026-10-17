@@ -83,3 +83,22 @@ test_that("exclude_concurrent is validated", {
   expect_error(sample_non_events(el, exclude_concurrent = NA), "exclude_concurrent")
   expect_error(sample_non_events(el, exclude_concurrent = "yes"), "exclude_concurrent")
 })
+
+test_that("scope = 'citation' keeps citing and cited pools apart under the default mode", {
+  # paper k cites earlier papers; each paper first appears as a sender
+  set.seed(4)
+  rows <- lapply(2:40, function(k) {
+    cited <- sample(seq_len(k - 1), min(k - 1, 3))
+    data.frame(sender = paste0("p", k), receiver = paste0("p", cited), time = k)
+  })
+  cit <- do.call(rbind, rows)
+  cc <- sample_non_events(cit, n_controls = 2, scope = "citation", seed = 5)
+  ctrl <- cc[cc$event == 0L, ]
+  ev <- cc[cc$event == 1L, ]
+  citing <- ev$sender[match(ctrl$stratum, ev$stratum)]
+  expect_true(all(ctrl$sender == citing))
+  pub <- tapply(cit$time, cit$sender, min)
+  expect_true(all(pub[ctrl$receiver] < ctrl$time))
+  expect_identical(cc, sample_non_events(cit, n_controls = 2, scope = "citation",
+                                         mode = "two", seed = 5))
+})

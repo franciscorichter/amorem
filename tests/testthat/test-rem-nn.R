@@ -168,3 +168,33 @@ test_that("nn_control validates the new arguments", {
                "spline_df")
   expect_error(nn_control(batch_strata = 1), "batch_strata")
 })
+
+test_that("nn fits with a seed leave the caller's random-number state alone", {
+  set.seed(3)
+  d <- data.frame(stratum = rep(1:60, each = 3), event = rep(c(1L, 0L, 0L), 60),
+                  x = rnorm(180))
+  set.seed(11); before <- stats::runif(1)
+  set.seed(11)
+  rem(event ~ x, data = d, method = "nn", stratum = "stratum",
+      nn = nn_control(hidden = 4, epochs = 5, seed = 1))
+  expect_identical(stats::runif(1), before)
+})
+
+test_that("concordance splits tied top scores", {
+  # stratum 1: event alone on top; 2: event tied with one control; 3: control on top
+  expect_equal(.nn_concordance(c(2, 1, 1,  1, 1, 0,  0, 1, 0),
+                               rep(1:3, each = 3),
+                               rep(c(TRUE, FALSE, FALSE), 3)),
+               (1 + 0.5 + 0) / 3)
+})
+
+test_that("partial-dependence grids stay inside the data", {
+  set.seed(4)
+  d <- data.frame(stratum = rep(1:80, each = 3), event = rep(c(1L, 0L, 0L), 80),
+                  x = log1p(rpois(240, 0.5)))
+  fit <- rem(event ~ x, data = d, method = "nn", stratum = "stratum",
+             nn = nn_control(hidden = 4, epochs = 5, seed = 1))
+  g <- .nn_pdp_grid(fit$fit, 1, 20)
+  expect_gte(min(g), min(d$x))
+  expect_lte(max(g), max(d$x))
+})
