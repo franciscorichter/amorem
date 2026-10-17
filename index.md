@@ -25,8 +25,8 @@ The package consolidates four lines of recent methodological work:
 ## Installation
 
 ```r
-# install.packages("remotes")
-remotes::install_github("franciscorichter/amorem")
+install.packages("amorem")                              # CRAN release
+# remotes::install_github("franciscorichter/amorem")    # development version
 ```
 
 ## 30-second tour
@@ -40,7 +40,7 @@ data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
 data(radoslaw_email)          # 82,927 emails, 167 actors (Michalski et al. 2014)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
-feat <- compute_endogenous_features(
+feat <- endogenous_features(
   classroom_events, stats = c("reciprocity", "recency"))
 
 # 3. Simulate a ready-to-fit case-1-control table with known structure ...
@@ -65,11 +65,16 @@ summary(fit)
 - **`simulate_relational_events()`** — exact Gillespie or τ-leap; composes
   exogenous, endogenous, and time-varying global covariates; with `wide = TRUE`
   emits a ready-to-fit case-1-control table.
-- **`compute_endogenous_features()`** — the endogenous catalogue computed
-  post-hoc from any `(sender, receiver, time)` log; via `history_log` it scores
-  sampled non-events without polluting the event history.
+- **`endogenous_features()`** — the endogenous catalogue computed post-hoc
+  from any `(sender, receiver, time)` log. On case-control data only the
+  observed events build the network history; the sampled controls are scored
+  against it without entering it.
 - **`sample_non_events()`** — nested case-control sampling with appearance /
-  citation / remove risk-set rules.
+  citation / remove risk-set rules, and time-shifted sampling
+  (`shift = "exponential"`) that keeps global covariates estimable.
+- **Datasets** — event logs from published interaction networks, and
+  `enso_nino34`, a reconstructed El Niño index (1301–2005) for use as a global
+  covariate.
 - **Goodness of fit** — `gof_global()`, `gof_multivariate()`, `gof_auxiliary()`,
   and pointwise `martingale_residuals()`.
 - The earlier `compare_models()`, `compare_models_smooth()` and
@@ -85,8 +90,10 @@ summary(fit)
 | [Estimation](articles/estimation.html) | case-control sampling, the three `rem()` backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](articles/hyperedge-models.html) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](articles/datasets.html) | the bundled REM datasets |
-| [Real-data analysis](articles/real-data-analysis.html) | sender-frailty flip, smooth effect curves |
+| [Real-data analysis](articles/real-data-analysis.html) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](articles/validation-experiments.html) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
+| [GoF calibration](articles/gof-calibration.html) | type-I error of the martingale-residual GoF tests under correct specification |
+| [Species invasions](articles/species-invasion.html) | a one-shot (`risk = "remove"`) process with ENSO as a global driver, fitted by time-shifted sampling |
 
 Full per-function documentation is under [Reference](reference/index.html).
 

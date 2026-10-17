@@ -318,8 +318,7 @@ cat("naive max:",   max(sapply(stats, function(s) md(evo[[s]], fn[[s]]))),
 #> naive max: 12  | aligned max: 4.263e-14   -> parity holds (all < 1e-9)
 ```
 
-**Result — parity holds; the previously reported "bug" was a
-comparison artifact.**
+**Result — parity holds once the controls are kept out of the history.**
 
 | Statistic | naive (no `history_log`) | aligned (`history_log` = events) |
 |---|---:|---:|
@@ -336,20 +335,19 @@ comparison artifact.**
 | `reciprocity_binary` | 1.0 | 0 |
 | `transitivity_binary` | 1.0 | 0 |
 
-An earlier run of this experiment reported the naive column as
-evidence of a "state-update ordering bug" and advised treating the
-post-hoc engine as authoritative for count statistics. **That
-conclusion is retracted.** The naive recompute lets sampled control
-rows write into the running history (count/exp-decay drift of order
-`n_events`) and lets tied rows read post-update state (timing drift).
-Passing `history_log` reproduces the simulator's exact semantics —
+The naive recompute lets sampled control rows write into the running
+history (count/exp-decay drift of order `n_events`) and lets tied rows read
+post-update state (timing drift). The aligned recompute reproduces the
+simulator's exact semantics —
 the C++ engine processes rows in time groups, every row at a tied
 timestamp reads before any write, and only event rows write
 (`src/compute_features_cpp.cpp`, time-group loop; mask construction
 in `R/preprocess.R`). Under that alignment the engines agree to
 floating-point precision (max 4.3 × 10⁻¹⁴, the exp-decay residue
-being summation-order noise). There is no ordering bug, and neither
-engine needs to be privileged over the other.
+being summation-order noise). Neither engine needs to be privileged over the
+other. The naive column is what the experiment gets by dropping the `event`
+column: on a case-control table that keeps it, `endogenous_features()` applies
+the aligned semantics by default.
 
 ![Parity bars](figures/exp5-parity.png)
 

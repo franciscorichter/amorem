@@ -2,6 +2,13 @@
 title: "Estimation"
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7.5,
+                      fig.height = 4.2, warning = FALSE, message = FALSE)
+library(amorem)
+fmt <- function(x, d = 1) formatC(x, format = "f", digits = d, big.mark = ",")
+```
+
 # Estimation
 
 `amorem`'s estimation surface has these layers:
@@ -21,9 +28,10 @@ title: "Estimation"
 4. **Goodness-of-fit tests** check whether the selected fit is
    actually adequate.
 
-Every numerical output below is produced by
-`paper/wiki/experiments/est_demo.R`, which is re-run on every
-release of the wiki.
+The examples on the bundled `classroom_events` log run when this page is
+built, so their output comes from the current version of the package. Snippets
+that use data the package does not ship (`lesmis`, `event_log`, `native`) are
+shown without being run.
 
 ---
 
@@ -39,7 +47,7 @@ sampled non-firing dyads per case.
 Throughout this page we use the bundled `classroom_events` log —
 any event log with `time`, `sender`, `receiver` columns will do.
 
-```r
+```{r sampling}
 library(amorem)
 data(classroom_events)
 
@@ -50,8 +58,10 @@ cc <- sample_non_events(classroom_events,
 ```
 
 `scope` selects which non-firing dyads form the candidate pool
-(`"all"`, `"appearance"`, or `"citation"`); `mode` selects the
-sampling design (`"one"` matched-set or `"two"` permuted).
+(`"all"`, `"appearance"`, or `"citation"`); `mode` selects whether
+senders and receivers are drawn from one actor pool (`"one"`, the default)
+or from separate sender and receiver pools (`"two"`, for bipartite
+networks).
 
 **Risk-set exclusions.** Two further controls keep ineligible dyads out of the
 candidate pool. `exclude_pairs` is a two-column `(sender, receiver)` table of
@@ -61,7 +71,7 @@ controls. And under `risk = "remove"`, a dyad firing at the focal event's own
 timestamp is now treated as a concurrent event (not a valid non-event at that
 instant) and excluded from its control pool:
 
-```r
+```{r, eval = FALSE}
 cc <- sample_non_events(event_log,
                         scope         = "all",
                         mode          = "two",
@@ -77,10 +87,11 @@ the case-control partial likelihood for 1:1 matched designs). For
 internally). AIC values are comparable across specifications that
 share a case-control draw.
 
-To compute endogenous covariates for the sampled non-events
-*without* letting them enter the event history, pass the true event
-log as `history_log` to `endogenous_features()` — only rows
-present in `history_log` update the running network state.
+`endogenous_features()` on a case-control table (a 0/1 `event` column with
+control rows, as `sample_non_events()` returns) builds the network history
+from the observed events only: the sampled non-events are scored against it
+but never enter it. `history_log` overrides this with an explicit history
+(only rows present in `history_log` update the running network state).
 
 For set-valued covariates, the `"sender_receivers_set"` statistic returns a
 **list-column**: for each row, the set of receivers the row's sender has reached
@@ -88,7 +99,7 @@ before it (e.g. the regions a species has already invaded). It honours
 `history_log` too, so it is correct for non-events. Downstream, you join it to
 an external lookup to build the actual covariate:
 
-```r
+```{r, eval = FALSE}
 feats <- endogenous_features(cc, stats = "sender_receivers_set",
                                      history_log = event_log)
 feats$invaded <- Map(setdiff, feats$sender_receivers_set, native_range(feats$sender))
@@ -125,7 +136,7 @@ computation. It has three backends:
   the matched event/control random effect (identified when the event and
   control differ on `x`).
 
-```r
+```{r, eval = FALSE}
 # case-20-control conditional logit (e.g. an eventnet-preprocessed log)
 fit20 <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
              data = lesmis, method = "clogit", stratum = "EVENT_INTERVAL")
@@ -172,7 +183,7 @@ below.
 A single call evaluates a list of candidate specifications on a
 shared case-control sample:
 
-```r
+```{r compare-models}
 data(classroom_events)
 compare_models(
   classroom_events,
@@ -183,24 +194,14 @@ compare_models(
     interrupted = c("reciprocity_time_recent_interrupted",
                     "transitivity_time_recent_interrupted")),
   n_controls = 1, seed = 11)
-#>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -305.5233 615.0466     0.000
-#> 2  continuous       2   691 -421.1231 846.2462   231.200
-#> 3 interrupted       2   691 -439.6904 883.3809   268.334
 ```
 
-Runtime: **0.3 s**.
-
-![compare_models AIC](figures/est-aic-models.png)
-
 **Read this with caution.** Without an actor-heterogeneity
-correction, `*_count` statistics absorb sender / receiver activity
-differences directly, so a spec that should encode *"how recently
-did this dyad fire?"* reduces to *"how active is this sender?"*.
-The naive count win is a well-known artefact. Adding a sender
-frailty term flips the ranking to **continuous** by ΔAIC ≈ 6,
-recovering Table 3 of Juozaitienė & Wit (2024) — see
-[Real-data analysis](real-data-analysis.html) for the corrected fit.
+correction, `*_count` statistics also carry sender and receiver activity:
+an actor who sends a lot accumulates large counts, so part of a count
+specification's advantage reflects who is active rather than how the dyad's
+history drives its rate. [Real-data analysis](real-data-analysis.html) repeats
+this comparison with a sender frailty.
 
 | Argument | Meaning |
 |---|---|
@@ -218,7 +219,7 @@ the fitted model objects — one per spec, named by model — as
 `attr(result, "fits")`, so an individual fit can be pulled out for plotting its
 estimated effects:
 
-```r
+```{r, eval = FALSE}
 res <- compare_models_smooth(event_log, models, keep_fits = TRUE)
 plot(attr(res, "fits")[["nl"]])     # the chosen spec's smooth panel
 ```
@@ -249,8 +250,8 @@ non-linear via a tensor product smooth). Implementation follows
 [Boschi, Lerner & Wit (2025)](https://arxiv.org/abs/2509.05289)
 Section 3.3:
 
-```r
-compare_models_smooth(
+```{r compare-smooth}
+cms <- compare_models_smooth(
   classroom_events,
   models = list(
     linear = c(reciprocity_time_recent  = "linear",
@@ -260,21 +261,13 @@ compare_models_smooth(
     tv    = c(reciprocity_time_recent  = "tv",
                transitivity_time_recent = "tv")),
   seed = 11, k = 5)
-#>    model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1    nl       2   691 -418.3044 845.6569     0.000
-#> 2 linear       2   691 -421.1231 846.2462     0.589
-#> 3    tv       2   691 -420.7474 849.6835     4.027
+cms
 ```
 
-Runtime: **1.9 s**.
-
-![compare_models_smooth AIC](figures/est-smooth-aic.png)
-
-The three specs are within 4 AIC points of each other on the
-recency-time terms — there is no signal in this dataset that a
-time-varying or non-linear effect adds value over the linear
-baseline. The case-vs-control matrix design behind these fits is
-described in detail at the bottom of this section.
+On the recency-time terms of this log the `r cms$model[1]` specification has
+the lowest AIC, `r fmt(cms$delta_AIC[2])` ahead of `r cms$model[2]` and
+`r fmt(cms$delta_AIC[3])` ahead of `r cms$model[3]`. The case-vs-control matrix
+design behind these fits is described in the table below.
 
 | Effect | Smooth term |
 |---|---|
@@ -312,7 +305,7 @@ control carries its own `time`. Compute endogenous statistics against
 the real history (`history_log`), evaluate the global covariate at each
 row's time, widen, and fit with `rem()`:
 
-```r
+```{r global-rem}
 g <- data.frame(time        = seq(0, max(classroom_events$time), length = 50),
                 temperature = sin(seq(0, 2 * pi, length = 50)))
 at <- function(t) g$temperature[findInterval(t, g$time)]
@@ -340,7 +333,7 @@ and 100.
 `compare_models_global()` runs the same design for a list of
 specifications and ranks them by AIC:
 
-```r
+```{r global-compare}
 compare_models_global(
   classroom_events,
   models = list(
@@ -380,33 +373,50 @@ normalisation, `Ŵ[γ̂, u] = Ĵ^{-1/2} · n^{-1/2} · G[γ̂, u]`
 converges to a standard (multivariate) Brownian bridge under
 correct specification.
 
-```r
+```{r gof}
 m <- c(reciprocity_count  = "linear",
        transitivity_count = "linear")
 
-gof_univariate(classroom_events, m, "reciprocity_count",  seed = 11)
-#> $statistic        : 0.929
-#> $p_value          : 0.354          # not rejected
-gof_univariate(classroom_events, m, "transitivity_count", seed = 11)
-#> $statistic        : 2.299
-#> $p_value          : 0.000          # rejected -- transitivity is misspecified
+gu_r <- gof_univariate(classroom_events, m, "reciprocity_count",  seed = 11)
+gu_t <- gof_univariate(classroom_events, m, "transitivity_count", seed = 11)
+gg   <- gof_global(classroom_events, m, seed = 11)
 
-gof_global(classroom_events, m, seed = 11)
-#> $statistic : 3089.6
-#> $p_value   : 0.000                 # overall model rejected
+rbind(reciprocity_count  = c(statistic = gu_r$statistic, p_value = gu_r$p_value),
+      transitivity_count = c(statistic = gu_t$statistic, p_value = gu_t$p_value),
+      global             = c(statistic = gg$statistic,   p_value = gg$p_value))
 ```
 
-![GOF cumulative process](figures/est-gof-process.png)
+```{r gof-figure, fig.alt = "Absolute cumulative martingale residual processes against a 95% Brownian-bridge envelope"}
+# 95% pointwise envelope of |Brownian bridge| by simulation
+set.seed(99)
+u <- gu_r$u; n_grid <- length(u)
+env <- replicate(500, {
+  b <- cumsum(rnorm(n_grid, sd = sqrt(1 / n_grid)))
+  abs(b - u * b[n_grid])
+})
+band <- apply(env, 1, stats::quantile, 0.95)
+plot(u, abs(gu_r$W), type = "n", ylim = c(0, 1.35 * max(abs(c(gu_r$W, gu_t$W)), band)),
+     xlab = "u (rescaled event index)", ylab = expression("|" * hat(W)(u) * "|"))
+polygon(c(u, rev(u)), c(band, rep(0, n_grid)), col = "grey85", border = NA)
+lines(gu_r$u, abs(gu_r$W), lwd = 2, col = "#1d4e89")
+lines(gu_t$u, abs(gu_t$W), lwd = 2, col = "#d97706")
+legend("top", bty = "n", lwd = 2, col = c("#1d4e89", "#d97706"), horiz = TRUE, cex = 0.85,
+       legend = sprintf("%s (p = %.3f)", c("reciprocity_count", "transitivity_count"),
+                        c(gu_r$p_value, gu_t$p_value)))
+```
 
-`reciprocity_count`'s process (blue) stays inside the 95 %
-Brownian-bridge envelope; `transitivity_count`'s process (orange)
-shoots well above the envelope around `u ≈ 0.30`, where the
-running residual is most informative. The omnibus Cauchy
-combination rejects the overall model with `p < 10⁻³` — and the
-per-component test pinpoints `transitivity_count` as the offender.
-The right next move is to enrich the transitivity term (try
-`tv`, `nl`, or a finer variant from the
-[Endogenous catalogue](endogenous-catalogue.html)) and re-test.
+```{r gof-numbers, include = FALSE}
+verdict <- function(p) if (p < 0.05) "rejected at the 5% level" else "not rejected at the 5% level"
+```
+
+The grey band is the 95% pointwise envelope of a Brownian bridge. For
+`reciprocity_count` the univariate test gives p = `r fmt(gu_r$p_value, 3)`
+(`r verdict(gu_r$p_value)`), for `transitivity_count` p =
+`r fmt(gu_t$p_value, 3)` (`r verdict(gu_t$p_value)`), and the omnibus Cauchy
+combination gives p = `r fmt(gg$p_value, 3)` (`r verdict(gg$p_value)`). When a
+component is rejected, the next step is to enrich that term (try `tv`, `nl`, or
+a finer variant from the [Endogenous catalogue](endogenous-catalogue.html)) and
+re-test.
 
 | Function | Statistic | p-value |
 |---|---|---|
@@ -419,11 +429,9 @@ These tests are complementary to the AIC-based selection performed
 by `compare_models*()`: AIC ranks competing fits, GOF tests check
 that the ranked-best fit is actually adequate.
 
-These p-values are well calibrated under the null and for *bounded* statistics,
-but become anti-conservative for *unbounded count* statistics in the presence of
-a real effect — read them as diagnostic there. See the
-[GoF calibration](gof-calibration.html) article for the empirical study and
-guidance.
+The [GoF calibration](gof-calibration.html) article measures the type-I error
+of `gof_univariate()` under correct specification, for count, decayed and
+recency statistics with and without a real effect.
 
 ---
 
@@ -435,23 +443,39 @@ returns one row per case-control observation with the residual
 is the fitted probability that observation `i` is the case in its
 two-element risk set:
 
-```r
+```{r martingale}
 res <- martingale_residuals(
   classroom_events,
   model = c(reciprocity_count  = "linear",
             transitivity_count = "linear"),
   seed = 7)
 # Residuals sum to zero within each (case, control) stratum:
-#> Min       1st Qu    Median    Mean    3rd Qu    Max
-#> -1.7e-16 -5.6e-17   0.0e+00  -3.6e-18 4.1e-17   2.2e-16
+summary(tapply(res$residual, res$stratum, sum))
 ```
 
-![Martingale residuals over time](figures/est-martingale.png)
+```{r martingale-figure, fig.alt = "Martingale residuals over event time with a loess curve per role"}
+role_col <- c(case = "#d62728", control = "#5b9bd5")
+plot(res$time, res$residual, pch = 16, cex = 0.5,
+     col = grDevices::adjustcolor(role_col[res$role], 0.4),
+     xlab = "event time", ylab = expression(M[i] == y[i] - pi[i]))
+abline(h = 0, col = "grey55")
+for (r in names(role_col)) {
+  d <- res[res$role == r, ]
+  lo <- stats::loess(residual ~ time, data = d, span = 0.4)
+  o <- order(d$time)
+  lines(d$time[o], stats::predict(lo)[o], lwd = 2, col = role_col[[r]])
+}
+legend("bottomright", bty = "n", pch = 16, col = role_col, legend = names(role_col))
+```
 
-The within-stratum zero-sum invariant holds to machine precision.
-The loess overlays per role would land on zero under correct
-specification; the visible separation here is consistent with the
-GOF rejection above. Currently linear-effect specs only.
+The largest within-stratum sum is
+`r formatC(max(abs(tapply(res$residual, res$stratum, sum))), format = "e", digits = 1)`
+in absolute value, so the zero-sum invariant holds to floating-point precision.
+A case residual is \(1 - \pi_i \ge 0\) and its control's is the mirror image,
+so the two curves are symmetric about zero by construction. The closer the case
+curve lies to zero, the more probability the model gives the observed events;
+a stretch where it rises marks the part of the stream the model fits worst.
+Currently linear-effect specs only.
 
 ---
 
@@ -489,7 +513,7 @@ likelihood. This keeps GAM-style interpretability (per-feature curves via
 `plot(type = "pdp")`) while `batch_strata` mini-batching scales to event
 logs far beyond what an in-memory smooth fit can hold:
 
-```r
+```{r, eval = FALSE}
 fit_add <- rem(IS_OBSERVED ~ individual.activity + dyadic.activity,
                data = lesmis, method = "nn", stratum = "EVENT_INTERVAL",
                nn = nn_control(architecture = "additive_spline",

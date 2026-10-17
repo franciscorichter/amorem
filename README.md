@@ -64,17 +64,15 @@ build.
 
 ## Status
 
-- **CRAN:** 1.0.0, published 2026-06-29. Version 1.0.1 (the `compare_models()`
-  stratification fix under **survival** < 3.7-3) is tagged `v1.0.1` and prepared in `DESCRIPTION`,
-  `NEWS.md` and `cran-comments.md`, but CRAN still serves 1.0.0.
-- **Planned for 1.1.0:** a hyper-event case-control sampler with history-aware
-  masking, so that hyper-event data can be fitted with `rem()`; resolving the
-  S3 class clash on `"rem"` with `relevent::rem()` and `redeem::rem()`.
-- **Open checks:** the `coxme` path with two random-effect axes
-  (`random_effects = c("sender", "receiver")`) may still be affected by the
-  stratification bug; validation artefacts that call `compare_models()` with
-  more than one control report shifted absolute log-likelihood and AIC
-  (Δ columns are unaffected).
+- **CRAN:** 1.0.0, published 2026-06-29. Version 1.1.0 was submitted on
+  2026-10-17 (`CRAN-SUBMISSION` records the commit) and awaits the maintainer's
+  email confirmation and CRAN review.
+- **Planned:** a hyper-event case-control sampler with history-aware masking,
+  so that hyper-event data can be fitted with `rem()`; resolving the S3 class
+  clash on `"rem"` with `relevent::rem()` and `redeem::rem()`.
+- **Open check:** the `coxme` path with two random-effect axes
+  (`random_effects = c("sender", "receiver")`) has not been re-validated since
+  the stratification fix.
 - **Companion paper:** the software paper describing version 1.0.0 is being
   revised outside this repository (host `air`,
   `~/System/Research/amorem-revision-20260812/`). The local `paper/` folder is

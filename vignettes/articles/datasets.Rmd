@@ -56,11 +56,10 @@ These differences matter for inference: the `*_count` family in
 the [Endogenous catalogue](endogenous-catalogue.html) absorbs activity
 heterogeneity directly, so heavy-tailed datasets like
 Manufacturing and CollegeMsg make sender / receiver random
-effects (or `compare_models_smooth()` non-linear specs) a near-
-requirement for honest interpretation. See
+effects (or `compare_models_smooth()` non-linear specs) part of any
+comparison between count and timing statistics. See
 [Real-data analysis](real-data-analysis.html) for the worked example
-on Classroom (where the AIC ranking flips once sender frailty is
-added).
+on Classroom, with and without a sender frailty.
 
 ## Provenance
 
