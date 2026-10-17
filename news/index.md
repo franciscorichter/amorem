@@ -1,5 +1,31 @@
 # Changelog
 
+## amorem (development version)
+
+### New features
+
+- [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  tests a model fitted with `rem(method = "gam")` with cumulative
+  martingale residuals (Boschi & Wit 2025): over event time
+  (`test = "time"`), over the quantiles of a covariate
+  (`test = "functional_form"`, which detects a wrong shape of the
+  effect), or over the quantiles weighted by the term’s basis
+  (`test = "functional_form_score"`). It works on linear and smooth
+  terms of the fitted model, and its null distribution is a multiplier
+  bootstrap that subtracts the drift from estimating the coefficients.
+  It has [`print()`](https://rdrr.io/r/base/print.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods. The
+  existing
+  [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md),
+  [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md)
+  and
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md)
+  are unchanged.
+
+- [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  fits store the name of their `time` column.
+
 ## amorem 1.1.0
 
 ### Bug fixes

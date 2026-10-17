@@ -377,8 +377,8 @@ compare_models_global(
                     temperature       = "global_smooth")),
   global_covariates = g, seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       2   690 -335.1267 679.9510   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  31.03881
+#> 1 with_global       2   690 -335.1267 679.9509   0.00000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  31.03884
 ```
 
 | Effect type     | Smooth                   | Use                         |
@@ -481,6 +481,71 @@ with and without a real effect.
 
 ------------------------------------------------------------------------
 
+### Testing a fitted model · `gof_rem()`
+
+[`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+applies the same cumulative-residual idea to a model fitted with
+`rem(method = "gam")`, so it covers smooth terms and the penalised fit
+itself. Its null distribution is a multiplier bootstrap that subtracts
+the drift from estimating the coefficients. Three processes are
+available:
+
+- `test = "time"` cumulates the residuals of one term over event time;
+- `test = "functional_form"` cumulates them over the quantiles of the
+  covariate, pooling event and control values, and detects a wrong shape
+  of the effect;
+- `test = "functional_form_score"` weights the same process by the
+  term’s basis (linear and `nl()` terms).
+
+Below, the true effect of a dyadic covariate is non-linear. The linear
+fit and the `nl()` fit are tested for functional form:
+
+``` r
+
+set.seed(7)
+p <- 15; n <- 800
+d <- matrix(runif(p * p, 0, 6), p, p); diag(d) <- NA
+ids <- which(!is.na(d))
+f <- function(x) sin(x) - 0.3 * (x - 3)            # true effect
+ev <- sample(ids, n, replace = TRUE, prob = exp(f(d[ids])))
+nv <- vapply(ev, function(e) sample(ids[ids != e], 1), 0)
+w <- data.frame(time = seq_len(n), x_ev = d[ev], x_nv = d[nv])
+w$x <- w$x_ev - w$x_nv
+
+fit_lin <- rem(~ x,     data = w, method = "gam", time = "time")
+fit_nl  <- rem(~ nl(x), data = w, method = "gam", time = "time")
+g_lin <- gof_rem(fit_lin, "x", test = "functional_form", data = w, seed = 1)
+g_nl  <- gof_rem(fit_nl,  "x", test = "functional_form", seed = 1)
+g_lin
+#> Martingale-residual GoF test of 'x': functional form
+#>   sup statistic = 1.0411, p-value = 0.0000 (2000 bootstrap replicates, n = 800)
+g_nl
+#> Martingale-residual GoF test of 'x': functional form
+#>   sup statistic = 0.2041, p-value = 0.6535 (2000 bootstrap replicates, n = 800)
+```
+
+``` r
+
+op <- par(mfrow = c(1, 2))
+plot(g_lin, main = "linear fit"); plot(g_nl, main = "nl() fit")
+```
+
+![Observed functional-form process against bootstrap processes for the
+linear and nl fits](estimation_files/figure-html/gof-rem-figure-1.png)
+
+``` r
+
+par(op)
+```
+
+The functional-form test gives p = 0.000 for the linear fit and p =
+0.653 for the `nl()` fit. Under correct specification (linear truth,
+linear fit, 100 simulated datasets of 1,500 events) the rejection rates
+at the 5% level were 0.050 (`time`), 0.030 (`functional_form`) and 0.040
+(`functional_form_score`).
+
+------------------------------------------------------------------------
+
 ### Pointwise diagnostic · `martingale_residuals()`
 
 For a more granular per-observation view,
@@ -500,7 +565,7 @@ res <- martingale_residuals(
 # Residuals sum to zero within each (case, control) stratum:
 summary(tapply(res$residual, res$stratum, sum))
 #>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
-#> -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16
+#> -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16
 ```
 
 ``` r
@@ -522,7 +587,7 @@ legend("bottomright", bty = "n", pch = 16, col = role_col, legend = names(role_c
 ![Martingale residuals over event time with a loess curve per
 role](estimation_files/figure-html/martingale-figure-1.png)
 
-The largest within-stratum sum is 2.2e-16 in absolute value, so the
+The largest within-stratum sum is 1.5e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 $`1 - \pi_i \ge 0`$ and its control’s is the mirror image, so the two
 curves are symmetric about zero by construction. The closer the case

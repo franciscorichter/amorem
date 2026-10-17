@@ -88,10 +88,16 @@ summary(fit)
   `enso_nino34`, a reconstructed El Niño index (1301–2005) for use as a
   global covariate.
 - **Goodness of fit** —
-  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
+  [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  tests a fitted
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  model (time, functional-form and score processes, bootstrap null that
+  accounts for the estimated coefficients);
+  [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md),
   [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
-  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md),
-  and pointwise
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md)
+  refit a linear model from the event log; pointwise
   [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md).
 - The earlier
   [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),

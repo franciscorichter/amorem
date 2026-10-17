@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -492,8 +492,8 @@ of specifications and ranks them by AIC:</p>
 <span>                    temperature       <span class="op">=</span> <span class="st">"global_smooth"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  global_covariates <span class="op">=</span> <span class="va">g</span>, seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1 with_global       2   690 -335.1267 679.9510   0.00000</span></span>
-<span><span class="co">#&gt; 2 dyadic_only       2   690 -353.4949 710.9898  31.03881</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 with_global       2   690 -335.1267 679.9509   0.00000</span></span>
+<span><span class="co">#&gt; 2 dyadic_only       2   690 -353.4949 710.9898  31.03884</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -635,6 +635,64 @@ without a real effect.</p>
 <hr>
 </div>
 <div class="section level3">
+<h3 id="testing-a-fitted-model-gof_rem">Testing a fitted model · <code>gof_rem()</code><a class="anchor" aria-label="anchor" href="#testing-a-fitted-model-gof_rem"></a>
+</h3>
+<p><code><a href="../reference/gof_rem.html">gof_rem()</a></code> applies the same cumulative-residual idea to a
+model fitted with <code>rem(method = "gam")</code>, so it covers smooth
+terms and the penalised fit itself. Its null distribution is a
+multiplier bootstrap that subtracts the drift from estimating the
+coefficients. Three processes are available:</p>
+<ul>
+<li>
+<code>test = "time"</code> cumulates the residuals of one term over
+event time;</li>
+<li>
+<code>test = "functional_form"</code> cumulates them over the
+quantiles of the covariate, pooling event and control values, and
+detects a wrong shape of the effect;</li>
+<li>
+<code>test = "functional_form_score"</code> weights the same process
+by the term’s basis (linear and <code>nl()</code> terms).</li>
+</ul>
+<p>Below, the true effect of a dyadic covariate is non-linear. The
+linear fit and the <code>nl()</code> fit are tested for functional
+form:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">7</span><span class="op">)</span></span>
+<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fl">15</span>; <span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">800</span></span>
+<span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">p</span> <span class="op">*</span> <span class="va">p</span>, <span class="fl">0</span>, <span class="fl">6</span><span class="op">)</span>, <span class="va">p</span>, <span class="va">p</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NA</span></span>
+<span><span class="va">ids</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">d</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">f</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="fl">3</span><span class="op">)</span>            <span class="co"># true effect</span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">ids</span>, <span class="va">n</span>, replace <span class="op">=</span> <span class="cn">TRUE</span>, prob <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu">f</span><span class="op">(</span><span class="va">d</span><span class="op">[</span><span class="va">ids</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">nv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">ev</span>, <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="va">ids</span><span class="op">[</span><span class="va">ids</span> <span class="op">!=</span> <span class="va">e</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>, x_ev <span class="op">=</span> <span class="va">d</span><span class="op">[</span><span class="va">ev</span><span class="op">]</span>, x_nv <span class="op">=</span> <span class="va">d</span><span class="op">[</span><span class="va">nv</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">w</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="va">w</span><span class="op">$</span><span class="va">x_ev</span> <span class="op">-</span> <span class="va">w</span><span class="op">$</span><span class="va">x_nv</span></span>
+<span></span>
+<span><span class="va">fit_lin</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="va">x</span>,     data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
+<span><span class="va">fit_nl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">nl</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
+<span><span class="va">g_lin</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit_lin</span>, <span class="st">"x"</span>, test <span class="op">=</span> <span class="st">"functional_form"</span>, data <span class="op">=</span> <span class="va">w</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">g_nl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit_nl</span>,  <span class="st">"x"</span>, test <span class="op">=</span> <span class="st">"functional_form"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">g_lin</span></span>
+<span><span class="co">#&gt; Martingale-residual GoF test of 'x': functional form</span></span>
+<span><span class="co">#&gt;   sup statistic = 1.0411, p-value = 0.0000 (2000 bootstrap replicates, n = 800)</span></span>
+<span><span class="va">g_nl</span></span>
+<span><span class="co">#&gt; Martingale-residual GoF test of 'x': functional form</span></span>
+<span><span class="co">#&gt;   sup statistic = 0.2041, p-value = 0.6535 (2000 bootstrap replicates, n = 800)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_lin</span>, main <span class="op">=</span> <span class="st">"linear fit"</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_nl</span>, main <span class="op">=</span> <span class="st">"nl() fit"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="estimation_files/figure-html/gof-rem-figure-1.png" class="r-plt" alt="Observed functional-form process against bootstrap processes for the linear and nl fits" width="720"></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p>The functional-form test gives p = 0.000 for the linear fit and p =
+0.653 for the <code>nl()</code> fit. Under correct specification (linear
+truth, linear fit, 100 simulated datasets of 1,500 events) the rejection
+rates at the 5% level were 0.050 (<code>time</code>), 0.030
+(<code>functional_form</code>) and 0.040
+(<code>functional_form_score</code>).</p>
+<hr>
+</div>
+<div class="section level3">
 <h3 id="pointwise-diagnostic-martingale_residuals">Pointwise diagnostic · <code>martingale_residuals()</code><a class="anchor" aria-label="anchor" href="#pointwise-diagnostic-martingale_residuals"></a>
 </h3>
 <p>For a more granular per-observation view,
@@ -643,7 +701,7 @@ observation with the residual <code>M_i = y_i − π_i</code> where
 <code>π_i = exp(η_i) / (exp(η_case) + exp(η_ctrl))</code> is the fitted
 probability that observation <code>i</code> is the case in its
 two-element risk set:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/martingale_residuals.html">martingale_residuals</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="st">"linear"</span>,</span>
@@ -652,8 +710,8 @@ two-element risk set:</p>
 <span><span class="co"># Residuals sum to zero within each (case, control) stratum:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">residual</span>, <span class="va">res</span><span class="op">$</span><span class="va">stratum</span>, <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
-<span><span class="co">#&gt; -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt; -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">role_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>case <span class="op">=</span> <span class="st">"#d62728"</span>, control <span class="op">=</span> <span class="st">"#5b9bd5"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">time</span>, <span class="va">res</span><span class="op">$</span><span class="va">residual</span>, pch <span class="op">=</span> <span class="fl">16</span>, cex <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>     col <span class="op">=</span> <span class="fu">grDevices</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grDevices/adjustcolor.html" class="external-link">adjustcolor</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">[</span><span class="va">res</span><span class="op">$</span><span class="va">role</span><span class="op">]</span>, <span class="fl">0.4</span><span class="op">)</span>,</span>
@@ -667,7 +725,7 @@ two-element risk set:</p>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, bty <span class="op">=</span> <span class="st">"n"</span>, pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="va">role_col</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="estimation_files/figure-html/martingale-figure-1.png" class="r-plt" alt="Martingale residuals over event time with a loess curve per role" width="720"></p>
-<p>The largest within-stratum sum is 2.2e-16 in absolute value, so the
+<p>The largest within-stratum sum is 1.5e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><msub><mi>π</mi><mi>i</mi></msub><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">1 - \pi_i \ge 0</annotation></semantics></math>
 and its control’s is the mirror image, so the two curves are symmetric
@@ -714,7 +772,7 @@ keeps GAM-style interpretability (per-feature curves via
 <code>plot(type = "pdp")</code>) while <code>batch_strata</code>
 mini-batching scales to event logs far beyond what an in-memory smooth
 fit can hold:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_add</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">IS_OBSERVED</span> <span class="op">~</span> <span class="va">individual.activity</span> <span class="op">+</span> <span class="va">dyadic.activity</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lesmis</span>, method <span class="op">=</span> <span class="st">"nn"</span>, stratum <span class="op">=</span> <span class="st">"EVENT_INTERVAL"</span>,</span>
 <span>               nn <span class="op">=</span> <span class="fu"><a href="../reference/nn_control.html">nn_control</a></span><span class="op">(</span>architecture <span class="op">=</span> <span class="st">"additive_spline"</span>,</span>

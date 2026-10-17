@@ -62,6 +62,8 @@
   : Omnibus GOF test via Cauchy combination
 - [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md)
   : GOF test for an auxiliary (unmodelled) statistic
+- [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  : Goodness of fit for a fitted relational event model
 
 ## Hyperedge data model
 

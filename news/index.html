@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,6 +47,14 @@
       <small>Source: <a href="https://github.com/franciscorichter/amorem/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="amorem-development-version">amorem (development version)<a class="anchor" aria-label="anchor" href="#amorem-development-version"></a></h2>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li><p><code><a href="../reference/gof_rem.html">gof_rem()</a></code> tests a model fitted with <code>rem(method = "gam")</code> with cumulative martingale residuals (Boschi &amp; Wit 2025): over event time (<code>test = "time"</code>), over the quantiles of a covariate (<code>test = "functional_form"</code>, which detects a wrong shape of the effect), or over the quantiles weighted by the term’s basis (<code>test = "functional_form_score"</code>). It works on linear and smooth terms of the fitted model, and its null distribution is a multiplier bootstrap that subtracts the drift from estimating the coefficients. It has <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods. The existing <code><a href="../reference/gof_univariate.html">gof_univariate()</a></code>, <code><a href="../reference/gof_multivariate.html">gof_multivariate()</a></code>, <code><a href="../reference/gof_global.html">gof_global()</a></code> and <code><a href="../reference/gof_auxiliary.html">gof_auxiliary()</a></code> are unchanged.</p></li>
+<li><p><code><a href="../reference/rem.html">rem()</a></code> fits store the name of their <code>time</code> column.</p></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.1.0" id="amorem-110">amorem 1.1.0<a class="anchor" aria-label="anchor" href="#amorem-110"></a></h2>
 <div class="section level3">
