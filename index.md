@@ -75,8 +75,11 @@ summary(fit)
 - **Datasets** — event logs from published interaction networks, and
   `enso_nino34`, a reconstructed El Niño index (1301–2005) for use as a global
   covariate.
-- **Goodness of fit** — `gof_global()`, `gof_multivariate()`, `gof_auxiliary()`,
-  and pointwise `martingale_residuals()`.
+- **Goodness of fit** — `gof_rem()` tests a fitted `rem()` model (time,
+  functional-form and score processes, bootstrap null that accounts for the
+  estimated coefficients); `gof_univariate()`, `gof_multivariate()`,
+  `gof_global()`, `gof_auxiliary()` refit a linear model from the event log;
+  pointwise `martingale_residuals()`.
 - The earlier `compare_models()`, `compare_models_smooth()` and
   `compare_models_global()` remain available (superseded by `rem()`).
 

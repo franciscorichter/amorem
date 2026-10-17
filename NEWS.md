@@ -1,3 +1,20 @@
+# amorem (development version)
+
+## New features
+
+* `gof_rem()` tests a model fitted with `rem(method = "gam")` with cumulative
+  martingale residuals (Boschi & Wit 2025): over event time
+  (`test = "time"`), over the quantiles of a covariate
+  (`test = "functional_form"`, which detects a wrong shape of the effect), or
+  over the quantiles weighted by the term's basis
+  (`test = "functional_form_score"`). It works on linear and smooth terms of
+  the fitted model, and its null distribution is a multiplier bootstrap that
+  subtracts the drift from estimating the coefficients. It has `print()` and
+  `plot()` methods. The existing `gof_univariate()`, `gof_multivariate()`,
+  `gof_global()` and `gof_auxiliary()` are unchanged.
+
+* `rem()` fits store the name of their `time` column.
+
 # amorem 1.1.0
 
 ## Bug fixes

@@ -85,6 +85,7 @@ reference:
       - gof_multivariate
       - gof_global
       - gof_auxiliary
+      - gof_rem
   - title: "Hyperedge data model"
     contents:
       - hyperedge_log

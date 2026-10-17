@@ -386,7 +386,7 @@ rem <- function(formula, data,
 
   structure(
     list(fit = fit, method = method, formula = formula,
-         terms = terms_info, n = n, gam_formula = fm),
+         terms = terms_info, n = n, gam_formula = fm, time = time),
     class = "rem")
 }
 

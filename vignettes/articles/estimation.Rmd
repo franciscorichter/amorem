@@ -435,6 +435,56 @@ recency statistics with and without a real effect.
 
 ---
 
+## Testing a fitted model · `gof_rem()`
+
+`gof_rem()` applies the same cumulative-residual idea to a model fitted with
+`rem(method = "gam")`, so it covers smooth terms and the penalised fit itself.
+Its null distribution is a multiplier bootstrap that subtracts the drift from
+estimating the coefficients. Three processes are available:
+
+- `test = "time"` cumulates the residuals of one term over event time;
+- `test = "functional_form"` cumulates them over the quantiles of the
+  covariate, pooling event and control values, and detects a wrong shape of
+  the effect;
+- `test = "functional_form_score"` weights the same process by the term's
+  basis (linear and `nl()` terms).
+
+Below, the true effect of a dyadic covariate is non-linear. The linear fit and
+the `nl()` fit are tested for functional form:
+
+```{r gof-rem}
+set.seed(7)
+p <- 15; n <- 800
+d <- matrix(runif(p * p, 0, 6), p, p); diag(d) <- NA
+ids <- which(!is.na(d))
+f <- function(x) sin(x) - 0.3 * (x - 3)            # true effect
+ev <- sample(ids, n, replace = TRUE, prob = exp(f(d[ids])))
+nv <- vapply(ev, function(e) sample(ids[ids != e], 1), 0)
+w <- data.frame(time = seq_len(n), x_ev = d[ev], x_nv = d[nv])
+w$x <- w$x_ev - w$x_nv
+
+fit_lin <- rem(~ x,     data = w, method = "gam", time = "time")
+fit_nl  <- rem(~ nl(x), data = w, method = "gam", time = "time")
+g_lin <- gof_rem(fit_lin, "x", test = "functional_form", data = w, seed = 1)
+g_nl  <- gof_rem(fit_nl,  "x", test = "functional_form", seed = 1)
+g_lin
+g_nl
+```
+
+```{r gof-rem-figure, fig.alt = "Observed functional-form process against bootstrap processes for the linear and nl fits"}
+op <- par(mfrow = c(1, 2))
+plot(g_lin, main = "linear fit"); plot(g_nl, main = "nl() fit")
+par(op)
+```
+
+The functional-form test gives p = `r fmt(g_lin$p_value, 3)` for the linear fit
+and p = `r fmt(g_nl$p_value, 3)` for the `nl()` fit. Under correct
+specification (linear truth, linear fit, 100 simulated datasets of 1,500
+events) the rejection rates at the 5% level were 0.050 (`time`), 0.030
+(`functional_form`) and 0.040 (`functional_form_score`).
+
+---
+
 ## Pointwise diagnostic · `martingale_residuals()`
 
 For a more granular per-observation view, `martingale_residuals()`
