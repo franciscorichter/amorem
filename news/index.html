@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,9 +48,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="amorem-development-version">amorem (development version)<a class="anchor" aria-label="anchor" href="#amorem-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.2.0" id="amorem-120">amorem 1.2.0<a class="anchor" aria-label="anchor" href="#amorem-120"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-1-2-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-2-0"></a></h3>
 <ul><li><p><code>sample_non_events(scope = "citation")</code> always draws the citing paper and the cited papers from separate pools. Under the <code>mode = "one"</code> default of 1.1.0 it pooled them, so most controls had a sender other than the citing paper.</p></li>
 <li><p><code>rem(method = "nn")</code> and <code><a href="../reference/nn_uncertainty.html">nn_uncertainty()</a></code> no longer change the caller’s random-number state when given a seed (CRAN policy); fitted results are unchanged.</p></li>
 <li><p>Partial-dependence curves of <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> on neural fits and of <code><a href="../reference/nn_uncertainty.html">nn_uncertainty()</a></code> span the 1st to 99th percentile of each feature instead of the mean ± 2 standard deviations, which reached below the data for skewed, non-negative statistics.</p></li>
@@ -58,12 +58,12 @@
 <li><p><code>simulate_relational_events(method = "tau_leap")</code> stops with a message when a single step would draw more than ten million events, which happens when an effect grows without bound; it could exhaust memory.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<h3 id="new-features-1-2-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-2-0"></a></h3>
 <ul><li><p><code><a href="../reference/gof_rem.html">gof_rem()</a></code> tests a model fitted with <code>rem(method = "gam")</code> with cumulative martingale residuals (Boschi &amp; Wit 2025): over event time (<code>test = "time"</code>), over the quantiles of a covariate (<code>test = "functional_form"</code>, which detects a wrong shape of the effect), or over the quantiles weighted by the term’s basis (<code>test = "functional_form_score"</code>). It works on linear and smooth terms of the fitted model, and its null distribution is a multiplier bootstrap that subtracts the drift from estimating the coefficients. It has <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods (<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> takes <code>main</code> and a <code>legend</code> position). The existing <code><a href="../reference/gof_univariate.html">gof_univariate()</a></code>, <code><a href="../reference/gof_multivariate.html">gof_multivariate()</a></code>, <code><a href="../reference/gof_global.html">gof_global()</a></code> and <code><a href="../reference/gof_auxiliary.html">gof_auxiliary()</a></code> are unchanged.</p></li>
 <li><p><code><a href="../reference/rem.html">rem()</a></code> fits store the name of their <code>time</code> column.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="datasets-development-version">Datasets<a class="anchor" aria-label="anchor" href="#datasets-development-version"></a></h3>
+<h3 id="datasets-1-2-0">Datasets<a class="anchor" aria-label="anchor" href="#datasets-1-2-0"></a></h3>
 <ul><li><p>New event logs, all under licences that allow redistribution: <code>copenhagen_calls</code>, <code>copenhagen_sms</code> and <code>copenhagen_actors</code> (Copenhagen Networks Study, MIT); <code>us_leader_visits</code> (leader-to-leader visits to and from the United States, 1945-2019, CC0); <code>football_results</code> (men’s international football matches since 1872, CC0); <code>ucdp_dyads</code> (UCDP armed-conflict dyads, 1946-2025, CC BY 4.0); <code>alien_invasions</code> (first records of alien species by region, 1880-2005, CC0).</p></li>
 <li><p>New hyperevent log: <code>congress_bills_118</code>, one sponsor and the cosponsors of each bill of the 118th US Congress, with <code>congress_members_118</code> (public domain).</p></li>
 <li><p>New global covariates: <code>oni</code> (Oceanic Nino Index since 1950), <code>daily_weather</code> (NOAA daily temperature and precipitation for the cities of the bundled email and messaging logs) and <code>public_holidays</code>.</p></li>

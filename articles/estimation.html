@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">amorem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -492,8 +492,8 @@ of specifications and ranks them by AIC:</p>
 <span>                    temperature       <span class="op">=</span> <span class="st">"global_smooth"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  global_covariates <span class="op">=</span> <span class="va">g</span>, seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1 with_global       2   690 -335.1267 679.9509   0.00000</span></span>
-<span><span class="co">#&gt; 2 dyadic_only       2   690 -353.4949 710.9898  31.03884</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 with_global       2   690 -335.1267 679.9510   0.00000</span></span>
+<span><span class="co">#&gt; 2 dyadic_only       2   690 -353.4949 710.9898  31.03881</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -710,7 +710,7 @@ two-element risk set:</p>
 <span><span class="co"># Residuals sum to zero within each (case, control) stratum:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">residual</span>, <span class="va">res</span><span class="op">$</span><span class="va">stratum</span>, <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
-<span><span class="co">#&gt; -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16</span></span></code></pre></div>
+<span><span class="co">#&gt; -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">role_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>case <span class="op">=</span> <span class="st">"#d62728"</span>, control <span class="op">=</span> <span class="st">"#5b9bd5"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">time</span>, <span class="va">res</span><span class="op">$</span><span class="va">residual</span>, pch <span class="op">=</span> <span class="fl">16</span>, cex <span class="op">=</span> <span class="fl">0.5</span>,</span>
@@ -725,7 +725,7 @@ two-element risk set:</p>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, bty <span class="op">=</span> <span class="st">"n"</span>, pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="va">role_col</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="estimation_files/figure-html/martingale-figure-1.png" class="r-plt" alt="Martingale residuals over event time with a loess curve per role" width="720"></p>
-<p>The largest within-stratum sum is 1.5e-16 in absolute value, so the
+<p>The largest within-stratum sum is 2.2e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><msub><mi>π</mi><mi>i</mi></msub><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">1 - \pi_i \ge 0</annotation></semantics></math>
 and its control’s is the mirror image, so the two curves are symmetric
