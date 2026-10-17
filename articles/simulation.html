@@ -91,7 +91,8 @@
 on top of an event-by-event inner loop. Two algorithms drive the loop:
 <strong>Gillespie</strong> (exact, per-event) and
 <strong>τ-leap</strong> (approximate, fixed time slices). The two are
-compared at the bottom of this page.</p>
+compared at the bottom of this page. The examples on this page run when
+the page is built.</p>
 <div class="section level3">
 <h3 id="the-five-mechanisms">The five mechanisms<a class="anchor" aria-label="anchor" href="#the-five-mechanisms"></a>
 </h3>
@@ -165,8 +166,11 @@ Gillespie scheme.</li>
 </tr>
 <tr class="even">
 <td>Case–control output</td>
-<td><code>n_controls</code></td>
-<td>≥ 1 activates stratified output</td>
+<td>
+<code>n_controls</code>, <code>wide</code>
+</td>
+<td>≥ 1 activates stratified output; <code>wide = TRUE</code> gives one
+row per event</td>
 </tr>
 <tr class="odd">
 <td>Algorithm</td>
@@ -195,23 +199,104 @@ Gillespie scheme.</li>
 <h4 id="minimal-gillespie">Minimal Gillespie<a class="anchor" aria-label="anchor" href="#minimal-gillespie"></a>
 </h4>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events      <span class="op">=</span> <span class="fl">500</span>,</span>
 <span>  senders       <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
 <span>  receivers     <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">]</span>,</span>
-<span>  baseline_rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span>  baseline_rate <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ev</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   sender receiver       time</span></span>
+<span><span class="co">#&gt; 1      A        C 0.02517273</span></span>
+<span><span class="co">#&gt; 2      B        C 0.03002962</span></span>
+<span><span class="co">#&gt; 3      D        E 0.09668795</span></span>
+<span><span class="co">#&gt; 4      B        F 0.11122357</span></span>
+<span><span class="co">#&gt; 5      C        F 0.17902660</span></span>
+<span><span class="co">#&gt; 6      A        C 0.19149479</span></span></code></pre></div>
+<p>With a homogeneous rate every one of the 30 admissible dyads (no
+loops) is equally likely, so each dyad fires about 16.7 times on
+average; here the counts range from 9 to 26. Waiting times are
+exponential with rate 30 (baseline 1 per dyad), so the log spans 16.97
+time units.</p>
+</div>
+<div class="section level4">
+<h4 id="per-dyad-contribution-logits">Per-dyad contribution logits<a class="anchor" aria-label="anchor" href="#per-dyad-contribution-logits"></a>
+</h4>
+<p>A static matrix shifts the log-rate of each dyad. Here dyads whose
+sender and receiver share a group get a log-rate bonus of 1.5:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">actors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span></span>
+<span><span class="va">group</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">logits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/outer.html" class="external-link">outer</a></span><span class="op">(</span><span class="va">group</span>, <span class="va">group</span>, <span class="kw">function</span><span class="op">(</span><span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">a</span> <span class="op">==</span> <span class="va">b</span>, <span class="fl">1.5</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dimnames.html" class="external-link">dimnames</a></span><span class="op">(</span><span class="va">logits</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">actors</span>, <span class="va">actors</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">ev_g</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>  n_events <span class="op">=</span> <span class="fl">1000</span>, senders <span class="op">=</span> <span class="va">actors</span>, receivers <span class="op">=</span> <span class="va">actors</span>,</span>
+<span>  contribution_logits <span class="op">=</span> <span class="va">logits</span><span class="op">)</span></span>
+<span><span class="va">within_share</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">group</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">ev_g</span><span class="op">$</span><span class="va">sender</span>, <span class="va">actors</span><span class="op">)</span><span class="op">]</span> <span class="op">==</span></span>
+<span>                     <span class="va">group</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/match.html" class="external-link">match</a></span><span class="op">(</span><span class="va">ev_g</span><span class="op">$</span><span class="va">receiver</span>, <span class="va">actors</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">within_share</span></span>
+<span><span class="co">#&gt; [1] 0.74</span></span></code></pre></div>
+<p>Within-group dyads make up 24 of the 56 admissible dyads; with weight
+<code>exp(1.5)</code> they should carry a share of 0.771 of the events,
+and the simulated share is 0.740.</p>
+</div>
+<div class="section level4">
+<h4 id="exogenous-sender-covariates">Exogenous sender covariates<a class="anchor" aria-label="anchor" href="#exogenous-sender-covariates"></a>
+</h4>
+<p>Per-actor covariates enter through a numeric table with one row per
+sender and a vector of effects:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">actors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">activity</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>activity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span>, length.out <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">ev_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>  n_events <span class="op">=</span> <span class="fl">2000</span>, senders <span class="op">=</span> <span class="va">actors</span>, receivers <span class="op">=</span> <span class="va">actors</span>,</span>
+<span>  sender_covariates <span class="op">=</span> <span class="va">activity</span>, sender_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>activity <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sent</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/vector.html" class="external-link">as.vector</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="va">ev_x</span><span class="op">$</span><span class="va">sender</span>, levels <span class="op">=</span> <span class="va">actors</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">activity</span>, <span class="va">sent</span><span class="op">)</span></span>
+<span><span class="co">#&gt;      activity sent</span></span>
+<span><span class="co">#&gt; 1  -1.0000000   70</span></span>
+<span><span class="co">#&gt; 2  -0.7777778   70</span></span>
+<span><span class="co">#&gt; 3  -0.5555556   98</span></span>
+<span><span class="co">#&gt; 4  -0.3333333  107</span></span>
+<span><span class="co">#&gt; 5  -0.1111111  135</span></span>
+<span><span class="co">#&gt; 6   0.1111111  196</span></span>
+<span><span class="co">#&gt; 7   0.3333333  233</span></span>
+<span><span class="co">#&gt; 8   0.5555556  278</span></span>
+<span><span class="co">#&gt; 9   0.7777778  350</span></span>
+<span><span class="co">#&gt; 10  1.0000000  463</span></span></code></pre></div>
+<p>The sender with the highest covariate value sends 463 events and the
+one with the lowest 70; their ratio, 6.61, compares with
+<code>exp(2)</code> = 7.39 implied by an effect of 1 over a covariate
+range of 2.</p>
 </div>
 <div class="section level4">
 <h4 id="endogenous-structure">Endogenous structure<a class="anchor" aria-label="anchor" href="#endogenous-structure"></a>
 </h4>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">ev_e</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events           <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  senders            <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>,</span>
 <span>  receivers          <span class="op">=</span> <span class="va">letters</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span>,</span>
 <span>  endogenous_stats   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span>
-<span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="fl">0.4</span>,</span>
-<span>                          transitivity_count <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="fl">0.4</span>,</span>
+<span>                         transitivity_count <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">feats</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">ev_e</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>,</span>
+<span>                                            <span class="st">"transitivity_count"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">feats</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  reciprocity_count transitivity_count</span></span>
+<span><span class="co">#&gt;  Min.   :  0.0     Min.   :0.000     </span></span>
+<span><span class="co">#&gt;  1st Qu.: 41.0     1st Qu.:5.000     </span></span>
+<span><span class="co">#&gt;  Median :165.5     Median :5.000     </span></span>
+<span><span class="co">#&gt;  Mean   :172.9     Mean   :5.432     </span></span>
+<span><span class="co">#&gt;  3rd Qu.:289.8     3rd Qu.:7.000     </span></span>
+<span><span class="co">#&gt;  Max.   :414.0     Max.   :7.000</span></span></code></pre></div>
+<p><code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> recomputes the statistics from the
+timestamps alone; the simulator applies the same definitions while it
+generates the events (the <a href="validation-experiments.html">Validation experiments</a>, E5,
+compare the two row for row).</p>
 </div>
 <div class="section level4">
 <h4 id="casecontrol-output">Case–control output<a class="anchor" aria-label="anchor" href="#casecontrol-output"></a>
@@ -220,108 +305,135 @@ Gillespie scheme.</li>
 table directly: each fired event becomes one <em>case</em> row paired
 with <code>k</code> <em>control</em> rows drawn from the non-event risk
 set at that moment, sharing a <code>stratum</code> id.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events           <span class="op">=</span> <span class="fl">1200</span>,</span>
 <span>  senders            <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
 <span>  receivers          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">20</span><span class="op">)</span>,</span>
 <span>  endogenous_stats   <span class="op">=</span> <span class="st">"reciprocity_count"</span>,</span>
 <span>  endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span>,</span>
-<span>  n_controls         <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span>  n_controls         <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">stratum</span>, <span class="op">-</span><span class="va">cc</span><span class="op">$</span><span class="va">event</span><span class="op">)</span>, <span class="op">]</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   stratum event sender receiver        time reciprocity_count</span></span>
+<span><span class="co">#&gt; 1       1     1     a2      a14 0.005231605                 0</span></span>
+<span><span class="co">#&gt; 2       1     0    a15      a10 0.005231605                 0</span></span>
+<span><span class="co">#&gt; 3       2     1     a1       a3 0.007413057                 0</span></span>
+<span><span class="co">#&gt; 4       2     0    a17      a20 0.007413057                 0</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/therneau/survival" class="external-link">survival</a></span><span class="op">)</span>   <span class="co"># clogit() and strata()</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">clogit</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">reciprocity_count</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">stratum</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">cc</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; reciprocity_count </span></span>
+<span><span class="co">#&gt;         0.4690212</span></span></code></pre></div>
+<p>The conditional-logit estimate from this one sample is 0.469 against
+the generating value 0.6. With <code>wide = TRUE</code> (and
+<code>n_controls = 1</code>) the same output comes as one row per event,
+ready for <code>rem(method = "gam")</code>.</p>
 </div>
 <div class="section level4">
 <h4 id="time-varying-global-covariates">Time-varying global covariates<a class="anchor" aria-label="anchor" href="#time-varying-global-covariates"></a>
 </h4>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span>, <span class="fl">5</span><span class="op">)</span>,</span>
 <span>                weekend    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">ev</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="va">ev_w</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
 <span>  n_events          <span class="op">=</span> <span class="fl">800</span>,</span>
 <span>  senders           <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,</span>
 <span>  receivers         <span class="op">=</span> <span class="va">LETTERS</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">]</span>,</span>
 <span>  baseline_rate     <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  global_covariates <span class="op">=</span> <span class="va">g</span>,</span>
-<span>  global_effects    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>weekend <span class="op">=</span> <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  global_effects    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>weekend <span class="op">=</span> <span class="op">-</span><span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">in_weekend</span> <span class="op">&lt;-</span> <span class="va">ev_w</span><span class="op">$</span><span class="va">time</span> <span class="op">&gt;=</span> <span class="fl">2</span> <span class="op">&amp;</span> <span class="va">ev_w</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fl">5</span></span>
+<span><span class="va">rate_weekend</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">in_weekend</span><span class="op">)</span> <span class="op">/</span> <span class="fl">3</span></span>
+<span><span class="va">rate_week</span>    <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">!</span><span class="va">in_weekend</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">ev_w</span><span class="op">$</span><span class="va">time</span><span class="op">)</span> <span class="op">-</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>events_per_unit_weekend <span class="op">=</span> <span class="va">rate_weekend</span>, events_per_unit_otherwise <span class="op">=</span> <span class="va">rate_week</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   events_per_unit_weekend events_per_unit_otherwise </span></span>
+<span><span class="co">#&gt;                  16.00000                  56.92281</span></span></code></pre></div>
 <p>A boundary-aware Gillespie scheme advances the clock across each
-<code>time_start</code> boundary without artificially recording or
-losing events.</p>
+<code>time_start</code> boundary without recording or losing events. The
+event rate during the “weekend” interval <code>[2, 5)</code> is 16.0 per
+time unit against 56.9 outside it, a ratio of 0.281; the effect of −1.5
+implies <code>exp(-1.5)</code> = 0.223. Each row also carries the
+covariate value at its time (<code>weekend</code> column).</p>
 <hr>
 </div>
 </div>
 <div class="section level3">
+<h3 id="engines-and-the-statistic-catalogue">Engines and the statistic catalogue<a class="anchor" aria-label="anchor" href="#engines-and-the-statistic-catalogue"></a>
+</h3>
+<p>Both algorithms update the endogenous state from the realized events.
+The post-hoc <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> evaluates a statistic in
+compiled code when it is listed by <code><a href="../reference/cpp_supported_stats.html">cpp_supported_stats()</a></code>,
+and in R otherwise:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">supported</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cpp_supported_stats.html">cpp_supported_stats</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">supported</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 66</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">supported</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "reciprocity"              "reciprocity_binary"      </span></span>
+<span><span class="co">#&gt;  [3] "reciprocity_count"        "transitivity_binary"     </span></span>
+<span><span class="co">#&gt;  [5] "transitivity_count"       "cyclic_binary"           </span></span>
+<span><span class="co">#&gt;  [7] "cyclic_count"             "sending_balance_binary"  </span></span>
+<span><span class="co">#&gt;  [9] "sending_balance_count"    "receiving_balance_binary"</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level3">
 <h3 id="gillespie-vs-τ-leap">Gillespie vs τ-leap<a class="anchor" aria-label="anchor" href="#gillespie-vs-%CF%84-leap"></a>
 </h3>
-<p>Same scenario in both algorithms: 50-actor network, 2,000 events,
-reciprocity at β = 0.6, one control per case, 15 replicates per method.
-For each replicate we record the wall-clock of the simulator call and
-the recovered β̂ from
-<code>clogit(event ~ reciprocity_count + strata(stratum))</code>.</p>
-<div class="section level4">
-<h4 id="statistical-equivalence">Statistical equivalence<a class="anchor" aria-label="anchor" href="#statistical-equivalence"></a>
-</h4>
-<table class="table">
-<thead><tr class="header">
-<th>Method</th>
-<th align="right">β̂ mean</th>
-<th align="right">β̂ SD</th>
-<th align="right">wall-clock (s)</th>
-<th align="right">successes / 15</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>Gillespie</td>
-<td align="right">0.613</td>
-<td align="right">0.050</td>
-<td align="right">0.37</td>
-<td align="right">15</td>
-</tr>
-<tr class="even">
-<td>τ-leap @ τ = 0.01</td>
-<td align="right">0.591</td>
-<td align="right">0.057</td>
-<td align="right">0.32</td>
-<td align="right"><strong>8</strong></td>
-</tr>
-<tr class="odd">
-<td>τ-leap @ τ = 0.05</td>
-<td align="right">0.589</td>
-<td align="right">0.041</td>
-<td align="right">0.11</td>
-<td align="right">14</td>
-</tr>
-<tr class="even">
-<td>τ-leap @ τ = 0.20</td>
-<td align="right">0.590</td>
-<td align="right">0.066</td>
-<td align="right">0.11</td>
-<td align="right">15</td>
-</tr>
-</tbody>
-</table>
-<p>On the successful replicates, all four methods recover β within ~0.02
-of the truth (Gillespie’s mean of 0.613 sits slightly above, the τ-leap
-means slightly below). At this scale the differences are within Monte
-Carlo noise. <strong>τ-leap with τ ≥ 0.05 is statistically equivalent to
-Gillespie</strong> on the reciprocity-only generator while running ≈ 3×
-faster. τ = 0.01 is too small for this regime — only 8 of 15 runs
-completed within a 30 s timeout budget.</p>
-<div class="float">
-<img src="figures/sim-methods-recovery.png" alt="Recovery by method"><div class="figcaption">Recovery by method</div>
-</div>
-</div>
-<div class="section level4">
-<h4 id="wall-clock-cost">Wall-clock cost<a class="anchor" aria-label="anchor" href="#wall-clock-cost"></a>
-</h4>
-<p>τ-leap at τ ≥ 0.05 runs <strong>about 3× faster</strong> than
-Gillespie at 50 actors. The crossover grows with the actor universe: in
-the full scaling sweep (<a href="validation-experiments.html">Validation
-experiments / E3</a>), τ-leap is 20×–70× faster than Gillespie at 100
-actors.</p>
-<div class="float">
-<img src="figures/sim-methods-time.png" alt="Wall-clock by method"><div class="figcaption">Wall-clock by method</div>
-</div>
-<p>Driver: <code>paper/wiki/experiments/sim_methods.R</code>.</p>
-</div>
+<p>Same scenario in both algorithms: 50 actors, 2,000 events, a
+<code>reciprocity_binary</code> effect of 0.6, one control per case, 10
+replicates per method. For each replicate we record the wall-clock of
+the simulator call and the conditional-logit estimate
+<code>clogit(event ~ reciprocity_binary + strata(stratum))</code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">one_run</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">seed</span>, <span class="va">method</span>, <span class="va">tau</span> <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">50</span><span class="op">)</span></span>
+<span>  <span class="va">secs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
+<span>    <span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulate_relational_events.html">simulate_relational_events</a></span><span class="op">(</span></span>
+<span>      n_events <span class="op">=</span> <span class="fl">2000</span>, senders <span class="op">=</span> <span class="va">a</span>, receivers <span class="op">=</span> <span class="va">a</span>, baseline_rate <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>      endogenous_stats <span class="op">=</span> <span class="st">"reciprocity_binary"</span>,</span>
+<span>      endogenous_effects <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_binary <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span>,</span>
+<span>      n_controls <span class="op">=</span> <span class="fl">1</span>, method <span class="op">=</span> <span class="va">method</span>, tau <span class="op">=</span> <span class="va">tau</span><span class="op">)</span></span>
+<span>  <span class="op">)</span><span class="op">[[</span><span class="st">"elapsed"</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">clogit</a></span><span class="op">(</span><span class="va">event</span> <span class="op">~</span> <span class="va">reciprocity_binary</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/pkg/survival/man/strata.html" class="external-link">strata</a></span><span class="op">(</span><span class="va">stratum</span><span class="op">)</span>,</span>
+<span>                          data <span class="op">=</span> <span class="va">cc</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, seconds <span class="op">=</span> <span class="va">secs</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">configs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Gillespie"</span>      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"gillespie"</span>, tau <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  <span class="st">"tau-leap 0.01"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"tau_leap"</span>,  tau <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span>,</span>
+<span>  <span class="st">"tau-leap 0.05"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"tau_leap"</span>,  tau <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span>,</span>
+<span>  <span class="st">"tau-leap 0.20"</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>method <span class="op">=</span> <span class="st">"tau_leap"</span>,  tau <span class="op">=</span> <span class="fl">0.20</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">runs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">configs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">cfg</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span>, <span class="va">one_run</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span>, method <span class="op">=</span> <span class="va">cfg</span><span class="op">$</span><span class="va">method</span>, tau <span class="op">=</span> <span class="va">cfg</span><span class="op">$</span><span class="va">tau</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">tab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>beta_mean <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                                    beta_sd   <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                                    seconds   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">r</span><span class="op">[</span>, <span class="st">"seconds"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tab</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;               beta_mean beta_sd seconds</span></span>
+<span><span class="co">#&gt; Gillespie         0.563   0.086   0.600</span></span>
+<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.213</span></span>
+<span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.188</span></span>
+<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.199</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4.5</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html" class="external-link">hat</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>        col <span class="op">=</span> <span class="st">"grey90"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0.6</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"firebrick"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="simulation_files/figure-html/methods-figure-1.png" class="r-plt" alt="Estimated reciprocity effect by simulation algorithm, with the generating value" width="720"></p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p>The dashed line marks the generating value 0.6; at these settings the
+four distributions overlap. Across the ten replicates the mean estimate
+is 0.563 for Gillespie and 0.636, 0.585 and 0.587 for τ = 0.01, 0.05 and
+0.20. With 50 actors the baseline alone produces about 2450 events per
+time unit, so a step of τ = 0.20 contains roughly 490 events that all
+share the start-of-step state; within a step, a dyad whose reverse fires
+earlier in the same step does not yet see it. Mean simulator time per
+run is 0.60 s for Gillespie and 0.19–0.21 s for τ-leap.</p>
 <div class="section level4">
 <h4 id="when-to-pick-which">When to pick which<a class="anchor" aria-label="anchor" href="#when-to-pick-which"></a>
 </h4>
@@ -336,24 +448,24 @@ actors.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>≤ ~30 actors</td>
-<td>≥ ~50 actors</td>
+<td>Every event must react to every prior event</td>
+<td>Events within a step may share the start-of-step state</td>
 </tr>
 <tr class="even">
-<td>You need every event to react to every prior event</td>
-<td>Bias from intra-step reactions is acceptable</td>
-</tr>
-<tr class="odd">
-<td>τ-leap returns “no risk dyads” failures (small / dense regimes)</td>
-<td>Wall-clock matters and you can verify τ via a small Gillespie
+<td>The model has effects that grow without bound (e.g. a large
+<code>reciprocity_count</code> effect), which τ-leap draws in large
+batches</td>
+<td>Wall-clock matters and τ has been checked against a small Gillespie
 run</td>
 </tr>
 </tbody>
 </table>
-<p>A 15-actor sweep on this same scenario was noticeably unstable under
-τ-leap (timeouts and silent failures); the comparison above uses 50
-actors, where τ-leap is well-behaved. Treat τ as a tunable bias / cost
-knob and validate it once at the start of each project.</p>
+<p>When a single step would draw more than ten million events,
+<code><a href="../reference/simulate_relational_events.html">simulate_relational_events()</a></code> stops with a message instead.
+Choose τ so that the expected number of events per step is small
+relative to the size of the process, and check it against a Gillespie
+run of the same model; the <a href="validation-experiments.html">Validation experiments</a> report the
+wall-clock scaling with the number of actors.</p>
 <hr>
 </div>
 </div>
@@ -363,7 +475,11 @@ knob and validate it once at the start of each project.</p>
 <ul>
 <li>
 <a href="validation-experiments.html">Validation experiments</a> —
-the full wall-clock scaling grid (4 × 5 × 2) and parity tests.</li>
+the full wall-clock scaling grid and parity tests.</li>
+<li>
+<a href="sampling-options.html">Sampling options</a> — the risk-set
+options of <code><a href="../reference/sample_non_events.html">sample_non_events()</a></code> for case-control samples
+drawn from an observed log.</li>
 <li>
 <a href="estimation.html">Estimation</a> — how to use the
 case-control output produced by <code>n_controls ≥ 1</code>.</li>

@@ -77,8 +77,10 @@ bootstrap processes `process_sim` (grid points x replicates), the grid
 (`x`, and `u` on the quantile scale), `test` and `term`. It has
 [`print()`](https://rdrr.io/r/base/print.html) and
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods;
-`plot(x, n_show = 20, main = NULL)` draws the observed process against
-`n_show` bootstrap processes.
+`plot(x, n_show = 20, main = NULL, legend = "topright")` draws the
+observed process against `n_show` bootstrap processes, with the legend
+at a [`graphics::legend()`](https://rdrr.io/r/graphics/legend.html)
+position or none (`legend = NULL`).
 
 ## Tests
 

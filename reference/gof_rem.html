@@ -136,8 +136,9 @@ number state is restored afterwards.</p></dd>
 the bootstrap suprema <code>statistic_sim</code>, the observed process <code>process</code>, the
 bootstrap processes <code>process_sim</code> (grid points x replicates), the grid
 (<code>x</code>, and <code>u</code> on the quantile scale), <code>test</code> and <code>term</code>. It has <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>
-and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods; <code>plot(x, n_show = 20, main = NULL)</code> draws the
-observed process against <code>n_show</code> bootstrap processes.</p>
+and <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> methods; <code>plot(x, n_show = 20, main = NULL, legend = "topright")</code> draws the observed process against <code>n_show</code> bootstrap
+processes, with the legend at a <code><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">graphics::legend()</a></code> position or none
+(<code>legend = NULL</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="tests">Tests<a class="anchor" aria-label="anchor" href="#tests"></a></h2>

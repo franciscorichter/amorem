@@ -2,6 +2,33 @@
 
 ## amorem (development version)
 
+### Bug fixes
+
+- `sample_non_events(scope = "citation")` always draws the citing paper
+  and the cited papers from separate pools. Under the `mode = "one"`
+  default of 1.1.0 it pooled them, so most controls had a sender other
+  than the citing paper.
+
+- `rem(method = "nn")` and
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  no longer change the caller’s random-number state when given a seed
+  (CRAN policy); fitted results are unchanged.
+
+- Partial-dependence curves of
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) on neural
+  fits and of
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  span the 1st to 99th percentile of each feature instead of the mean ±
+  2 standard deviations, which reached below the data for skewed,
+  non-negative statistics.
+
+- Concordance of neural fits splits a tied top score evenly between the
+  tied candidates; it gave the whole stratum to the event.
+
+- `simulate_relational_events(method = "tau_leap")` stops with a message
+  when a single step would draw more than ten million events, which
+  happens when an effect grows without bound; it could exhaust memory.
+
 ### New features
 
 - [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
@@ -14,8 +41,9 @@
   terms of the fitted model, and its null distribution is a multiplier
   bootstrap that subtracts the drift from estimating the coefficients.
   It has [`print()`](https://rdrr.io/r/base/print.html) and
-  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods. The
-  existing
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods
+  ([`plot()`](https://rdrr.io/r/graphics/plot.default.html) takes `main`
+  and a `legend` position). The existing
   [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md),
   [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
   [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md)

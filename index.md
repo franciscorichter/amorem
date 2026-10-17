@@ -113,13 +113,17 @@ summary(fit)
 |----|----|
 | [Quick start](https://franciscorichter.github.io/amorem/articles/quick-start.md) | install + simulate-and-recover in a few lines |
 | [Simulation](https://franciscorichter.github.io/amorem/articles/simulation.md) | the dyadic mechanisms, Gillespie vs τ-leap |
+| [Sampling options](https://franciscorichter.github.io/amorem/articles/sampling-options.md) | the risk-set options of [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md): `n_controls`, `mode`, `scope`, `risk = "remove"`, `exclude_concurrent`, `exclude_pairs`, `shift` |
 | [Endogenous catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md) | the statistic catalogue and its variant axes |
 | [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
-| [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
+| [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the bundled REM datasets |
 | [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md) | type-I error of the martingale-residual GoF tests under correct specification |
+| [Case study: email and the clock](https://franciscorichter.github.io/amorem/articles/case-email-global.md) | time of day and day of week as global covariates in the Manufacturing e-mail log, time-shifted sampling, cyclic smooths, `tv()` on shifted data, [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md), [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md), [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md) |
+| [Case study: Social Evolution](https://franciscorichter.github.io/amorem/articles/case-social-evolution.md) | data intake, actor attributes and survey friendship as covariates, `rem(method = "clogit")`, a sender random effect with `re()` |
+| [Case study: estimation backends](https://franciscorichter.github.io/amorem/articles/case-email-eu-models.md) | `clogit`, neural (`nn`, MLP and additive splines, [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)) and `gam` with `tv()` / `tvnl()` on Email-EU-core, compared on held-out e-mails |
 | [Species invasions](https://franciscorichter.github.io/amorem/articles/species-invasion.md) | a one-shot (`risk = "remove"`) process with ENSO as a global driver, fitted by time-shifted sampling |
 
 Full per-function documentation is under

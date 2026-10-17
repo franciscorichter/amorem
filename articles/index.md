@@ -7,6 +7,8 @@ End-to-end walkthroughs of the package.
 - [Quick
   start](https://franciscorichter.github.io/amorem/articles/quick-start.md):
 - [Simulation](https://franciscorichter.github.io/amorem/articles/simulation.md):
+- [Sampling
+  options](https://franciscorichter.github.io/amorem/articles/sampling-options.md):
 - [Endogenous
   catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalogue.md):
 - [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md):
@@ -20,6 +22,17 @@ End-to-end walkthroughs of the package.
   experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md):
 - [GoF
   calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md):
+
+### Case studies
+
+Analyses of the bundled datasets, run when the site is built.
+
+- [Case study: time of day and day of week in company
+  email](https://franciscorichter.github.io/amorem/articles/case-email-global.md):
+- [Case study: Social
+  Evolution](https://franciscorichter.github.io/amorem/articles/case-social-evolution.md):
+- [Case study: estimation backends on
+  Email-EU-core](https://franciscorichter.github.io/amorem/articles/case-email-eu-models.md):
 
 ### Worked examples
 

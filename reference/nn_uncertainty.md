@@ -49,7 +49,8 @@ nn_uncertainty(
 
 - n_grid:
 
-  Grid resolution for the partial-dependence curves.
+  Number of grid points of each partial-dependence curve, which spans
+  the 1st to 99th percentile of the feature in `data`.
 
 - level:
 
