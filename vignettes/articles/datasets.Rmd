@@ -53,23 +53,33 @@ cosponsors (mean `r fmt(mean(lengths(congress_bills_118$J)), 1)`, largest
 Actor attributes come in `classroom_actors`, `social_evolution_actors`,
 `copenhagen_actors`, `congress_members_118` and `radoslaw_hierarchy`.
 
-## Activity over time
+## What each log looks like
 
-```{r rates, fig.height = 7, fig.alt = "Events per time bin for each bundled event log"}
-# events per bin; bins are the panel's unit or coarser
-op <- par(mfrow = c(3, 4), mar = c(3.2, 3.4, 2.2, 0.6), mgp = c(2, 0.6, 0), cex = 0.7)
-for (nm in names(ev)) {
-  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
-  t <- if (nm == "ucdp_dyads") x$year else if (nm == "alien_invasions") x$stop else x$time
-  unit <- ev[[nm]][[3]]
-  if ("date" %in% names(x)) { t <- as.numeric(format(x$date, "%Y")); unit <- "year" }
-  h <- hist(t, breaks = min(60, max(10, length(unique(t)))), plot = FALSE)
-  plot(h$mids, h$counts, type = "h", lwd = 2, col = "#1d4e89", bty = "l", las = 1,
-       xlab = unit, ylab = "", main = nm, ylim = c(0, max(h$counts)), yaxt = "n")
-  at <- pretty(c(0, h$counts), 4)
-  axis(2, at = at, labels = ifelse(at >= 1000, paste0(at / 1000, "k"), at), las = 1)
+For each event log: the network of the actors in its busiest pairs, then when
+the 30 most active of them are active. The [data catalogue](data-catalogue.html) adds a
+close-up of single events and the counting processes of the busiest pairs.
+
+```{r views, results = "asis"}
+source("data/catalogue/helpers.R")
+bundled <- c("classroom_events", "social_evolution_calls", "radoslaw_email", "college_msg", "email_eu_core",
+             "copenhagen_calls", "copenhagen_sms", "us_leader_visits", "football_results", "ucdp_dyads",
+             "alien_invasions", "congress_bills_118")
+for (nm in bundled) {
+  p <- readRDS(file.path("data/bundled", paste0(nm, ".rds")))
+  cat(sprintf("\n### `%s`\n\n", nm))
+  if (p$kind == "hyper") {
+    cat(knitr::knit_child(text = c(sprintf("```{r v-%s, fig.width = 10, fig.height = 6, fig.alt = 'Hyperevents of %s over time'}", nm, nm),
+                                   "plot_hyper_timeline(p$view, p)", "```"), quiet = TRUE, envir = environment()))
+    cat("\n", cap_hyper_timeline(p), "\n")
+  } else {
+    cat(knitr::knit_child(text = c(sprintf("```{r n-%s, fig.width = 7, fig.height = 5.4, out.width = '60%%', fig.align = 'center', fig.alt = 'Network of the most active actors of %s'}", nm, nm),
+                                   "plot_network(p$view)", "```"), quiet = TRUE, envir = environment()))
+    cat("\n", cap_network(p), "\n")
+    cat(knitr::knit_child(text = c(sprintf("```{r t-%s, fig.width = 10, fig.height = 6, fig.alt = 'Activity of the most active actors of %s over time'}", nm, nm),
+                                   "plot_timeline(p$view, p)", "```"), quiet = TRUE, envir = environment()))
+    cat("\n", cap_timeline(p), "\n")
+  }
 }
-par(op)
 ```
 
 ## Who is active

@@ -3,6 +3,32 @@
 
 `r source_block("{{id}}")`
 
+```{r net-{{id}}, fig.width = 7, fig.height = 5.4, out.width = "75%", fig.align = "center", fig.alt = "{{title}}: network of the most active actors", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_network(load_profile("{{id}}")$view)
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**Who interacts with whom.**", cap_network(load_profile("{{id}}")))`
+
+```{r tl-{{id}}, fig.width = 10, fig.height = 6, fig.alt = "{{title}}: activity of the most active actors over time", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_timeline(load_profile("{{id}}")$view, load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**When.**", cap_timeline(load_profile("{{id}}")))`
+
+```{r zoom-{{id}}, fig.width = 10, fig.height = 6, fig.alt = "{{title}}: close-up of the busiest stretch, event by event", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_zoom(load_profile("{{id}}")$view, load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**Event by event.**", cap_closeup(load_profile("{{id}}")))`
+
+```{r pairs-{{id}}, fig.width = 10, fig.height = 4.2, fig.alt = "{{title}}: counting processes of the busiest pairs", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_counts(load_profile("{{id}}")$view, load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**Pairs as counting processes.**", cap_pairs(load_profile("{{id}}")))`
+
+**Statistical profile.**
+
 ```{r fig-{{id}}, fig.width = 11, fig.height = 2.9, fig.alt = "{{title}}: activity over time, inter-event times, partners per actor, daily cycle or actor activity", echo = FALSE}
 p <- load_profile("{{id}}")
 plot_dyadic(p)

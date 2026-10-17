@@ -3,6 +3,20 @@
 
 `r source_block("{{id}}")`
 
+```{r tl-{{id}}, fig.width = 10, fig.height = 6, fig.alt = "{{title}}: hyperevents of the most active actors over time", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_hyper_timeline(load_profile("{{id}}")$view, load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**When.**", cap_hyper_timeline(load_profile("{{id}}")))`
+
+```{r zoom-{{id}}, fig.width = 10, fig.height = 6, fig.alt = "{{title}}: consecutive hyperevents and their members", echo = FALSE}
+if (!is.null(load_profile("{{id}}")$view)) plot_hyper_zoom(load_profile("{{id}}")$view, load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$view)) paste("**Hyperevent by hyperevent.**", cap_hyper_closeup(load_profile("{{id}}")))`
+
+**Statistical profile.**
+
 ```{r fig-{{id}}, fig.width = 10, fig.height = 3, fig.alt = "{{title}}: activity over time and set sizes", echo = FALSE}
 plot_hyper(load_profile("{{id}}"))
 ```
