@@ -20,8 +20,8 @@ simulation and inference in relational event models (REMs) and relational
 ### → [franciscorichter.github.io/amorem](https://franciscorichter.github.io/amorem/)
 
 Installation, the quick-start tutorial, the full guide set (simulation,
-endogenous catalogue, estimation, hyperedge models, datasets, real-data
-analysis, validation experiments), and the complete function reference are
+endogenous catalogue, estimation, hyperedge models, datasets, analyses of
+bundled event logs, validation experiments), and the complete function reference are
 all there.
 
 ## What the package covers

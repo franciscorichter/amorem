@@ -40,7 +40,7 @@ The `*_interrupted` family is the central methodological
 distinction of Juozaitienė & Wit (2024): a closure event "resets"
 the relevant counter, so the statistic measures only the most
 recent unclosed cycle. On Manufacturing it carries information
-distinct from `*_time_recent` ([Real-data analysis](real-data-analysis.html)).
+distinct from `*_time_recent` ([Analyses of bundled event logs](bundled-log-analyses.html)).
 
 Driver script: `paper/wiki/experiments/variant_traces.R`.
 

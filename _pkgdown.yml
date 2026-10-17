@@ -41,8 +41,8 @@ navbar:
           href: articles/hyperedge-models.html
         - text: Datasets
           href: articles/datasets.html
-        - text: Real-data analysis
-          href: articles/real-data-analysis.html
+        - text: Analyses of bundled event logs
+          href: articles/bundled-log-analyses.html
         - text: Validation experiments
           href: articles/validation-experiments.html
         - text: GoF calibration
@@ -132,7 +132,7 @@ articles:
       - articles/estimation
       - articles/hyperedge-models
       - articles/datasets
-      - articles/real-data-analysis
+      - articles/bundled-log-analyses
       - articles/validation-experiments
       - articles/gof-calibration
   - title: "Case studies"
@@ -162,3 +162,6 @@ articles:
       - endogenous-and-global
       - species-invasion
       - model-comparison
+
+redirects:
+  - ["articles/real-data-analysis.html", "articles/bundled-log-analyses.html"]

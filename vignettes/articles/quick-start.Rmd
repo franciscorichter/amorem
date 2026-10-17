@@ -69,6 +69,6 @@ fit, the case-1-control degenerate-logistic variant, and smooth
 | [Endogenous catalogue](endogenous-catalogue.html) | The 68-stat dyadic table plus hyperedge-native subset repetition |
 | [Estimation](estimation.html) | Case-control sampling, linear/smooth/global-covariate model comparison, GOF tests |
 | [Hyperedge models](hyperedge-models.html) | RHEMs with set-valued sender/receiver hyperedges |
-| [Real-data analysis](real-data-analysis.html) | Classroom, Manufacturing, frailty, smooth effects |
+| [Analyses of bundled event logs](bundled-log-analyses.html) | Classroom, Manufacturing, CollegeMsg: frailty, smooth effects |
 | [Validation experiments](validation-experiments.html) | Parity tests + MLE recovery + scaling |
 | [Datasets](datasets.html) | The three bundled REM datasets and their provenance |

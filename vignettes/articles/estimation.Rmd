@@ -200,7 +200,7 @@ compare_models(
 correction, `*_count` statistics also carry sender and receiver activity:
 an actor who sends a lot accumulates large counts, so part of a count
 specification's advantage reflects who is active rather than how the dyad's
-history drives its rate. [Real-data analysis](real-data-analysis.html) repeats
+history drives its rate. The [analyses of bundled event logs](bundled-log-analyses.html) repeat
 this comparison with a sender frailty.
 
 | Argument | Meaning |

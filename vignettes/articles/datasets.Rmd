@@ -102,7 +102,7 @@ knitr::kable(conc, row.names = FALSE, col.names = c("object", "events with the t
 
 Logs with highly concentrated activity are where count statistics carry sender
 and receiver activity rather than dyadic history; see
-[Real-data analysis](real-data-analysis.html) for a comparison with and without a
+[Analyses of bundled event logs](bundled-log-analyses.html) for a comparison with and without a
 sender frailty.
 
 ## Global covariates

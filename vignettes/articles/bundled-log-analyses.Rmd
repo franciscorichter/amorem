@@ -1,5 +1,5 @@
 ---
-title: "Real-data analysis"
+title: "Analyses of bundled event logs"
 ---
 
 ```{r, include = FALSE}
@@ -9,7 +9,7 @@ library(amorem)
 fmt <- function(x, d = 1) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
-# Real-data analysis
+# Analyses of bundled event logs
 
 Three analyses on the bundled datasets. The code below runs when this page is
 built, so every table, figure and number in the text comes from the current
