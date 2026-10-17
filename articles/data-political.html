@@ -95,11 +95,11 @@ aggregates computed from the files as published; each section links the
 source and the code that reads it.</p>
 <table class="table">
 <colgroup>
-<col width="47%">
-<col width="5%">
-<col width="4%">
-<col width="31%">
-<col width="11%">
+<col width="26%">
+<col width="2%">
+<col width="2%">
+<col width="17%">
+<col width="50%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">dataset</th>
@@ -139,7 +139,8 @@ conflict data (GED, dyadic, actor, interstate onsets)</a></td>
 <td align="left">3,518</td>
 <td align="left">704</td>
 <td align="left">CC BY 4.0</td>
-<td align="left">can bundle</td>
+<td align="left">bundled as <code>ucdp_dyads</code>
+</td>
 </tr>
 <tr class="odd">
 <td align="left"><a href="#atop-alliance-treaty-obligations-5-1">ATOP
@@ -179,7 +180,8 @@ leader-to-leader diplomatic visits 1946-2019</a></td>
 <td align="left">3,943</td>
 <td align="left">189</td>
 <td align="left">CC0 1.0</td>
-<td align="left">can bundle</td>
+<td align="left">bundled as <code>us_leader_visits</code>
+</td>
 </tr>
 <tr class="even">
 <td align="left"><a href="#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution">goldfish
@@ -188,7 +190,10 @@ Evolution</a></td>
 <td align="left">69</td>
 <td align="left">33</td>
 <td align="left">GPL-3.0 (source repository/package)</td>
-<td align="left">GPL only</td>
+<td align="left">bundled as <code>social_evolution_calls</code>,
+<code>social_evolution_friendship</code>,
+<code>social_evolution_actors</code> since an earlier release; licence
+under review</td>
 </tr>
 <tr class="odd">
 <td align="left"><a href="#unhcr-refugee-population-statistics-refugees-r-package-">UNHCR
@@ -368,8 +373,7 @@ Get the data
 <h3 id="ucdp-conflict-data-ged-dyadic-actor-interstate-onsets">UCDP conflict data (GED, dyadic, actor, interstate onsets)<a class="anchor" aria-label="anchor" href="#ucdp-conflict-data-ged-dyadic-actor-interstate-onsets"></a>
 </h3>
 <p><em>Source:</em> <a href="https://ucdp.uu.se/downloads/" class="external-link uri">https://ucdp.uu.se/downloads/</a> · <em>Licence:</em> CC BY
-4.0 · <em>Status in amorem:</em> may be redistributed with
-attribution.</p>
+4.0 · <em>Status in amorem:</em> bundled as <code>ucdp_dyads</code>.</p>
 <p><img src="data-political_files/figure-html/fig-ucdp-1.png" class="r-plt" alt="UCDP conflict data (GED, dyadic, actor, interstate onsets): activity over time, inter-event times, partners per actor, daily cycle or actor activity" width="1056"></p>
 <p><strong>3,518</strong> directed events among <strong>704</strong>
 actors over 79.0 years (695 distinct ordered pairs). 80.2% of events
@@ -610,8 +614,8 @@ Get the data
 <h3 id="us-leader-to-leader-diplomatic-visits-1946-2019">US leader-to-leader diplomatic visits 1946-2019<a class="anchor" aria-label="anchor" href="#us-leader-to-leader-diplomatic-visits-1946-2019"></a>
 </h3>
 <p><em>Source:</em> <a href="https://doi.org/10.7910/DVN/2ZNR5R" class="external-link uri">https://doi.org/10.7910/DVN/2ZNR5R</a> · <em>Licence:</em>
-CC0 1.0 · <em>Status in amorem:</em> may be redistributed with
-attribution.</p>
+CC0 1.0 · <em>Status in amorem:</em> bundled as
+<code>us_leader_visits</code>.</p>
 <p><img src="data-political_files/figure-html/fig-us-leader-visits-1.png" class="r-plt" alt="US leader-to-leader diplomatic visits 1946-2019: activity over time, inter-event times, partners per actor, daily cycle or actor activity" width="1056"></p>
 <p><strong>3,943</strong> directed events among <strong>189</strong>
 actors over 27,183.0 days (308 distinct ordered pairs). 92.2% of events
@@ -665,8 +669,11 @@ Get the data
 Evolution<a class="anchor" aria-label="anchor" href="#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution"></a>
 </h3>
 <p><em>Source:</em> <a href="https://github.com/snlab-ch/goldfish" class="external-link uri">https://github.com/snlab-ch/goldfish</a> · <em>Licence:</em>
-GPL-3.0 (source repository/package) · <em>Status in amorem:</em> GPL-3:
-redistributable only inside a GPL-compatible package.</p>
+GPL-3.0 (source repository/package) · <em>Status in amorem:</em> bundled
+as <code>social_evolution_calls</code>,
+<code>social_evolution_friendship</code>,
+<code>social_evolution_actors</code> since an earlier release; licence
+under review.</p>
 <p><img src="data-political_files/figure-html/fig-goldfish-datasets-1.png" class="r-plt" alt="goldfish package data: fisheries treaties, RFID validity, Social Evolution: activity over time, inter-event times, partners per actor, daily cycle or actor activity" width="1056"></p>
 <p><strong>69</strong> undirected contacts among <strong>33</strong>
 actors over 3,552.0 days (35 distinct pairs). 49.3% of events repeat an

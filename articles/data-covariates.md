@@ -14,21 +14,20 @@ the source and the code that reads it.
 
 | dataset | events | actors | licence | amorem |
 |:---|:---|:---|:---|:---|
-| [NOAA GHCN-Daily weather for the bundled logs’ periods](#noaa-ghcn-daily-weather-for-the-bundled-logs-periods) | 944 |  | public domain (US Government work) | can bundle |
+| [NOAA GHCN-Daily weather for the bundled logs’ periods](#noaa-ghcn-daily-weather-for-the-bundled-logs-periods) | 944 |  | public domain (US Government work) | bundled as `daily_weather` |
 | [Open-Meteo historical weather, London 2026 and Warsaw 2010](#open-meteo-historical-weather-london-2026-and-warsaw-2010) | 332 |  | CC BY 4.0 | can bundle |
 | [IMGW daily synoptic weather, Poland 2010](#imgw-daily-synoptic-weather-poland-2010) | 730 |  | Polish public-sector open data re-use | can bundle |
-| [NOAA CPC ENSO indices (ONI, SST indices)](#noaa-cpc-enso-indices-oni-sst-indices-) | 920 |  | public domain (US Government work) | can bundle |
+| [NOAA CPC ENSO indices (ONI, SST indices)](#noaa-cpc-enso-indices-oni-sst-indices-) | 920 |  | public domain (US Government work) | bundled as `oni` |
 | [EIA daily Brent and WTI spot prices](#eia-daily-brent-and-wti-spot-prices) | 9,108 |  | public domain (US Government work) | can bundle |
 | [World Bank commodity prices (Pink Sheet)](#world-bank-commodity-prices-pink-sheet-) | 801 |  | CC BY 4.0 | can bundle |
-| [Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026](#public-holidays-nager-date-api-pl-2010-us-2004-2008-2009-gb-2026) | 75 |  | facts (holiday dates); API terms not recorded | can bundle |
+| [Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026](#public-holidays-nager-date-api-pl-2010-us-2004-2008-2009-gb-2026) | 75 |  | facts (holiday dates); API terms not recorded | bundled as `public_holidays` |
 | [UN General Assembly ideal points](#un-general-assembly-ideal-points) | 11,612 |  | CC0 1.0 | can bundle |
 | [UN General Assembly roll-call votes 1946-2013](#un-general-assembly-roll-call-votes-1946-2013) | 4,497 |  | CC0 1.0 | can bundle |
 
 ### NOAA GHCN-Daily weather for the bundled logs’ periods
 
 *Source:* <https://www.ncei.noaa.gov/> · *Licence:* public domain (US
-Government work) · *Status in amorem:* may be redistributed with
-attribution.
+Government work) · *Status in amorem:* bundled as `daily_weather`.
 
 ![NOAA GHCN-Daily weather for the bundled logs' periods: series over
 time](data-covariates_files/figure-html/fig-noaa-ghcnd-weather-1.png)
@@ -111,8 +110,7 @@ The reader is `readers[["imgw-synop-daily-2010"]]` in
 ### NOAA CPC ENSO indices (ONI, SST indices)
 
 *Source:* <https://www.cpc.ncep.noaa.gov/> · *Licence:* public domain
-(US Government work) · *Status in amorem:* may be redistributed with
-attribution.
+(US Government work) · *Status in amorem:* bundled as `oni`.
 
 ![NOAA CPC ENSO indices (ONI, SST indices): series over
 time](data-covariates_files/figure-html/fig-noaa-enso-1.png)
@@ -185,8 +183,8 @@ The reader is `readers[["worldbank-pinksheet"]]` in
 ### Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026
 
 *Source:* <https://date.nager.at/> · *Licence:* facts (holiday dates);
-API terms not recorded · *Status in amorem:* may be redistributed with
-attribution.
+API terms not recorded · *Status in amorem:* bundled as
+`public_holidays`.
 
 ![Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026:
 series over

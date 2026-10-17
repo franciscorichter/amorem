@@ -19,7 +19,7 @@ the source and the code that reads it.
 | [Benson higher-order data: email-Enron, email-Eu, congress-bills](#benson-higher-order-data-email-enron-email-eu-congress-bills) | 282,049 | 1,718 | none stated | obtain from source |
 | [Benson ScHoLP timestamped simplices](#benson-scholp-timestamped-simplices) | 719,792 | 176,445 | none stated | obtain from source |
 | [XGI-DATA: email-enron, senate-bills, sfhh-conference hypergraphs](#xgi-data-email-enron-senate-bills-sfhh-conference-hypergraphs) | 10,885 | 143 | CC BY 4.0 per Zenodo record (sfhh-conference derives from SocioPatterns CC BY-NC-SA) | per dataset |
-| [US Congress bill status, 118th Congress (sponsors, cosponsors)](#us-congress-bill-status-118th-congress-sponsors-cosponsors-) | 16,213 | 553 | public domain (17 U.S.C. 105) | can bundle |
+| [US Congress bill status, 118th Congress (sponsors, cosponsors)](#us-congress-bill-status-118th-congress-sponsors-cosponsors-) | 16,213 | 553 | public domain (17 U.S.C. 105) | bundled as `congress_bills_118`, `congress_members_118` |
 | [OpenAlex: works of the journal Social Networks](#openalex-works-of-the-journal-social-networks) | 1,894 | 43,066 | CC0 1.0 | can bundle |
 
 ### Enron email with recipient lists (Perry & Wolfe)
@@ -148,8 +148,8 @@ in
 ### US Congress bill status, 118th Congress (sponsors, cosponsors)
 
 *Source:* <https://www.govinfo.gov/bulkdata/BILLSTATUS> · *Licence:*
-public domain (17 U.S.C. 105) · *Status in amorem:* may be redistributed
-with attribution.
+public domain (17 U.S.C. 105) · *Status in amorem:* bundled as
+`congress_bills_118`, `congress_members_118`.
 
 ![US Congress bill status, 118th Congress (sponsors, cosponsors):
 activity over time and set

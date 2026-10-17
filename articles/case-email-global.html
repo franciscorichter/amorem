@@ -118,9 +118,9 @@ European clock time.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ev</span><span class="op">)</span>, actors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">sender</span>, <span class="va">ev</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  first <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu">clock</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, last <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu">clock</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                events                actors                 first </span></span>
-<span><span class="co">#&gt;               "10776"                 "151" "2010-01-02 18:40:10" </span></span>
+<span><span class="co">#&gt;               "10776"                 "151" "2010-01-02 17:40:10" </span></span>
 <span><span class="co">#&gt;                  last </span></span>
-<span><span class="co">#&gt; "2010-02-01 18:35:37"</span></span></code></pre></div>
+<span><span class="co">#&gt; "2010-02-01 17:35:37"</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="fu">tod</span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">24</span>, col <span class="op">=</span> <span class="st">"#9ecae1"</span>, border <span class="op">=</span> <span class="st">"white"</span>,</span>
@@ -132,7 +132,7 @@ European clock time.</p>
 <p><img src="case-email-global_files/figure-html/clock-figure-1.png" class="r-plt" alt="Number of emails by hour of day and by day of week" width="768"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p>93.0% of the emails are sent between 07:00 and 16:00, and 0.8% on
+<p>92.6% of the emails are sent between 07:00 and 16:00, and 0.8% on
 Saturday or Sunday.</p>
 </div>
 <div class="section level3">
@@ -163,7 +163,7 @@ control is stored at its own time.</p>
 <span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cc</span>, <span class="st">"shift"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean_shift_days <span class="op">=</span> <span class="va">sh</span><span class="op">$</span><span class="va">mean</span>, uninformative_events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">uninformative</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      mean_shift_days uninformative_events </span></span>
-<span><span class="co">#&gt;             15.23542              1.00000</span></span></code></pre></div>
+<span><span class="co">#&gt;             15.23542              0.00000</span></span></code></pre></div>
 <p>The endogenous covariate is reciprocity timing: the time since the
 receiver last emailed the sender, mapped to a recency weight with
 <code><a href="../reference/transform_recency.html">transform_recency()</a></code> (1 when the receiver emailed the sender
@@ -180,8 +180,8 @@ day of week are read from each row’s clock time.</p>
 <span><span class="va">cc</span><span class="op">$</span><span class="va">dow</span> <span class="op">&lt;-</span> <span class="fu">dow</span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
 <span><span class="va">w</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc</span>, covariates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"recip"</span>, <span class="st">"tod"</span>, <span class="st">"dow"</span>, <span class="st">"time"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">w</span><span class="op">$</span><span class="va">d_tod</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span></span>
-<span><span class="co">#&gt; -23.27501  -6.12079  -0.01665  -0.05324   5.95200  23.13132</span></span></code></pre></div>
+<span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
+<span><span class="co">#&gt; -18.314  -7.283  -1.169  -1.144   4.869  23.427</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="model">Model<a class="anchor" aria-label="anchor" href="#model"></a>
@@ -203,10 +203,10 @@ the control’s time.</p>
 <span>           data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">s.table</span></span>
 <span><span class="co">#&gt;                       edf    Ref.df    Chi.sq      p-value</span></span>
-<span><span class="co">#&gt; s(.X_tod):.I     9.845795 10.000000 807.03965 0.0000000000</span></span>
-<span><span class="co">#&gt; s(.X_dow):.I     5.934112  6.000000 423.60903 0.0000000000</span></span>
-<span><span class="co">#&gt; s(.X_time):.I    3.067855  3.553957  20.10041 0.0006211163</span></span>
-<span><span class="co">#&gt; s(.TP):.XI_recip 4.518897  4.874724 229.52099 0.0000000000</span></span></code></pre></div>
+<span><span class="co">#&gt; s(.X_tod):.I     9.820934 10.000000 938.51277 0.0000000000</span></span>
+<span><span class="co">#&gt; s(.X_dow):.I     5.931675  6.000000 433.23812 0.0000000000</span></span>
+<span><span class="co">#&gt; s(.X_time):.I    3.167483  3.640323  22.21318 0.0003238577</span></span>
+<span><span class="co">#&gt; s(.TP):.XI_recip 2.000223  2.000444 301.06346 0.0000000000</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">1</span>, scale <span class="op">=</span> <span class="fl">0</span>, xlab <span class="op">=</span> <span class="st">"hour of day"</span>, ylab <span class="op">=</span> <span class="st">"f(hour)"</span>,</span>
@@ -221,13 +221,13 @@ the control’s time.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p>In the <code>mgcv</code> summary the largest p-value of the four
-smooth terms is 6.2e-04. The time-of-day curve is lowest at about 3.5 h
-and ranges from 1.19 to 2.03 between 08:00 and 16:00. The day-of-week
-curve averages 0.42 from Monday to Friday and -1.88 on Saturday and
+smooth terms is 3.2e-04. The time-of-day curve is lowest at about 3.1 h
+and ranges from -0.04 to 1.88 between 08:00 and 16:00. The day-of-week
+curve averages 0.44 from Monday to Friday and -1.97 on Saturday and
 Sunday (log-rate scale, each curve centred by <code>mgcv</code>). Over
 the 30 days the reciprocity coefficient
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>
-ranges from 6.18 to 10.97. Dashed lines in the figure are ±2 standard
+ranges from 5.71 to 7.59. Dashed lines in the figure are ±2 standard
 errors.</p>
 </div>
 <div class="section level3">
@@ -244,11 +244,11 @@ coefficients.</p>
 <span><span class="va">g_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"recip"</span>, test <span class="op">=</span> <span class="st">"time"</span>, data <span class="op">=</span> <span class="va">w</span>, n_sim <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g_tod</span>; <span class="va">g_dow</span>; <span class="va">g_time</span></span>
 <span><span class="co">#&gt; Martingale-residual GoF test of 'tod': functional form</span></span>
-<span><span class="co">#&gt;   sup statistic = 0.1425, p-value = 0.0580 (1000 bootstrap replicates, n = 10775)</span></span>
+<span><span class="co">#&gt;   sup statistic = 0.2554, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)</span></span>
 <span><span class="co">#&gt; Martingale-residual GoF test of 'dow': functional form</span></span>
-<span><span class="co">#&gt;   sup statistic = 0.4696, p-value = 0.0000 (1000 bootstrap replicates, n = 10775)</span></span>
+<span><span class="co">#&gt;   sup statistic = 0.5011, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)</span></span>
 <span><span class="co">#&gt; Martingale-residual GoF test of 'recip': time specification</span></span>
-<span><span class="co">#&gt;   sup statistic = 0.1020, p-value = 0.0250 (1000 bootstrap replicates, n = 10775)</span></span></code></pre></div>
+<span><span class="co">#&gt;   sup statistic = 0.1370, p-value = 0.0020 (1000 bootstrap replicates, n = 10776)</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_tod</span>, main <span class="op">=</span> <span class="st">"time of day: functional form"</span><span class="op">)</span></span>
@@ -257,9 +257,9 @@ coefficients.</p>
 <p><img src="case-email-global_files/figure-html/gof-rem-figure-1.png" class="r-plt" alt="Observed GoF processes against bootstrap processes" width="768"></p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p>The functional-form test gives p = 0.058 for time of day and p &lt;
-0.001 for day of week; the time test for the reciprocity term gives p =
-0.025.</p>
+<p>The functional-form test gives p &lt; 0.001 for time of day and p
+&lt; 0.001 for day of week; the time test for the reciprocity term gives
+p = 0.002.</p>
 </div>
 <div class="section level3">
 <h3 id="linear-model-diagnostics-on-one-week">Linear-model diagnostics on one week<a class="anchor" aria-label="anchor" href="#linear-model-diagnostics-on-one-week"></a>
@@ -281,11 +281,11 @@ statistic carries signal the model misses.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>multivariate_reciprocity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>statistic <span class="op">=</span> <span class="va">gm</span><span class="op">$</span><span class="va">statistic</span>, p_value <span class="op">=</span> <span class="va">gm</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span>,</span>
 <span>      auxiliary_sender_outdegree <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>statistic <span class="op">=</span> <span class="va">ga</span><span class="op">$</span><span class="va">statistic</span>, p_value <span class="op">=</span> <span class="va">ga</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                            statistic p_value</span></span>
-<span><span class="co">#&gt; multivariate_reciprocity    7.966615   0.000</span></span>
-<span><span class="co">#&gt; auxiliary_sender_outdegree 12.806399   0.038</span></span></code></pre></div>
-<p>On the 2794 emails of the first week, the multivariate test gives p
-&lt; 0.001 for a non-linear reciprocity-count effect, and the auxiliary
-test gives p = 0.038 for the sender’s out-degree.</p>
+<span><span class="co">#&gt; multivariate_reciprocity    4.075663   0.029</span></span>
+<span><span class="co">#&gt; auxiliary_sender_outdegree 10.159138   0.057</span></span></code></pre></div>
+<p>On the 2794 emails of the first week, the multivariate test gives p =
+0.029 for a non-linear reciprocity-count effect, and the auxiliary test
+gives p = 0.057 for the sender’s out-degree.</p>
 </div>
 <div class="section level3">
 <h3 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>

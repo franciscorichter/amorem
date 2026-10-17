@@ -15,7 +15,7 @@ the source and the code that reads it.
 |:---|:---|:---|:---|:---|
 | [Lichess rated standard games, January 2013](#lichess-rated-standard-games-january-2013) | 121,332 | 4,922 | CC0 | can bundle |
 | [KONECT: chess games](#konect-chess-games) | 65,053 | 7,301 | unknown (site unreachable 2026-10-17) | obtain from source |
-| [International football results 1872-present](#international-football-results-1872-present) | 49,945 | 337 | CC0 1.0 | can bundle |
+| [International football results 1872-present](#international-football-results-1872-present) | 49,945 | 337 | CC0 1.0 | bundled as `football_results` |
 | [Retrosheet MLB game logs 1871-2024](#retrosheet-mlb-game-logs-1871-2024) | 233,135 | 153 | free use with required notice | can bundle |
 
 ### Lichess rated standard games, January 2013
@@ -100,8 +100,7 @@ is `readers[["konect-chess"]]` in
 ### International football results 1872-present
 
 *Source:* <https://github.com/martj42/international_results> ·
-*Licence:* CC0 1.0 · *Status in amorem:* may be redistributed with
-attribution.
+*Licence:* CC0 1.0 · *Status in amorem:* bundled as `football_results`.
 
 ![International football results 1872-present: activity over time,
 inter-event times, partners per actor, daily cycle or actor

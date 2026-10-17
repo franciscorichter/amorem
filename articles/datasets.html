@@ -86,228 +86,374 @@
 <div class="section level2">
 <h2 id="bundled-datasets">Bundled datasets<a class="anchor" aria-label="anchor" href="#bundled-datasets"></a>
 </h2>
-<p><code>amorem</code> ships five real-world relational-event datasets
-directly, each as a tidy <code>(time, sender, receiver, ...)</code>
-event table loadable via <code>data(...)</code>. They span three orders
-of magnitude in size and cover three interaction types — face-to-face
-contact, phone calls, and email / instant messaging.</p>
+<p>amorem ships the event logs and covariates below, each loadable with
+<code>data(...)</code>. The tables and figures on this page are computed
+from them when the page is built. The <a href="data-catalogue.html">data
+catalogue</a> documents a wider collection, including datasets whose
+licences do not allow amorem to redistribute them.</p>
+<div class="section level3">
+<h3 id="event-logs">Event logs<a class="anchor" aria-label="anchor" href="#event-logs"></a>
+</h3>
 <table class="table">
 <colgroup>
-<col width="12%">
-<col width="12%">
+<col width="22%">
+<col width="40%">
 <col width="16%">
-<col width="16%">
-<col width="16%">
-<col width="16%">
-<col width="12%">
+<col width="5%">
+<col width="5%">
+<col width="9%">
 </colgroup>
 <thead><tr class="header">
-<th>Dataset</th>
-<th><code>data(...)</code></th>
-<th align="right">Events</th>
-<th align="right">Actors</th>
-<th align="right">Span</th>
-<th align="right">Rate (/day)</th>
-<th>Interaction</th>
+<th align="left">object</th>
+<th align="left">data</th>
+<th align="left">kind</th>
+<th align="left">events</th>
+<th align="left">actors</th>
+<th align="left">span</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Classroom</td>
-<td><code>classroom_events</code></td>
-<td align="right">691</td>
-<td align="right">20</td>
-<td align="right">44 d</td>
-<td align="right">15.8</td>
-<td>face-to-face</td>
+<td align="left"><code>classroom_events</code></td>
+<td align="left">Classroom (McFarland 2001)</td>
+<td align="left">face-to-face, minutes</td>
+<td align="left">691</td>
+<td align="left">20</td>
+<td align="left">43.9 minutes</td>
 </tr>
 <tr class="even">
-<td>Social Evolution</td>
-<td><code>social_evolution_calls</code></td>
-<td align="right">439</td>
-<td align="right">54</td>
-<td align="right">42 d</td>
-<td align="right">10.4</td>
-<td>phone calls</td>
+<td align="left"><code>social_evolution_calls</code></td>
+<td align="left">Social Evolution calls (Madan et al. 2011)</td>
+<td align="left">phone calls</td>
+<td align="left">439</td>
+<td align="left">54</td>
+<td align="left">42.1 days</td>
 </tr>
 <tr class="odd">
-<td>Manufacturing</td>
-<td><code>radoslaw_email</code></td>
-<td align="right">82,927</td>
-<td align="right">167</td>
-<td align="right">271 d</td>
-<td align="right">305.8</td>
-<td>email</td>
+<td align="left"><code>social_evolution_friendship</code></td>
+<td align="left">Social Evolution friendship survey</td>
+<td align="left">tie changes</td>
+<td align="left">766</td>
+<td align="left">76</td>
+<td align="left">40.0 days</td>
 </tr>
 <tr class="even">
-<td>CollegeMsg</td>
-<td><code>college_msg</code></td>
-<td align="right">59,835</td>
-<td align="right">1,899</td>
-<td align="right">194 d</td>
-<td align="right">308.9</td>
-<td>instant messages</td>
+<td align="left"><code>radoslaw_email</code></td>
+<td align="left">Manufacturing company email (Nurek &amp; Michalski
+2020)</td>
+<td align="left">email</td>
+<td align="left">82,927</td>
+<td align="left">167</td>
+<td align="left">271 days</td>
 </tr>
 <tr class="odd">
-<td>Email-EU-Core</td>
-<td><code>email_eu_core</code></td>
-<td align="right">12,216</td>
-<td align="right">89</td>
-<td align="right">803 d</td>
-<td align="right">15.2</td>
-<td>email</td>
+<td align="left"><code>college_msg</code></td>
+<td align="left">CollegeMsg (Panzarasa et al. 2009)</td>
+<td align="left">instant messages</td>
+<td align="left">59,835</td>
+<td align="left">1,899</td>
+<td align="left">194 days</td>
+</tr>
+<tr class="even">
+<td align="left"><code>email_eu_core</code></td>
+<td align="left">Email-EU-core, one department (Paranjape et
+al. 2017)</td>
+<td align="left">email</td>
+<td align="left">12,216</td>
+<td align="left">89</td>
+<td align="left">802 days</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>copenhagen_calls</code></td>
+<td align="left">Copenhagen Networks Study calls</td>
+<td align="left">phone calls</td>
+<td align="left">3,600</td>
+<td align="left">536</td>
+<td align="left">28.0 days</td>
+</tr>
+<tr class="even">
+<td align="left"><code>copenhagen_sms</code></td>
+<td align="left">Copenhagen Networks Study text messages</td>
+<td align="left">text messages</td>
+<td align="left">24,333</td>
+<td align="left">568</td>
+<td align="left">28.0 days</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>us_leader_visits</code></td>
+<td align="left">US leader-to-leader visits 1945-2019</td>
+<td align="left">state visits</td>
+<td align="left">3,943</td>
+<td align="left">189</td>
+<td align="left">27,183 days</td>
+</tr>
+<tr class="even">
+<td align="left"><code>football_results</code></td>
+<td align="left">Men’s international football since 1872</td>
+<td align="left">matches</td>
+<td align="left">49,945</td>
+<td align="left">337</td>
+<td align="left">56,192 days</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>ucdp_dyads</code></td>
+<td align="left">UCDP armed conflict dyads 1946-2025</td>
+<td align="left">conflict dyad-years</td>
+<td align="left">3,518</td>
+<td align="left">704</td>
+<td align="left">79.0 years</td>
+</tr>
+<tr class="even">
+<td align="left"><code>alien_invasions</code></td>
+<td align="left">Alien species first records 1880-2005</td>
+<td align="left">species -&gt; region</td>
+<td align="left">11,730</td>
+<td align="left">3,188</td>
+<td align="left">125 years</td>
 </tr>
 </tbody>
 </table>
-<div class="section level3">
-<h3 id="event-rate-trace">Event-rate trace<a class="anchor" aria-label="anchor" href="#event-rate-trace"></a>
-</h3>
-<p>The bundled datasets are emphatically <em>non-stationary</em>: term
-boundaries, weekly cycles, weekends, and bursty episodes all show up in
-the per-bin rate. This is exactly the regime the time-varying /
-global-covariate machinery in <a href="estimation.html">Estimation</a>
-is built for.</p>
-<div class="float">
-<img src="figures/datasets-rate.png" alt="Event-rate trace"><div class="figcaption">Event-rate trace</div>
-</div>
-<ul>
-<li>
-<strong>Classroom</strong>: two spikes corresponding to the two
-recorded sessions; otherwise quiet.</li>
-<li>
-<strong>Social Evolution</strong>: linear ramp-up — calls accumulate
-as the recording instrumentation rolls out.</li>
-<li>
-<strong>Manufacturing</strong> &amp; <strong>Email-EU-Core</strong>:
-visible weekly modulation superimposed on a roughly stationary base
-rate.</li>
-<li>
-<strong>CollegeMsg</strong>: front-loaded — student onboarding
-traffic in the first quarter dominates the entire stream.</li>
-</ul>
+<p><code>congress_bills_118</code> holds hyperevents: each of its 16,213
+bills has one sponsor and a set of cosponsors (mean 10.0, largest 331),
+from 2023-01-03 to 2025-01-03. Actor attributes come in
+<code>classroom_actors</code>, <code>social_evolution_actors</code>,
+<code>copenhagen_actors</code>, <code>congress_members_118</code> and
+<code>radoslaw_hierarchy</code>.</p>
 </div>
 <div class="section level3">
-<h3 id="per-actor-activity-distributions">Per-actor activity distributions<a class="anchor" aria-label="anchor" href="#per-actor-activity-distributions"></a>
+<h3 id="activity-over-time">Activity over time<a class="anchor" aria-label="anchor" href="#activity-over-time"></a>
 </h3>
-<p>Out-degree (events sent) and in-degree (events received), per actor,
-smoothed on a log scale:</p>
-<div class="float">
-<img src="figures/datasets-degrees.png" alt="Activity distributions"><div class="figcaption">Activity distributions</div>
-</div>
-<ul>
-<li>
-<strong>Classroom</strong> is bell-shaped on a tight log axis —
-small homogeneous group.</li>
-<li>
-<strong>Social Evolution</strong> and <strong>Email-EU-Core</strong>
-show moderately heavy tails.</li>
-<li>
-<strong>Manufacturing</strong> and <strong>CollegeMsg</strong> are
-unambiguously heavy-tailed across three orders of magnitude — a small
-core drives most of the traffic.</li>
-</ul>
-<p>These differences matter for inference: the <code>*_count</code>
-family in the <a href="endogenous-catalogue.html">Endogenous
-catalogue</a> absorbs activity heterogeneity directly, so heavy-tailed
-datasets like Manufacturing and CollegeMsg make sender / receiver random
-effects (or <code><a href="../reference/compare_models_smooth.html">compare_models_smooth()</a></code> non-linear specs) part
-of any comparison between count and timing statistics. See <a href="real-data-analysis.html">Real-data analysis</a> for the worked
-example on Classroom, with and without a sender frailty.</p>
+<p><img src="datasets_files/figure-html/rates-1.png" class="r-plt" alt="Events per time bin for each bundled event log" width="960"></p>
 </div>
 <div class="section level3">
-<h3 id="provenance">Provenance<a class="anchor" aria-label="anchor" href="#provenance"></a>
+<h3 id="who-is-active">Who is active<a class="anchor" aria-label="anchor" href="#who-is-active"></a>
+</h3>
+<p>Share of all events in which the most active 10% of actors take part,
+and the Gini coefficient of actor activity (0 when all actors are
+equally active):</p>
+<table class="table">
+<colgroup>
+<col width="43%">
+<col width="49%">
+<col width="7%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">object</th>
+<th align="left">events with the top 10% of actors</th>
+<th align="left">Gini</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>classroom_events</code></td>
+<td align="left">23.4%</td>
+<td align="left">0.29</td>
+</tr>
+<tr class="even">
+<td align="left"><code>social_evolution_calls</code></td>
+<td align="left">57.1%</td>
+<td align="left">0.68</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>social_evolution_friendship</code></td>
+<td align="left">27.1%</td>
+<td align="left">0.40</td>
+</tr>
+<tr class="even">
+<td align="left"><code>radoslaw_email</code></td>
+<td align="left">40.9%</td>
+<td align="left">0.62</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>college_msg</code></td>
+<td align="left">60.2%</td>
+<td align="left">0.75</td>
+</tr>
+<tr class="even">
+<td align="left"><code>email_eu_core</code></td>
+<td align="left">34.3%</td>
+<td align="left">0.53</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>copenhagen_calls</code></td>
+<td align="left">42.8%</td>
+<td align="left">0.59</td>
+</tr>
+<tr class="even">
+<td align="left"><code>copenhagen_sms</code></td>
+<td align="left">61.3%</td>
+<td align="left">0.73</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>us_leader_visits</code></td>
+<td align="left">71.3%</td>
+<td align="left">0.78</td>
+</tr>
+<tr class="even">
+<td align="left"><code>football_results</code></td>
+<td align="left">30.2%</td>
+<td align="left">0.54</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>ucdp_dyads</code></td>
+<td align="left">58.9%</td>
+<td align="left">0.70</td>
+</tr>
+<tr class="even">
+<td align="left"><code>alien_invasions</code></td>
+<td align="left">62.7%</td>
+<td align="left">0.70</td>
+</tr>
+</tbody>
+</table>
+<p>Logs with highly concentrated activity are where count statistics
+carry sender and receiver activity rather than dyadic history; see <a href="real-data-analysis.html">Real-data analysis</a> for a comparison
+with and without a sender frailty.</p>
+</div>
+<div class="section level3">
+<h3 id="global-covariates">Global covariates<a class="anchor" aria-label="anchor" href="#global-covariates"></a>
 </h3>
 <ul>
 <li>
-<strong>Classroom</strong> — <code>networkDynamic</code> CRAN
-package. McFarland (2001).</li>
+<code>enso_nino34</code>: tree-ring reconstruction of the winter
+Niño3.4 anomaly, 1301-2005 (see
+<code><a href="../articles/species-invasion.html">vignette("species-invasion")</a></code>); <code>oni</code>: the
+instrumental Oceanic Niño Index since 1950.</li>
 <li>
-<strong>Social Evolution</strong> — <code>goldfish</code> GitHub
-package. Madan et al. (2011).</li>
+<code>daily_weather</code>: daily temperature and precipitation at
+Boston (Social Evolution, 2008), Santa Ana (CollegeMsg, 2004), and
+Warsaw and Wroclaw (manufacturing email, 2010).</li>
 <li>
-<strong>Manufacturing</strong> — Network Repository,
-<code>ia-radoslaw-email</code>. Michalski et al. (2014).</li>
-<li>
-<strong>CollegeMsg</strong> — SNAP, <code>CollegeMsg.txt.gz</code>.
-Panzarasa, Opsahl &amp; Carley (2009).</li>
-<li>
-<strong>Email-EU-Core</strong> — SNAP,
-<code>email-Eu-core-temporal-Dept3</code>. Paranjape, Benson &amp;
-Leskovec (2017). Self-loops removed.</li>
-<li>
-<strong>ENSO Niño3.4 reconstruction</strong> — NOAA NCEI World Data
-Service for Paleoclimatology, study 14632 (<a href="https://doi.org/10.25921/jfqm-9178" class="external-link">doi:10.25921/jfqm-9178</a>),
-file <code>enso-li2013.txt</code>. Li et al. (2013).</li>
+<code>public_holidays</code>: public holidays for the same countries
+and years.</li>
 </ul>
-<p>The fourth dataset analysed by Juozaitienė &amp; Wit (2024) — Enron —
-is intentionally not bundled because the only publicly archived version
-is an aggregated daily edge-weight table rather than the event-level
-slice the paper analyses.</p>
+<p>They take one value at a time for every pair, so their effects are
+estimated with time-shifted sampling
+(<code>sample_non_events(shift = "exponential")</code>); the <a href="case-email-global.html">email case study</a> does this with the
+clock.</p>
+<p><code>dist_matrix</code> holds distances between 56 US states and
+territories, used by the validation experiments.</p>
 </div>
 <div class="section level3">
 <h3 id="time-conventions">Time conventions<a class="anchor" aria-label="anchor" href="#time-conventions"></a>
 </h3>
-<p>Times are normalised to <strong>days since the first event</strong>
-for every dataset except Classroom, which uses <strong>minutes</strong>
-(its original time unit). The original Unix-epoch timestamps are
-preserved as a <code>unix_origin</code> attribute on each event frame
-where the source provided them:</p>
+<p>Event times are days since the first event, except
+<code>classroom_events</code> (minutes since the start of the class),
+<code>ucdp_dyads</code> (year) and <code>alien_invasions</code> (years
+<code>start</code> and <code>stop</code>). Where the source gives clock
+time, <code>attr(x, "unix_origin")</code> holds the Unix time of
+<code>time = 0</code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">radoslaw_email</span>, <span class="st">"unix_origin"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2010-01-02 14:45:35 UTC"</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">college_msg</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">college_msg</span>, <span class="st">"unix_origin"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2004-04-15 03:02:41 UTC"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">radoslaw_email</span>, <span class="st">"unix_origin"</span><span class="op">)</span>, origin <span class="op">=</span> <span class="st">"1970-01-01"</span>,</span>
+<span>                  tz <span class="op">=</span> <span class="st">"Europe/Warsaw"</span><span class="op">)</span>, usetz <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "2010-01-02 17:40:10 CET"</span></span></code></pre>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">college_msg</span>, <span class="st">"unix_origin"</span><span class="op">)</span>, origin <span class="op">=</span> <span class="st">"1970-01-01"</span>,</span>
+<span>                  tz <span class="op">=</span> <span class="st">"America/Los_Angeles"</span><span class="op">)</span>, usetz <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "2004-04-15 07:56:01 PDT"</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="auxiliary-objects">Auxiliary objects<a class="anchor" aria-label="anchor" href="#auxiliary-objects"></a>
+<h3 id="sources-and-licences">Sources and licences<a class="anchor" aria-label="anchor" href="#sources-and-licences"></a>
 </h3>
-<ul>
-<li>
-<code>classroom_actors</code>, <code>social_evolution_actors</code>,
-<code>social_evolution_friendship</code> — per-actor covariates and the
-friendship-survey event log accompanying their main event tables.</li>
-<li>
-<code>dist_matrix</code> — a 56 × 56 matrix of inter-state
-geographic distances; used by Experiment 2 in <a href="validation-experiments.html">Validation experiments</a>.</li>
-<li>
-<code>enso_nino34</code> — a global covariate: the tree-ring
-reconstruction of the winter Niño3.4 sea-surface temperature anomaly,
-one value per year from 1301 to 2005. It takes the same value for every
-dyad, so its effect is estimated with time-shifted sampling
-(<code>sample_non_events(shift = "exponential")</code>); the
-<code><a href="../articles/species-invasion.html">vignette("species-invasion")</a></code> simulates five centuries of
-invasions driven by it.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="citing-the-datasets">Citing the datasets<a class="anchor" aria-label="anchor" href="#citing-the-datasets"></a>
-</h3>
-<p>If you publish results from any bundled dataset, please cite the
-original source in addition to citing <code>amorem</code>:</p>
-<ul>
-<li>McFarland, D.A. (2001). <em>Student resistance: How the formal and
-informal organization of classrooms facilitate everyday forms of student
-defiance.</em> American Journal of Sociology.</li>
-<li>Madan, A. et al. (2011). <em>Sensing the “health state” of a
-community.</em> IEEE Pervasive Computing.</li>
-<li>Michalski, R. et al. (2014). <em>Matching organizational structure
-and social network extracted from email communication.</em> New
-Generation Computing 32(3–4), 213–235.</li>
-<li>Panzarasa, P., Opsahl, T., Carley, K. (2009). <em>Patterns and
-dynamics of users’ behavior and interaction: Network analysis of an
-online community.</em> Journal of the American Society for Information
-Science and Technology 60(5), 911–932.</li>
-<li>Paranjape, A., Benson, A.R., Leskovec, J. (2017). <em>Motifs in
-temporal networks.</em> WSDM ’17, 601–610.</li>
-<li>Li, J., Xie, S.-P., Cook, E.R., et al. (2013). <em>El Niño
-modulations over the past seven centuries.</em> Nature Climate Change 3,
-822–826.</li>
-<li>Juozaitienė R., Wit E.C. (2024). <em>It’s about time: revisiting
-reciprocity and triadicity in relational event analysis.</em> JRSS-A
-188(4), 1246–1262.</li>
-</ul>
+<table class="table">
+<colgroup>
+<col width="36%">
+<col width="32%">
+<col width="31%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">object</th>
+<th align="left">source</th>
+<th align="left">licence</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">
+<code>radoslaw_email</code>,
+<code>radoslaw_hierarchy</code>
+</td>
+<td align="left">Harvard Dataverse <a href="doi:10.7910/DVN/6Z3CGX" class="uri">doi:10.7910/DVN/6Z3CGX</a>
+</td>
+<td align="left">CC0 1.0</td>
+</tr>
+<tr class="even">
+<td align="left"><code>copenhagen_*</code></td>
+<td align="left">Figshare <a href="doi:10.6084/m9.figshare.7267433" class="uri">doi:10.6084/m9.figshare.7267433</a>
+</td>
+<td align="left">MIT</td>
+</tr>
+<tr class="odd">
+<td align="left">
+<code>congress_bills_118</code>,
+<code>congress_members_118</code>
+</td>
+<td align="left">US GPO govinfo BILLSTATUS bulk data</td>
+<td align="left">public domain (US Government work)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>us_leader_visits</code></td>
+<td align="left">Harvard Dataverse <a href="doi:10.7910/DVN/2ZNR5R" class="uri">doi:10.7910/DVN/2ZNR5R</a>
+</td>
+<td align="left">CC0 1.0</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>ucdp_dyads</code></td>
+<td align="left">Uppsala Conflict Data Program</td>
+<td align="left">CC BY 4.0</td>
+</tr>
+<tr class="even">
+<td align="left"><code>football_results</code></td>
+<td align="left">github.com/martj42/international_results</td>
+<td align="left">CC0 1.0</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>alien_invasions</code></td>
+<td align="left">Dryad <a href="doi:10.5061/dryad.x69p8czpv" class="uri">doi:10.5061/dryad.x69p8czpv</a>
+</td>
+<td align="left">CC0 1.0</td>
+</tr>
+<tr class="even">
+<td align="left">
+<code>daily_weather</code>, <code>oni</code>,
+<code>enso_nino34</code>
+</td>
+<td align="left">NOAA NCEI and CPC</td>
+<td align="left">public domain (US Government work)</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>public_holidays</code></td>
+<td align="left">Nager.Date API</td>
+<td align="left">dates and names (facts)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>dist_matrix</code></td>
+<td align="left">US Census TIGER/Line</td>
+<td align="left">public domain (US Government work)</td>
+</tr>
+<tr class="odd">
+<td align="left">
+<code>college_msg</code>,
+<code>email_eu_core</code>
+</td>
+<td align="left">SNAP (Stanford)</td>
+<td align="left">no licence stated (citation requested)</td>
+</tr>
+<tr class="even">
+<td align="left">
+<code>classroom_events</code>,
+<code>classroom_actors</code>
+</td>
+<td align="left">networkDynamic R package</td>
+<td align="left">package licence GPL-3</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>social_evolution_*</code></td>
+<td align="left">goldfish R package</td>
+<td align="left">package licence GPL-3</td>
+</tr>
+</tbody>
+</table>
+<p>Each object’s help page (<code><a href="../reference/radoslaw_email.html">?radoslaw_email</a></code>,
+<code><a href="../reference/ucdp_dyads.html">?ucdp_dyads</a></code>, …) gives the reference to cite. Please cite
+the original source of any dataset you use, in addition to amorem.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

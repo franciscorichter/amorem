@@ -287,9 +287,9 @@ the dyadic catalogue applies to them directly:</p>
 <span><span class="va">dy_single</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hyperedge_log.html">as_dyadic_log</a></span><span class="op">(</span><span class="va">single</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">dy_single</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"recency"</span><span class="op">)</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   sender receiver     time reciprocity_count      recency</span></span>
-<span><span class="co">#&gt; 1     18       19 1.499028                 0           NA</span></span>
-<span><span class="co">#&gt; 2     18       19 1.499595                 0 0.0005671296</span></span>
-<span><span class="co">#&gt; 3     20        3 1.519433                 0           NA</span></span></code></pre></div>
+<span><span class="co">#&gt; 1     39       81 1.499028                 0           NA</span></span>
+<span><span class="co">#&gt; 2     39       81 1.499595                 0 0.0005671296</span></span>
+<span><span class="co">#&gt; 3    112      136 1.519433                 0           NA</span></span></code></pre></div>
 <div class="section level4">
 <h4 id="a-size-matched-case-control-fit">A size-matched case-control fit<a class="anchor" aria-label="anchor" href="#a-size-matched-case-control-fit"></a>
 </h4>
@@ -340,13 +340,13 @@ the sender, averaged over the recipients
 <span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">p.table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimate"</span>, <span class="st">"Std. Error"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">est</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                     Estimate Std. Error</span></span>
-<span><span class="co">#&gt; log_sender_activity    0.481      0.077</span></span>
-<span><span class="co">#&gt; log_repetition         1.525      0.268</span></span>
-<span><span class="co">#&gt; log_reciprocity        3.539      0.252</span></span></code></pre></div>
+<span><span class="co">#&gt; log_sender_activity    0.551      0.081</span></span>
+<span><span class="co">#&gt; log_repetition         1.344      0.254</span></span>
+<span><span class="co">#&gt; log_reciprocity        4.377      0.323</span></span></code></pre></div>
 <p>All three statistics enter on the <code>log(1 + count)</code> scale.
-Holding the other two fixed, the log-rate of an e-mail changes by 0.48
-(standard error 0.08) per unit of sender activity, by 1.52 (s.e. 0.27)
-per unit of repetition and by 3.54 (s.e. 0.25) per unit of reciprocity.
+Holding the other two fixed, the log-rate of an e-mail changes by 0.55
+(standard error 0.08) per unit of sender activity, by 1.34 (s.e. 0.25)
+per unit of repetition and by 4.38 (s.e. 0.32) per unit of reciprocity.
 A control is drawn from all actor sets of the same size, so these
 coefficients compare each e-mail with an arbitrary hyperedge of its
 size; a design that also matches on the sender would isolate the

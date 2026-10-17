@@ -95,11 +95,11 @@ aggregates computed from the files as published; each section links the
 source and the code that reads it.</p>
 <table class="table">
 <colgroup>
-<col width="49%">
+<col width="44%">
 <col width="4%">
 <col width="4%">
-<col width="32%">
-<col width="7%">
+<col width="28%">
+<col width="18%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">dataset</th>
@@ -115,7 +115,8 @@ GHCN-Daily weather for the bundled logs’ periods</a></td>
 <td align="left">944</td>
 <td align="left"></td>
 <td align="left">public domain (US Government work)</td>
-<td align="left">can bundle</td>
+<td align="left">bundled as <code>daily_weather</code>
+</td>
 </tr>
 <tr class="even">
 <td align="left"><a href="#open-meteo-historical-weather-london-2026-and-warsaw-2010">Open-Meteo
@@ -139,7 +140,8 @@ CPC ENSO indices (ONI, SST indices)</a></td>
 <td align="left">920</td>
 <td align="left"></td>
 <td align="left">public domain (US Government work)</td>
-<td align="left">can bundle</td>
+<td align="left">bundled as <code>oni</code>
+</td>
 </tr>
 <tr class="odd">
 <td align="left"><a href="#eia-daily-brent-and-wti-spot-prices">EIA
@@ -163,7 +165,8 @@ holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026</a></td>
 <td align="left">75</td>
 <td align="left"></td>
 <td align="left">facts (holiday dates); API terms not recorded</td>
-<td align="left">can bundle</td>
+<td align="left">bundled as <code>public_holidays</code>
+</td>
 </tr>
 <tr class="even">
 <td align="left"><a href="#un-general-assembly-ideal-points">UN General
@@ -187,8 +190,8 @@ Assembly roll-call votes 1946-2013</a></td>
 <h3 id="noaa-ghcn-daily-weather-for-the-bundled-logs-periods">NOAA GHCN-Daily weather for the bundled logs’ periods<a class="anchor" aria-label="anchor" href="#noaa-ghcn-daily-weather-for-the-bundled-logs-periods"></a>
 </h3>
 <p><em>Source:</em> <a href="https://www.ncei.noaa.gov/" class="external-link uri">https://www.ncei.noaa.gov/</a> · <em>Licence:</em> public
-domain (US Government work) · <em>Status in amorem:</em> may be
-redistributed with attribution.</p>
+domain (US Government work) · <em>Status in amorem:</em> bundled as
+<code>daily_weather</code>.</p>
 <p><img src="data-covariates_files/figure-html/fig-noaa-ghcnd-weather-1.png" class="r-plt" alt="NOAA GHCN-Daily weather for the bundled logs' periods: series over time" width="960"></p>
 <p><strong>944</strong> observations. <code>tmax_c</code>: mean 16.2, sd
 10, range -14.3 to 37.8, 26.4% missing; <code>tmin_c</code>: mean 8.95,
@@ -255,8 +258,8 @@ Get the data
 <h3 id="noaa-cpc-enso-indices-oni-sst-indices">NOAA CPC ENSO indices (ONI, SST indices)<a class="anchor" aria-label="anchor" href="#noaa-cpc-enso-indices-oni-sst-indices"></a>
 </h3>
 <p><em>Source:</em> <a href="https://www.cpc.ncep.noaa.gov/" class="external-link uri">https://www.cpc.ncep.noaa.gov/</a> · <em>Licence:</em>
-public domain (US Government work) · <em>Status in amorem:</em> may be
-redistributed with attribution.</p>
+public domain (US Government work) · <em>Status in amorem:</em> bundled
+as <code>oni</code>.</p>
 <p><img src="data-covariates_files/figure-html/fig-noaa-enso-1.png" class="r-plt" alt="NOAA CPC ENSO indices (ONI, SST indices): series over time" width="960"></p>
 <p><strong>920</strong> observations. <code>oni</code>: mean 0.021, sd
 0.79, range -2.04 to 2.59, 0.0% missing. Oceanic Nino Index, three-month
@@ -315,8 +318,8 @@ Get the data
 2026<a class="anchor" aria-label="anchor" href="#public-holidays-nager-date-api-pl-2010-us-200420082009-gb-2026"></a>
 </h3>
 <p><em>Source:</em> <a href="https://date.nager.at/" class="external-link uri">https://date.nager.at/</a> · <em>Licence:</em> facts
-(holiday dates); API terms not recorded · <em>Status in amorem:</em> may
-be redistributed with attribution.</p>
+(holiday dates); API terms not recorded · <em>Status in amorem:</em>
+bundled as <code>public_holidays</code>.</p>
 <p><img src="data-covariates_files/figure-html/fig-nager-date-holidays-1.png" class="r-plt" alt="Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026: series over time" width="960"></p>
 <p><strong>75</strong> entries. public holidays: PL 2010, US
 2004/2008/2009, GB 2026</p>

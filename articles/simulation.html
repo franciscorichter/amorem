@@ -414,10 +414,10 @@ the simulator call and the conditional-logit estimate
 <span>                <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tab</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               beta_mean beta_sd seconds</span></span>
-<span><span class="co">#&gt; Gillespie         0.563   0.086   0.506</span></span>
-<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.166</span></span>
-<span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.140</span></span>
-<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.151</span></span></code></pre></div>
+<span><span class="co">#&gt; Gillespie         0.563   0.086   0.574</span></span>
+<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.203</span></span>
+<span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.176</span></span>
+<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.187</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4.5</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html" class="external-link">hat</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -433,7 +433,7 @@ is 0.563 for Gillespie and 0.636, 0.585 and 0.587 for τ = 0.01, 0.05 and
 time unit, so a step of τ = 0.20 contains roughly 490 events that all
 share the start-of-step state; within a step, a dyad whose reverse fires
 earlier in the same step does not yet see it. Mean simulator time per
-run is 0.51 s for Gillespie and 0.14–0.17 s for τ-leap.</p>
+run is 0.57 s for Gillespie and 0.18–0.20 s for τ-leap.</p>
 <div class="section level4">
 <h4 id="when-to-pick-which">When to pick which<a class="anchor" aria-label="anchor" href="#when-to-pick-which"></a>
 </h4>

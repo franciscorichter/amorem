@@ -177,9 +177,9 @@ class(single) <- class(email_hl)
 dy_single <- as_dyadic_log(single)
 head(endogenous_features(dy_single, stats = c("reciprocity_count", "recency")), 3)
 #>   sender receiver     time reciprocity_count      recency
-#> 1     18       19 1.499028                 0           NA
-#> 2     18       19 1.499595                 0 0.0005671296
-#> 3     20        3 1.519433                 0           NA
+#> 1     39       81 1.499028                 0           NA
+#> 2     39       81 1.499595                 0 0.0005671296
+#> 3    112      136 1.519433                 0           NA
 ```
 
 #### A size-matched case-control fit
@@ -229,15 +229,15 @@ fit <- rem(~ log_sender_activity + log_repetition + log_reciprocity,
 est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
 round(est, 3)
 #>                     Estimate Std. Error
-#> log_sender_activity    0.481      0.077
-#> log_repetition         1.525      0.268
-#> log_reciprocity        3.539      0.252
+#> log_sender_activity    0.551      0.081
+#> log_repetition         1.344      0.254
+#> log_reciprocity        4.377      0.323
 ```
 
 All three statistics enter on the `log(1 + count)` scale. Holding the
-other two fixed, the log-rate of an e-mail changes by 0.48 (standard
-error 0.08) per unit of sender activity, by 1.52 (s.e. 0.27) per unit of
-repetition and by 3.54 (s.e. 0.25) per unit of reciprocity. A control is
+other two fixed, the log-rate of an e-mail changes by 0.55 (standard
+error 0.08) per unit of sender activity, by 1.34 (s.e. 0.25) per unit of
+repetition and by 4.38 (s.e. 0.32) per unit of reciprocity. A control is
 drawn from all actor sets of the same size, so these coefficients
 compare each e-mail with an arbitrary hyperedge of its size; a design
 that also matches on the sender would isolate the recipient-side

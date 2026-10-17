@@ -15,12 +15,12 @@ the source and the code that reads it.
 
 | dataset | events | actors | licence | amorem |
 |:---|:---|:---|:---|:---|
-| [Manufacturing company email metadata and corporate hierarchy](#manufacturing-company-email-metadata-and-corporate-hierarchy) | 82,876 | 167 | CC0 1.0 | can bundle |
-| [SNAP: CollegeMsg (UC Irvine messages)](#snap-collegemsg-uc-irvine-messages-) | 59,835 | 1,899 | none stated | obtain from source |
-| [SNAP: email-Eu-core temporal (four departments)](#snap-email-eu-core-temporal-four-departments-) | 332,334 | 986 | none stated | obtain from source |
+| [Manufacturing company email metadata and corporate hierarchy](#manufacturing-company-email-metadata-and-corporate-hierarchy) | 82,876 | 167 | CC0 1.0 | bundled as `radoslaw_email`, `radoslaw_hierarchy` |
+| [SNAP: CollegeMsg (UC Irvine messages)](#snap-collegemsg-uc-irvine-messages-) | 59,835 | 1,899 | none stated | bundled as `college_msg` since an earlier release; licence under review |
+| [SNAP: email-Eu-core temporal (four departments)](#snap-email-eu-core-temporal-four-departments-) | 332,334 | 986 | none stated | bundled as `email_eu_core` since an earlier release; licence under review |
 | [Network Repository: Enron employees email](#network-repository-enron-employees-email) | 47,088 | 150 | CC BY-SA | share-alike |
 | [eventnet example data (Enron, Apache, Wikipedia hyperevents)](#eventnet-example-data-enron-apache-wikipedia-hyperevents-) | 39,752 | 6,062 | GPL-3.0 (source repository/package) | GPL only |
-| [Copenhagen Networks Study interaction data](#copenhagen-networks-study-interaction-data) | 3,600 | 536 | MIT | can bundle |
+| [Copenhagen Networks Study interaction data](#copenhagen-networks-study-interaction-data) | 3,600 | 536 | MIT | bundled as `copenhagen_calls`, `copenhagen_sms`, `copenhagen_actors` |
 | [statnet relevent workshop data (WTC radio, classroom)](#statnet-relevent-workshop-data-wtc-radio-classroom-) | 481 | 35 | GPL-3.0 (source repository/package) | GPL only |
 | [4PCAN alter nominations](#id_4pcan-alter-nominations) | 56,570 | 2,491 | CC BY 4.0 | can bundle |
 | [networkDynamicData package data](#networkdynamicdata-package-data) | 259 | 37 | GPL-3.0 (source repository/package) | GPL only |
@@ -29,7 +29,7 @@ the source and the code that reads it.
 ### Manufacturing company email metadata and corporate hierarchy
 
 *Source:* <https://doi.org/10.7910/DVN/6Z3CGX> · *Licence:* CC0 1.0 ·
-*Status in amorem:* may be redistributed with attribution.
+*Status in amorem:* bundled as `radoslaw_email`, `radoslaw_hierarchy`.
 
 ![Manufacturing company email metadata and corporate hierarchy: activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -72,8 +72,8 @@ is `readers[["radoslaw-email-dataverse"]]` in
 ### SNAP: CollegeMsg (UC Irvine messages)
 
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
-*Status in amorem:* no licence stated: not redistributed; obtain from
-the source.
+*Status in amorem:* bundled as `college_msg` since an earlier release;
+licence under review.
 
 ![SNAP: CollegeMsg (UC Irvine messages): activity over time, inter-event
 times, partners per actor, daily cycle or actor
@@ -112,8 +112,8 @@ is `readers[["snap-collegemsg"]]` in
 ### SNAP: email-Eu-core temporal (four departments)
 
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
-*Status in amorem:* no licence stated: not redistributed; obtain from
-the source.
+*Status in amorem:* bundled as `email_eu_core` since an earlier release;
+licence under review.
 
 ![SNAP: email-Eu-core temporal (four departments): activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -251,7 +251,8 @@ is `readers[["eventnet-rhem-data"]]` in
 ### Copenhagen Networks Study interaction data
 
 *Source:* <https://doi.org/10.6084/m9.figshare.7267433.v1> · *Licence:*
-MIT · *Status in amorem:* may be redistributed with attribution.
+MIT · *Status in amorem:* bundled as `copenhagen_calls`,
+`copenhagen_sms`, `copenhagen_actors`.
 
 ![Copenhagen Networks Study interaction data: activity over time,
 inter-event times, partners per actor, daily cycle or actor

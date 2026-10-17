@@ -227,10 +227,8 @@ Full per-function documentation is under
 - [`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md)
   : Endogenous features for a hyperedge event log
 
-## Data
+## Data: event logs
 
-- [`dist_matrix`](https://franciscorichter.github.io/amorem/reference/dist_matrix.md)
-  : US state distance matrix
 - [`classroom_events`](https://franciscorichter.github.io/amorem/reference/classroom_events.md)
   : Classroom interaction events (McFarland 2001)
 - [`classroom_actors`](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)
@@ -243,12 +241,45 @@ Full per-function documentation is under
   : Friendship-survey events for the Social Evolution study
 - [`radoslaw_email`](https://franciscorichter.github.io/amorem/reference/radoslaw_email.md)
   : Manufacturing-company email events (Michalski et al. 2014)
+- [`radoslaw_hierarchy`](https://franciscorichter.github.io/amorem/reference/radoslaw_hierarchy.md)
+  : Reporting hierarchy of the manufacturing company (Nurek & Michalski
+  2020)
 - [`college_msg`](https://franciscorichter.github.io/amorem/reference/college_msg.md)
   : CollegeMsg: private messages on a university online community
 - [`email_eu_core`](https://franciscorichter.github.io/amorem/reference/email_eu_core.md)
   : Email-Eu-Core temporal (single-department subset)
+- [`copenhagen_calls`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
+  [`copenhagen_sms`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
+  [`copenhagen_actors`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
+  : Copenhagen Networks Study: phone calls, text messages and gender
+- [`us_leader_visits`](https://franciscorichter.github.io/amorem/reference/us_leader_visits.md)
+  : US leader-to-leader visits, 1945–2019
+- [`football_results`](https://franciscorichter.github.io/amorem/reference/football_results.md)
+  : Men's international football results since 1872
+- [`ucdp_dyads`](https://franciscorichter.github.io/amorem/reference/ucdp_dyads.md)
+  : UCDP dyadic conflict data, 1946–2025
+- [`alien_invasions`](https://franciscorichter.github.io/amorem/reference/alien_invasions.md)
+  : Alien species first records, prepared for relational event models
+
+## Data: hyperevents
+
+- [`congress_bills_118`](https://franciscorichter.github.io/amorem/reference/congress_bills_118.md)
+  : Bills of the 118th US Congress as hyperevents
+- [`congress_members_118`](https://franciscorichter.github.io/amorem/reference/congress_members_118.md)
+  : Members of the 118th US Congress
+
+## Data: global covariates
+
 - [`enso_nino34`](https://franciscorichter.github.io/amorem/reference/enso_nino34.md)
   : Reconstructed Niño3.4 ENSO index, 1301–2005 (Li et al. 2013)
+- [`oni`](https://franciscorichter.github.io/amorem/reference/oni.md) :
+  Oceanic Niño Index, 1950–present
+- [`daily_weather`](https://franciscorichter.github.io/amorem/reference/daily_weather.md)
+  : Daily weather at the places and periods of the bundled event logs
+- [`public_holidays`](https://franciscorichter.github.io/amorem/reference/public_holidays.md)
+  : Public holidays for the periods of the bundled event logs
+- [`dist_matrix`](https://franciscorichter.github.io/amorem/reference/dist_matrix.md)
+  : US state distance matrix
 
 # Articles
 

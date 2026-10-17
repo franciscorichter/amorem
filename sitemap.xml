@@ -34,6 +34,7 @@
 <url><loc>https://franciscorichter.github.io/amorem/authors.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/index.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/news/index.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/alien_invasions.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/amorem-package.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/attach_static_covariates.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/classroom_actors.html</loc></url>
@@ -42,11 +43,16 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models_global.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models_smooth.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/congress_bills_118.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/congress_members_118.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/copenhagen.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/daily_weather.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/dist_matrix.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/email_eu_core.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/endogenous_features.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/enso_nino34.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/football_results.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/gof_auxiliary.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/gof_global.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/gof_multivariate.html</loc></url>
@@ -61,8 +67,11 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/martingale_residuals.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/nn_control.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/nn_uncertainty.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/oni.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/plot.nn_uncertainty.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/public_holidays.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/radoslaw_email.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/radoslaw_hierarchy.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/rem.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/sample_non_events.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/simulate_actor_covariates.html</loc></url>
@@ -75,6 +84,8 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/standardize_event_log.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/transform_recency.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/ucdp_dyads.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/us_leader_visits.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/widen_case_control.html</loc></url>
 </urlset>
 

@@ -16,7 +16,7 @@ the source and the code that reads it.
 |:---|:---|:---|:---|:---|
 | [TfL Santander Cycles journeys, February 2026](#tfl-santander-cycles-journeys-february-2026) | 550,273 | 805 | Open Government Licence v2.0 (TfL) | can bundle |
 | [OpenSky COVID-19 flight list, April 2020](#opensky-covid-19-flight-list-april-2020) | 458,022 | 10,635 | CC BY 4.0 | can bundle |
-| [Alien species first records prepared for REMs (Juozaitienė et al.)](#alien-species-first-records-prepared-for-rems-juozaitien-et-al-) | 11,730 | 3,188 | CC0 1.0 | can bundle |
+| [Alien species first records prepared for REMs (Juozaitienė et al.)](#alien-species-first-records-prepared-for-rems-juozaitien-et-al-) | 11,730 | 3,188 | CC0 1.0 | bundled as `alien_invasions` |
 | [Alien Species First Records Database v4.0 (Seebens et al.)](#alien-species-first-records-database-v4-0-seebens-et-al-) | 90,023 | 29,091 | CC BY 4.0 | can bundle |
 | [COVID-19 transmission chains, Bucharest](#covid-19-transmission-chains-bucharest) | 13,377 | 19,713 | CC BY 4.0 | can bundle |
 
@@ -104,8 +104,8 @@ is `readers[["opensky-covid-flightlist-2020-04"]]` in
 
 ### Alien species first records prepared for REMs (Juozaitienė et al.)
 
-*Source:* <https://doi.org/10.5281/zenodo.8096819> · *Licence:* CC0 1.0
-· *Status in amorem:* may be redistributed with attribution.
+*Source:* <https://doi.org/10.5061/dryad.x69p8czpv> · *Licence:* CC0 1.0
+· *Status in amorem:* bundled as `alien_invasions`.
 
 ![Alien species first records prepared for REMs (Juozaitienė et al.):
 activity over time, inter-event times, partners per actor, daily cycle

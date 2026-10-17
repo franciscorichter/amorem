@@ -23,9 +23,14 @@ carry.
 | share-alike (CC BY-SA): compatible only with a package under the same terms | 3 |
 | licence differs between datasets of the collection | 1 |
 
-Datasets that cannot be redistributed are documented here with code that
-downloads them from their source; the figures and numbers on the topic
-pages are aggregates, not the data.
+10 of the datasets that may be bundled ship with amorem (see [Bundled
+datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)).
+Three datasets bundled in earlier releases (CollegeMsg, Email-EU-core
+and the Social Evolution study) come from sources without a licence or
+under GPL-3; their status is under review. Datasets that cannot be
+redistributed are documented here with code that downloads them from
+their source; the figures and numbers on the topic pages are aggregates,
+not the data.
 
 ## Topic pages
 
@@ -62,37 +67,37 @@ pages are aggregates, not the data.
 | [4PCAN alter nominations](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | CC BY 4.0 | can bundle | yes |
 | [Africa’s diplomatic visits (foreign ministers) 2010-2022](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC BY 4.0 | can bundle | yes |
 | [Alien Species First Records Database v4.0 (Seebens et al.)](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | CC BY 4.0 | can bundle | yes |
-| [Alien species first records prepared for REMs (Juozaitienė et al.)](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | CC0 1.0 | can bundle | yes |
-| [Copenhagen Networks Study interaction data](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | MIT | can bundle | yes |
+| [Alien species first records prepared for REMs (Juozaitienė et al.)](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | CC0 1.0 | bundled as `alien_invasions` | yes |
+| [Copenhagen Networks Study interaction data](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | MIT | bundled as `copenhagen_calls`, `copenhagen_sms`, `copenhagen_actors` | yes |
 | [COVID-19 transmission chains, Bucharest](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | CC BY 4.0 | can bundle | yes |
 | [Diplomatic visits of the foreign ministers of Russia and Ukraine 2021-2024](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC0 1.0 | can bundle | yes |
 | [EIA daily Brent and WTI spot prices](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | public domain (US Government work) | can bundle | yes |
 | [GDELT event database (1979 file and one daily file)](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | unrestricted use and redistribution with citation | can bundle | yes |
 | [IMGW daily synoptic weather, Poland 2010](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | Polish public-sector open data re-use | can bundle | yes |
-| [International football results 1872-present](https://franciscorichter.github.io/amorem/articles/data-sports.md) | events | CC0 1.0 | can bundle | yes |
+| [International football results 1872-present](https://franciscorichter.github.io/amorem/articles/data-sports.md) | events | CC0 1.0 | bundled as `football_results` | yes |
 | [Italy’s diplomatic visits 2000-2023](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC BY 4.0 | can bundle | yes |
 | [Lichess rated standard games, January 2013](https://franciscorichter.github.io/amorem/articles/data-sports.md) | events | CC0 | can bundle | yes |
-| [Manufacturing company email metadata and corporate hierarchy](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | CC0 1.0 | can bundle | yes |
-| [NOAA CPC ENSO indices (ONI, SST indices)](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | public domain (US Government work) | can bundle | yes |
-| [NOAA GHCN-Daily weather for the bundled logs’ periods](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | public domain (US Government work) | can bundle | yes |
+| [Manufacturing company email metadata and corporate hierarchy](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | CC0 1.0 | bundled as `radoslaw_email`, `radoslaw_hierarchy` | yes |
+| [NOAA CPC ENSO indices (ONI, SST indices)](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | public domain (US Government work) | bundled as `oni` | yes |
+| [NOAA GHCN-Daily weather for the bundled logs’ periods](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | public domain (US Government work) | bundled as `daily_weather` | yes |
 | [Open-Meteo historical weather, London 2026 and Warsaw 2010](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | CC BY 4.0 | can bundle | yes |
 | [OpenAlex: works of the journal Social Networks](https://franciscorichter.github.io/amorem/articles/data-hyperevents.md) | hyperevents | CC0 1.0 | can bundle | yes |
 | [OpenSky COVID-19 flight list, April 2020](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | CC BY 4.0 | can bundle | yes |
 | [POLECAT weekly event data 2024](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC0 1.0 | can bundle | yes |
 | Polish statutory holidays (Dziennik Ustaw) | covariate | public domain (Polish normative acts, Art. 4 copyright act) | can bundle | no: legal texts (holiday statutes) |
-| [Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | facts (holiday dates); API terms not recorded | can bundle | yes |
+| [Public holidays (Nager.Date API): PL 2010, US 2004/2008/2009, GB 2026](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | facts (holiday dates); API terms not recorded | bundled as `public_holidays` | yes |
 | [Retrosheet MLB game logs 1871-2024](https://franciscorichter.github.io/amorem/articles/data-sports.md) | events | free use with required notice | can bundle | yes |
 | [TfL Santander Cycles journeys, February 2026](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md) | events | Open Government Licence v2.0 (TfL) | can bundle | yes |
 | UC Irvine academic calendars 2003-2005 | covariate | facts (dates); pages (c) UC Regents | can bundle | no: calendar web pages |
-| [UCDP conflict data (GED, dyadic, actor, interstate onsets)](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC BY 4.0 | can bundle | yes |
+| [UCDP conflict data (GED, dyadic, actor, interstate onsets)](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC BY 4.0 | bundled as `ucdp_dyads` | yes |
 | [UN General Assembly ideal points](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | CC0 1.0 | can bundle | yes |
 | [UN General Assembly roll-call votes 1946-2013](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | events | CC0 1.0 | can bundle | yes |
 | [UNHCR refugee population statistics (refugees R package)](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC BY 4.0 | can bundle | yes |
-| [US Congress bill status, 118th Congress (sponsors, cosponsors)](https://franciscorichter.github.io/amorem/articles/data-hyperevents.md) | hyperevents | public domain (17 U.S.C. 105) | can bundle | yes |
-| [US leader-to-leader diplomatic visits 1946-2019](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC0 1.0 | can bundle | yes |
+| [US Congress bill status, 118th Congress (sponsors, cosponsors)](https://franciscorichter.github.io/amorem/articles/data-hyperevents.md) | hyperevents | public domain (17 U.S.C. 105) | bundled as `congress_bills_118`, `congress_members_118` | yes |
+| [US leader-to-leader diplomatic visits 1946-2019](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC0 1.0 | bundled as `us_leader_visits` | yes |
 | [World Bank commodity prices (Pink Sheet)](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | CC BY 4.0 | can bundle | yes |
 | [eventnet example data (Enron, Apache, Wikipedia hyperevents)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | hyperevents | GPL-3.0 (source repository/package) | GPL only | yes |
-| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | GPL-3.0 (source repository/package) | GPL only | yes |
+| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | GPL-3.0 (source repository/package) | bundled as `social_evolution_calls`, `social_evolution_friendship`, `social_evolution_actors` since an earlier release; licence under review | yes |
 | [networkDynamicData package data](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | GPL-3.0 (source repository/package) | GPL only | yes |
 | [statnet relevent workshop data (WTC radio, classroom)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | GPL-3.0 (source repository/package) | GPL only | yes |
 | [ATOP alliance treaty obligations 5.1](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | none stated | obtain from source | yes |
@@ -112,8 +117,8 @@ pages are aggregates, not the data.
 | [SNAP: Ask Ubuntu interactions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: Bitcoin Alpha trust ratings](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: Bitcoin OTC trust ratings](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
-| [SNAP: CollegeMsg (UC Irvine messages)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | obtain from source | yes |
-| [SNAP: email-Eu-core temporal (four departments)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | obtain from source | yes |
+| [SNAP: CollegeMsg (UC Irvine messages)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `college_msg` since an earlier release; licence under review | yes |
+| [SNAP: email-Eu-core temporal (four departments)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `email_eu_core` since an earlier release; licence under review | yes |
 | SNAP: face-to-face interactions in Resistance games | events | none stated | obtain from source | no: many small game networks rather than one log |
 | [SNAP: MathOverflow interactions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: MOOC user actions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |

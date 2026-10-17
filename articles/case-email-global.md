@@ -38,9 +38,9 @@ dow <- function(t) { p <- clock(t); (p$wday + 6) %% 7 + tod(t) / 24 }     # 0 = 
 c(events = nrow(ev), actors = length(unique(c(ev$sender, ev$receiver))),
   first = format(clock(min(ev$time))), last = format(clock(max(ev$time))))
 #>                events                actors                 first 
-#>               "10776"                 "151" "2010-01-02 18:40:10" 
+#>               "10776"                 "151" "2010-01-02 17:40:10" 
 #>                  last 
-#> "2010-02-01 18:35:37"
+#> "2010-02-01 17:35:37"
 ```
 
 ``` r
@@ -62,7 +62,7 @@ week](case-email-global_files/figure-html/clock-figure-1.png)
 par(op)
 ```
 
-93.0% of the emails are sent between 07:00 and 16:00, and 0.8% on
+92.6% of the emails are sent between 07:00 and 16:00, and 0.8% on
 Saturday or Sunday.
 
 ### Ordinary sampling cannot see a global covariate
@@ -97,7 +97,7 @@ cc <- sample_non_events(ev, seed = 1, shift = "exponential", window = c(0, 30))
 sh <- attr(cc, "shift")
 c(mean_shift_days = sh$mean, uninformative_events = length(sh$uninformative))
 #>      mean_shift_days uninformative_events 
-#>             15.23542              1.00000
+#>             15.23542              0.00000
 ```
 
 The endogenous covariate is reciprocity timing: the time since the
@@ -120,8 +120,8 @@ cc$tod <- tod(cc$time)
 cc$dow <- dow(cc$time)
 w <- widen_case_control(cc, covariates = c("recip", "tod", "dow", "time"))
 summary(w$d_tod)
-#>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
-#> -23.27501  -6.12079  -0.01665  -0.05324   5.95200  23.13132
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#> -18.314  -7.283  -1.169  -1.144   4.869  23.427
 ```
 
 ### Model
@@ -140,10 +140,10 @@ fit <- rem(~ nl(tod, bs = "cc", k = 12) + nl(dow, bs = "cc", k = 8) +
            data = w, method = "gam", time = "time")
 summary(fit)$s.table
 #>                       edf    Ref.df    Chi.sq      p-value
-#> s(.X_tod):.I     9.845795 10.000000 807.03965 0.0000000000
-#> s(.X_dow):.I     5.934112  6.000000 423.60903 0.0000000000
-#> s(.X_time):.I    3.067855  3.553957  20.10041 0.0006211163
-#> s(.TP):.XI_recip 4.518897  4.874724 229.52099 0.0000000000
+#> s(.X_tod):.I     9.820934 10.000000 938.51277 0.0000000000
+#> s(.X_dow):.I     5.931675  6.000000 433.23812 0.0000000000
+#> s(.X_time):.I    3.167483  3.640323  22.21318 0.0003238577
+#> s(.TP):.XI_recip 2.000223  2.000444 301.06346 0.0000000000
 ```
 
 ``` r
@@ -169,11 +169,11 @@ par(op)
 ```
 
 In the `mgcv` summary the largest p-value of the four smooth terms is
-6.2e-04. The time-of-day curve is lowest at about 3.5 h and ranges from
-1.19 to 2.03 between 08:00 and 16:00. The day-of-week curve averages
-0.42 from Monday to Friday and -1.88 on Saturday and Sunday (log-rate
+3.2e-04. The time-of-day curve is lowest at about 3.1 h and ranges from
+-0.04 to 1.88 between 08:00 and 16:00. The day-of-week curve averages
+0.44 from Monday to Friday and -1.97 on Saturday and Sunday (log-rate
 scale, each curve centred by `mgcv`). Over the 30 days the reciprocity
-coefficient $`\beta(t)`$ ranges from 6.18 to 10.97. Dashed lines in the
+coefficient $`\beta(t)`$ ranges from 5.71 to 7.59. Dashed lines in the
 figure are ±2 standard errors.
 
 ### Goodness of fit of the fitted model
@@ -191,11 +191,11 @@ g_dow  <- gof_rem(fit, "dow", test = "functional_form", n_sim = 1000, seed = 1)
 g_time <- gof_rem(fit, "recip", test = "time", data = w, n_sim = 1000, seed = 1)
 g_tod; g_dow; g_time
 #> Martingale-residual GoF test of 'tod': functional form
-#>   sup statistic = 0.1425, p-value = 0.0580 (1000 bootstrap replicates, n = 10775)
+#>   sup statistic = 0.2554, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)
 #> Martingale-residual GoF test of 'dow': functional form
-#>   sup statistic = 0.4696, p-value = 0.0000 (1000 bootstrap replicates, n = 10775)
+#>   sup statistic = 0.5011, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)
 #> Martingale-residual GoF test of 'recip': time specification
-#>   sup statistic = 0.1020, p-value = 0.0250 (1000 bootstrap replicates, n = 10775)
+#>   sup statistic = 0.1370, p-value = 0.0020 (1000 bootstrap replicates, n = 10776)
 ```
 
 ``` r
@@ -214,8 +214,8 @@ processes](case-email-global_files/figure-html/gof-rem-figure-1.png)
 par(op)
 ```
 
-The functional-form test gives p = 0.058 for time of day and p \< 0.001
-for day of week; the time test for the reciprocity term gives p = 0.025.
+The functional-form test gives p \< 0.001 for time of day and p \< 0.001
+for day of week; the time test for the reciprocity term gives p = 0.002.
 
 ### Linear-model diagnostics on one week
 
@@ -242,13 +242,13 @@ ga <- gof_auxiliary(ev7, m, auxiliary = "sender_outdegree", n_sim = 1000,
 rbind(multivariate_reciprocity = c(statistic = gm$statistic, p_value = gm$p_value),
       auxiliary_sender_outdegree = c(statistic = ga$statistic, p_value = ga$p_value))
 #>                            statistic p_value
-#> multivariate_reciprocity    7.966615   0.000
-#> auxiliary_sender_outdegree 12.806399   0.038
+#> multivariate_reciprocity    4.075663   0.029
+#> auxiliary_sender_outdegree 10.159138   0.057
 ```
 
-On the 2794 emails of the first week, the multivariate test gives p \<
-0.001 for a non-linear reciprocity-count effect, and the auxiliary test
-gives p = 0.038 for the sender’s out-degree.
+On the 2794 emails of the first week, the multivariate test gives p =
+0.029 for a non-linear reciprocity-count effect, and the auxiliary test
+gives p = 0.057 for the sender’s out-degree.
 
 ### Reference
 

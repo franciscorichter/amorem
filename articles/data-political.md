@@ -18,13 +18,13 @@ the source and the code that reads it.
 | [GDELT event database (1979 file and one daily file)](#gdelt-event-database-1979-file-and-one-daily-file-) | 144,177 | 207 | unrestricted use and redistribution with citation | can bundle |
 | [POLECAT weekly event data 2024](#polecat-weekly-event-data-2024) | 64,979 | 3,790 | CC0 1.0 | can bundle |
 | [Cline Center Phoenix NYT event data 1945-2005](#cline-center-phoenix-nyt-event-data-1945-2005) | 248,493 | 213 | unknown (databank page returned 403) | obtain from source |
-| [UCDP conflict data (GED, dyadic, actor, interstate onsets)](#ucdp-conflict-data-ged-dyadic-actor-interstate-onsets-) | 3,518 | 704 | CC BY 4.0 | can bundle |
+| [UCDP conflict data (GED, dyadic, actor, interstate onsets)](#ucdp-conflict-data-ged-dyadic-actor-interstate-onsets-) | 3,518 | 704 | CC BY 4.0 | bundled as `ucdp_dyads` |
 | [ATOP alliance treaty obligations 5.1](#atop-alliance-treaty-obligations-5-1) | 5,101 | 207 | none stated | obtain from source |
 | [Africa’s diplomatic visits (foreign ministers) 2010-2022](#africa-s-diplomatic-visits-foreign-ministers-2010-2022) | 3,892 | 183 | CC BY 4.0 | can bundle |
 | [Italy’s diplomatic visits 2000-2023](#italy-s-diplomatic-visits-2000-2023) | 2,631 | 158 | CC BY 4.0 | can bundle |
 | [Diplomatic visits of the foreign ministers of Russia and Ukraine 2021-2024](#diplomatic-visits-of-the-foreign-ministers-of-russia-and-ukraine-2021-2024) | 101 | 54 | CC0 1.0 | can bundle |
-| [US leader-to-leader diplomatic visits 1946-2019](#us-leader-to-leader-diplomatic-visits-1946-2019) | 3,943 | 189 | CC0 1.0 | can bundle |
-| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution) | 69 | 33 | GPL-3.0 (source repository/package) | GPL only |
+| [US leader-to-leader diplomatic visits 1946-2019](#us-leader-to-leader-diplomatic-visits-1946-2019) | 3,943 | 189 | CC0 1.0 | bundled as `us_leader_visits` |
+| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution) | 69 | 33 | GPL-3.0 (source repository/package) | bundled as `social_evolution_calls`, `social_evolution_friendship`, `social_evolution_actors` since an earlier release; licence under review |
 | [UNHCR refugee population statistics (refugees R package)](#unhcr-refugee-population-statistics-refugees-r-package-) | 114,516 | 211 | CC BY 4.0 | can bundle |
 
 ### GDELT event database (1979 file and one daily file)
@@ -159,7 +159,7 @@ is `readers[["phoenix-cline"]]` in
 ### UCDP conflict data (GED, dyadic, actor, interstate onsets)
 
 *Source:* <https://ucdp.uu.se/downloads/> · *Licence:* CC BY 4.0 ·
-*Status in amorem:* may be redistributed with attribution.
+*Status in amorem:* bundled as `ucdp_dyads`.
 
 ![UCDP conflict data (GED, dyadic, actor, interstate onsets): activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -359,7 +359,7 @@ is `readers[["russia-ukraine-mfa-visits"]]` in
 ### US leader-to-leader diplomatic visits 1946-2019
 
 *Source:* <https://doi.org/10.7910/DVN/2ZNR5R> · *Licence:* CC0 1.0 ·
-*Status in amorem:* may be redistributed with attribution.
+*Status in amorem:* bundled as `us_leader_visits`.
 
 ![US leader-to-leader diplomatic visits 1946-2019: activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -400,8 +400,10 @@ is `readers[["us-leader-visits"]]` in
 ### goldfish package data: fisheries treaties, RFID validity, Social Evolution
 
 *Source:* <https://github.com/snlab-ch/goldfish> · *Licence:* GPL-3.0
-(source repository/package) · *Status in amorem:* GPL-3: redistributable
-only inside a GPL-compatible package.
+(source repository/package) · *Status in amorem:* bundled as
+`social_evolution_calls`, `social_evolution_friendship`,
+`social_evolution_actors` since an earlier release; licence under
+review.
 
 ![goldfish package data: fisheries treaties, RFID validity, Social
 Evolution: activity over time, inter-event times, partners per actor,
