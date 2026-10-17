@@ -377,8 +377,8 @@ compare_models_global(
                     temperature       = "global_smooth")),
   global_covariates = g, seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       2   690 -335.1267 679.9510   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  31.03881
+#> 1 with_global       2   690 -335.1267 679.9509   0.00000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  31.03884
 ```
 
 | Effect type     | Smooth                   | Use                         |
@@ -565,7 +565,7 @@ res <- martingale_residuals(
 # Residuals sum to zero within each (case, control) stratum:
 summary(tapply(res$residual, res$stratum, sum))
 #>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
-#> -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16
+#> -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16
 ```
 
 ``` r
@@ -587,7 +587,7 @@ legend("bottomright", bty = "n", pch = 16, col = role_col, legend = names(role_c
 ![Martingale residuals over event time with a loess curve per
 role](estimation_files/figure-html/martingale-figure-1.png)
 
-The largest within-stratum sum is 2.2e-16 in absolute value, so the
+The largest within-stratum sum is 1.5e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 $`1 - \pi_i \ge 0`$ and its control’s is the mirror image, so the two
 curves are symmetric about zero by construction. The closer the case

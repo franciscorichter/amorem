@@ -2,7 +2,7 @@
 
 ## Authors
 
-- **Francisco Richter**. Author, maintainer, copyright holder.
+- **Francisco Richter**. Author, maintainer.
 
 - **Martina Boschi**. Author.
 

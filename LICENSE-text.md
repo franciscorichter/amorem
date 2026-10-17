@@ -1,4 +1,4 @@
 # License
 
     YEAR: 2026
-    COPYRIGHT HOLDER: Francisco Richter
+    COPYRIGHT HOLDER: amorem authors
