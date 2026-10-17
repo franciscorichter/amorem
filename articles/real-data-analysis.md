@@ -2,22 +2,20 @@
 
 ## Real-data analysis
 
-Three reproducible analyses on the bundled datasets. Every numerical and
-graphical output below is produced by
-`paper/wiki/experiments/realdata.R`.
+Three analyses on the bundled datasets. The code below runs when this
+page is built, so every table, figure and number in the text comes from
+the current version of the package.
 
 ------------------------------------------------------------------------
 
-### Classroom · sender frailty narrows, but does not reverse, the count family’s lead
+### Classroom · timing variants with and without a sender frailty
 
-The central methodological lesson of Juozaitienė & Wit (2024): without
-an actor-heterogeneity correction the `*_count` family silently absorbs
-sender activity differences, so it dominates the AIC table even when
-timing variants are the better description of the dynamics. Adding a
-Gamma
-[`survival::frailty()`](https://rdrr.io/pkg/survival/man/frailty.html)
-on the sender absorbs a large part of that advantage — but on this
-stream it does not overturn it.
+Juozaitienė & Wit (2024) compare *count* statistics with *timing*
+variants (time since the most recent reciprocating or transitive event,
+continuous or interrupted by a closing event). Count statistics also
+carry sender activity: an actor who sends a lot accumulates large
+counts. A Gamma sender frailty (`random_effects = "sender"`) absorbs
+activity differences between senders.
 
 ``` r
 
@@ -28,48 +26,63 @@ specs <- list(
   interrupted = c("reciprocity_time_recent_interrupted",
                   "transitivity_time_recent_interrupted"))
 
-compare_models(classroom_events, specs, n_controls = 3, seed = 11)
+no_re <- compare_models(classroom_events, specs, n_controls = 3, seed = 11)
+no_re
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -730.3872 1464.774    0.0000
-#> 2  continuous       2   691 -850.2339 1704.468  239.6934
-#> 3 interrupted       2   691 -931.9619 1867.924  403.1494
+#> 1       count       2   691 -653.3589 1310.718    0.0000
+#> 2 interrupted       2   691 -864.9598 1733.920  423.2017
+#> 3  continuous       2   691 -919.1762 1842.352  531.6345
 
-compare_models(classroom_events, specs, n_controls = 3, seed = 11,
-               random_effects = "sender")
+with_re <- compare_models(classroom_events, specs, n_controls = 3, seed = 11,
+                          random_effects = "sender")
+with_re
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -587.5516 1216.857    0.0000
-#> 2  continuous       2   691 -659.9403 1362.168  145.3112
-#> 3 interrupted       2   691 -751.6045 1545.503  328.6461
+#> 1       count       2   691 -525.3774 1092.430    0.0000
+#> 2 interrupted       2   691 -679.7356 1401.603  309.1735
+#> 3  continuous       2   691 -769.7646 1581.834  489.4043
 ```
 
-![Classroom AIC comparison with and without a sender
-frailty](figures/realdata-classroom-flip.png)
+``` r
 
-Classroom AIC comparison with and without a sender frailty
+cols <- c(count = "#d62728", continuous = "#2ca02c", interrupted = "#1f77b4")
+op <- par(mfrow = c(1, 2), mar = c(4, 4.5, 2.5, 1))
+for (tab in list(no_re, with_re)) {
+  d <- setNames(tab$delta_AIC, tab$model)[names(specs)]
+  bp <- barplot(d, col = cols[names(d)], ylim = c(0, max(d) * 1.15),
+                ylab = expression(Delta * "AIC"),
+                main = if (identical(tab, no_re)) "no random effect" else "sender frailty")
+  text(bp, d, sprintf("%.1f", d), pos = 3, cex = 0.85)
+}
+```
 
-Two findings worth flagging:
+![Delta AIC of the three specifications without and with a sender
+frailty](real-data-analysis_files/figure-html/classroom-figure-1.png)
 
-1.  **Count “wins” naively by 240 AIC** over continuous (left panel).
-    This is the trap the count family puts you in on datasets with
-    heterogeneous senders.
-2.  **With sender frailty (right panel)** the count specification no
-    longer fits — `coxph(... + frailty(sender, ...))` fails its inner
-    Newton–Raphson update once the random effect absorbs the activity
-    differences. Continuous overtakes interrupted by 184 AIC points,
-    matching Table 3 of Juozaitienė & Wit (2024).
+``` r
 
-Total wall-clock for the two compare_models calls: **~3 minutes**.
-Driver: `paper/wiki/experiments/realdata.R`, section (a).
+par(op)
+```
+
+Without a random effect the count specification has the lowest AIC,
+ahead of interrupted by 423.2. With the sender frailty the count
+specification still has the lowest AIC, and its lead over interrupted is
+309.2. Among the timing variants, interrupted fits better than
+continuous by 180.2 AIC points once the frailty is in the model.
 
 ------------------------------------------------------------------------
 
 ### Manufacturing · smooth effect curves
 
 A stratified Cox model with `pspline(stat, df = 4)` on four endogenous
-statistics (`reciprocity_time_recent`, `transitivity_time_recent`, and
-the interrupted variants of each), fit on the first 30 days of the
-`radoslaw_email` dataset (10,776 events, 151 actors) with three controls
-per case:
+statistics, fitted on the first 30 days of the `radoslaw_email` dataset
+with three controls per case. Statistics are computed with the default
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+behaviour on case-control data: the controls are scored against the
+history of observed events without entering it. Each time gap is mapped
+to a recency weight with
+[`transform_recency()`](https://franciscorichter.github.io/amorem/reference/transform_recency.md)
+(1 for an event that just happened, falling towards 0 as the gap grows),
+and a dyad with no such event gets weight 0.
 
 ``` r
 
@@ -84,61 +97,91 @@ stat_names <- c("reciprocity_time_recent",
 
 cc   <- sample_non_events(re30, n_controls = 3, seed = 11)
 feat <- endogenous_features(cc, stats = stat_names)
+for (s in stat_names) {
+  w <- transform_recency(feat[[s]])
+  w[is.na(w)] <- 0                     # no such event yet: weight 0
+  feat[[s]] <- w
+}
 
-fit <- survival::coxph(
-  survival::Surv(rep(1, nrow(feat)), event) ~
-    pspline(reciprocity_time_recent,            df = 4) +
-    pspline(transitivity_time_recent,           df = 4) +
-    pspline(reciprocity_time_recent_interrupted, df = 4) +
+library(survival)   # coxph() recognises pspline() and strata() only unqualified
+fit <- coxph(
+  Surv(rep(1, nrow(feat)), event) ~
+    pspline(reciprocity_time_recent,              df = 4) +
+    pspline(transitivity_time_recent,             df = 4) +
+    pspline(reciprocity_time_recent_interrupted,  df = 4) +
     pspline(transitivity_time_recent_interrupted, df = 4) +
-    survival::strata(stratum),
+    strata(stratum),
   data = feat, method = "breslow")
+c(events = nrow(re30), actors = length(unique(c(re30$sender, re30$receiver))))
+#> events actors 
+#>  10776    151
 ```
 
-![Smooth effect curves](figures/realdata-manufacturing-smooth.png)
+``` r
 
-Smooth effect curves
+panel <- c("reciprocity · continuous", "transitivity · continuous",
+           "reciprocity · interrupted", "transitivity · interrupted")
+op <- par(mfrow = c(2, 2), mar = c(4, 4.5, 2.5, 1))
+for (j in seq_along(stat_names)) {
+  s <- stat_names[j]
+  rng <- stats::quantile(feat[[s]], c(0.02, 0.98))
+  nd <- feat[rep(1, 80), ]
+  for (o in stat_names) nd[[o]] <- stats::median(feat[[o]])
+  nd[[s]] <- seq(rng[1], rng[2], length.out = 80)
+  pr <- stats::predict(fit, newdata = nd, type = "terms", se.fit = TRUE)
+  k <- grep(s, colnames(pr$fit), fixed = TRUE)[1]
+  y <- pr$fit[, k]; se <- pr$se.fit[, k]
+  plot(nd[[s]], y, type = "n", ylim = range(y - 2 * se, y + 2 * se),
+       xlab = "recency weight", ylab = "partial log-hazard", main = panel[j])
+  polygon(c(nd[[s]], rev(nd[[s]])), c(y + 2 * se, rev(y - 2 * se)),
+          col = grDevices::adjustcolor("#1d4e89", 0.2), border = NA)
+  abline(h = 0, col = "grey60")
+  lines(nd[[s]], y, lwd = 2, col = "#1d4e89")
+}
+```
 
-The four panels are not redundant:
+![Smooth partial log-hazard contributions of the four timing
+statistics](real-data-analysis_files/figure-html/manufacturing-figure-1.png)
 
-- **Continuous variants** (top row) show the canonical
-  “boost-then-decay” shape — a recent event raises the hazard briefly,
-  then the contribution falls off and turns negative.
-- **Interrupted variants** (bottom row) start near zero, dip to a
-  pronounced minimum, and partially recover. This is the
-  cycle-closure-reset behavior the interrupted family is built to
-  expose: once the closing event fires the statistic snaps to a fresh
-  state, and the partial effect on subsequent events reflects that
-  reset.
+``` r
 
-Fit wall-clock: **~40 s**. Driver: section (b) of the same script.
+par(op)
+```
+
+Each panel shows one statistic’s contribution to the log-hazard, with
+the other three held at their medians; the band is ±2 standard errors.
+In this fit the two continuous variants rise steeply from weight 0 (no
+reciprocating or transitive event yet) and stay high, peaking for the
+most recent events. The interrupted reciprocity curve stays near zero
+until large weights and then rises; the interrupted transitivity curve
+is highest at weight 0 and below zero for most of the range.
 
 ------------------------------------------------------------------------
 
 ### CollegeMsg · first 30 days
 
-A sanity check on the newly bundled `college_msg` dataset (60k IMs, 1899
-users, 193 days; see
-[Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)).
-The first 30 days alone hold 22,265 messages across 1,086 users:
+The same three specifications on the first 30 days of `college_msg`,
+with one control per case:
 
 ``` r
 
 data(college_msg)
 cm30 <- college_msg[college_msg$time < 30, ]
-compare_models(cm30, specs, n_controls = 1, seed = 11)
-#>         model n_terms  n_obs  log_lik      AIC  delta_AIC
-#> 1       count       2  22265   -6775   13554        0
-#> 2  continuous       2  22265  -14982   29968    16414
-#> 3 interrupted       2  22265  -15059   30122    16567
+c(messages = nrow(cm30), users = length(unique(c(cm30$sender, cm30$receiver))))
+#> messages    users 
+#>    22265     1086
+cm <- compare_models(cm30, specs, n_controls = 1, seed = 11)
+cm
+#>         model n_terms n_obs    log_lik      AIC delta_AIC
+#> 1       count       2 22265  -6782.367 13568.73      0.00
+#> 2  continuous       2 22265 -13853.169 27710.34  14141.60
+#> 3 interrupted       2 22265 -14716.110 29436.22  15867.48
 ```
 
-The same pattern as Classroom — `*_count` “wins” by tens of thousands of
-AIC points because CollegeMsg has dramatic activity heterogeneity (see
-the actor-degree panel on the
+The count specification leads by 14,142 AIC points. The datasets article
+shows the activity heterogeneity of this network (see the actor-degree
+panel on the
 [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)
-page). This is the kind of dataset where the sender-frailty correction
-is not optional; the naive ranking is not a reflection of the dynamics,
-it is a reflection of who happens to be highly active in the data.
-
-Driver: section (c) of the same script. Runtime: **~30 s**.
+page); without a sender frailty the count statistics carry that
+heterogeneity, so this table ranks the specifications on activity as
+much as on dynamics.

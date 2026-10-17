@@ -535,8 +535,8 @@ history nor read post-update state at tied timestamps).</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"naive max:"</span>,   <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">stats</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="fu">md</span><span class="op">(</span><span class="va">evo</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span>, <span class="va">fn</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    <span class="st">"| aligned max:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">stats</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="fu">md</span><span class="op">(</span><span class="va">evo</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span>, <span class="va">fc</span><span class="op">[[</span><span class="va">s</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; naive max: 12  | aligned max: 4.263e-14   -&gt; parity holds (all &lt; 1e-9)</span></span></code></pre></div>
-<p><strong>Result — parity holds; the previously reported “bug” was a
-comparison artifact.</strong></p>
+<p><strong>Result — parity holds once the controls are kept out of the
+history.</strong></p>
 <table class="table">
 <colgroup>
 <col width="27%">
@@ -611,21 +611,20 @@ comparison artifact.</strong></p>
 </tr>
 </tbody>
 </table>
-<p>An earlier run of this experiment reported the naive column as
-evidence of a “state-update ordering bug” and advised treating the
-post-hoc engine as authoritative for count statistics. <strong>That
-conclusion is retracted.</strong> The naive recompute lets sampled
-control rows write into the running history (count/exp-decay drift of
-order <code>n_events</code>) and lets tied rows read post-update state
-(timing drift). Passing <code>history_log</code> reproduces the
-simulator’s exact semantics — the C++ engine processes rows in time
-groups, every row at a tied timestamp reads before any write, and only
-event rows write (<code>src/compute_features_cpp.cpp</code>, time-group
-loop; mask construction in <code>R/preprocess.R</code>). Under that
-alignment the engines agree to floating-point precision (max 4.3 ×
-10⁻¹⁴, the exp-decay residue being summation-order noise). There is no
-ordering bug, and neither engine needs to be privileged over the
-other.</p>
+<p>The naive recompute lets sampled control rows write into the running
+history (count/exp-decay drift of order <code>n_events</code>) and lets
+tied rows read post-update state (timing drift). The aligned recompute
+reproduces the simulator’s exact semantics — the C++ engine processes
+rows in time groups, every row at a tied timestamp reads before any
+write, and only event rows write
+(<code>src/compute_features_cpp.cpp</code>, time-group loop; mask
+construction in <code>R/preprocess.R</code>). Under that alignment the
+engines agree to floating-point precision (max 4.3 × 10⁻¹⁴, the
+exp-decay residue being summation-order noise). Neither engine needs to
+be privileged over the other. The naive column is what the experiment
+gets by dropping the <code>event</code> column: on a case-control table
+that keeps it, <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> applies the aligned
+semantics by default.</p>
 <div class="float">
 <img src="figures/exp5-parity.png" alt="Parity bars"><div class="figcaption">Parity bars</div>
 </div>

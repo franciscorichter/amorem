@@ -61,11 +61,10 @@ catalogue](https://franciscorichter.github.io/amorem/articles/endogenous-catalog
 absorbs activity heterogeneity directly, so heavy-tailed datasets like
 Manufacturing and CollegeMsg make sender / receiver random effects (or
 [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
-non-linear specs) a near- requirement for honest interpretation. See
-[Real-data
+non-linear specs) part of any comparison between count and timing
+statistics. See [Real-data
 analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md)
-for the worked example on Classroom (where the AIC ranking flips once
-sender frailty is added).
+for the worked example on Classroom, with and without a sender frailty.
 
 ### Provenance
 

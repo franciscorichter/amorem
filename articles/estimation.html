@@ -108,9 +108,11 @@ AIC table (superseded by <code><a href="../reference/rem.html">rem()</a></code>,
 <strong>Goodness-of-fit tests</strong> check whether the selected
 fit is actually adequate.</li>
 </ol>
-<p>Every numerical output below is produced by
-<code>paper/wiki/experiments/est_demo.R</code>, which is re-run on every
-release of the wiki.</p>
+<p>The examples on the bundled <code>classroom_events</code> log run
+when this page is built, so their output comes from the current version
+of the package. Snippets that use data the package does not ship
+(<code>lesmis</code>, <code>event_log</code>, <code>native</code>) are
+shown without being run.</p>
 <hr>
 <div class="section level3">
 <h3 id="case-control-sampling">Case-control sampling<a class="anchor" aria-label="anchor" href="#case-control-sampling"></a>
@@ -134,8 +136,10 @@ log — any event log with <code>time</code>, <code>sender</code>,
 <span>                        mode       <span class="op">=</span> <span class="st">"one"</span><span class="op">)</span></span></code></pre></div>
 <p><code>scope</code> selects which non-firing dyads form the candidate
 pool (<code>"all"</code>, <code>"appearance"</code>, or
-<code>"citation"</code>); <code>mode</code> selects the sampling design
-(<code>"one"</code> matched-set or <code>"two"</code> permuted).</p>
+<code>"citation"</code>); <code>mode</code> selects whether senders and
+receivers are drawn from one actor pool (<code>"one"</code>, the
+default) or from separate sender and receiver pools (<code>"two"</code>,
+for bipartite networks).</p>
 <p><strong>Risk-set exclusions.</strong> Two further controls keep
 ineligible dyads out of the candidate pool. <code>exclude_pairs</code>
 is a two-column <code>(sender, receiver)</code> table of dyads that are
@@ -157,11 +161,13 @@ designs). For <code>n_controls &gt; 1</code> it is a stratified Cox
 model via <code><a href="https://rdrr.io/pkg/survival/man/coxph.html" class="external-link">survival::coxph</a></code> (the same machinery
 <code><a href="https://rdrr.io/pkg/survival/man/clogit.html" class="external-link">survival::clogit</a></code> calls internally). AIC values are
 comparable across specifications that share a case-control draw.</p>
-<p>To compute endogenous covariates for the sampled non-events
-<em>without</em> letting them enter the event history, pass the true
-event log as <code>history_log</code> to
-<code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> — only rows present in
-<code>history_log</code> update the running network state.</p>
+<p><code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> on a case-control table (a 0/1
+<code>event</code> column with control rows, as
+<code><a href="../reference/sample_non_events.html">sample_non_events()</a></code> returns) builds the network history
+from the observed events only: the sampled non-events are scored against
+it but never enter it. <code>history_log</code> overrides this with an
+explicit history (only rows present in <code>history_log</code> update
+the running network state).</p>
 <p>For set-valued covariates, the <code>"sender_receivers_set"</code>
 statistic returns a <strong>list-column</strong>: for each row, the set
 of receivers the row’s sender has reached before it (e.g. the regions a
@@ -270,22 +276,15 @@ shared case-control sample:</p>
 <span>                    <span class="st">"transitivity_time_recent_interrupted"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  n_controls <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1       count       2   691 -305.5233 615.0466     0.000</span></span>
-<span><span class="co">#&gt; 2  continuous       2   691 -421.1231 846.2462   231.200</span></span>
-<span><span class="co">#&gt; 3 interrupted       2   691 -439.6904 883.3809   268.334</span></span></code></pre></div>
-<p>Runtime: <strong>0.3 s</strong>.</p>
-<div class="float">
-<img src="figures/est-aic-models.png" alt="compare_models AIC"><div class="figcaption">compare_models AIC</div>
-</div>
+<span><span class="co">#&gt; 1       count       2   691 -280.8221 565.6442    0.0000</span></span>
+<span><span class="co">#&gt; 2 interrupted       2   691 -412.7271 829.4541  263.8099</span></span>
+<span><span class="co">#&gt; 3  continuous       2   691 -438.9000 881.8000  316.1557</span></span></code></pre></div>
 <p><strong>Read this with caution.</strong> Without an
-actor-heterogeneity correction, <code>*_count</code> statistics absorb
-sender / receiver activity differences directly, so a spec that should
-encode <em>“how recently did this dyad fire?”</em> reduces to <em>“how
-active is this sender?”</em>. The naive count win is a well-known
-artefact. Adding a sender frailty term flips the ranking to
-<strong>continuous</strong> by ΔAIC ≈ 6, recovering Table 3 of
-Juozaitienė &amp; Wit (2024) — see <a href="real-data-analysis.html">Real-data analysis</a> for the corrected
-fit.</p>
+actor-heterogeneity correction, <code>*_count</code> statistics also
+carry sender and receiver activity: an actor who sends a lot accumulates
+large counts, so part of a count specification’s advantage reflects who
+is active rather than how the dyad’s history drives its rate. <a href="real-data-analysis.html">Real-data analysis</a> repeats this
+comparison with a sender frailty.</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -377,7 +376,7 @@ covariate), or <code>tvnl</code> (jointly time-varying non-linear via a
 tensor product smooth). Implementation follows <a href="https://arxiv.org/abs/2509.05289" class="external-link">Boschi, Lerner &amp; Wit
 (2025)</a> Section 3.3:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compare_models_smooth.html">compare_models_smooth</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">cms</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models_smooth.html">compare_models_smooth</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>    linear <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"linear"</span>,</span>
@@ -387,19 +386,15 @@ tensor product smooth). Implementation follows <a href="https://arxiv.org/abs/25
 <span>    tv    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_time_recent  <span class="op">=</span> <span class="st">"tv"</span>,</span>
 <span>               transitivity_time_recent <span class="op">=</span> <span class="st">"tv"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">cms</span></span>
 <span><span class="co">#&gt;    model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1    nl       2   691 -418.3044 845.6569     0.000</span></span>
-<span><span class="co">#&gt; 2 linear       2   691 -421.1231 846.2462     0.589</span></span>
-<span><span class="co">#&gt; 3    tv       2   691 -420.7474 849.6835     4.027</span></span></code></pre></div>
-<p>Runtime: <strong>1.9 s</strong>.</p>
-<div class="float">
-<img src="figures/est-smooth-aic.png" alt="compare_models_smooth AIC"><div class="figcaption">compare_models_smooth AIC</div>
-</div>
-<p>The three specs are within 4 AIC points of each other on the
-recency-time terms — there is no signal in this dataset that a
-time-varying or non-linear effect adds value over the linear baseline.
-The case-vs-control matrix design behind these fits is described in
-detail at the bottom of this section.</p>
+<span><span class="co">#&gt; 1     nl       2   691 -415.4388 845.3280   0.00000</span></span>
+<span><span class="co">#&gt; 2     tv       2   691 -419.6671 855.4971  10.16917</span></span>
+<span><span class="co">#&gt; 3 linear       2   691 -438.9000 881.8000  36.47202</span></span></code></pre></div>
+<p>On the recency-time terms of this log the nl specification has the
+lowest AIC, 10.2 ahead of tv and 36.5 ahead of linear. The
+case-vs-control matrix design behind these fits is described in the
+table below.</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -495,7 +490,10 @@ of specifications and ranks them by AIC:</p>
 <span>                    transitivity_count <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>,</span>
 <span>    with_global <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="st">"linear"</span>,</span>
 <span>                    temperature       <span class="op">=</span> <span class="st">"global_smooth"</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  global_covariates <span class="op">=</span> <span class="va">g</span>, seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span>  global_covariates <span class="op">=</span> <span class="va">g</span>, seed <span class="op">=</span> <span class="fl">11</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
+<span><span class="co">#&gt; 1 with_global       2   690 -335.1267 679.9510   0.00000</span></span>
+<span><span class="co">#&gt; 2 dyadic_only       2   690 -353.4949 710.9898  31.03881</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -553,27 +551,42 @@ standard (multivariate) Brownian bridge under correct specification.</p>
 <code class="sourceCode R"><span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="st">"linear"</span>,</span>
 <span>       transitivity_count <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/gof_univariate.html">gof_univariate</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, <span class="st">"reciprocity_count"</span>,  seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $statistic        : 0.929</span></span>
-<span><span class="co">#&gt; $p_value          : 0.354          # not rejected</span></span>
-<span><span class="fu"><a href="../reference/gof_univariate.html">gof_univariate</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, <span class="st">"transitivity_count"</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $statistic        : 2.299</span></span>
-<span><span class="co">#&gt; $p_value          : 0.000          # rejected -- transitivity is misspecified</span></span>
+<span><span class="va">gu_r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_univariate.html">gof_univariate</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, <span class="st">"reciprocity_count"</span>,  seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="va">gu_t</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_univariate.html">gof_univariate</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, <span class="st">"transitivity_count"</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="va">gg</span>   <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_global.html">gof_global</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/gof_global.html">gof_global</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">m</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $statistic : 3089.6</span></span>
-<span><span class="co">#&gt; $p_value   : 0.000                 # overall model rejected</span></span></code></pre></div>
-<div class="float">
-<img src="figures/est-gof-process.png" alt="GOF cumulative process"><div class="figcaption">GOF cumulative process</div>
-</div>
-<p><code>reciprocity_count</code>’s process (blue) stays inside the 95 %
-Brownian-bridge envelope; <code>transitivity_count</code>’s process
-(orange) shoots well above the envelope around <code>u ≈ 0.30</code>,
-where the running residual is most informative. The omnibus Cauchy
-combination rejects the overall model with <code>p &lt; 10⁻³</code> —
-and the per-component test pinpoints <code>transitivity_count</code> as
-the offender. The right next move is to enrich the transitivity term
-(try <code>tv</code>, <code>nl</code>, or a finer variant from the <a href="endogenous-catalogue.html">Endogenous catalogue</a>) and
+<span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>statistic <span class="op">=</span> <span class="va">gu_r</span><span class="op">$</span><span class="va">statistic</span>, p_value <span class="op">=</span> <span class="va">gu_r</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span>,</span>
+<span>      transitivity_count <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>statistic <span class="op">=</span> <span class="va">gu_t</span><span class="op">$</span><span class="va">statistic</span>, p_value <span class="op">=</span> <span class="va">gu_t</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span>,</span>
+<span>      global             <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>statistic <span class="op">=</span> <span class="va">gg</span><span class="op">$</span><span class="va">statistic</span>,   p_value <span class="op">=</span> <span class="va">gg</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                    statistic    p_value</span></span>
+<span><span class="co">#&gt; reciprocity_count  0.7514555 0.62471719</span></span>
+<span><span class="co">#&gt; transitivity_count 1.2504243 0.08768022</span></span>
+<span><span class="co">#&gt; global             1.5624453 0.18122308</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># 95% pointwise envelope of |Brownian bridge| by simulation</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">99</span><span class="op">)</span></span>
+<span><span class="va">u</span> <span class="op">&lt;-</span> <span class="va">gu_r</span><span class="op">$</span><span class="va">u</span>; <span class="va">n_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">u</span><span class="op">)</span></span>
+<span><span class="va">env</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">500</span>, <span class="op">{</span></span>
+<span>  <span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_grid</span>, sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="va">n_grid</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">b</span> <span class="op">-</span> <span class="va">u</span> <span class="op">*</span> <span class="va">b</span><span class="op">[</span><span class="va">n_grid</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">band</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">env</span>, <span class="fl">1</span>, <span class="fu">stats</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span>, <span class="fl">0.95</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">u</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">gu_r</span><span class="op">$</span><span class="va">W</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"n"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1.35</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">gu_r</span><span class="op">$</span><span class="va">W</span>, <span class="va">gu_t</span><span class="op">$</span><span class="va">W</span><span class="op">)</span><span class="op">)</span>, <span class="va">band</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"u (rescaled event index)"</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="st">"|"</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html" class="external-link">hat</a></span><span class="op">(</span><span class="va">W</span><span class="op">)</span><span class="op">(</span><span class="va">u</span><span class="op">)</span> <span class="op">*</span> <span class="st">"|"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/polygon.html" class="external-link">polygon</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">u</span>, <span class="fu"><a href="https://rdrr.io/r/base/rev.html" class="external-link">rev</a></span><span class="op">(</span><span class="va">u</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">band</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">0</span>, <span class="va">n_grid</span><span class="op">)</span><span class="op">)</span>, col <span class="op">=</span> <span class="st">"grey85"</span>, border <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">gu_r</span><span class="op">$</span><span class="va">u</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">gu_r</span><span class="op">$</span><span class="va">W</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"#1d4e89"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">gu_t</span><span class="op">$</span><span class="va">u</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">gu_t</span><span class="op">$</span><span class="va">W</span><span class="op">)</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"#d97706"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"top"</span>, bty <span class="op">=</span> <span class="st">"n"</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#1d4e89"</span>, <span class="st">"#d97706"</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, cex <span class="op">=</span> <span class="fl">0.85</span>,</span>
+<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%s (p = %.3f)"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span>
+<span>                        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">gu_r</span><span class="op">$</span><span class="va">p_value</span>, <span class="va">gu_t</span><span class="op">$</span><span class="va">p_value</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="estimation_files/figure-html/gof-figure-1.png" class="r-plt" alt="Absolute cumulative martingale residual processes against a 95% Brownian-bridge envelope" width="720"></p>
+<p>The grey band is the 95% pointwise envelope of a Brownian bridge. For
+<code>reciprocity_count</code> the univariate test gives p = 0.625 (not
+rejected at the 5% level), for <code>transitivity_count</code> p = 0.088
+(not rejected at the 5% level), and the omnibus Cauchy combination gives
+p = 0.181 (not rejected at the 5% level). When a component is rejected,
+the next step is to enrich that term (try <code>tv</code>,
+<code>nl</code>, or a finer variant from the <a href="endogenous-catalogue.html">Endogenous catalogue</a>) and
 re-test.</p>
 <table class="table">
 <colgroup>
@@ -615,11 +628,10 @@ re-test.</p>
 <p>These tests are complementary to the AIC-based selection performed by
 <code>compare_models*()</code>: AIC ranks competing fits, GOF tests
 check that the ranked-best fit is actually adequate.</p>
-<p>These p-values are well calibrated under the null and for
-<em>bounded</em> statistics, but become anti-conservative for
-<em>unbounded count</em> statistics in the presence of a real effect —
-read them as diagnostic there. See the <a href="gof-calibration.html">GoF calibration</a> article for the
-empirical study and guidance.</p>
+<p>The <a href="gof-calibration.html">GoF calibration</a> article
+measures the type-I error of <code><a href="../reference/gof_univariate.html">gof_univariate()</a></code> under correct
+specification, for count, decayed and recency statistics with and
+without a real effect.</p>
 <hr>
 </div>
 <div class="section level3">
@@ -631,22 +643,38 @@ observation with the residual <code>M_i = y_i − π_i</code> where
 <code>π_i = exp(η_i) / (exp(η_case) + exp(η_ctrl))</code> is the fitted
 probability that observation <code>i</code> is the case in its
 two-element risk set:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/martingale_residuals.html">martingale_residuals</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count  <span class="op">=</span> <span class="st">"linear"</span>,</span>
 <span>            transitivity_count <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">7</span><span class="op">)</span></span>
 <span><span class="co"># Residuals sum to zero within each (case, control) stratum:</span></span>
-<span><span class="co">#&gt; Min       1st Qu    Median    Mean    3rd Qu    Max</span></span>
-<span><span class="co">#&gt; -1.7e-16 -5.6e-17   0.0e+00  -3.6e-18 4.1e-17   2.2e-16</span></span></code></pre></div>
-<div class="float">
-<img src="figures/est-martingale.png" alt="Martingale residuals over time"><div class="figcaption">Martingale residuals over time</div>
-</div>
-<p>The within-stratum zero-sum invariant holds to machine precision. The
-loess overlays per role would land on zero under correct specification;
-the visible separation here is consistent with the GOF rejection above.
-Currently linear-effect specs only.</p>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">residual</span>, <span class="va">res</span><span class="op">$</span><span class="va">stratum</span>, <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
+<span><span class="co">#&gt; -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">role_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>case <span class="op">=</span> <span class="st">"#d62728"</span>, control <span class="op">=</span> <span class="st">"#5b9bd5"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">time</span>, <span class="va">res</span><span class="op">$</span><span class="va">residual</span>, pch <span class="op">=</span> <span class="fl">16</span>, cex <span class="op">=</span> <span class="fl">0.5</span>,</span>
+<span>     col <span class="op">=</span> <span class="fu">grDevices</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/grDevices/adjustcolor.html" class="external-link">adjustcolor</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">[</span><span class="va">res</span><span class="op">$</span><span class="va">role</span><span class="op">]</span>, <span class="fl">0.4</span><span class="op">)</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"event time"</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">M</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">==</span> <span class="va">y</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">-</span> <span class="va">pi</span><span class="op">[</span><span class="va">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, col <span class="op">=</span> <span class="st">"grey55"</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">d</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">[</span><span class="va">res</span><span class="op">$</span><span class="va">role</span> <span class="op">==</span> <span class="va">r</span>, <span class="op">]</span></span>
+<span>  <span class="va">lo</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/loess.html" class="external-link">loess</a></span><span class="op">(</span><span class="va">residual</span> <span class="op">~</span> <span class="va">time</span>, data <span class="op">=</span> <span class="va">d</span>, span <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span>
+<span>  <span class="va">o</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="va">o</span><span class="op">]</span>, <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">lo</span><span class="op">)</span><span class="op">[</span><span class="va">o</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="va">role_col</span><span class="op">[[</span><span class="va">r</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, bty <span class="op">=</span> <span class="st">"n"</span>, pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="va">role_col</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="estimation_files/figure-html/martingale-figure-1.png" class="r-plt" alt="Martingale residuals over event time with a loess curve per role" width="720"></p>
+<p>The largest within-stratum sum is 2.2e-16 in absolute value, so the
+zero-sum invariant holds to floating-point precision. A case residual is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><msub><mi>π</mi><mi>i</mi></msub><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">1 - \pi_i \ge 0</annotation></semantics></math>
+and its control’s is the mirror image, so the two curves are symmetric
+about zero by construction. The closer the case curve lies to zero, the
+more probability the model gives the observed events; a stretch where it
+rises marks the part of the stream the model fits worst. Currently
+linear-effect specs only.</p>
 <hr>
 </div>
 <div class="section level3">
@@ -686,7 +714,7 @@ keeps GAM-style interpretability (per-feature curves via
 <code>plot(type = "pdp")</code>) while <code>batch_strata</code>
 mini-batching scales to event logs far beyond what an in-memory smooth
 fit can hold:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_add</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="va">IS_OBSERVED</span> <span class="op">~</span> <span class="va">individual.activity</span> <span class="op">+</span> <span class="va">dyadic.activity</span>,</span>
 <span>               data <span class="op">=</span> <span class="va">lesmis</span>, method <span class="op">=</span> <span class="st">"nn"</span>, stratum <span class="op">=</span> <span class="st">"EVENT_INTERVAL"</span>,</span>
 <span>               nn <span class="op">=</span> <span class="fu"><a href="../reference/nn_control.html">nn_control</a></span><span class="op">(</span>architecture <span class="op">=</span> <span class="st">"additive_spline"</span>,</span>

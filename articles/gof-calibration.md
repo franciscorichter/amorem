@@ -7,30 +7,27 @@ The martingale-residual goodness-of-fit family
 [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
 [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md),
 [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md))
-reports p-values against an analytic null. This article documents an
-empirical study of **when those p-values are exact and when they should
-be read as diagnostic**. In short: the tests are well calibrated under
-the null and for *bounded* statistics, and become anti-conservative for
-*unbounded count* statistics in the presence of a real effect. This is a
-finite-sample property of the test, not a coding error — but it changes
-how the tests should be used.
+reports p-values against an analytic null. This article measures the
+type-I error of
+[`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md)
+under correct specification: simulate from a model, fit the **same**
+model, and collect the p-values. For a calibrated test they are
+Uniform(0, 1), so the rejection rate at level α equals α.
 
-**Method.** A type-I error-rate study under *correct specification*:
-simulate from a model, fit the **same** model, and collect GoF p-values.
-Under a calibrated test these are Uniform(0, 1), so the empirical
-rejection rate at level α should equal α. Settings below use a 20-actor
-one-mode network, the Gillespie simulator, 1{,}500 events and 150
-replicates per cell unless stated, and a single control per case (the
-`m = 2` design the GoF uses).
+**Settings.** A 20-actor one-mode network, the Gillespie simulator,
+1,500 events, one control per case (the design the GoF uses), and 600
+replicates per cell. With 600 replicates the Monte Carlo standard error
+of a rejection rate near 0.05 is about 0.009.
 
 ``` r
 
 library(amorem)
+library(parallel)
 actors <- paste0("a", 1:20)
 
 # one replicate under correct specification: simulate with a known effect,
 # fit the same linear model, return the gof_univariate p-value
-gof_rep <- function(i, beta, stat = "reciprocity_count", half_life = NULL) {
+gof_rep <- function(i, beta, stat, half_life = NULL) {
   set.seed(70000L + i)
   ev <- simulate_relational_events(
     n_events = 1500, senders = actors, receivers = actors,
@@ -40,108 +37,94 @@ gof_rep <- function(i, beta, stat = "reciprocity_count", half_life = NULL) {
                  half_life = half_life, seed = 90000L + i)$p_value
 }
 
-type_I <- function(beta, ...) {
-  p <- vapply(1:150, gof_rep, numeric(1), beta = beta, ...)
-  c(rejection_05 = mean(p < 0.05), ks_uniformity = ks.test(p, "punif")$p.value)
-}
+cells <- list(
+  list(stat = "reciprocity_count", beta = 0.0),
+  list(stat = "reciprocity_count", beta = 0.1),
+  list(stat = "reciprocity_count", beta = 0.2),
+  list(stat = "reciprocity_count", beta = 0.3),
+  list(stat = "reciprocity_count", beta = 0.5),
+  list(stat = "recency", beta = 0.2),
+  list(stat = "reciprocity_exp_decay", beta = 0.2, half_life = 5))
+p <- lapply(cells, function(g) unlist(mclapply(1:600, gof_rep, beta = g$beta,
+          stat = g$stat, half_life = g$half_life, mc.cores = 8)))
 ```
 
-------------------------------------------------------------------------
-
-### Calibrated under the null
-
-With no true effect the test is calibrated (indeed mildly conservative),
-and the p-values pass a uniformity check:
-
-| true β | type-I @ .05 | p-value uniformity (KS) |
-|-------:|-------------:|------------------------:|
-|    0.0 |        0.013 |                    0.61 |
-|    0.1 |        0.027 |                       — |
-
-------------------------------------------------------------------------
-
-### Anti-conservative for counts with a real effect
-
-Once a real moderate effect is present, the rejection rate climbs above
-nominal — and it is **not** driven by numerical separation in the fit
-(at β = 0.2 essentially no strata are separated):
-
-| true β (`reciprocity_count`) | type-I @ .05 | mean separation |
-|-----------------------------:|-------------:|----------------:|
-|                          0.0 |        0.013 |            0.00 |
-|                          0.2 |        0.147 |            0.01 |
-|                          0.3 |        0.213 |            0.33 |
-|                          0.5 |        0.107 |            0.68 |
-
-The empirical CDF of the p-values bows above the diagonal at small p —
-the signature of over-rejection:
-
-![GoF p-value calibration: empirical CDF vs
-uniform](figures/exp8-gof-calibration.png)
-
-GoF p-value calibration: empirical CDF vs uniform
-
-The driver is the **nature of the covariate**, not its scale. At a
-matched moderate effect (β = 0.2, negligible separation):
-
-| covariate               | nature                       | type-I @ .05 |
-|-------------------------|------------------------------|-------------:|
-| `recency`               | bounded, resets              |    **0.053** |
-| `reciprocity_exp_decay` | bounded by decay             |        0.093 |
-| `reciprocity_count`     | unbounded accumulating count |        0.147 |
+The p-values from that run (amorem 1.1.0) are stored with this article,
+and the table and figure below are computed from them.
 
 ``` r
 
-type_I(0.2, stat = "recency")
-type_I(0.2, stat = "reciprocity_exp_decay", half_life = 5)
-type_I(0.2, stat = "reciprocity_count")
+res <- readRDS("data/gof-calibration.rds")
+tab <- do.call(rbind, lapply(split(res, list(res$stat, res$beta), drop = TRUE),
+  function(d) data.frame(
+    statistic     = d$stat[1],
+    true_beta     = d$beta[1],
+    replicates    = sum(!is.na(d$p_value)),
+    reject_05     = mean(d$p_value < 0.05, na.rm = TRUE),
+    reject_10     = mean(d$p_value < 0.10, na.rm = TRUE),
+    ks_uniformity = suppressWarnings(stats::ks.test(stats::na.omit(d$p_value),
+                                                    "punif")$p.value))))
+tab <- tab[order(tab$statistic != "reciprocity_count", tab$statistic, tab$true_beta), ]
+rownames(tab) <- NULL
+knitr::kable(tab, digits = c(0, 1, 0, 3, 3, 4))
 ```
 
-A bounded statistic calibrates; an unbounded count does not. The
-cumulative-residual-process asymptotics require each event’s increment
-to be negligible relative to the whole, and an accumulating count
-becomes heavy-tailed late in the stream (a few late, high-count events
-dominate the process), which violates that condition.
+| statistic             | true_beta | replicates | reject_05 | reject_10 | ks_uniformity |
+|:----------------------|----------:|-----------:|----------:|----------:|--------------:|
+| reciprocity_count     |       0.0 |        600 |     0.050 |     0.083 |        0.6699 |
+| reciprocity_count     |       0.1 |        600 |     0.045 |     0.077 |        0.0018 |
+| reciprocity_count     |       0.2 |        600 |     0.037 |     0.080 |        0.0673 |
+| reciprocity_count     |       0.3 |        600 |     0.047 |     0.113 |        0.4504 |
+| reciprocity_count     |       0.5 |        600 |     0.038 |     0.072 |        0.0000 |
+| recency               |       0.2 |        600 |     0.078 |     0.152 |        0.0006 |
+| reciprocity_exp_decay |       0.2 |        600 |     0.048 |     0.097 |        0.5429 |
 
-------------------------------------------------------------------------
+``` r
 
-### What does *not* fix it
+show <- list(c("reciprocity_count", 0.2), c("reciprocity_exp_decay", 0.2),
+             c("recency", 0.2))
+op <- par(mfrow = c(1, 3), mar = c(4, 4, 2.5, 1))
+for (s in show) {
+  pv <- sort(res$p_value[res$stat == s[1] & res$beta == as.numeric(s[2])])
+  plot(pv, seq_along(pv) / length(pv), type = "s", lwd = 2, col = "#1f5fb4",
+       xlim = c(0, 1), ylim = c(0, 1), xlab = "p-value", ylab = "empirical CDF",
+       main = sprintf("%s, beta = %s", s[1], s[2]), cex.main = 0.9)
+  abline(0, 1, lty = 2, col = "grey40")
+}
+```
 
-| attempted remedy | type-I @ β = 0.2 | outcome |
-|----|---:|----|
-| [`scale()`](https://rdrr.io/r/base/scale.html) the covariate | 0.147 | no change — the test normalises by the residual variance, so any *linear* rescaling cancels exactly |
-| [`log1p()`](https://rdrr.io/r/base/Log.html) / [`sqrt()`](https://rdrr.io/r/base/MathFun.html) the covariate | 0.88 / 0.88 | *worse* — transforming the term misspecifies a linear-in-count truth, and the test correctly rejects |
-| multiplier-bootstrap null | 0.113 | partial only |
-| parametric bootstrap (re-simulate under β̂, refit) | 0.158 | **no improvement** (≈ analytic 0.158) |
+![Empirical CDF of GoF p-values against the uniform
+diagonal](gof-calibration_files/figure-html/ecdf-1.png)
 
-The parametric bootstrap is the decisive test: it is the most principled
-reference distribution available — it re-simulates under the fitted null
-and re-fits, fully accounting for the estimation effect. Because it
-over-rejects *identically* to the analytic null (R = 120: both 0.158,
-95% CI 0.098–0.236; p-values fail uniformity, KS p = 0.008), the problem
-is **not** the null-distribution approximation. The observed statistic
-is genuinely larger than the fitted model predicts — a real
-finite-sample lack-of-fit of the case-1-control (`m = 2`) construction
-for count covariates with a true effect.
+``` r
 
-------------------------------------------------------------------------
+par(op)
+```
 
-### Guidance and outlook
+### Reading the results
 
-- **Use under the null and for bounded statistics** (`recency`, the
-  decayed variants): the p-values are trustworthy.
-- **For raw, unbounded count statistics with a real effect**, read the
-  GoF as a **diagnostic** — inspect the cumulative residual process and
-  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md)
-  — rather than relying on the exact p-value, which is anti-conservative
-  (type-I ≈ 0.15 at the settings above).
-- **Open direction.** A proper fix is a methods question rather than a
-  one-line patch. The most promising candidate is a **multi-control
-  (risk-set / softmax) GoF** in place of the single-control `m = 2`
-  degenerate binomial (the GoF currently fixes `n_controls = 1`), or a
-  Khmaladze martingale transform that removes the estimation effect from
-  the residual process. Quantifying the rejection rate as the number of
-  controls grows is the natural next experiment.
+- **Count statistic.** For `reciprocity_count` the rejection rate at the
+  5% level ranges from 0.037 to 0.050 across true effects from 0 to 0.5,
+  at most 1.5 Monte Carlo standard errors (0.009) from 0.05. The p-value
+  distribution is not exactly uniform in every cell: the uniformity test
+  gives p = 0.0018 at β = 0.1 and p = 7.1e-06 at β = 0.5, while the
+  rejection rate at 5% stays at nominal.
+- **Decayed statistic.** `reciprocity_exp_decay` rejects at 0.048
+  (uniformity p = 0.543).
+- **Recency.** `recency` rejects at 0.078, which is 3.2 Monte Carlo
+  standard errors above 0.05 (uniformity p = 5.9e-04).
+
+### Guidance
+
+- For count and decayed statistics, the p-values can be used at the 5%
+  level in settings like these.
+- For `recency`, the test rejects a correct model more often than the
+  nominal level (0.078 at 5%); read its p-value together with the
+  cumulative residual process and
+  [`martingale_residuals()`](https://franciscorichter.github.io/amorem/reference/martingale_residuals.md).
+- These cells cover one network size, one sample size and one control
+  per case. The rejection rate as the number of controls grows has not
+  been measured.
 
 See the
 [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md)

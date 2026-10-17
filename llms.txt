@@ -27,8 +27,8 @@ The package consolidates four lines of recent methodological work:
 
 ``` r
 
-# install.packages("remotes")
-remotes::install_github("franciscorichter/amorem")
+install.packages("amorem")                              # CRAN release
+# remotes::install_github("franciscorichter/amorem")    # development version
 ```
 
 ## 30-second tour
@@ -43,7 +43,7 @@ data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
 data(radoslaw_email)          # 82,927 emails, 167 actors (Michalski et al. 2014)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
-feat <- compute_endogenous_features(
+feat <- endogenous_features(
   classroom_events, stats = c("reciprocity", "recency"))
 
 # 3. Simulate a ready-to-fit case-1-control table with known structure ...
@@ -75,13 +75,18 @@ summary(fit)
   — exact Gillespie or τ-leap; composes exogenous, endogenous, and
   time-varying global covariates; with `wide = TRUE` emits a
   ready-to-fit case-1-control table.
-- **`compute_endogenous_features()`** — the endogenous catalogue
-  computed post-hoc from any `(sender, receiver, time)` log; via
-  `history_log` it scores sampled non-events without polluting the event
-  history.
+- **[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)**
+  — the endogenous catalogue computed post-hoc from any
+  `(sender, receiver, time)` log. On case-control data only the observed
+  events build the network history; the sampled controls are scored
+  against it without entering it.
 - **[`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)**
   — nested case-control sampling with appearance / citation / remove
-  risk-set rules.
+  risk-set rules, and time-shifted sampling (`shift = "exponential"`)
+  that keeps global covariates estimable.
+- **Datasets** — event logs from published interaction networks, and
+  `enso_nino34`, a reconstructed El Niño index (1301–2005) for use as a
+  global covariate.
 - **Goodness of fit** —
   [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
   [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
@@ -106,8 +111,10 @@ summary(fit)
 | [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model and RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the bundled REM datasets |
-| [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | sender-frailty flip, smooth effect curves |
+| [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
+| [GoF calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md) | type-I error of the martingale-residual GoF tests under correct specification |
+| [Species invasions](https://franciscorichter.github.io/amorem/articles/species-invasion.md) | a one-shot (`risk = "remove"`) process with ENSO as a global driver, fitted by time-shifted sampling |
 
 Full per-function documentation is under
 [Reference](https://franciscorichter.github.io/amorem/reference/index.md).

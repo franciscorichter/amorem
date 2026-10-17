@@ -93,8 +93,8 @@
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"franciscorichter/amorem"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"amorem"</span><span class="op">)</span>                              <span class="co"># CRAN release</span></span>
+<span><span class="co"># remotes::install_github("franciscorichter/amorem")    # development version</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="id_30-second-tour">30-second tour<a class="anchor" aria-label="anchor" href="#id_30-second-tour"></a>
@@ -108,7 +108,7 @@
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span>          <span class="co"># 82,927 emails, 167 actors (Michalski et al. 2014)</span></span>
 <span></span>
 <span><span class="co"># 2. Compute endogenous features post-hoc from any (sender, receiver, time) log</span></span>
-<span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu">compute_endogenous_features</span><span class="op">(</span></span>
+<span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>, stats <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity"</span>, <span class="st">"recency"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Simulate a ready-to-fit case-1-control table with known structure ...</span></span>
@@ -130,9 +130,11 @@
 <li>
 <strong><code><a href="reference/simulate_relational_events.html">simulate_relational_events()</a></code></strong> — exact Gillespie or τ-leap; composes exogenous, endogenous, and time-varying global covariates; with <code>wide = TRUE</code> emits a ready-to-fit case-1-control table.</li>
 <li>
-<strong><code>compute_endogenous_features()</code></strong> — the endogenous catalogue computed post-hoc from any <code>(sender, receiver, time)</code> log; via <code>history_log</code> it scores sampled non-events without polluting the event history.</li>
+<strong><code><a href="reference/endogenous_features.html">endogenous_features()</a></code></strong> — the endogenous catalogue computed post-hoc from any <code>(sender, receiver, time)</code> log. On case-control data only the observed events build the network history; the sampled controls are scored against it without entering it.</li>
 <li>
-<strong><code><a href="reference/sample_non_events.html">sample_non_events()</a></code></strong> — nested case-control sampling with appearance / citation / remove risk-set rules.</li>
+<strong><code><a href="reference/sample_non_events.html">sample_non_events()</a></code></strong> — nested case-control sampling with appearance / citation / remove risk-set rules, and time-shifted sampling (<code>shift = "exponential"</code>) that keeps global covariates estimable.</li>
+<li>
+<strong>Datasets</strong> — event logs from published interaction networks, and <code>enso_nino34</code>, a reconstructed El Niño index (1301–2005) for use as a global covariate.</li>
 <li>
 <strong>Goodness of fit</strong> — <code><a href="reference/gof_global.html">gof_global()</a></code>, <code><a href="reference/gof_multivariate.html">gof_multivariate()</a></code>, <code><a href="reference/gof_auxiliary.html">gof_auxiliary()</a></code>, and pointwise <code><a href="reference/martingale_residuals.html">martingale_residuals()</a></code>.</li>
 <li>The earlier <code><a href="reference/compare_models.html">compare_models()</a></code>, <code><a href="reference/compare_models_smooth.html">compare_models_smooth()</a></code> and <code><a href="reference/compare_models_global.html">compare_models_global()</a></code> remain available (superseded by <code><a href="reference/rem.html">rem()</a></code>).</li>
@@ -177,11 +179,19 @@
 </tr>
 <tr>
 <td><a href="articles/real-data-analysis.html">Real-data analysis</a></td>
-<td>sender-frailty flip, smooth effect curves</td>
+<td>timing vs count statistics with and without a sender frailty, smooth effect curves</td>
 </tr>
 <tr>
 <td><a href="articles/validation-experiments.html">Validation experiments</a></td>
 <td>recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery)</td>
+</tr>
+<tr>
+<td><a href="articles/gof-calibration.html">GoF calibration</a></td>
+<td>type-I error of the martingale-residual GoF tests under correct specification</td>
+</tr>
+<tr>
+<td><a href="articles/species-invasion.html">Species invasions</a></td>
+<td>a one-shot (<code>risk = "remove"</code>) process with ENSO as a global driver, fitted by time-shifted sampling</td>
 </tr>
 </tbody>
 </table>
