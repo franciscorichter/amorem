@@ -7,26 +7,33 @@
 \format{
 A data frame with 82,927 rows and 4 columns:
 \describe{
-\item{time}{Days since the first email.
-\code{attr(., "unix_origin")} holds the Unix epoch of \code{time = 0}.}
-\item{sender}{Character employee id.}
+\item{time}{Days since the first email. \code{attr(., "unix_origin")} holds the
+Unix time of \code{time = 0}; the release records local (Europe/Warsaw) time.}
+\item{sender}{Character employee id, as in \link{radoslaw_hierarchy}.}
 \item{receiver}{Character employee id.}
-\item{weight}{Integer — \code{1} for every record in the original file.}
+\item{weight}{Integer, \code{1} for every record.}
 }
 }
 \source{
-Michalski, R., Palus, S., Kazienko, P. (2014). Seed selection
-for spread of influence in social networks: Temporal vs. static
-approach. \emph{New Generation Computing} 32(3–4), 213–235.
-\doi{10.1007/s00354-014-0402-9}. Distributed via
-\url{https://networkrepository.com/ia-radoslaw-email.php}.
+Nurek M, Michalski R (2020). Manufacturing company email metadata and
+corporate hierarchy. Harvard Dataverse, \doi{10.7910/DVN/6Z3CGX}, licence
+CC0 1.0. Cite: Nurek M, Michalski R (2020). Combining machine learning and
+social network analysis to reveal the organizational structures.
+\emph{Applied Sciences} 10(5), 1699, \doi{10.3390/app10051699}; and Michalski R,
+Palus S, Kazienko P (2011). Matching organizational structure and social
+network extracted from email communication. \emph{Lecture Notes in Business
+Information Processing} 87, 197--206.
 }
 \usage{
 radoslaw_email
 }
 \description{
-Time-stamped directed emails among employees of a mid-sized
-manufacturing company over a nine-month period. Sourced from Network
-Repository as the \code{ia-radoslaw-email} dataset.
+Time-stamped directed emails among the 167 employees of a mid-sized
+manufacturing company in Poland, January to September 2010. Each recipient
+of an email (To, CC or BCC) is a separate row. The data are the CC0 release
+of Nurek & Michalski (2020); \link{radoslaw_hierarchy} gives who reports to whom.
+}
+\details{
+51 rows are emails an employee sent to themself.
 }
 \keyword{datasets}

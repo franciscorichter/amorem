@@ -2,141 +2,151 @@
 title: "Bundled datasets"
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 10)
+library(amorem)
+fmt <- function(x, d = 0) formatC(x, format = "f", digits = d, big.mark = ",")
+```
+
 # Bundled datasets
 
-`amorem` ships five real-world relational-event datasets directly,
-each as a tidy `(time, sender, receiver, ...)` event table loadable
-via `data(...)`. They span three orders of magnitude in size and
-cover three interaction types — face-to-face contact, phone calls,
-and email / instant messaging.
+amorem ships the event logs and covariates below, each loadable with
+`data(...)`. The tables and figures on this page are computed from them when
+the page is built. The [data catalogue](data-catalogue.html) documents a wider
+collection, including datasets whose licences do not allow amorem to
+redistribute them.
 
-| Dataset | `data(...)` | Events | Actors | Span | Rate (/day) | Interaction |
-|---|---|---:|---:|---:|---:|---|
-| Classroom | `classroom_events` | 691 | 20 | 44 d | 15.8 | face-to-face |
-| Social Evolution | `social_evolution_calls` | 439 | 54 | 42 d | 10.4 | phone calls |
-| Manufacturing | `radoslaw_email` | 82,927 | 167 | 271 d | 305.8 | email |
-| CollegeMsg | `college_msg` | 59,835 | 1,899 | 194 d | 308.9 | instant messages |
-| Email-EU-Core | `email_eu_core` | 12,216 | 89 | 803 d | 15.2 | email |
+## Event logs
 
-## Event-rate trace
+```{r inventory}
+ev <- list(
+  classroom_events = list("Classroom (McFarland 2001)", "face-to-face, minutes", "minutes"),
+  social_evolution_calls = list("Social Evolution calls (Madan et al. 2011)", "phone calls", "days"),
+  social_evolution_friendship = list("Social Evolution friendship survey", "tie changes", "days"),
+  radoslaw_email = list("Manufacturing company email (Nurek & Michalski 2020)", "email", "days"),
+  college_msg = list("CollegeMsg (Panzarasa et al. 2009)", "instant messages", "days"),
+  email_eu_core = list("Email-EU-core, one department (Paranjape et al. 2017)", "email", "days"),
+  copenhagen_calls = list("Copenhagen Networks Study calls", "phone calls", "days"),
+  copenhagen_sms = list("Copenhagen Networks Study text messages", "text messages", "days"),
+  us_leader_visits = list("US leader-to-leader visits 1945-2019", "state visits", "days"),
+  football_results = list("Men's international football since 1872", "matches", "days"),
+  ucdp_dyads = list("UCDP armed conflict dyads 1946-2025", "conflict dyad-years", "year"),
+  alien_invasions = list("Alien species first records 1880-2005", "species -> region", "year"))
+inv <- do.call(rbind, lapply(names(ev), function(nm) {
+  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
+  s <- if (nm == "alien_invasions") x$species else x$sender
+  r <- if (nm == "alien_invasions") x$region else x$receiver
+  t <- if (nm == "ucdp_dyads") x$year else if (nm == "alien_invasions") x$stop else x$time
+  span <- diff(range(t))
+  data.frame(object = sprintf("`%s`", nm), data = ev[[nm]][[1]], kind = ev[[nm]][[2]],
+             events = fmt(nrow(x)), actors = fmt(length(unique(c(s, r)))),
+             span = sprintf("%s %s", fmt(span, if (span < 100) 1 else 0), sub("^year$", "years", ev[[nm]][[3]])))
+}))
+knitr::kable(inv, row.names = FALSE)
+```
 
-The bundled datasets are emphatically *non-stationary*: term
-boundaries, weekly cycles, weekends, and bursty episodes all show
-up in the per-bin rate. This is exactly the regime the
-time-varying / global-covariate machinery in
-[Estimation](estimation.html) is built for.
+`congress_bills_118` holds hyperevents: each of its
+`r fmt(nrow(congress_bills_118))` bills has one sponsor and a set of
+cosponsors (mean `r fmt(mean(lengths(congress_bills_118$J)), 1)`, largest
+`r fmt(max(lengths(congress_bills_118$J)))`), from
+`r format(min(congress_bills_118$date))` to `r format(max(congress_bills_118$date))`.
+Actor attributes come in `classroom_actors`, `social_evolution_actors`,
+`copenhagen_actors`, `congress_members_118` and `radoslaw_hierarchy`.
 
-![Event-rate trace](figures/datasets-rate.png)
+## Activity over time
 
-- **Classroom**: two spikes corresponding to the two recorded
-  sessions; otherwise quiet.
-- **Social Evolution**: linear ramp-up — calls accumulate as the
-  recording instrumentation rolls out.
-- **Manufacturing** & **Email-EU-Core**: visible weekly modulation
-  superimposed on a roughly stationary base rate.
-- **CollegeMsg**: front-loaded — student onboarding traffic in the
-  first quarter dominates the entire stream.
+```{r rates, fig.height = 7, fig.alt = "Events per time bin for each bundled event log"}
+# events per bin; bins are the panel's unit or coarser
+op <- par(mfrow = c(3, 4), mar = c(3.2, 3.4, 2.2, 0.6), mgp = c(2, 0.6, 0), cex = 0.7)
+for (nm in names(ev)) {
+  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
+  t <- if (nm == "ucdp_dyads") x$year else if (nm == "alien_invasions") x$stop else x$time
+  unit <- ev[[nm]][[3]]
+  if ("date" %in% names(x)) { t <- as.numeric(format(x$date, "%Y")); unit <- "year" }
+  h <- hist(t, breaks = min(60, max(10, length(unique(t)))), plot = FALSE)
+  plot(h$mids, h$counts, type = "h", lwd = 2, col = "#1d4e89", bty = "l", las = 1,
+       xlab = unit, ylab = "", main = nm, ylim = c(0, max(h$counts)), yaxt = "n")
+  at <- pretty(c(0, h$counts), 4)
+  axis(2, at = at, labels = ifelse(at >= 1000, paste0(at / 1000, "k"), at), las = 1)
+}
+par(op)
+```
 
-## Per-actor activity distributions
+## Who is active
 
-Out-degree (events sent) and in-degree (events received), per
-actor, smoothed on a log scale:
+Share of all events in which the most active 10% of actors take part, and the
+Gini coefficient of actor activity (0 when all actors are equally active):
 
-![Activity distributions](figures/datasets-degrees.png)
+```{r concentration}
+conc <- do.call(rbind, lapply(names(ev), function(nm) {
+  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
+  a <- if (nm == "alien_invasions") c(x$species, x$region) else c(x$sender, x$receiver)
+  n <- sort(as.numeric(table(a)), decreasing = TRUE)
+  g <- { y <- sort(n); k <- length(y); sum((2 * seq_len(k) - k - 1) * y) / (k * sum(y)) }
+  data.frame(object = sprintf("`%s`", nm),
+             top10 = sprintf("%.1f%%", 100 * sum(n[seq_len(ceiling(length(n) / 10))]) / sum(n)),
+             gini = sprintf("%.2f", g))
+}))
+knitr::kable(conc, row.names = FALSE, col.names = c("object", "events with the top 10% of actors", "Gini"))
+```
 
-- **Classroom** is bell-shaped on a tight log axis — small
-  homogeneous group.
-- **Social Evolution** and **Email-EU-Core** show moderately
-  heavy tails.
-- **Manufacturing** and **CollegeMsg** are unambiguously
-  heavy-tailed across three orders of magnitude — a small core
-  drives most of the traffic.
+Logs with highly concentrated activity are where count statistics carry sender
+and receiver activity rather than dyadic history; see
+[Real-data analysis](real-data-analysis.html) for a comparison with and without a
+sender frailty.
 
-These differences matter for inference: the `*_count` family in
-the [Endogenous catalogue](endogenous-catalogue.html) absorbs activity
-heterogeneity directly, so heavy-tailed datasets like
-Manufacturing and CollegeMsg make sender / receiver random
-effects (or `compare_models_smooth()` non-linear specs) part of any
-comparison between count and timing statistics. See
-[Real-data analysis](real-data-analysis.html) for the worked example
-on Classroom, with and without a sender frailty.
+## Global covariates
 
-## Provenance
+- `enso_nino34`: tree-ring reconstruction of the winter Niño3.4 anomaly,
+  1301-2005 (see `vignette("species-invasion")`); `oni`: the instrumental
+  Oceanic Niño Index since 1950.
+- `daily_weather`: daily temperature and precipitation at Boston (Social
+  Evolution, 2008), Santa Ana (CollegeMsg, 2004), and Warsaw and Wroclaw
+  (manufacturing email, 2010).
+- `public_holidays`: public holidays for the same countries and years.
 
-- **Classroom** — `networkDynamic` CRAN package. McFarland (2001).
-- **Social Evolution** — `goldfish` GitHub package. Madan et al.
-  (2011).
-- **Manufacturing** — Network Repository, `ia-radoslaw-email`.
-  Michalski et al. (2014).
-- **CollegeMsg** — SNAP, `CollegeMsg.txt.gz`. Panzarasa, Opsahl &
-  Carley (2009).
-- **Email-EU-Core** — SNAP, `email-Eu-core-temporal-Dept3`.
-  Paranjape, Benson & Leskovec (2017). Self-loops removed.
-- **ENSO Niño3.4 reconstruction** — NOAA NCEI World Data Service for
-  Paleoclimatology, study 14632 ([doi:10.25921/jfqm-9178](https://doi.org/10.25921/jfqm-9178)), file
-  `enso-li2013.txt`. Li et al. (2013).
+They take one value at a time for every pair, so their effects are estimated
+with time-shifted sampling (`sample_non_events(shift = "exponential")`); the
+[email case study](case-email-global.html) does this with the clock.
 
-The fourth dataset analysed by Juozaitienė & Wit (2024) — Enron —
-is intentionally not bundled because the only publicly archived
-version is an aggregated daily edge-weight table rather than the
-event-level slice the paper analyses.
+`dist_matrix` holds distances between 56 US states and territories, used by the
+validation experiments.
 
 ## Time conventions
 
-Times are normalised to **days since the first event** for every
-dataset except Classroom, which uses **minutes** (its original
-time unit). The original Unix-epoch timestamps are preserved as a
-`unix_origin` attribute on each event frame where the source
-provided them:
+Event times are days since the first event, except `classroom_events`
+(minutes since the start of the class), `ucdp_dyads` (year) and
+`alien_invasions` (years `start` and `stop`). Where the source gives clock
+time, `attr(x, "unix_origin")` holds the Unix time of `time = 0`:
 
-```r
-data(radoslaw_email)
-attr(radoslaw_email, "unix_origin")
-#> [1] "2010-01-02 14:45:35 UTC"
-
-data(college_msg)
-attr(college_msg, "unix_origin")
-#> [1] "2004-04-15 03:02:41 UTC"
+```{r origins, echo = TRUE}
+format(as.POSIXct(attr(radoslaw_email, "unix_origin"), origin = "1970-01-01",
+                  tz = "Europe/Warsaw"), usetz = TRUE)
+format(as.POSIXct(attr(college_msg, "unix_origin"), origin = "1970-01-01",
+                  tz = "America/Los_Angeles"), usetz = TRUE)
 ```
 
-## Auxiliary objects
+## Sources and licences
 
-- `classroom_actors`, `social_evolution_actors`,
-  `social_evolution_friendship` — per-actor covariates and the
-  friendship-survey event log accompanying their main event
-  tables.
-- `dist_matrix` — a 56 × 56 matrix of inter-state geographic
-  distances; used by Experiment 2 in
-  [Validation experiments](validation-experiments.html).
-- `enso_nino34` — a global covariate: the tree-ring reconstruction of
-  the winter Niño3.4 sea-surface temperature anomaly, one value per
-  year from 1301 to 2005. It takes the same value for every dyad, so its
-  effect is estimated with time-shifted sampling
-  (`sample_non_events(shift = "exponential")`); the
-  `vignette("species-invasion")` simulates five centuries of invasions
-  driven by it.
+```{r licences}
+lic <- data.frame(
+  object = c("`radoslaw_email`, `radoslaw_hierarchy`", "`copenhagen_*`", "`congress_bills_118`, `congress_members_118`",
+             "`us_leader_visits`", "`ucdp_dyads`", "`football_results`", "`alien_invasions`",
+             "`daily_weather`, `oni`, `enso_nino34`", "`public_holidays`", "`dist_matrix`",
+             "`college_msg`, `email_eu_core`", "`classroom_events`, `classroom_actors`",
+             "`social_evolution_*`"),
+  source = c("Harvard Dataverse doi:10.7910/DVN/6Z3CGX", "Figshare doi:10.6084/m9.figshare.7267433",
+             "US GPO govinfo BILLSTATUS bulk data", "Harvard Dataverse doi:10.7910/DVN/2ZNR5R",
+             "Uppsala Conflict Data Program", "github.com/martj42/international_results",
+             "Dryad doi:10.5061/dryad.x69p8czpv", "NOAA NCEI and CPC", "Nager.Date API",
+             "US Census TIGER/Line", "SNAP (Stanford)", "networkDynamic R package", "goldfish R package"),
+  licence = c("CC0 1.0", "MIT", "public domain (US Government work)", "CC0 1.0", "CC BY 4.0", "CC0 1.0",
+              "CC0 1.0", "public domain (US Government work)", "dates and names (facts)",
+              "public domain (US Government work)", "no licence stated (citation requested)",
+              "package licence GPL-3", "package licence GPL-3"))
+knitr::kable(lic, row.names = FALSE)
+```
 
-## Citing the datasets
-
-If you publish results from any bundled dataset, please cite the
-original source in addition to citing `amorem`:
-
-- McFarland, D.A. (2001). *Student resistance: How the formal and
-  informal organization of classrooms facilitate everyday forms
-  of student defiance.* American Journal of Sociology.
-- Madan, A. et al. (2011). *Sensing the "health state" of a
-  community.* IEEE Pervasive Computing.
-- Michalski, R. et al. (2014). *Matching organizational structure
-  and social network extracted from email communication.* New
-  Generation Computing 32(3–4), 213–235.
-- Panzarasa, P., Opsahl, T., Carley, K. (2009). *Patterns and
-  dynamics of users' behavior and interaction: Network analysis
-  of an online community.* Journal of the American Society for
-  Information Science and Technology 60(5), 911–932.
-- Paranjape, A., Benson, A.R., Leskovec, J. (2017). *Motifs in
-  temporal networks.* WSDM '17, 601–610.
-- Li, J., Xie, S.-P., Cook, E.R., et al. (2013). *El Niño modulations
-  over the past seven centuries.* Nature Climate Change 3, 822–826.
-- Juozaitienė R., Wit E.C. (2024). *It's about time: revisiting
-  reciprocity and triadicity in relational event analysis.*
-  JRSS-A 188(4), 1246–1262.
+Each object's help page (`?radoslaw_email`, `?ucdp_dyads`, ...) gives the
+reference to cite. Please cite the original source of any dataset you use, in
+addition to amorem.

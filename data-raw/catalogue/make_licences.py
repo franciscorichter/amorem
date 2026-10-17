@@ -53,7 +53,7 @@ rows = {
  "fourpcan-alter-nominations": ("4PCAN alter nominations", "events",
    ("CC BY 4.0", "https://doi.org/10.5281/zenodo.21409040", "Zenodo record licence: CC BY 4.0", B)),
  "alien-species-first-records-rem": ("Alien species first records prepared for REMs (Juozaitienė et al.)", "events",
-   ("CC0 1.0", "https://doi.org/10.5281/zenodo.8096819", "Zenodo mirror of Dryad doi:10.5061/dryad.x69p8czpv; CC0 1.0", B)),
+   ("CC0 1.0", "https://doi.org/10.5061/dryad.x69p8czpv", "Dryad record, CC0 1.0; files downloaded from its Zenodo mirror (record 8096819)", B)),
  "alien-first-records-v4": ("Alien Species First Records Database v4.0 (Seebens et al.)", "events",
    ("CC BY 4.0", "https://zenodo.org/records/18759840", "Zenodo record licence: CC BY 4.0", B)),
  "honeybee-trophallaxis-gernat2018": ("Honeybee trophallaxis interactions (Gernat et al. 2018)", "events",
@@ -128,6 +128,22 @@ rows = {
  "uci-academic-calendars": ("UC Irvine academic calendars 2003-2005", "covariate",
    ("facts (dates); pages (c) UC Regents", "https://www.reg.uci.edu/calendars/", "", B)),
 }
+# Package objects built from each dataset (data-raw/bundle_open_datasets.R and earlier data-raw scripts)
+in_amorem = {
+ "alien-species-first-records-rem": "alien_invasions",
+ "copenhagen-networks-study": "copenhagen_calls, copenhagen_sms, copenhagen_actors",
+ "goldfish-datasets": "social_evolution_calls, social_evolution_friendship, social_evolution_actors (Social Evolution part)",
+ "govinfo-billstatus-118": "congress_bills_118, congress_members_118",
+ "international-football-results": "football_results",
+ "nager-date-holidays": "public_holidays",
+ "noaa-enso": "oni",
+ "noaa-ghcnd-weather": "daily_weather",
+ "radoslaw-email-dataverse": "radoslaw_email, radoslaw_hierarchy",
+ "snap-collegemsg": "college_msg",
+ "snap-email-eu-core-temporal": "email_eu_core",
+ "ucdp": "ucdp_dyads",
+ "us-leader-visits": "us_leader_visits",
+}
 raw = os.path.expanduser("~/System/Research/REM/data-raw/raw")
 folders = sorted(d for d in os.listdir(raw) if os.path.isdir(os.path.join(raw, d)))
 missing = [f for f in folders if f not in rows]
@@ -135,9 +151,9 @@ assert not missing, missing
 out = os.path.expanduser("~/System/Research/REM/data-raw/catalogue/licences.csv")
 with open(out, "w", newline="") as fh:
     w = csv.writer(fh)
-    w.writerow(["id", "title", "kind", "licence", "licence_url", "evidence", "verdict", "checked"])
+    w.writerow(["id", "title", "kind", "licence", "licence_url", "evidence", "verdict", "checked", "in_amorem"])
     for f in folders:
         t, k, (lic, url, ev, verdict) = rows[f]
-        w.writerow([f, t, k, lic, url, ev, verdict, "2026-10-17"])
+        w.writerow([f, t, k, lic, url, ev, verdict, "2026-10-17", in_amorem.get(f, "")])
 from collections import Counter
 print(len(folders), "datasets;", Counter(r[2][3] for r in rows.values()))

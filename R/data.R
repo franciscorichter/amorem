@@ -111,24 +111,42 @@
 
 #' Manufacturing-company email events (Michalski et al. 2014)
 #'
-#' Time-stamped directed emails among employees of a mid-sized
-#' manufacturing company over a nine-month period. Sourced from Network
-#' Repository as the `ia-radoslaw-email` dataset.
+#' Time-stamped directed emails among the 167 employees of a mid-sized
+#' manufacturing company in Poland, January to September 2010. Each recipient
+#' of an email (To, CC or BCC) is a separate row. The data are the CC0 release
+#' of Nurek & Michalski (2020); [radoslaw_hierarchy] gives who reports to whom.
 #'
 #' @format A data frame with 82,927 rows and 4 columns:
 #' \describe{
-#'   \item{time}{Days since the first email.
-#'     `attr(., "unix_origin")` holds the Unix epoch of `time = 0`.}
-#'   \item{sender}{Character employee id.}
+#'   \item{time}{Days since the first email. `attr(., "unix_origin")` holds the
+#'     Unix time of `time = 0`; the release records local (Europe/Warsaw) time.}
+#'   \item{sender}{Character employee id, as in [radoslaw_hierarchy].}
 #'   \item{receiver}{Character employee id.}
-#'   \item{weight}{Integer — `1` for every record in the original file.}
+#'   \item{weight}{Integer, `1` for every record.}
 #' }
-#' @source Michalski, R., Palus, S., Kazienko, P. (2014). Seed selection
-#'   for spread of influence in social networks: Temporal vs. static
-#'   approach. *New Generation Computing* 32(3–4), 213–235.
-#'   \doi{10.1007/s00354-014-0402-9}. Distributed via
-#'   <https://networkrepository.com/ia-radoslaw-email.php>.
+#' @details 51 rows are emails an employee sent to themself.
+#' @source Nurek M, Michalski R (2020). Manufacturing company email metadata and
+#'   corporate hierarchy. Harvard Dataverse, \doi{10.7910/DVN/6Z3CGX}, licence
+#'   CC0 1.0. Cite: Nurek M, Michalski R (2020). Combining machine learning and
+#'   social network analysis to reveal the organizational structures.
+#'   *Applied Sciences* 10(5), 1699, \doi{10.3390/app10051699}; and Michalski R,
+#'   Palus S, Kazienko P (2011). Matching organizational structure and social
+#'   network extracted from email communication. *Lecture Notes in Business
+#'   Information Processing* 87, 197--206.
 "radoslaw_email"
+
+#' Reporting hierarchy of the manufacturing company (Nurek & Michalski 2020)
+#'
+#' Who reports to whom among the employees of [radoslaw_email]. Employee 86 is
+#' the chief executive and reports to themself.
+#'
+#' @format A data frame with 167 rows and 2 columns:
+#' \describe{
+#'   \item{id}{Character employee id, as in [radoslaw_email].}
+#'   \item{reports_to}{Character id of the employee's manager.}
+#' }
+#' @source Harvard Dataverse, \doi{10.7910/DVN/6Z3CGX}, licence CC0 1.0.
+"radoslaw_hierarchy"
 
 #' CollegeMsg: private messages on a university online community
 #'
@@ -212,3 +230,158 @@
 #' plot(enso_nino34$year, enso_nino34$nino34, type = "l",
 #'      xlab = "year", ylab = "Niño3.4 anomaly (°C)")
 "enso_nino34"
+
+
+#' Copenhagen Networks Study: phone calls, text messages and gender
+#'
+#' Phone calls and text messages among students of the Technical University of
+#' Denmark over four weeks, from the Copenhagen Networks Study (Sapiezynski et
+#' al. 2019). `copenhagen_actors` records each participant's gender.
+#'
+#' @format `copenhagen_calls`: 3,600 rows, `time` (days since the start of the
+#'   study period), `sender` (caller), `receiver` (callee), `duration` (seconds;
+#'   `-1` for missed calls in the release). `copenhagen_sms`: 24,333 rows,
+#'   `time`, `sender`, `receiver`. `copenhagen_actors`: 787 rows, `id`,
+#'   `female` (1 = female).
+#' @source Sapiezynski P, Stopczynski A, Lassen DD, Lehmann S (2019).
+#'   Interaction data from the Copenhagen Networks Study. *Scientific Data* 6,
+#'   315, \doi{10.1038/s41597-019-0325-x}. Data: Figshare,
+#'   \doi{10.6084/m9.figshare.7267433}, MIT licence.
+#' @name copenhagen
+#' @aliases copenhagen_calls copenhagen_sms copenhagen_actors
+NULL
+
+#' @rdname copenhagen
+"copenhagen_calls"
+
+#' @rdname copenhagen
+"copenhagen_sms"
+
+#' @rdname copenhagen
+"copenhagen_actors"
+
+#' Bills of the 118th US Congress as hyperevents
+#'
+#' Every House and Senate bill introduced in the 118th Congress (January 2023
+#' to January 2025) as a directed hyperevent: the sponsor sends the bill, the
+#' cosponsors receive it. An [hyperedge_log()] with the bill number and the
+#' introduction date; [congress_members_118] gives party and state.
+#'
+#' @format An `amorem_hyperedge_log` with 16,213 rows: `I` (list of one sponsor
+#'   bioguide id), `J` (list of cosponsor bioguide ids, possibly empty), `time`
+#'   (days since 3 January 2023), `bill` (e.g. `"hr184"`), `date` (introduced).
+#' @source US Government Publishing Office, BILLSTATUS bulk data for the 118th
+#'   Congress, <https://www.govinfo.gov/bulkdata/BILLSTATUS>, accessed
+#'   2026-10-17. A work of the US Government, public domain (17 U.S.C. 105).
+"congress_bills_118"
+
+#' Members of the 118th US Congress
+#'
+#' Sponsors and cosponsors appearing in [congress_bills_118].
+#'
+#' @format A data frame with 553 rows: `bioguide_id`, `name` (as printed in the
+#'   bill status), `party`, `state`.
+#' @source As [congress_bills_118]; public domain.
+"congress_members_118"
+
+#' US leader-to-leader visits, 1945--2019
+#'
+#' Visits of foreign heads of state or government to the United States, and
+#' travels of US presidents abroad, as directed visitor-to-host events.
+#'
+#' @format A data frame with 3,943 rows: `time` (days since the first visit),
+#'   `date`, `sender` (visiting country), `receiver` (host country),
+#'   `direction` (`"to_us"` or `"from_us"`).
+#' @source US Leader-to-Leader Diplomatic Visits Dataset, 1946--2019. Harvard
+#'   Dataverse, \doi{10.7910/DVN/2ZNR5R}, licence CC0 1.0.
+"us_leader_visits"
+
+#' UCDP dyadic conflict data, 1946--2025
+#'
+#' One row per year in which a pair of actors (governments, rebel groups) was in
+#' armed conflict with at least 25 battle-related deaths, from the UCDP Dyadic
+#' Dataset version 26.1.
+#'
+#' @format A data frame with 3,518 rows: `year`, `sender` (side A), `receiver`
+#'   (side B), `dyad_id`, `conflict_id`, `location`, `intensity_level`
+#'   (1 = 25 to 999 deaths, 2 = 1,000 or more), `type_of_conflict` (1
+#'   extrasystemic, 2 interstate, 3 intrastate, 4 internationalised intrastate).
+#' @source Uppsala Conflict Data Program, <https://ucdp.uu.se/downloads/>,
+#'   licence CC BY 4.0. Cite: Harbom L, Melander E, Wallensteen P (2008). Dyadic
+#'   dimensions of armed conflict, 1946--2007. *Journal of Peace Research*
+#'   45(5), 697--710, \doi{10.1177/0022343308094331}; and Davies S, Pettersson T,
+#'   Öberg M (2025). Organized violence 1989--2024. *Journal of Peace Research*.
+"ucdp_dyads"
+
+#' Men's international football results since 1872
+#'
+#' Every men's full international match: the home team as sender, the away team
+#' as receiver.
+#'
+#' @format A data frame with 49,945 rows: `time` (days since 30 November 1872),
+#'   `date`, `sender` (home team), `receiver` (away team), `home_score`,
+#'   `away_score`, `tournament`, `neutral` (`TRUE` when played at a neutral
+#'   venue).
+#' @source Jürisoo M. International football results from 1872 to present,
+#'   <https://github.com/martj42/international_results>, licence CC0 1.0,
+#'   accessed 2026-10-17.
+"football_results"
+
+#' Alien species first records, prepared for relational event models
+#'
+#' First records of established alien species (mammals, birds, plants, insects)
+#' in 272 regions, 1880--2005, as one-shot species-to-region events: each pair
+#' fires at most once (`risk = "remove"`). The first record is dated `stop`;
+#' `start` is the start of the last interval over which the pair was at risk
+#' with unchanged covariates in the counting-process release.
+#'
+#' @format A data frame with 11,730 rows, ordered by `stop`: `species`,
+#'   `region`, `start`, `stop` (years; equal when the record falls in the first
+#'   year, 1880), `taxonomy`.
+#' @details The release also holds every censored species-region-interval with
+#'   distance, trade, colonial, climate and land-use covariates (535,020 rows);
+#'   download it from the source to fit the full model.
+#' @source Juozaitienė R, Seebens H, Latombe G, Essl F, Wit EC (2023).
+#'   Analysing ecological dynamics with relational event models: the case of
+#'   biological invasions. *Diversity and Distributions* 29, 1208--1225,
+#'   \doi{10.1111/ddi.13723}. Data: Dryad \doi{10.5061/dryad.x69p8czpv}
+#'   (CC0 1.0).
+"alien_invasions"
+
+#' Daily weather at the places and periods of the bundled event logs
+#'
+#' Daily maximum and minimum temperature and precipitation from NOAA GHCN-Daily
+#' for Boston Logan (September--December 2008, Social Evolution), Santa Ana
+#' John Wayne airport (April--October 2004, CollegeMsg), and Warsaw-Okecie and
+#' Wroclaw-Strachowice (January--October 2010, manufacturing email).
+#'
+#' @format A data frame with 944 rows: `station`, `name`, `date`, `tmax` and
+#'   `tmin` (degrees Celsius), `prcp` (millimetres). Missing values are `NA`.
+#' @source NOAA National Centers for Environmental Information, Global
+#'   Historical Climatology Network Daily, <https://www.ncei.noaa.gov/>,
+#'   accessed 2026-10-17. A work of the US Government, public domain.
+"daily_weather"
+
+#' Public holidays for the periods of the bundled event logs
+#'
+#' Public holidays in Poland (2010), the United States (2004, 2008, 2009) and
+#' Great Britain (2026).
+#'
+#' @format A data frame with 75 rows: `country` (ISO code), `date`, `name`,
+#'   `local_name`.
+#' @source Nager.Date public holiday API, <https://nagerholidays.com/>, accessed
+#'   2026-10-17. Holiday dates and names are facts.
+"public_holidays"
+
+#' Oceanic Niño Index, 1950--present
+#'
+#' Three-month running mean of the Niño 3.4 sea-surface temperature anomaly, the
+#' NOAA measure of El Niño and La Niña. The instrumental counterpart of the
+#' reconstruction in [enso_nino34].
+#'
+#' @format A data frame with 920 rows: `year`, `season` (three-month window,
+#'   e.g. `"DJF"`), `sst` (degrees Celsius), `anomaly` (degrees Celsius).
+#' @source NOAA Climate Prediction Center,
+#'   <https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt>, accessed
+#'   2026-10-17. A work of the US Government, public domain.
+"oni"

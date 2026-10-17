@@ -38,6 +38,37 @@
 
 * `rem()` fits store the name of their `time` column.
 
+## Datasets
+
+* New event logs, all under licences that allow redistribution:
+  `copenhagen_calls`, `copenhagen_sms` and `copenhagen_actors` (Copenhagen
+  Networks Study, MIT); `us_leader_visits` (leader-to-leader visits to and from
+  the United States, 1945-2019, CC0); `football_results` (men's international
+  football matches since 1872, CC0); `ucdp_dyads` (UCDP armed-conflict dyads,
+  1946-2025, CC BY 4.0); `alien_invasions` (first records of alien species by
+  region, 1880-2005, CC0).
+
+* New hyperevent log: `congress_bills_118`, one sponsor and the cosponsors of
+  each bill of the 118th US Congress, with `congress_members_118` (public
+  domain).
+
+* New global covariates: `oni` (Oceanic Nino Index since 1950), `daily_weather`
+  (NOAA daily temperature and precipitation for the cities of the bundled email
+  and messaging logs) and `public_holidays`.
+
+* `radoslaw_email` is rebuilt from the authors' CC0 release (Nurek & Michalski
+  2020, doi:10.7910/DVN/6Z3CGX). It keeps the original employee ids, which
+  match the new `radoslaw_hierarchy` (who reports to whom), and its
+  timestamps are read as Warsaw local time. The previous copy, from Network
+  Repository, read them as UTC, so it ignored daylight saving time: events
+  sent during Polish summer time are now one hour earlier relative to the
+  first event, and `unix_origin` is one hour earlier. The number of events
+  and each employee's activity are unchanged.
+
+* The pkgdown site has a data catalogue: licences, download code and
+  structural profiles of 78 relational-event datasets and covariates, including
+  the many whose licences do not allow amorem to redistribute them.
+
 # amorem 1.1.0
 
 ## Bug fixes

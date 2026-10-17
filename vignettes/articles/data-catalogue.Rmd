@@ -46,7 +46,11 @@ knitr::kable(data.frame(verdict = lab[names(vt)], datasets = as.integer(vt), row
              row.names = FALSE)
 ```
 
-Datasets that cannot be redistributed are documented here with code that
+`r sum(nzchar(licences$in_amorem) & licences$verdict == "bundle")` of the
+datasets that may be bundled ship with amorem (see [Bundled datasets](datasets.html)).
+Three datasets bundled in earlier releases (CollegeMsg, Email-EU-core and the
+Social Evolution study) come from sources without a licence or under GPL-3; their
+status is under review. Datasets that cannot be redistributed are documented here with code that
 downloads them from their source; the figures and numbers on the topic pages
 are aggregates, not the data.
 
@@ -70,8 +74,7 @@ reason <- c("sp-colocation" = "repackages the SocioPatterns sets above",
 tab <- data.frame(
   dataset = ifelse(!is.na(licences$page), sprintf("[%s](%s.html)", licences$title, licences$page), licences$title),
   kind = licences$kind, licence = licences$licence,
-  amorem = c(bundle = "can bundle", "gpl-only" = "GPL only", sharealike = "share-alike", noncommercial = "obtain from source",
-             "no-licence" = "obtain from source", "per-dataset" = "per dataset")[licences$verdict],
+  amorem = vapply(seq_len(nrow(licences)), function(i) amorem_status(licences[i, ]), ""),
   profile = ifelse(profiled, "yes", paste0("no: ", reason[licences$id])),
   row.names = NULL)
 knitr::kable(tab[order(licences$verdict, licences$title), ], row.names = FALSE)

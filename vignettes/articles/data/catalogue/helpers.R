@@ -17,6 +17,19 @@ verdict_text <- c(
   "no-licence" = "no licence stated: not redistributed; obtain from the source",
   "per-dataset" = "licence differs by dataset in the collection")
 
+verdict_short <- c(bundle = "can bundle", "gpl-only" = "GPL only", sharealike = "share-alike",
+                   noncommercial = "obtain from source", "no-licence" = "obtain from source",
+                   "per-dataset" = "per dataset")
+
+# Status of a dataset in amorem: the objects it ships as, or what its licence allows
+amorem_status <- function(l, short = TRUE) {
+  objs <- trimws(sub("\\(.*", "", l$in_amorem))
+  if (is.na(objs) || !nzchar(objs)) return(if (short) verdict_short[[l$verdict]] else verdict_text[[l$verdict]])
+  objs <- paste(sprintf("`%s`", trimws(strsplit(objs, ",")[[1]])), collapse = ", ")
+  if (l$verdict == "bundle") return(paste("bundled as", objs))
+  paste0("bundled as ", objs, " since an earlier release; licence under review")
+}
+
 # Time axis in readable units
 .time_axis <- function(p, t) {
   u <- p$time_unit
@@ -106,7 +119,7 @@ fit_table <- function(p) {
 source_block <- function(id) {
   l <- licences[licences$id == id, ]
   sprintf("*Source:* <%s> · *Licence:* %s · *Status in amorem:* %s.",
-          l$licence_url, l$licence, verdict_text[[l$verdict]])
+          l$licence_url, l$licence, amorem_status(l, short = FALSE))
 }
 
 # --- hyperevents ---------------------------------------------------------------
@@ -237,9 +250,7 @@ summary_table <- function(ids) {
     p <- load_profile(id); s <- p$stats; l <- licences[licences$id == id, ]
     data.frame(dataset = sprintf("[%s](#%s)", l$title, gsub("[^a-z0-9]+", "-", tolower(l$title))),
                events = fmt_n(s[[1]]), actors = if (!is.null(s["actors"]) && !is.na(s["actors"])) fmt_n(s[["actors"]]) else "",
-               licence = l$licence, amorem = c(bundle = "can bundle", "gpl-only" = "GPL only", sharealike = "share-alike",
-                                               noncommercial = "obtain from source", "no-licence" = "obtain from source",
-                                               "per-dataset" = "per dataset")[[l$verdict]])
+               licence = l$licence, amorem = amorem_status(l))
   })
   knitr::kable(do.call(rbind, rows), row.names = FALSE)
 }

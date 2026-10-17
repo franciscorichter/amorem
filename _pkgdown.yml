@@ -93,18 +93,33 @@ reference:
       - hyperedge_activity
       - hyperedge_subrep
       - hyperedge_features
-  - title: "Data"
+  - title: "Data: event logs"
     contents:
-      - dist_matrix
       - classroom_events
       - classroom_actors
       - social_evolution_calls
       - social_evolution_actors
       - social_evolution_friendship
       - radoslaw_email
+      - radoslaw_hierarchy
       - college_msg
       - email_eu_core
+      - copenhagen
+      - us_leader_visits
+      - football_results
+      - ucdp_dyads
+      - alien_invasions
+  - title: "Data: hyperevents"
+    contents:
+      - congress_bills_118
+      - congress_members_118
+  - title: "Data: global covariates"
+    contents:
       - enso_nino34
+      - oni
+      - daily_weather
+      - public_holidays
+      - dist_matrix
 
 articles:
   - title: "Guides"
