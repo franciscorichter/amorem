@@ -41,3 +41,4 @@ docs/
 .claude/
 paper/manuscript/*.fdb_latexmk
 paper/manuscript/*.fls
+data-raw/raw/
