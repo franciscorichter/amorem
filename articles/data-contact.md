@@ -41,6 +41,44 @@ the source and the code that reads it.
 redistributable in amorem (MIT); obtain from the source.
 
 ![SocioPatterns: high school contacts, diaries, friendship, Facebook
+2013: network of the most active
+actors](data-contact_files/figure-html/net-sp-highschool-2013-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+327; events between two of them are 26.0% of all events. Each actor’s
+three strongest ties are drawn (112 of 261 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: high school contacts, diaries, friendship, Facebook
+2013: activity of the most active actors over
+time](data-contact_files/figure-html/tl-sp-highschool-2013-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 188,508 events.
+
+![SocioPatterns: high school contacts, diaries, friendship, Facebook
+2013: close-up of the busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-highschool-2013-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 05 December
+2013 08:36 to Thu 05 December 2013 08:38, event by event: each vertical
+line is one event between two of the actors above.
+
+![SocioPatterns: high school contacts, diaries, friendship, Facebook
+2013: counting processes of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-highschool-2013-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 6.9% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
+![SocioPatterns: high school contacts, diaries, friendship, Facebook
 2013: activity over time, inter-event times, partners per actor, daily
 cycle or actor
 activity](data-contact_files/figure-html/fig-sp-highschool-2013-1.png)
@@ -75,6 +113,44 @@ is `readers[["sp-highschool-2013"]]` in
 <https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/>
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
+
+![SocioPatterns: high school contacts 2011 and 2012 (Marseille): network
+of the most active
+actors](data-contact_files/figure-html/net-sp-highschool-2011-2012-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+180; events between two of them are 55.2% of all events. Each actor’s
+three strongest ties are drawn (121 of 451 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: high school contacts 2011 and 2012 (Marseille):
+activity of the most active actors over
+time](data-contact_files/figure-html/tl-sp-highschool-2011-2012-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 45,047 events.
+
+![SocioPatterns: high school contacts 2011 and 2012 (Marseille):
+close-up of the busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-highschool-2011-2012-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 375919.9 to
+hour 375920.0, event by event: each vertical line is one event between
+two of the actors above.
+
+![SocioPatterns: high school contacts 2011 and 2012 (Marseille):
+counting processes of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-highschool-2011-2012-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 12.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SocioPatterns: high school contacts 2011 and 2012 (Marseille):
 activity over time, inter-event times, partners per actor, daily cycle
@@ -111,6 +187,44 @@ is `readers[["sp-highschool-2011-2012"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: primary school contacts (Lyon): network of the most
+active
+actors](data-contact_files/figure-html/net-sp-primaryschool-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+242; events between two of them are 19.1% of all events. Each actor’s
+three strongest ties are drawn (118 of 766 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: primary school contacts (Lyon): activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-primaryschool-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 125,773 events.
+
+![SocioPatterns: primary school contacts (Lyon): close-up of the busiest
+stretch, event by
+event](data-contact_files/figure-html/zoom-sp-primaryschool-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 36.5 to hour
+36.5, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: primary school contacts (Lyon): counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-primaryschool-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 2.8% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: primary school contacts (Lyon): activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-primaryschool-1.png)
@@ -143,6 +257,44 @@ is `readers[["sp-primaryschool"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: hospital ward contacts (Lyon): network of the most
+active
+actors](data-contact_files/figure-html/net-sp-hospital-lyon-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+75; events between two of them are 96.0% of all events. Each actor’s
+three strongest ties are drawn (147 of 931 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: hospital ward contacts (Lyon): activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-hospital-lyon-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 32,424 events.
+
+![SocioPatterns: hospital ward contacts (Lyon): close-up of the busiest
+stretch, event by
+event](data-contact_files/figure-html/zoom-sp-hospital-lyon-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 24.5 to hour
+24.5, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: hospital ward contacts (Lyon): counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-hospital-lyon-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 11.9% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: hospital ward contacts (Lyon): activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-hospital-lyon-1.png)
@@ -173,6 +325,44 @@ is `readers[["sp-hospital-lyon"]]` in
 <https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/>
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
+
+![SocioPatterns: workplace contacts 2013 (InVS): network of the most
+active
+actors](data-contact_files/figure-html/net-sp-workplace-invs13-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+92; events between two of them are 81.1% of all events. Each actor’s
+three strongest ties are drawn (119 of 416 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: workplace contacts 2013 (InVS): activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-workplace-invs13-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 9,827 events.
+
+![SocioPatterns: workplace contacts 2013 (InVS): close-up of the busiest
+stretch, event by
+event](data-contact_files/figure-html/zoom-sp-workplace-invs13-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 226.4 to
+hour 226.7, event by event: each vertical line is one event between two
+of the actors above.
+
+![SocioPatterns: workplace contacts 2013 (InVS): counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-workplace-invs13-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 20.5% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SocioPatterns: workplace contacts 2013 (InVS): activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -206,6 +396,44 @@ is `readers[["sp-workplace-invs13"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: workplace contacts 2015 (InVS): network of the most
+active
+actors](data-contact_files/figure-html/net-sp-workplace-invs15-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+217; events between two of them are 28.2% of all events. Each actor’s
+three strongest ties are drawn (120 of 433 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: workplace contacts 2015 (InVS): activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-workplace-invs15-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 78,249 events.
+
+![SocioPatterns: workplace contacts 2015 (InVS): close-up of the busiest
+stretch, event by
+event](data-contact_files/figure-html/zoom-sp-workplace-invs15-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 13.0 to hour
+13.1, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: workplace contacts 2015 (InVS): counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-workplace-invs15-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 6.5% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: workplace contacts 2015 (InVS): activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-workplace-invs15-1.png)
@@ -237,6 +465,43 @@ is `readers[["sp-workplace-invs15"]]` in
 <https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/>
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
+
+![SocioPatterns: ACM Hypertext 2009 conference contacts: network of the
+most active actors](data-contact_files/figure-html/net-sp-ht2009-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+113; events between two of them are 67.5% of all events. Each actor’s
+three strongest ties are drawn (113 of 867 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: ACM Hypertext 2009 conference contacts: activity of the
+most active actors over
+time](data-contact_files/figure-html/tl-sp-ht2009-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 20,818 events.
+
+![SocioPatterns: ACM Hypertext 2009 conference contacts: close-up of the
+busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-ht2009-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 54.1 to hour
+54.2, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: ACM Hypertext 2009 conference contacts: counting
+processes of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-ht2009-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 13.6% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SocioPatterns: ACM Hypertext 2009 conference contacts: activity over
 time, inter-event times, partners per actor, daily cycle or actor
@@ -270,6 +535,44 @@ is `readers[["sp-ht2009"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: SFHH conference contacts (Nice): network of the most
+active
+actors](data-contact_files/figure-html/net-sp-sfhh-conference-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+403; events between two of them are 28.9% of all events. Each actor’s
+three strongest ties are drawn (129 of 514 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: SFHH conference contacts (Nice): activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-sfhh-conference-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 70,261 events.
+
+![SocioPatterns: SFHH conference contacts (Nice): close-up of the
+busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-sfhh-conference-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 14.2 to hour
+14.2, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: SFHH conference contacts (Nice): counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-sfhh-conference-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 6.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: SFHH conference contacts (Nice): activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-sfhh-conference-1.png)
@@ -300,6 +603,44 @@ is `readers[["sp-sfhh-conference"]]` in
 <https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/>
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
+
+![SocioPatterns: Infectious exhibition contacts (Dublin): network of the
+most active
+actors](data-contact_files/figure-html/net-sp-infectious-dublin-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+200; events between two of them are 41.0% of all events. Each actor’s
+three strongest ties are drawn (76 of 100 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: Infectious exhibition contacts (Dublin): activity of
+the most active actors over
+time](data-contact_files/figure-html/tl-sp-infectious-dublin-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 5,943 events.
+
+![SocioPatterns: Infectious exhibition contacts (Dublin): close-up of
+the busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-infectious-dublin-1.png)
+
+**Event by event.** The busiest stretch of the record, Tue 28 April 2009
+11:24 to Tue 28 April 2009 11:28, event by event: each vertical line is
+one event between two of the actors above.
+
+![SocioPatterns: Infectious exhibition contacts (Dublin): counting
+processes of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-infectious-dublin-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 9.5% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SocioPatterns: Infectious exhibition contacts (Dublin): activity over
 time, inter-event times, partners per actor, daily cycle or actor
@@ -332,6 +673,44 @@ is `readers[["sp-infectious-dublin"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: village contacts in rural Malawi: network of the most
+active
+actors](data-contact_files/figure-html/net-sp-malawi-village-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+86; events between two of them are 90.1% of all events. Each actor’s
+three strongest ties are drawn (108 of 219 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: village contacts in rural Malawi: activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-malawi-village-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 102,293 events.
+
+![SocioPatterns: village contacts in rural Malawi: close-up of the
+busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-malawi-village-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 958.6 to
+hour 958.7, event by event: each vertical line is one event between two
+of the actors above.
+
+![SocioPatterns: village contacts in rural Malawi: counting processes of
+the busiest
+pairs](data-contact_files/figure-html/pairs-sp-malawi-village-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 20.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: village contacts in rural Malawi: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-malawi-village-1.png)
@@ -362,6 +741,44 @@ is `readers[["sp-malawi-village"]]` in
 <https://www.sociopatterns.org/datasets/high-school-contact-and-friendship-networks/>
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
+
+![SocioPatterns: household contacts in rural Kenya: network of the most
+active
+actors](data-contact_files/figure-html/net-sp-kenya-households-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+75; events between two of them are 93.8% of all events. Each actor’s
+three strongest ties are drawn (120 of 345 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: household contacts in rural Kenya: activity of the most
+active actors over
+time](data-contact_files/figure-html/tl-sp-kenya-households-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 32,425 events.
+
+![SocioPatterns: household contacts in rural Kenya: close-up of the
+busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-kenya-households-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 7.0 to hour
+7.0, event by event: each vertical line is one event between two of the
+actors above.
+
+![SocioPatterns: household contacts in rural Kenya: counting processes
+of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-kenya-households-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 13.7% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SocioPatterns: household contacts in rural Kenya: activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -396,6 +813,44 @@ is `readers[["sp-kenya-households"]]` in
 · *Licence:* CC BY-NC-SA · *Status in amorem:* non-commercial: not
 redistributable in amorem (MIT); obtain from the source.
 
+![SocioPatterns: baboon proximity and observations (Rousset): network of
+the most active
+actors](data-contact_files/figure-html/net-sp-baboons-1.png)
+
+**Who interacts with whom.** The 13 actors of the busiest pairs, out of
+13; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (26 of 78 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SocioPatterns: baboon proximity and observations (Rousset): activity
+of the most active actors over
+time](data-contact_files/figure-html/tl-sp-baboons-1.png)
+
+**When.** Each row is one of the 13 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 63,095 events.
+
+![SocioPatterns: baboon proximity and observations (Rousset): close-up
+of the busiest stretch, event by
+event](data-contact_files/figure-html/zoom-sp-baboons-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 13 June 2019
+08:55 to Thu 13 June 2019 08:59, event by event: each vertical line is
+one event between two of the actors above.
+
+![SocioPatterns: baboon proximity and observations (Rousset): counting
+processes of the busiest
+pairs](data-contact_files/figure-html/pairs-sp-baboons-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 38.3% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SocioPatterns: baboon proximity and observations (Rousset): activity
 over time, inter-event times, partners per actor, daily cycle or actor
 activity](data-contact_files/figure-html/fig-sp-baboons-1.png)
@@ -426,6 +881,44 @@ is `readers[["sp-baboons"]]` in
 *Source:* <https://beemonitoring.igb.illinois.edu/> · *Licence:* none
 stated for data (software AGPL-3) · *Status in amorem:* no licence
 stated: not redistributed; obtain from the source.
+
+![Honeybee trophallaxis interactions (Gernat et al. 2018): network of
+the most active
+actors](data-contact_files/figure-html/net-honeybee-trophallaxis-gernat2018-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+1,164; events between two of them are 0.5% of all events. Each actor’s
+three strongest ties are drawn (121 of 685 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Honeybee trophallaxis interactions (Gernat et al. 2018): activity of
+the most active actors over
+time](data-contact_files/figure-html/tl-honeybee-trophallaxis-gernat2018-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 302,221 events.
+
+![Honeybee trophallaxis interactions (Gernat et al. 2018): close-up of
+the busiest stretch, event by
+event](data-contact_files/figure-html/zoom-honeybee-trophallaxis-gernat2018-1.png)
+
+**Event by event.** The busiest stretch of the record, Fri 05 July 2013
+15:49 to Sat 06 July 2013 18:14, event by event: each vertical line is
+one event between two of the actors above.
+
+![Honeybee trophallaxis interactions (Gernat et al. 2018): counting
+processes of the busiest
+pairs](data-contact_files/figure-html/pairs-honeybee-trophallaxis-gernat2018-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![Honeybee trophallaxis interactions (Gernat et al. 2018): activity over
 time, inter-event times, partners per actor, daily cycle or actor
@@ -459,6 +952,40 @@ is `readers[["honeybee-trophallaxis-gernat2018"]]` in
 *Source:* <http://konect.cc/> · *Licence:* unknown (site unreachable
 2026-10-17) · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
+
+![KONECT: Haggle device contacts: network of the most active
+actors](data-contact_files/figure-html/net-konect-haggle-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+274; events between two of them are 92.1% of all events. Each actor’s
+three strongest ties are drawn (135 of 1,161 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![KONECT: Haggle device contacts: activity of the most active actors
+over time](data-contact_files/figure-html/tl-konect-haggle-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 28,244 events.
+
+![KONECT: Haggle device contacts: close-up of the busiest stretch, event
+by event](data-contact_files/figure-html/zoom-konect-haggle-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 6.1 to hour
+6.1, event by event: each vertical line is one event between two of the
+actors above.
+
+![KONECT: Haggle device contacts: counting processes of the busiest
+pairs](data-contact_files/figure-html/pairs-konect-haggle-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 2.8% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![KONECT: Haggle device contacts: activity over time, inter-event times,
 partners per actor, daily cycle or actor

@@ -32,6 +32,44 @@ the source and the code that reads it.
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
 
+![SNAP: Wikipedia talk-page messages: network of the most active
+actors](data-online_files/figure-html/net-snap-wiki-talk-temporal-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+1,094,018; events between two of them are 0.6% of all events. Each
+actor’s three strongest ties are drawn (115 of 255 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Wikipedia talk-page messages: activity of the most active actors
+over
+time](data-online_files/figure-html/tl-snap-wiki-talk-temporal-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 6,100,538 events.
+
+![SNAP: Wikipedia talk-page messages: close-up of the busiest stretch,
+event by
+event](data-online_files/figure-html/zoom-snap-wiki-talk-temporal-1.png)
+
+**Event by event.** The busiest stretch of the record, Sun 07 May 2006
+05:49 to Mon 08 May 2006 00:02, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![SNAP: Wikipedia talk-page messages: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-wiki-talk-temporal-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![SNAP: Wikipedia talk-page messages: activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-online_files/figure-html/fig-snap-wiki-talk-temporal-1.png)
@@ -71,6 +109,44 @@ is `readers[["snap-wiki-talk-temporal"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![SNAP: Wikipedia requests for adminship votes: network of the most
+active actors](data-online_files/figure-html/net-snap-wiki-rfa-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+11,128; events between two of them are 0.4% of all events. Each actor’s
+three strongest ties are drawn (132 of 383 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Wikipedia requests for adminship votes: activity of the most
+active actors over
+time](data-online_files/figure-html/tl-snap-wiki-rfa-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 188,816 events.
+
+![SNAP: Wikipedia requests for adminship votes: close-up of the busiest
+stretch, event by
+event](data-online_files/figure-html/zoom-snap-wiki-rfa-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 21 May 2007
+09:32 to Sat 18 August 2007 22:35, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![SNAP: Wikipedia requests for adminship votes: counting processes of
+the busiest
+pairs](data-online_files/figure-html/pairs-snap-wiki-rfa-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SNAP: Wikipedia requests for adminship votes: activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -112,6 +188,42 @@ is `readers[["snap-wiki-rfa"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![SNAP: MathOverflow interactions: network of the most active
+actors](data-online_files/figure-html/net-snap-sx-mathoverflow-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+24,759; events between two of them are 3.6% of all events. Each actor’s
+three strongest ties are drawn (137 of 977 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: MathOverflow interactions: activity of the most active actors
+over time](data-online_files/figure-html/tl-snap-sx-mathoverflow-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 390,441 events.
+
+![SNAP: MathOverflow interactions: close-up of the busiest stretch,
+event by
+event](data-online_files/figure-html/zoom-snap-sx-mathoverflow-1.png)
+
+**Event by event.** The busiest stretch of the record, Fri 05 February
+2010 20:03 to Sat 13 February 2010 16:05, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![SNAP: MathOverflow interactions: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-sx-mathoverflow-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.2% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SNAP: MathOverflow interactions: activity over time, inter-event
 times, partners per actor, daily cycle or actor
@@ -156,6 +268,42 @@ is `readers[["snap-sx-mathoverflow"]]` in
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
 
+![SNAP: Ask Ubuntu interactions: network of the most active
+actors](data-online_files/figure-html/net-snap-sx-askubuntu-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+157,222; events between two of them are 1.2% of all events. Each actor’s
+three strongest ties are drawn (135 of 779 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Ask Ubuntu interactions: activity of the most active actors over
+time](data-online_files/figure-html/tl-snap-sx-askubuntu-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 726,661 events.
+
+![SNAP: Ask Ubuntu interactions: close-up of the busiest stretch, event
+by event](data-online_files/figure-html/zoom-snap-sx-askubuntu-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 20 April 2015
+17:51 to Thu 23 April 2015 08:34, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![SNAP: Ask Ubuntu interactions: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-sx-askubuntu-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![SNAP: Ask Ubuntu interactions: activity over time, inter-event times,
 partners per actor, daily cycle or actor
 activity](data-online_files/figure-html/fig-snap-sx-askubuntu-1.png)
@@ -195,6 +343,42 @@ is `readers[["snap-sx-askubuntu"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![SNAP: Super User interactions: network of the most active
+actors](data-online_files/figure-html/net-snap-sx-superuser-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+192,409; events between two of them are 0.9% of all events. Each actor’s
+three strongest ties are drawn (135 of 971 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Super User interactions: activity of the most active actors over
+time](data-online_files/figure-html/tl-snap-sx-superuser-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 1,108,739 events.
+
+![SNAP: Super User interactions: close-up of the busiest stretch, event
+by event](data-online_files/figure-html/zoom-snap-sx-superuser-1.png)
+
+**Event by event.** The busiest stretch of the record, Sat 20 October
+2012 21:38 to Tue 30 October 2012 03:30, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![SNAP: Super User interactions: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-sx-superuser-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![SNAP: Super User interactions: activity over time, inter-event times,
 partners per actor, daily cycle or actor
@@ -236,6 +420,42 @@ is `readers[["snap-sx-superuser"]]` in
 BY-SA · *Status in amorem:* share-alike: redistributable only under the
 same licence.
 
+![Network Repository: Facebook-like forum: network of the most active
+actors](data-online_files/figure-html/net-nr-fb-forum-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+899; events between two of them are 17.2% of all events. Each actor’s
+three strongest ties are drawn (121 of 268 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Network Repository: Facebook-like forum: activity of the most active
+actors over time](data-online_files/figure-html/tl-nr-fb-forum-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 33,686 events.
+
+![Network Repository: Facebook-like forum: close-up of the busiest
+stretch, event by
+event](data-online_files/figure-html/zoom-nr-fb-forum-1.png)
+
+**Event by event.** The busiest stretch of the record, Wed 26 May 2004
+18:52 to Thu 27 May 2004 08:02, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![Network Repository: Facebook-like forum: counting processes of the
+busiest pairs](data-online_files/figure-html/pairs-nr-fb-forum-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 2.3% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![Network Repository: Facebook-like forum: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-online_files/figure-html/fig-nr-fb-forum-1.png)
@@ -274,6 +494,42 @@ is `readers[["nr-fb-forum"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![SNAP: Bitcoin OTC trust ratings: network of the most active
+actors](data-online_files/figure-html/net-snap-bitcoin-otc-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+5,881; events between two of them are 1.0% of all events. Each actor’s
+three strongest ties are drawn (112 of 189 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Bitcoin OTC trust ratings: activity of the most active actors
+over time](data-online_files/figure-html/tl-snap-bitcoin-otc-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 35,592 events.
+
+![SNAP: Bitcoin OTC trust ratings: close-up of the busiest stretch,
+event by
+event](data-online_files/figure-html/zoom-snap-bitcoin-otc-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 08 November
+2010 18:45 to Wed 18 May 2011 02:35, event by event: each vertical line
+is one event between two of the actors above, from the sender (dot) to
+the receiver (ring).
+
+![SNAP: Bitcoin OTC trust ratings: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-bitcoin-otc-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SNAP: Bitcoin OTC trust ratings: activity over time, inter-event
 times, partners per actor, daily cycle or actor
@@ -315,6 +571,42 @@ is `readers[["snap-bitcoin-otc"]]` in
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
 
+![SNAP: Bitcoin Alpha trust ratings: network of the most active
+actors](data-online_files/figure-html/net-snap-bitcoin-alpha-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+3,783; events between two of them are 1.7% of all events. Each actor’s
+three strongest ties are drawn (123 of 230 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: Bitcoin Alpha trust ratings: activity of the most active actors
+over time](data-online_files/figure-html/tl-snap-bitcoin-alpha-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 24,186 events.
+
+![SNAP: Bitcoin Alpha trust ratings: close-up of the busiest stretch,
+event by
+event](data-online_files/figure-html/zoom-snap-bitcoin-alpha-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 08 November
+2010 05:00 to Tue 17 May 2011 07:24, event by event: each vertical line
+is one event between two of the actors above, from the sender (dot) to
+the receiver (ring).
+
+![SNAP: Bitcoin Alpha trust ratings: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-bitcoin-alpha-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SNAP: Bitcoin Alpha trust ratings: activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-online_files/figure-html/fig-snap-bitcoin-alpha-1.png)
@@ -355,6 +647,40 @@ is `readers[["snap-bitcoin-alpha"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![SNAP: MOOC user actions: network of the most active
+actors](data-online_files/figure-html/net-snap-act-mooc-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+7,144; events between two of them are 1.0% of all events. Each actor’s
+three strongest ties are drawn (138 of 608 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: MOOC user actions: activity of the most active actors over
+time](data-online_files/figure-html/tl-snap-act-mooc-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 411,749 events.
+
+![SNAP: MOOC user actions: close-up of the busiest stretch, event by
+event](data-online_files/figure-html/zoom-snap-act-mooc-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 410.4 to
+hour 417.6, event by event: each vertical line is one event between two
+of the actors above, from the sender (dot) to the receiver (ring).
+
+![SNAP: MOOC user actions: counting processes of the busiest
+pairs](data-online_files/figure-html/pairs-snap-act-mooc-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![SNAP: MOOC user actions: activity over time, inter-event times,
 partners per actor, daily cycle or actor
@@ -398,6 +724,44 @@ is `readers[["snap-act-mooc"]]` in
 *Source:* <https://www.gharchive.org/> · *Licence:* none stated ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![GH Archive: one hour of public GitHub events: network of the most
+active actors](data-online_files/figure-html/net-gharchive-sample-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+11,431; events between two of them are 5.9% of all events. Each actor’s
+three strongest ties are drawn (31 of 31 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![GH Archive: one hour of public GitHub events: activity of the most
+active actors over
+time](data-online_files/figure-html/tl-gharchive-sample-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 11,351 events.
+
+![GH Archive: one hour of public GitHub events: close-up of the busiest
+stretch, event by
+event](data-online_files/figure-html/zoom-gharchive-sample-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 01 January
+2015 15:35 to Thu 01 January 2015 15:41, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![GH Archive: one hour of public GitHub events: counting processes of
+the busiest
+pairs](data-online_files/figure-html/pairs-gharchive-sample-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 2.1% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![GH Archive: one hour of public GitHub events: activity over time,
 inter-event times, partners per actor, daily cycle or actor

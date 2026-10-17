@@ -28,6 +28,27 @@ the source and the code that reads it.
 none stated · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
 
+![Enron email with recipient lists (Perry & Wolfe): hyperevents of the
+most active actors over
+time](data-hyperevents_files/figure-html/tl-enron-perry-wolfe-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+21,635 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![Enron email with recipient lists (Perry & Wolfe): consecutive
+hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-enron-perry-wolfe-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, Wed 24 October
+2001 13:41 to Thu 25 October 2001 07:54, one per column: the bar on top
+is its size, and the line joins its members among the rows above (dot:
+sender side, ring: receiver side). Members outside these 40 rows are
+counted in the bar but not drawn.
+
+**Statistical profile.**
+
 ![Enron email with recipient lists (Perry & Wolfe): activity over time
 and set
 sizes](data-hyperevents_files/figure-html/fig-enron-perry-wolfe-1.png)
@@ -64,6 +85,26 @@ stated · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
 
 ![Benson higher-order data: email-Enron, email-Eu, congress-bills:
+hyperevents of the most active actors over
+time](data-hyperevents_files/figure-html/tl-benson-drive-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+282,049 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![Benson higher-order data: email-Enron, email-Eu, congress-bills:
+consecutive hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-benson-drive-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, 28 April 1970
+to 03 January 1972, one per column: the bar on top is its size, and the
+line joins its members among the rows above. Members outside these 40
+rows are counted in the bar but not drawn.
+
+**Statistical profile.**
+
+![Benson higher-order data: email-Enron, email-Eu, congress-bills:
 activity over time and set
 sizes](data-hyperevents_files/figure-html/fig-benson-drive-1.png)
 
@@ -93,6 +134,25 @@ The reader that builds the hyperevent table is
 stated · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
 
+![Benson ScHoLP timestamped simplices: hyperevents of the most active
+actors over
+time](data-hyperevents_files/figure-html/tl-benson-scholp-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+719,792 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![Benson ScHoLP timestamped simplices: consecutive hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-benson-scholp-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, Fri 01 October
+1976 09:01 to Fri 01 October 1976 12:05, one per column: the bar on top
+is its size, and the line joins its members among the rows above.
+Members outside these 40 rows are counted in the bar but not drawn.
+
+**Statistical profile.**
+
 ![Benson ScHoLP timestamped simplices: activity over time and set
 sizes](data-hyperevents_files/figure-html/fig-benson-scholp-1.png)
 
@@ -119,6 +179,26 @@ The reader that builds the hyperevent table is
 per Zenodo record (sfhh-conference derives from SocioPatterns CC
 BY-NC-SA) · *Status in amorem:* licence differs by dataset in the
 collection.
+
+![XGI-DATA: email-enron, senate-bills, sfhh-conference hypergraphs:
+hyperevents of the most active actors over
+time](data-hyperevents_files/figure-html/tl-xgi-data-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+10,885 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![XGI-DATA: email-enron, senate-bills, sfhh-conference hypergraphs:
+consecutive hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-xgi-data-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, Wed 24 October
+2001 03:30 to Thu 25 October 2001 18:05, one per column: the bar on top
+is its size, and the line joins its members among the rows above.
+Members outside these 40 rows are counted in the bar but not drawn.
+
+**Statistical profile.**
 
 ![XGI-DATA: email-enron, senate-bills, sfhh-conference hypergraphs:
 activity over time and set
@@ -152,6 +232,27 @@ public domain (17 U.S.C. 105) · *Status in amorem:* bundled as
 `congress_bills_118`, `congress_members_118`.
 
 ![US Congress bill status, 118th Congress (sponsors, cosponsors):
+hyperevents of the most active actors over
+time](data-hyperevents_files/figure-html/tl-govinfo-billstatus-118-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+16,213 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![US Congress bill status, 118th Congress (sponsors, cosponsors):
+consecutive hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-govinfo-billstatus-118-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, 22 March 2023
+to 23 March 2023, one per column: the bar on top is its size, and the
+line joins its members among the rows above (dot: sender side, ring:
+receiver side). Members outside these 40 rows are counted in the bar but
+not drawn.
+
+**Statistical profile.**
+
+![US Congress bill status, 118th Congress (sponsors, cosponsors):
 activity over time and set
 sizes](data-hyperevents_files/figure-html/fig-govinfo-billstatus-118-1.png)
 
@@ -179,6 +280,27 @@ The reader that builds the hyperevent table is
 
 *Source:* <https://openalex.org/> · *Licence:* CC0 1.0 · *Status in
 amorem:* may be redistributed with attribution.
+
+![OpenAlex: works of the journal Social Networks: hyperevents of the
+most active actors over
+time](data-hyperevents_files/figure-html/tl-openalex-social-networks-journal-1.png)
+
+**When.** Each row is one of the 40 actors who take part in most of the
+1,894 hyperevents, coloured by group (modularity on co-membership); a
+cell is darker the more hyperevents the actor joined in that stretch of
+time. The grey bars on top count all hyperevents.
+
+![OpenAlex: works of the journal Social Networks: consecutive
+hyperevents and their
+members](data-hyperevents_files/figure-html/zoom-openalex-social-networks-journal-1.png)
+
+**Hyperevent by hyperevent.** 60 consecutive hyperevents, 28 August 2021
+to 04 February 2022, one per column: the bar on top is its size, and the
+line joins its members among the rows above (dot: sender side, ring:
+receiver side). Members outside these 40 rows are counted in the bar but
+not drawn.
+
+**Statistical profile.**
 
 ![OpenAlex: works of the journal Social Networks: activity over time and
 set

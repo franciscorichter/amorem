@@ -23,6 +23,45 @@ the source and the code that reads it.
 *Source:* <https://database.lichess.org/> · *Licence:* CC0 · *Status in
 amorem:* may be redistributed with attribution.
 
+![Lichess rated standard games, January 2013: network of the most active
+actors](data-sports_files/figure-html/net-lichess-2013-01-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+4,922; events between two of them are 5.2% of all events. Each actor’s
+three strongest ties are drawn (118 of 458 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Lichess rated standard games, January 2013: activity of the most
+active actors over
+time](data-sports_files/figure-html/tl-lichess-2013-01-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 121,332 events.
+
+![Lichess rated standard games, January 2013: close-up of the busiest
+stretch, event by
+event](data-sports_files/figure-html/zoom-lichess-2013-01-1.png)
+
+**Event by event.** The busiest stretch of the record, Fri 18 January
+2013 04:19 to Fri 18 January 2013 06:47, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![Lichess rated standard games, January 2013: counting processes of the
+busiest
+pairs](data-sports_files/figure-html/pairs-lichess-2013-01-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.5% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![Lichess rated standard games, January 2013: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-sports_files/figure-html/fig-lichess-2013-01-1.png)
@@ -63,6 +102,41 @@ is `readers[["lichess-2013-01"]]` in
 2026-10-17) · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
 
+![KONECT: chess games: network of the most active
+actors](data-sports_files/figure-html/net-konect-chess-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+7,301; events between two of them are 1.7% of all events. Each actor’s
+three strongest ties are drawn (109 of 350 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![KONECT: chess games: activity of the most active actors over
+time](data-sports_files/figure-html/tl-konect-chess-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 65,053 events.
+
+![KONECT: chess games: close-up of the busiest stretch, event by
+event](data-sports_files/figure-html/zoom-konect-chess-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 23 September
+2002 18:00 to Mon 21 July 2003 21:00, event by event: each vertical line
+is one event between two of the actors above, from the sender (dot) to
+the receiver (ring).
+
+![KONECT: chess games: counting processes of the busiest
+pairs](data-sports_files/figure-html/pairs-konect-chess-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![KONECT: chess games: activity over time, inter-event times, partners
 per actor, daily cycle or actor
 activity](data-sports_files/figure-html/fig-konect-chess-1.png)
@@ -101,6 +175,45 @@ is `readers[["konect-chess"]]` in
 
 *Source:* <https://github.com/martj42/international_results> ·
 *Licence:* CC0 1.0 · *Status in amorem:* bundled as `football_results`.
+
+![International football results 1872-present: network of the most
+active
+actors](data-sports_files/figure-html/net-international-football-results-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+337; events between two of them are 23.7% of all events. Each actor’s
+three strongest ties are drawn (108 of 820 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![International football results 1872-present: activity of the most
+active actors over
+time](data-sports_files/figure-html/tl-international-football-results-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 49,945 events.
+
+![International football results 1872-present: close-up of the busiest
+stretch, event by
+event](data-sports_files/figure-html/zoom-international-football-results-1.png)
+
+**Event by event.** The busiest stretch of the record, 12 January 1997
+to 27 July 1998, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![International football results 1872-present: counting processes of the
+busiest
+pairs](data-sports_files/figure-html/pairs-international-football-results-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.9% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![International football results 1872-present: activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -147,6 +260,42 @@ is `readers[["international-football-results"]]` in
 *Source:* <https://www.retrosheet.org/> · *Licence:* free use with
 required notice · *Status in amorem:* may be redistributed with
 attribution.
+
+![Retrosheet MLB game logs 1871-2024: network of the most active
+actors](data-sports_files/figure-html/net-retrosheet-gamelogs-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+153; events between two of them are 96.1% of all events. Each actor’s
+three strongest ties are drawn (148 of 682 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Retrosheet MLB game logs 1871-2024: activity of the most active actors
+over time](data-sports_files/figure-html/tl-retrosheet-gamelogs-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 233,135 events.
+
+![Retrosheet MLB game logs 1871-2024: close-up of the busiest stretch,
+event by
+event](data-sports_files/figure-html/zoom-retrosheet-gamelogs-1.png)
+
+**Event by event.** The busiest stretch of the record, 27 July 1972 to
+01 August 1972, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![Retrosheet MLB game logs 1871-2024: counting processes of the busiest
+pairs](data-sports_files/figure-html/pairs-retrosheet-gamelogs-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 3.3% of all events. Steep stretches are bursts and flat ones
+silences. 6 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![Retrosheet MLB game logs 1871-2024: activity over time, inter-event
 times, partners per actor, daily cycle or actor

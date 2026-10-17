@@ -282,9 +282,9 @@ tab <- t(vapply(runs, function(r) c(beta_mean = mean(r[, "beta"]),
 round(tab, 3)
 #>               beta_mean beta_sd seconds
 #> Gillespie         0.563   0.086   0.574
-#> tau-leap 0.01     0.636   0.062   0.203
-#> tau-leap 0.05     0.585   0.049   0.176
-#> tau-leap 0.20     0.587   0.055   0.187
+#> tau-leap 0.01     0.636   0.062   0.202
+#> tau-leap 0.05     0.585   0.049   0.175
+#> tau-leap 0.20     0.587   0.055   0.184
 ```
 
 ``` r

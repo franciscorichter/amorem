@@ -31,6 +31,46 @@ the source and the code that reads it.
 *Source:* <https://doi.org/10.7910/DVN/6Z3CGX> · *Licence:* CC0 1.0 ·
 *Status in amorem:* bundled as `radoslaw_email`, `radoslaw_hierarchy`.
 
+![Manufacturing company email metadata and corporate hierarchy: network
+of the most active
+actors](data-communication_files/figure-html/net-radoslaw-email-dataverse-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+167; events between two of them are 64.9% of all events. Each actor’s
+three strongest ties are drawn (127 of 1,020 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![Manufacturing company email metadata and corporate hierarchy: activity
+of the most active actors over
+time](data-communication_files/figure-html/tl-radoslaw-email-dataverse-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 82,876 events.
+
+![Manufacturing company email metadata and corporate hierarchy: close-up
+of the busiest stretch, event by
+event](data-communication_files/figure-html/zoom-radoslaw-email-dataverse-1.png)
+
+**Event by event.** The busiest stretch of the record, Tue 21 September
+2010 08:45 to Tue 21 September 2010 10:55, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![Manufacturing company email metadata and corporate hierarchy: counting
+processes of the busiest
+pairs](data-communication_files/figure-html/pairs-radoslaw-email-dataverse-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 6.0% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![Manufacturing company email metadata and corporate hierarchy: activity
 over time, inter-event times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-radoslaw-email-dataverse-1.png)
@@ -75,6 +115,45 @@ is `readers[["radoslaw-email-dataverse"]]` in
 *Status in amorem:* bundled as `college_msg` since an earlier release;
 licence under review.
 
+![SNAP: CollegeMsg (UC Irvine messages): network of the most active
+actors](data-communication_files/figure-html/net-snap-collegemsg-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+1,899; events between two of them are 8.9% of all events. Each actor’s
+three strongest ties are drawn (116 of 226 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: CollegeMsg (UC Irvine messages): activity of the most active
+actors over
+time](data-communication_files/figure-html/tl-snap-collegemsg-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 59,835 events.
+
+![SNAP: CollegeMsg (UC Irvine messages): close-up of the busiest
+stretch, event by
+event](data-communication_files/figure-html/zoom-snap-collegemsg-1.png)
+
+**Event by event.** The busiest stretch of the record, Mon 03 May 2004
+01:58 to Mon 03 May 2004 06:37, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![SNAP: CollegeMsg (UC Irvine messages): counting processes of the
+busiest
+pairs](data-communication_files/figure-html/pairs-snap-collegemsg-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.9% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![SNAP: CollegeMsg (UC Irvine messages): activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-snap-collegemsg-1.png)
@@ -114,6 +193,45 @@ is `readers[["snap-collegemsg"]]` in
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
 *Status in amorem:* bundled as `email_eu_core` since an earlier release;
 licence under review.
+
+![SNAP: email-Eu-core temporal (four departments): network of the most
+active
+actors](data-communication_files/figure-html/net-snap-email-eu-core-temporal-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+986; events between two of them are 17.9% of all events. Each actor’s
+three strongest ties are drawn (121 of 375 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: email-Eu-core temporal (four departments): activity of the most
+active actors over
+time](data-communication_files/figure-html/tl-snap-email-eu-core-temporal-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 332,334 events.
+
+![SNAP: email-Eu-core temporal (four departments): close-up of the
+busiest stretch, event by
+event](data-communication_files/figure-html/zoom-snap-email-eu-core-temporal-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 19187.1 to
+hour 19189.0, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![SNAP: email-Eu-core temporal (four departments): counting processes of
+the busiest
+pairs](data-communication_files/figure-html/pairs-snap-email-eu-core-temporal-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 2.9% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![SNAP: email-Eu-core temporal (four departments): activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -160,6 +278,44 @@ is `readers[["snap-email-eu-core-temporal"]]` in
 BY-SA · *Status in amorem:* share-alike: redistributable only under the
 same licence.
 
+![Network Repository: Enron employees email: network of the most active
+actors](data-communication_files/figure-html/net-nr-ia-enron-employees-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+150; events between two of them are 67.7% of all events. Each actor’s
+three strongest ties are drawn (132 of 427 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Network Repository: Enron employees email: activity of the most active
+actors over
+time](data-communication_files/figure-html/tl-nr-ia-enron-employees-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 47,088 events.
+
+![Network Repository: Enron employees email: close-up of the busiest
+stretch, event by
+event](data-communication_files/figure-html/zoom-nr-ia-enron-employees-1.png)
+
+**Event by event.** The busiest stretch of the record, Fri 26 October
+2001 08:17 to Fri 26 October 2001 11:01, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![Network Repository: Enron employees email: counting processes of the
+busiest
+pairs](data-communication_files/figure-html/pairs-nr-ia-enron-employees-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 9.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![Network Repository: Enron employees email: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-nr-ia-enron-employees-1.png)
@@ -199,6 +355,45 @@ is `readers[["nr-ia-enron-employees"]]` in
 *Source:* <https://github.com/juergenlerner/eventnet> · *Licence:*
 GPL-3.0 (source repository/package) · *Status in amorem:* GPL-3:
 redistributable only inside a GPL-compatible package.
+
+![eventnet example data (Enron, Apache, Wikipedia hyperevents): network
+of the most active
+actors](data-communication_files/figure-html/net-eventnet-rhem-data-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+6,062; events between two of them are 2.8% of all events. Each actor’s
+three strongest ties are drawn (92 of 103 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![eventnet example data (Enron, Apache, Wikipedia hyperevents): activity
+of the most active actors over
+time](data-communication_files/figure-html/tl-eventnet-rhem-data-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 39,752 events.
+
+![eventnet example data (Enron, Apache, Wikipedia hyperevents): close-up
+of the busiest stretch, event by
+event](data-communication_files/figure-html/zoom-eventnet-rhem-data-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 06 December
+2007 13:21 to Sat 15 March 2008 10:26, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![eventnet example data (Enron, Apache, Wikipedia hyperevents): counting
+processes of the busiest
+pairs](data-communication_files/figure-html/pairs-eventnet-rhem-data-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![eventnet example data (Enron, Apache, Wikipedia hyperevents): activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -254,6 +449,44 @@ is `readers[["eventnet-rhem-data"]]` in
 MIT · *Status in amorem:* bundled as `copenhagen_calls`,
 `copenhagen_sms`, `copenhagen_actors`.
 
+![Copenhagen Networks Study interaction data: network of the most active
+actors](data-communication_files/figure-html/net-copenhagen-networks-study-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+536; events between two of them are 36.0% of all events. Each actor’s
+three strongest ties are drawn (38 of 38 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Copenhagen Networks Study interaction data: activity of the most
+active actors over
+time](data-communication_files/figure-html/tl-copenhagen-networks-study-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 3,600 events.
+
+![Copenhagen Networks Study interaction data: close-up of the busiest
+stretch, event by
+event](data-communication_files/figure-html/zoom-copenhagen-networks-study-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 583.5 to
+hour 650.6, event by event: each vertical line is one event between two
+of the actors above, from the sender (dot) to the receiver (ring).
+
+![Copenhagen Networks Study interaction data: counting processes of the
+busiest
+pairs](data-communication_files/figure-html/pairs-copenhagen-networks-study-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 8.5% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![Copenhagen Networks Study interaction data: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-copenhagen-networks-study-1.png)
@@ -303,6 +536,45 @@ is `readers[["copenhagen-networks-study"]]` in
 *Licence:* GPL-3.0 (source repository/package) · *Status in amorem:*
 GPL-3: redistributable only inside a GPL-compatible package.
 
+![statnet relevent workshop data (WTC radio, classroom): network of the
+most active
+actors](data-communication_files/figure-html/net-statnet-relevent-workshop-1.png)
+
+**Who interacts with whom.** The 35 actors of the busiest pairs, out of
+35; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (49 of 49 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![statnet relevent workshop data (WTC radio, classroom): activity of the
+most active actors over
+time](data-communication_files/figure-html/tl-statnet-relevent-workshop-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 481 events.
+
+![statnet relevent workshop data (WTC radio, classroom): close-up of the
+busiest stretch, event by
+event](data-communication_files/figure-html/zoom-statnet-relevent-workshop-1.png)
+
+**Event by event.** The busiest stretch of the record, hour 0.0 to hour
+0.0, event by event: each vertical line is one event between two of the
+actors above, from the sender (dot) to the receiver (ring).
+
+![statnet relevent workshop data (WTC radio, classroom): counting
+processes of the busiest
+pairs](data-communication_files/figure-html/pairs-statnet-relevent-workshop-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 41.6% of all events. Steep stretches are bursts and flat ones
+silences. 6 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![statnet relevent workshop data (WTC radio, classroom): activity over
 time, inter-event times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-statnet-relevent-workshop-1.png)
@@ -342,6 +614,40 @@ is `readers[["statnet-relevent-workshop"]]` in
 
 *Source:* <https://doi.org/10.5281/zenodo.21409040> · *Licence:* CC BY
 4.0 · *Status in amorem:* may be redistributed with attribution.
+
+![4PCAN alter nominations: network of the most active
+actors](data-communication_files/figure-html/net-fourpcan-alter-nominations-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+2,491; events between two of them are 7.5% of all events. Each actor’s
+three strongest ties are drawn (135 of 765 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![4PCAN alter nominations: activity of the most active actors over
+time](data-communication_files/figure-html/tl-fourpcan-alter-nominations-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 56,570 events.
+
+![4PCAN alter nominations: close-up of the busiest stretch, event by
+event](data-communication_files/figure-html/zoom-fourpcan-alter-nominations-1.png)
+
+**Event by event.** The busiest stretch of the record, 300 units to
+300.011 units, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![4PCAN alter nominations: counting processes of the busiest
+pairs](data-communication_files/figure-html/pairs-fourpcan-alter-nominations-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.2% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![4PCAN alter nominations: activity over time, inter-event times,
 partners per actor, daily cycle or actor
@@ -383,6 +689,42 @@ is `readers[["fourpcan-alter-nominations"]]` in
 *Licence:* GPL-3.0 (source repository/package) · *Status in amorem:*
 GPL-3: redistributable only inside a GPL-compatible package.
 
+![networkDynamicData package data: network of the most active
+actors](data-communication_files/figure-html/net-networkdynamicdata-cran-1.png)
+
+**Who interacts with whom.** The 37 actors of the busiest pairs, out of
+37; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (73 of 116 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![networkDynamicData package data: activity of the most active actors
+over
+time](data-communication_files/figure-html/tl-networkdynamicdata-cran-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 259 events.
+
+![networkDynamicData package data: close-up of the busiest stretch,
+event by
+event](data-communication_files/figure-html/zoom-networkdynamicdata-cran-1.png)
+
+**Event by event.** The busiest stretch of the record, 4 books to 5.25
+books, event by event: each vertical line is one event between two of
+the actors above, from the sender (dot) to the receiver (ring).
+
+![networkDynamicData package data: counting processes of the busiest
+pairs](data-communication_files/figure-html/pairs-networkdynamicdata-cran-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 5.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![networkDynamicData package data: activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-communication_files/figure-html/fig-networkdynamicdata-cran-1.png)
@@ -423,6 +765,46 @@ is `readers[["networkdynamicdata-cran"]]` in
 *Source:* <http://konect.cc/> · *Licence:* unknown (site unreachable
 2026-10-17) · *Status in amorem:* no licence stated: not redistributed;
 obtain from the source.
+
+![KONECT: Dutch college friendship waves (van de Bunt): network of the
+most active
+actors](data-communication_files/figure-html/net-konect-dutch-college-1.png)
+
+**Who interacts with whom.** The 32 actors of the busiest pairs, out of
+32; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (76 of 422 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![KONECT: Dutch college friendship waves (van de Bunt): activity of the
+most active actors over
+time](data-communication_files/figure-html/tl-konect-dutch-college-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 3,062 events.
+
+![KONECT: Dutch college friendship waves (van de Bunt): close-up of the
+busiest stretch, event by
+event](data-communication_files/figure-html/zoom-konect-dutch-college-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 15 April 1999
+23:00 to Thu 15 April 1999 23:08, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![KONECT: Dutch college friendship waves (van de Bunt): counting
+processes of the busiest
+pairs](data-communication_files/figure-html/pairs-konect-dutch-college-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 1.3% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![KONECT: Dutch college friendship waves (van de Bunt): activity over
 time, inter-event times, partners per actor, daily cycle or actor

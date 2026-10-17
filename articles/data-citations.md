@@ -25,6 +25,44 @@ the source and the code that reads it.
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
 
+![SNAP: arXiv hep-th citations with dates: network of the most active
+actors](data-citations_files/figure-html/net-snap-cit-hepth-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+18,477; events between two of them are 0.1% of all events. Each actor’s
+three strongest ties are drawn (54 of 57 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: arXiv hep-th citations with dates: activity of the most active
+actors over
+time](data-citations_files/figure-html/tl-snap-cit-hepth-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 136,416 events.
+
+![SNAP: arXiv hep-th citations with dates: close-up of the busiest
+stretch, event by
+event](data-citations_files/figure-html/zoom-snap-cit-hepth-1.png)
+
+**Event by event.** The busiest stretch of the record, 01 October 1993
+to 12 March 2002, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![SNAP: arXiv hep-th citations with dates: counting processes of the
+busiest
+pairs](data-citations_files/figure-html/pairs-snap-cit-hepth-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SNAP: arXiv hep-th citations with dates: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-citations_files/figure-html/fig-snap-cit-hepth-1.png)
@@ -72,6 +110,43 @@ is `readers[["snap-cit-hepth"]]` in
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
 
+![SNAP: arXiv hep-ph citations with dates: network of the most active
+actors](data-citations_files/figure-html/net-snap-cit-hepph-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+30,565; events between two of them are 0.0% of all events. Each actor’s
+three strongest ties are drawn (49 of 49 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![SNAP: arXiv hep-ph citations with dates: activity of the most active
+actors over
+time](data-citations_files/figure-html/tl-snap-cit-hepph-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 347,375 events.
+
+![SNAP: arXiv hep-ph citations with dates: close-up of the busiest
+stretch, event by
+event](data-citations_files/figure-html/zoom-snap-cit-hepph-1.png)
+
+**Event by event.** The busiest stretch of the record, 15 March 1992 to
+12 March 2002, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![SNAP: arXiv hep-ph citations with dates: counting processes of the
+busiest
+pairs](data-citations_files/figure-html/pairs-snap-cit-hepph-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![SNAP: arXiv hep-ph citations with dates: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-citations_files/figure-html/fig-snap-cit-hepph-1.png)
@@ -118,6 +193,44 @@ is `readers[["snap-cit-hepph"]]` in
 *Source:* <https://www.cs.cornell.edu/projects/kddcup/datasets.html> ·
 *Licence:* none stated · *Status in amorem:* no licence stated: not
 redistributed; obtain from the source.
+
+![KDD Cup 2003 arXiv hep-th papers, citations, dates: network of the
+most active
+actors](data-citations_files/figure-html/net-kddcup2003-hepth-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+27,769; events between two of them are 0.0% of all events. Each actor’s
+three strongest ties are drawn (49 of 49 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![KDD Cup 2003 arXiv hep-th papers, citations, dates: activity of the
+most active actors over
+time](data-citations_files/figure-html/tl-kddcup2003-hepth-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 352,768 events.
+
+![KDD Cup 2003 arXiv hep-th papers, citations, dates: close-up of the
+busiest stretch, event by
+event](data-citations_files/figure-html/zoom-kddcup2003-hepth-1.png)
+
+**Event by event.** The busiest stretch of the record, 01 July 1985 to
+01 May 2003, event by event: each vertical line is one event between two
+of the actors above, from the sender (dot) to the receiver (ring).
+
+![KDD Cup 2003 arXiv hep-th papers, citations, dates: counting processes
+of the busiest
+pairs](data-citations_files/figure-html/pairs-kddcup2003-hepth-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![KDD Cup 2003 arXiv hep-th papers, citations, dates: activity over
 time, inter-event times, partners per actor, daily cycle or actor
@@ -167,6 +280,43 @@ is `readers[["kddcup2003-hepth"]]` in
 none stated (freely available; cite Hall, Jaffe & Trajtenberg 2001) ·
 *Status in amorem:* no licence stated: not redistributed; obtain from
 the source.
+
+![NBER US patent citations 1975-1999: network of the most active
+actors](data-citations_files/figure-html/net-nber-patent-citations-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+3,774,362; events between two of them are 0.0% of all events. Each
+actor’s three strongest ties are drawn (37 of 37 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![NBER US patent citations 1975-1999: activity of the most active actors
+over
+time](data-citations_files/figure-html/tl-nber-patent-citations-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 16,516,269 events.
+
+![NBER US patent citations 1975-1999: close-up of the busiest stretch,
+event by
+event](data-citations_files/figure-html/zoom-nber-patent-citations-1.png)
+
+**Event by event.** The busiest stretch of the record, 07 January 1975
+to 28 December 1999, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![NBER US patent citations 1975-1999: counting processes of the busiest
+pairs](data-citations_files/figure-html/pairs-nber-patent-citations-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![NBER US patent citations 1975-1999: activity over time, inter-event
 times, partners per actor, daily cycle or actor

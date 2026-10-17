@@ -32,10 +32,209 @@ sponsor and a set of cosponsors (mean 10.0, largest 331), from
 `social_evolution_actors`, `copenhagen_actors`, `congress_members_118`
 and `radoslaw_hierarchy`.
 
-### Activity over time
+### What each log looks like
 
-![Events per time bin for each bundled event
-log](datasets_files/figure-html/rates-1.png)
+For each event log: the network of the actors in its busiest pairs, then
+when the 30 most active of them are active. The [data
+catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md)
+adds a close-up of single events and the counting processes of the
+busiest pairs.
+
+#### `classroom_events`
+
+![Network of the most active actors of
+classroom_events](datasets_files/figure-html/n-classroom_events-1.png)
+The 20 actors of the busiest pairs, out of 20; events between two of
+them are 100.0% of all events. Each actor’s three strongest ties are
+drawn (39 of 73 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of classroom_events over
+time](datasets_files/figure-html/t-classroom_events-1.png) Each row is
+one of the 20 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all 691
+events.
+
+#### `social_evolution_calls`
+
+![Network of the most active actors of
+social_evolution_calls](datasets_files/figure-html/n-social_evolution_calls-1.png)
+The 54 actors of the busiest pairs, out of 54; events between two of
+them are 100.0% of all events. Each actor’s three strongest ties are
+drawn (61 of 64 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of social_evolution_calls over
+time](datasets_files/figure-html/t-social_evolution_calls-1.png) Each
+row is one of the 30 most active actors of the network, coloured by its
+group there; a cell is darker the more events (with anyone) the actor
+took part in during that stretch of time. The grey bars on top count all
+439 events.
+
+#### `radoslaw_email`
+
+![Network of the most active actors of
+radoslaw_email](datasets_files/figure-html/n-radoslaw_email-1.png) The
+60 actors of the busiest pairs, out of 167; events between two of them
+are 64.9% of all events. Each actor’s three strongest ties are drawn
+(127 of 1,020 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of radoslaw_email over
+time](datasets_files/figure-html/t-radoslaw_email-1.png) Each row is one
+of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+82,876 events.
+
+#### `college_msg`
+
+![Network of the most active actors of
+college_msg](datasets_files/figure-html/n-college_msg-1.png) The 60
+actors of the busiest pairs, out of 1,899; events between two of them
+are 8.9% of all events. Each actor’s three strongest ties are drawn (116
+of 226 pairs that ever interacted): wider, darker lines carry more
+events, larger dots are more active actors, and colours are groups found
+by modularity (Louvain).
+
+![Activity of the most active actors of college_msg over
+time](datasets_files/figure-html/t-college_msg-1.png) Each row is one of
+the 30 most active actors of the network, coloured by its group there; a
+cell is darker the more events (with anyone) the actor took part in
+during that stretch of time. The grey bars on top count all 59,835
+events.
+
+#### `email_eu_core`
+
+![Network of the most active actors of
+email_eu_core](datasets_files/figure-html/n-email_eu_core-1.png) The 60
+actors of the busiest pairs, out of 89; events between two of them are
+89.4% of all events. Each actor’s three strongest ties are drawn (130 of
+686 pairs that ever interacted): wider, darker lines carry more events,
+larger dots are more active actors, and colours are groups found by
+modularity (Louvain).
+
+![Activity of the most active actors of email_eu_core over
+time](datasets_files/figure-html/t-email_eu_core-1.png) Each row is one
+of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+12,216 events.
+
+#### `copenhagen_calls`
+
+![Network of the most active actors of
+copenhagen_calls](datasets_files/figure-html/n-copenhagen_calls-1.png)
+The 60 actors of the busiest pairs, out of 536; events between two of
+them are 36.0% of all events. Each actor’s three strongest ties are
+drawn (38 of 38 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of copenhagen_calls over
+time](datasets_files/figure-html/t-copenhagen_calls-1.png) Each row is
+one of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+3,600 events.
+
+#### `copenhagen_sms`
+
+![Network of the most active actors of
+copenhagen_sms](datasets_files/figure-html/n-copenhagen_sms-1.png) The
+60 actors of the busiest pairs, out of 568; events between two of them
+are 56.7% of all events. Each actor’s three strongest ties are drawn (45
+of 45 pairs that ever interacted): wider, darker lines carry more
+events, larger dots are more active actors, and colours are groups found
+by modularity (Louvain).
+
+![Activity of the most active actors of copenhagen_sms over
+time](datasets_files/figure-html/t-copenhagen_sms-1.png) Each row is one
+of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+24,333 events.
+
+#### `us_leader_visits`
+
+![Network of the most active actors of
+us_leader_visits](datasets_files/figure-html/n-us_leader_visits-1.png)
+The 60 actors of the busiest pairs, out of 189; events between two of
+them are 74.3% of all events. Each actor’s three strongest ties are
+drawn (59 of 59 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of us_leader_visits over
+time](datasets_files/figure-html/t-us_leader_visits-1.png) Each row is
+one of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+3,943 events.
+
+#### `football_results`
+
+![Network of the most active actors of
+football_results](datasets_files/figure-html/n-football_results-1.png)
+The 60 actors of the busiest pairs, out of 337; events between two of
+them are 23.7% of all events. Each actor’s three strongest ties are
+drawn (108 of 820 pairs that ever interacted): wider, darker lines carry
+more events, larger dots are more active actors, and colours are groups
+found by modularity (Louvain).
+
+![Activity of the most active actors of football_results over
+time](datasets_files/figure-html/t-football_results-1.png) Each row is
+one of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+49,945 events.
+
+#### `ucdp_dyads`
+
+![Network of the most active actors of
+ucdp_dyads](datasets_files/figure-html/n-ucdp_dyads-1.png) The 60 actors
+of the busiest pairs, out of 704; events between two of them are 31.2%
+of all events. Each actor’s three strongest ties are drawn (49 of 51
+pairs that ever interacted): wider, darker lines carry more events,
+larger dots are more active actors, and colours are groups found by
+modularity (Louvain).
+
+![Activity of the most active actors of ucdp_dyads over
+time](datasets_files/figure-html/t-ucdp_dyads-1.png) Each row is one of
+the 30 most active actors of the network, coloured by its group there; a
+cell is darker the more events (with anyone) the actor took part in
+during that stretch of time. The grey bars on top count all 3,518
+events.
+
+#### `alien_invasions`
+
+![Network of the most active actors of
+alien_invasions](datasets_files/figure-html/n-alien_invasions-1.png) The
+60 actors of the busiest pairs, out of 3,188; events between two of them
+are 1.2% of all events. Each actor’s three strongest ties are drawn (105
+of 145 pairs that ever interacted): wider, darker lines carry more
+events, larger dots are more active actors, and colours are groups found
+by modularity (Louvain).
+
+![Activity of the most active actors of alien_invasions over
+time](datasets_files/figure-html/t-alien_invasions-1.png) Each row is
+one of the 30 most active actors of the network, coloured by its group
+there; a cell is darker the more events (with anyone) the actor took
+part in during that stretch of time. The grey bars on top count all
+11,730 events.
+
+#### `congress_bills_118`
+
+![Hyperevents of congress_bills_118 over
+time](datasets_files/figure-html/v-congress_bills_118-1.png) Each row is
+one of the 40 actors who take part in most of the 16,213 hyperevents,
+coloured by group (modularity on co-membership); a cell is darker the
+more hyperevents the actor joined in that stretch of time. The grey bars
+on top count all hyperevents.
 
 ### Who is active
 

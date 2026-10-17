@@ -27,6 +27,46 @@ the source and the code that reads it.
 · *Licence:* Open Government Licence v2.0 (TfL) · *Status in amorem:*
 may be redistributed with attribution.
 
+![TfL Santander Cycles journeys, February 2026: network of the most
+active
+actors](data-mobility-ecology_files/figure-html/net-tfl-cycle-hire-2026-02-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+805; events between two of them are 2.5% of all events. Each actor’s
+three strongest ties are drawn (117 of 722 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![TfL Santander Cycles journeys, February 2026: activity of the most
+active actors over
+time](data-mobility-ecology_files/figure-html/tl-tfl-cycle-hire-2026-02-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 550,273 events.
+
+![TfL Santander Cycles journeys, February 2026: close-up of the busiest
+stretch, event by
+event](data-mobility-ecology_files/figure-html/zoom-tfl-cycle-hire-2026-02-1.png)
+
+**Event by event.** The busiest stretch of the record, Tue 24 February
+2026 16:00 to Tue 24 February 2026 18:14, event by event: each vertical
+line is one event between two of the actors above, from the sender (dot)
+to the receiver (ring).
+
+![TfL Santander Cycles journeys, February 2026: counting processes of
+the busiest
+pairs](data-mobility-ecology_files/figure-html/pairs-tfl-cycle-hire-2026-02-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.3% of all events. Steep stretches are bursts and flat ones
+silences. 6 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![TfL Santander Cycles journeys, February 2026: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-mobility-ecology_files/figure-html/fig-tfl-cycle-hire-2026-02-1.png)
@@ -67,6 +107,45 @@ is `readers[["tfl-cycle-hire-2026-02"]]` in
 *Source:* <https://doi.org/10.5281/zenodo.4088205> · *Licence:* CC BY
 4.0 · *Status in amorem:* may be redistributed with attribution.
 
+![OpenSky COVID-19 flight list, April 2020: network of the most active
+actors](data-mobility-ecology_files/figure-html/net-opensky-covid-flightlist-2020-04-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+10,635; events between two of them are 16.0% of all events. Each actor’s
+three strongest ties are drawn (134 of 613 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![OpenSky COVID-19 flight list, April 2020: activity of the most active
+actors over
+time](data-mobility-ecology_files/figure-html/tl-opensky-covid-flightlist-2020-04-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 458,022 events.
+
+![OpenSky COVID-19 flight list, April 2020: close-up of the busiest
+stretch, event by
+event](data-mobility-ecology_files/figure-html/zoom-opensky-covid-flightlist-2020-04-1.png)
+
+**Event by event.** The busiest stretch of the record, Thu 02 April 2020
+01:38 to Thu 02 April 2020 02:22, event by event: each vertical line is
+one event between two of the actors above, from the sender (dot) to the
+receiver (ring).
+
+![OpenSky COVID-19 flight list, April 2020: counting processes of the
+busiest
+pairs](data-mobility-ecology_files/figure-html/pairs-opensky-covid-flightlist-2020-04-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.7% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![OpenSky COVID-19 flight list, April 2020: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-mobility-ecology_files/figure-html/fig-opensky-covid-flightlist-2020-04-1.png)
@@ -106,6 +185,44 @@ is `readers[["opensky-covid-flightlist-2020-04"]]` in
 
 *Source:* <https://doi.org/10.5061/dryad.x69p8czpv> · *Licence:* CC0 1.0
 · *Status in amorem:* bundled as `alien_invasions`.
+
+![Alien species first records prepared for REMs (Juozaitienė et al.):
+network of the most active
+actors](data-mobility-ecology_files/figure-html/net-alien-species-first-records-rem-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+3,188; events between two of them are 0.7% of all events. Each actor’s
+three strongest ties are drawn (81 of 82 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Alien species first records prepared for REMs (Juozaitienė et al.):
+activity of the most active actors over
+time](data-mobility-ecology_files/figure-html/tl-alien-species-first-records-rem-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 11,730 events.
+
+![Alien species first records prepared for REMs (Juozaitienė et al.):
+close-up of the busiest stretch, event by
+event](data-mobility-ecology_files/figure-html/zoom-alien-species-first-records-rem-1.png)
+
+**Event by event.** The busiest stretch of the record, 1880 to 2005,
+event by event: each vertical line is one event between two of the
+actors above, from the sender (dot) to the receiver (ring).
+
+![Alien species first records prepared for REMs (Juozaitienė et al.):
+counting processes of the busiest
+pairs](data-mobility-ecology_files/figure-html/pairs-alien-species-first-records-rem-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![Alien species first records prepared for REMs (Juozaitienė et al.):
 activity over time, inter-event times, partners per actor, daily cycle
@@ -152,6 +269,44 @@ is `readers[["alien-species-first-records-rem"]]` in
 
 *Source:* <https://zenodo.org/records/18759840> · *Licence:* CC BY 4.0 ·
 *Status in amorem:* may be redistributed with attribution.
+
+![Alien Species First Records Database v4.0 (Seebens et al.): network of
+the most active
+actors](data-mobility-ecology_files/figure-html/net-alien-first-records-v4-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+29,091; events between two of them are 0.3% of all events. Each actor’s
+three strongest ties are drawn (123 of 232 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Alien Species First Records Database v4.0 (Seebens et al.): activity
+of the most active actors over
+time](data-mobility-ecology_files/figure-html/tl-alien-first-records-v4-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 90,023 events.
+
+![Alien Species First Records Database v4.0 (Seebens et al.): close-up
+of the busiest stretch, event by
+event](data-mobility-ecology_files/figure-html/zoom-alien-first-records-v4-1.png)
+
+**Event by event.** The busiest stretch of the record, -7000 to 2023,
+event by event: each vertical line is one event between two of the
+actors above, from the sender (dot) to the receiver (ring).
+
+![Alien Species First Records Database v4.0 (Seebens et al.): counting
+processes of the busiest
+pairs](data-mobility-ecology_files/figure-html/pairs-alien-first-records-v4-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![Alien Species First Records Database v4.0 (Seebens et al.): activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -200,6 +355,43 @@ is `readers[["alien-first-records-v4"]]` in
 
 *Source:* <https://doi.org/10.5281/zenodo.6899738> · *Licence:* CC BY
 4.0 · *Status in amorem:* may be redistributed with attribution.
+
+![COVID-19 transmission chains, Bucharest: network of the most active
+actors](data-mobility-ecology_files/figure-html/net-covid-bucharest-transmission-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+19,713; events between two of them are 0.5% of all events. Each actor’s
+three strongest ties are drawn (34 of 34 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![COVID-19 transmission chains, Bucharest: activity of the most active
+actors over
+time](data-mobility-ecology_files/figure-html/tl-covid-bucharest-transmission-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 13,377 events.
+
+![COVID-19 transmission chains, Bucharest: close-up of the busiest
+stretch, event by
+event](data-mobility-ecology_files/figure-html/zoom-covid-bucharest-transmission-1.png)
+
+**Event by event.** The busiest stretch of the record, 01 August 2020 to
+31 October 2020, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![COVID-19 transmission chains, Bucharest: counting processes of the
+busiest
+pairs](data-mobility-ecology_files/figure-html/pairs-covid-bucharest-transmission-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![COVID-19 transmission chains, Bucharest: activity over time,
 inter-event times, partners per actor, daily cycle or actor

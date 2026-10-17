@@ -33,6 +33,45 @@ the source and the code that reads it.
 unrestricted use and redistribution with citation · *Status in amorem:*
 may be redistributed with attribution.
 
+![GDELT event database (1979 file and one daily file): network of the
+most active actors](data-political_files/figure-html/net-gdelt-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+207; events between two of them are 73.8% of all events. Each actor’s
+three strongest ties are drawn (141 of 1,185 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![GDELT event database (1979 file and one daily file): activity of the
+most active actors over
+time](data-political_files/figure-html/tl-gdelt-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 144,177 events.
+
+![GDELT event database (1979 file and one daily file): close-up of the
+busiest stretch, event by
+event](data-political_files/figure-html/zoom-gdelt-1.png)
+
+**Event by event.** The busiest stretch of the record, 31 December 1979
+to 31 December 1979, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![GDELT event database (1979 file and one daily file): counting
+processes of the busiest
+pairs](data-political_files/figure-html/pairs-gdelt-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 9.2% of all events. Steep stretches are bursts and flat ones
+silences. 6 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![GDELT event database (1979 file and one daily file): activity over
 time, inter-event times, partners per actor, daily cycle or actor
 activity](data-political_files/figure-html/fig-gdelt-1.png)
@@ -75,6 +114,41 @@ is `readers[["gdelt"]]` in
 
 *Source:* <https://doi.org/10.7910/DVN/AJGVIT> · *Licence:* CC0 1.0 ·
 *Status in amorem:* may be redistributed with attribution.
+
+![POLECAT weekly event data 2024: network of the most active
+actors](data-political_files/figure-html/net-polecat-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+3,790; events between two of them are 63.5% of all events. Each actor’s
+three strongest ties are drawn (156 of 957 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![POLECAT weekly event data 2024: activity of the most active actors
+over time](data-political_files/figure-html/tl-polecat-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 64,979 events.
+
+![POLECAT weekly event data 2024: close-up of the busiest stretch, event
+by event](data-political_files/figure-html/zoom-polecat-1.png)
+
+**Event by event.** The busiest stretch of the record, 19 April 2024 to
+19 April 2024, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![POLECAT weekly event data 2024: counting processes of the busiest
+pairs](data-political_files/figure-html/pairs-polecat-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 13.7% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![POLECAT weekly event data 2024: activity over time, inter-event times,
 partners per actor, daily cycle or actor
@@ -119,6 +193,45 @@ is `readers[["polecat"]]` in
 (databank page returned 403) · *Status in amorem:* no licence stated:
 not redistributed; obtain from the source.
 
+![Cline Center Phoenix NYT event data 1945-2005: network of the most
+active actors](data-political_files/figure-html/net-phoenix-cline-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+213; events between two of them are 79.5% of all events. Each actor’s
+three strongest ties are drawn (160 of 1,508 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![Cline Center Phoenix NYT event data 1945-2005: activity of the most
+active actors over
+time](data-political_files/figure-html/tl-phoenix-cline-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 248,493 events.
+
+![Cline Center Phoenix NYT event data 1945-2005: close-up of the busiest
+stretch, event by
+event](data-political_files/figure-html/zoom-phoenix-cline-1.png)
+
+**Event by event.** The busiest stretch of the record, 07 December 1956
+to 09 December 1956, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![Cline Center Phoenix NYT event data 1945-2005: counting processes of
+the busiest
+pairs](data-political_files/figure-html/pairs-phoenix-cline-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 8.8% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![Cline Center Phoenix NYT event data 1945-2005: activity over time,
 inter-event times, partners per actor, daily cycle or actor
 activity](data-political_files/figure-html/fig-phoenix-cline-1.png)
@@ -160,6 +273,43 @@ is `readers[["phoenix-cline"]]` in
 
 *Source:* <https://ucdp.uu.se/downloads/> · *Licence:* CC BY 4.0 ·
 *Status in amorem:* bundled as `ucdp_dyads`.
+
+![UCDP conflict data (GED, dyadic, actor, interstate onsets): network of
+the most active actors](data-political_files/figure-html/net-ucdp-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+704; events between two of them are 31.2% of all events. Each actor’s
+three strongest ties are drawn (49 of 51 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![UCDP conflict data (GED, dyadic, actor, interstate onsets): activity
+of the most active actors over
+time](data-political_files/figure-html/tl-ucdp-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 3,518 events.
+
+![UCDP conflict data (GED, dyadic, actor, interstate onsets): close-up
+of the busiest stretch, event by
+event](data-political_files/figure-html/zoom-ucdp-1.png)
+
+**Event by event.** The busiest stretch of the record, 2015 to 2023,
+event by event: each vertical line is one event between two of the
+actors above, from the sender (dot) to the receiver (ring).
+
+![UCDP conflict data (GED, dyadic, actor, interstate onsets): counting
+processes of the busiest
+pairs](data-political_files/figure-html/pairs-ucdp-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 8.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![UCDP conflict data (GED, dyadic, actor, interstate onsets): activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -216,6 +366,40 @@ is `readers[["ucdp"]]` in
 *Licence:* none stated · *Status in amorem:* no licence stated: not
 redistributed; obtain from the source.
 
+![ATOP alliance treaty obligations 5.1: network of the most active
+actors](data-political_files/figure-html/net-atop-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+207; events between two of them are 14.8% of all events. Each actor’s
+three strongest ties are drawn (139 of 757 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![ATOP alliance treaty obligations 5.1: activity of the most active
+actors over time](data-political_files/figure-html/tl-atop-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 5,101 events.
+
+![ATOP alliance treaty obligations 5.1: close-up of the busiest stretch,
+event by event](data-political_files/figure-html/zoom-atop-1.png)
+
+**Event by event.** The busiest stretch of the record, 1940 to 1945,
+event by event: each vertical line is one event between two of the
+actors above.
+
+![ATOP alliance treaty obligations 5.1: counting processes of the
+busiest pairs](data-political_files/figure-html/pairs-atop-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.1% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
 ![ATOP alliance treaty obligations 5.1: activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-political_files/figure-html/fig-atop-1.png)
@@ -244,6 +428,46 @@ is `readers[["atop"]]` in
 
 *Source:* <https://doi.org/10.7910/DVN/QXOUAR> · *Licence:* CC BY 4.0 ·
 *Status in amorem:* may be redistributed with attribution.
+
+![Africa's diplomatic visits (foreign ministers) 2010-2022: network of
+the most active
+actors](data-political_files/figure-html/net-africa-mfa-visits-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+183; events between two of them are 73.6% of all events. Each actor’s
+three strongest ties are drawn (149 of 718 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Africa's diplomatic visits (foreign ministers) 2010-2022: activity of
+the most active actors over
+time](data-political_files/figure-html/tl-africa-mfa-visits-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 3,892 events.
+
+![Africa's diplomatic visits (foreign ministers) 2010-2022: close-up of
+the busiest stretch, event by
+event](data-political_files/figure-html/zoom-africa-mfa-visits-1.png)
+
+**Event by event.** The busiest stretch of the record, 25 July 2021 to
+29 September 2021, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![Africa's diplomatic visits (foreign ministers) 2010-2022: counting
+processes of the busiest
+pairs](data-political_files/figure-html/pairs-africa-mfa-visits-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 3.1% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
 
 ![Africa's diplomatic visits (foreign ministers) 2010-2022: activity
 over time, inter-event times, partners per actor, daily cycle or actor
@@ -284,6 +508,44 @@ is `readers[["africa-mfa-visits"]]` in
 *Source:* <https://doi.org/10.7910/DVN/CY7Y8Z> · *Licence:* CC BY 4.0 ·
 *Status in amorem:* may be redistributed with attribution.
 
+![Italy's diplomatic visits 2000-2023: network of the most active
+actors](data-political_files/figure-html/net-italy-diplomatic-visits-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+158; events between two of them are 78.4% of all events. Each actor’s
+three strongest ties are drawn (59 of 59 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Italy's diplomatic visits 2000-2023: activity of the most active
+actors over
+time](data-political_files/figure-html/tl-italy-diplomatic-visits-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 2,631 events.
+
+![Italy's diplomatic visits 2000-2023: close-up of the busiest stretch,
+event by
+event](data-political_files/figure-html/zoom-italy-diplomatic-visits-1.png)
+
+**Event by event.** The busiest stretch of the record, 06 January 2012
+to 11 August 2012, event by event: each vertical line is one event
+between two of the actors above, from the sender (dot) to the receiver
+(ring).
+
+![Italy's diplomatic visits 2000-2023: counting processes of the busiest
+pairs](data-political_files/figure-html/pairs-italy-diplomatic-visits-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 11.7% of all events. Steep stretches are bursts and flat ones
+silences. 2 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
 ![Italy's diplomatic visits 2000-2023: activity over time, inter-event
 times, partners per actor, daily cycle or actor
 activity](data-political_files/figure-html/fig-italy-diplomatic-visits-1.png)
@@ -323,6 +585,45 @@ is `readers[["italy-diplomatic-visits"]]` in
 *Status in amorem:* may be redistributed with attribution.
 
 ![Diplomatic visits of the foreign ministers of Russia and Ukraine
+2021-2024: network of the most active
+actors](data-political_files/figure-html/net-russia-ukraine-mfa-visits-1.png)
+
+**Who interacts with whom.** The 54 actors of the busiest pairs, out of
+54; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (53 of 53 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![Diplomatic visits of the foreign ministers of Russia and Ukraine
+2021-2024: activity of the most active actors over
+time](data-political_files/figure-html/tl-russia-ukraine-mfa-visits-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 101 events.
+
+![Diplomatic visits of the foreign ministers of Russia and Ukraine
+2021-2024: close-up of the busiest stretch, event by
+event](data-political_files/figure-html/zoom-russia-ukraine-mfa-visits-1.png)
+
+**Event by event.** The busiest stretch of the record, 19 January 2021
+to 24 May 2024, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![Diplomatic visits of the foreign ministers of Russia and Ukraine
+2021-2024: counting processes of the busiest
+pairs](data-political_files/figure-html/pairs-russia-ukraine-mfa-visits-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 20.8% of all events. Steep stretches are bursts and flat ones
+silences. 4 of these pairs are the reverse of another, so replies run
+alongside the messages they answer.
+
+**Statistical profile.**
+
+![Diplomatic visits of the foreign ministers of Russia and Ukraine
 2021-2024: activity over time, inter-event times, partners per actor,
 daily cycle or actor
 activity](data-political_files/figure-html/fig-russia-ukraine-mfa-visits-1.png)
@@ -360,6 +661,44 @@ is `readers[["russia-ukraine-mfa-visits"]]` in
 
 *Source:* <https://doi.org/10.7910/DVN/2ZNR5R> · *Licence:* CC0 1.0 ·
 *Status in amorem:* bundled as `us_leader_visits`.
+
+![US leader-to-leader diplomatic visits 1946-2019: network of the most
+active
+actors](data-political_files/figure-html/net-us-leader-visits-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+189; events between two of them are 74.3% of all events. Each actor’s
+three strongest ties are drawn (59 of 59 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![US leader-to-leader diplomatic visits 1946-2019: activity of the most
+active actors over
+time](data-political_files/figure-html/tl-us-leader-visits-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 3,943 events.
+
+![US leader-to-leader diplomatic visits 1946-2019: close-up of the
+busiest stretch, event by
+event](data-political_files/figure-html/zoom-us-leader-visits-1.png)
+
+**Event by event.** The busiest stretch of the record, 03 June 2008 to
+13 April 2010, event by event: each vertical line is one event between
+two of the actors above, from the sender (dot) to the receiver (ring).
+
+![US leader-to-leader diplomatic visits 1946-2019: counting processes of
+the busiest
+pairs](data-political_files/figure-html/pairs-us-leader-visits-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 14.0% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![US leader-to-leader diplomatic visits 1946-2019: activity over time,
 inter-event times, partners per actor, daily cycle or actor
@@ -406,6 +745,44 @@ is `readers[["us-leader-visits"]]` in
 review.
 
 ![goldfish package data: fisheries treaties, RFID validity, Social
+Evolution: network of the most active
+actors](data-political_files/figure-html/net-goldfish-datasets-1.png)
+
+**Who interacts with whom.** The 33 actors of the busiest pairs, out of
+33; events between two of them are 100.0% of all events. Each actor’s
+three strongest ties are drawn (35 of 35 pairs that ever interacted):
+wider, darker lines carry more events, larger dots are more active
+actors, and colours are groups found by modularity (Louvain).
+
+![goldfish package data: fisheries treaties, RFID validity, Social
+Evolution: activity of the most active actors over
+time](data-political_files/figure-html/tl-goldfish-datasets-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 69 events.
+
+![goldfish package data: fisheries treaties, RFID validity, Social
+Evolution: close-up of the busiest stretch, event by
+event](data-political_files/figure-html/zoom-goldfish-datasets-1.png)
+
+**Event by event.** The busiest stretch of the record, Sat 19 March 1960
+00:00 to Tue 09 December 1969 00:00, event by event: each vertical line
+is one event between two of the actors above.
+
+![goldfish package data: fisheries treaties, RFID validity, Social
+Evolution: counting processes of the busiest
+pairs](data-political_files/figure-html/pairs-goldfish-datasets-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 49.3% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
+
+![goldfish package data: fisheries treaties, RFID validity, Social
 Evolution: activity over time, inter-event times, partners per actor,
 daily cycle or actor
 activity](data-political_files/figure-html/fig-goldfish-datasets-1.png)
@@ -439,6 +816,44 @@ is `readers[["goldfish-datasets"]]` in
 
 *Source:* <https://cran.r-project.org/package=refugees> · *Licence:* CC
 BY 4.0 · *Status in amorem:* may be redistributed with attribution.
+
+![UNHCR refugee population statistics (refugees R package): network of
+the most active
+actors](data-political_files/figure-html/net-unhcr-refugees-1.png)
+
+**Who interacts with whom.** The 60 actors of the busiest pairs, out of
+211; events between two of them are 28.6% of all events. Each actor’s
+three strongest ties are drawn (133 of 1,263 pairs that ever
+interacted): wider, darker lines carry more events, larger dots are more
+active actors, and colours are groups found by modularity (Louvain).
+
+![UNHCR refugee population statistics (refugees R package): activity of
+the most active actors over
+time](data-political_files/figure-html/tl-unhcr-refugees-1.png)
+
+**When.** Each row is one of the 30 most active actors of the network,
+coloured by its group there; a cell is darker the more events (with
+anyone) the actor took part in during that stretch of time. The grey
+bars on top count all 114,516 events.
+
+![UNHCR refugee population statistics (refugees R package): close-up of
+the busiest stretch, event by
+event](data-political_files/figure-html/zoom-unhcr-refugees-1.png)
+
+**Event by event.** The busiest stretch of the record, 2025 to 2025,
+event by event: each vertical line is one event between two of the
+actors above, from the sender (dot) to the receiver (ring).
+
+![UNHCR refugee population statistics (refugees R package): counting
+processes of the busiest
+pairs](data-political_files/figure-html/pairs-unhcr-refugees-1.png)
+
+**Pairs as counting processes.** The counting process N(t) of the 6
+busiest pairs: the number of events of the pair up to time t. Together
+they make 0.4% of all events. Steep stretches are bursts and flat ones
+silences.
+
+**Statistical profile.**
 
 ![UNHCR refugee population statistics (refugees R package): activity
 over time, inter-event times, partners per actor, daily cycle or actor
