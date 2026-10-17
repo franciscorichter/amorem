@@ -34,6 +34,32 @@ Analyses of the bundled datasets, run when the site is built.
 - [Case study: estimation backends on
   Email-EU-core](https://franciscorichter.github.io/amorem/articles/case-email-eu-models.md):
 
+### Data catalogue
+
+Relational event data and global covariates: sources, licences and
+profiles.
+
+- [Data
+  catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md):
+- [Data: face-to-face and proximity
+  contacts](https://franciscorichter.github.io/amorem/articles/data-contact.md):
+- [Data: email, messages, calls and
+  radio](https://franciscorichter.github.io/amorem/articles/data-communication.md):
+- [Data: online
+  platforms](https://franciscorichter.github.io/amorem/articles/data-online.md):
+- [Data:
+  citations](https://franciscorichter.github.io/amorem/articles/data-citations.md):
+- [Data: international relations and
+  conflict](https://franciscorichter.github.io/amorem/articles/data-political.md):
+- [Data: mobility, ecology and
+  epidemics](https://franciscorichter.github.io/amorem/articles/data-mobility-ecology.md):
+- [Data: games and
+  sports](https://franciscorichter.github.io/amorem/articles/data-sports.md):
+- [Data:
+  hyperevents](https://franciscorichter.github.io/amorem/articles/data-hyperevents.md):
+- [Data: global
+  covariates](https://franciscorichter.github.io/amorem/articles/data-covariates.md):
+
 ### Worked examples
 
 Focused, executable vignettes.

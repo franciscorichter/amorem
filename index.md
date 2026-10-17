@@ -118,6 +118,7 @@ summary(fit)
 | [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md) | case-control sampling, the three [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md) backends — `clogit` (linear), `gam` (smooth `tv`/`nl`/`tvnl`/`re` effects), `nn` (neural conditional logit) — model comparison, GOF |
 | [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the bundled REM datasets |
+| [Data catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md) | 78 relational event datasets and covariates: sources, licences, which can be bundled, profiles, and code to download the rest |
 | [Real-data analysis](https://franciscorichter.github.io/amorem/articles/real-data-analysis.md) | timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md) | type-I error of the martingale-residual GoF tests under correct specification |

@@ -281,10 +281,10 @@ tab <- t(vapply(runs, function(r) c(beta_mean = mean(r[, "beta"]),
                 numeric(3)))
 round(tab, 3)
 #>               beta_mean beta_sd seconds
-#> Gillespie         0.563   0.086   0.537
-#> tau-leap 0.01     0.636   0.062   0.198
-#> tau-leap 0.05     0.585   0.049   0.170
-#> tau-leap 0.20     0.587   0.055   0.179
+#> Gillespie         0.563   0.086   0.506
+#> tau-leap 0.01     0.636   0.062   0.166
+#> tau-leap 0.05     0.585   0.049   0.140
+#> tau-leap 0.20     0.587   0.055   0.151
 ```
 
 ``` r
@@ -310,7 +310,7 @@ is 0.563 for Gillespie and 0.636, 0.585 and 0.587 for τ = 0.01, 0.05 and
 time unit, so a step of τ = 0.20 contains roughly 490 events that all
 share the start-of-step state; within a step, a dyad whose reverse fires
 earlier in the same step does not yet see it. Mean simulator time per
-run is 0.54 s for Gillespie and 0.17–0.20 s for τ-leap.
+run is 0.51 s for Gillespie and 0.14–0.17 s for τ-leap.
 
 #### When to pick which
 

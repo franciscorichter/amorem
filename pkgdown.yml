@@ -5,6 +5,16 @@ articles:
   articles/case-email-eu-models: case-email-eu-models.html
   articles/case-email-global: case-email-global.html
   articles/case-social-evolution: case-social-evolution.html
+  articles/data-catalogue: data-catalogue.html
+  articles/data-citations: data-citations.html
+  articles/data-communication: data-communication.html
+  articles/data-contact: data-contact.html
+  articles/data-covariates: data-covariates.html
+  articles/data-hyperevents: data-hyperevents.html
+  articles/data-mobility-ecology: data-mobility-ecology.html
+  articles/data-online: data-online.html
+  articles/data-political: data-political.html
+  articles/data-sports: data-sports.html
   articles/datasets: datasets.html
   endogenous-and-global: endogenous-and-global.html
   articles/endogenous-catalogue: endogenous-catalogue.html
@@ -20,7 +30,7 @@ articles:
   articles/simulation: simulation.html
   species-invasion: species-invasion.html
   articles/validation-experiments: validation-experiments.html
-last_built: 2026-10-17T15:46Z
+last_built: 2026-10-17T17:52Z
 urls:
   reference: https://franciscorichter.github.io/amorem/reference
   article: https://franciscorichter.github.io/amorem/articles
