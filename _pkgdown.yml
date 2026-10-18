@@ -109,6 +109,7 @@ reference:
       - football_results
       - ucdp_dyads
       - alien_invasions
+      - alien_mammals
   - title: "Data: hyperevents"
     contents:
       - congress_bills_118

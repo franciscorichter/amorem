@@ -53,3 +53,16 @@ test_that("covariate tables cover the bundled logs' periods", {
   expect_true(all(c("PL", "US") %in% public_holidays$country))
   expect_equal(min(oni$year), 1950)
 })
+
+test_that("alien_mammals is a risk table with its risk-set attributes", {
+  data(alien_mammals, envir = environment())
+  x <- alien_mammals
+  expect_equal(sum(x$event), 676L)
+  expect_true(all(x$start <= x$stop))
+  ex <- attr(x, "never_at_risk")
+  expect_named(ex, c("sender", "receiver"))
+  expect_false(any(paste(ex$sender, ex$receiver) %in% paste(x$species, x$region)))
+  ent <- attr(x, "entry")
+  expect_true(all(x$start >= ent$entry[match(x$species, ent$species)]))
+})
+

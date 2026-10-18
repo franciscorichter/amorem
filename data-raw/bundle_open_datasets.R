@@ -128,6 +128,26 @@ alien_invasions <- alien_invasions[order(alien_invasions$stop, alien_invasions$s
 rownames(alien_invasions) <- NULL
 save_data(alien_invasions)
 
+# --- Risk table of the alien mammals, with the study's covariates (same CC0 source).
+# One row per species, region and interval at risk; event = 1 at the first record.
+# attr "never_at_risk": species-region pairs absent from the risk table (native
+# range, or established before 1880); attr "entry": the year each species enters
+# the risk set.
+rk <- fread(raw("alien-species-first-records-rem", "species_data.csv"))
+all_regions <- sort(unique(rk$country))
+mm <- rk[taxonomy == "Mammals"]
+alien_mammals <- data.frame(species = mm$species, region = mm$country, start = mm$strt, stop = mm$stp,
+                            event = as.integer(mm$event), dist = signif(mm$dist, 6), num_inv = signif(mm$num_inv, 6),
+                            trade = signif(mm$trade, 6), col = as.integer(mm$col), temp_dist = signif(mm$temp_dist, 6),
+                            pasture = mm$pasture, urban = mm$urban, cropland = mm$cropland)
+alien_mammals <- alien_mammals[order(alien_mammals$species, alien_mammals$region, alien_mammals$start), ]
+rownames(alien_mammals) <- NULL
+pairs <- CJ(sender = sort(unique(mm$species)), receiver = all_regions)
+at_risk <- unique(mm[, .(sender = species, receiver = country)])
+attr(alien_mammals, "never_at_risk") <- as.data.frame(pairs[!at_risk, on = .(sender, receiver)])
+attr(alien_mammals, "entry") <- as.data.frame(mm[, .(entry = min(strt)), by = species][order(species)])
+save_data(alien_mammals)
+
 # --- Daily weather (NOAA GHCN-Daily, US Government work, public domain)
 w <- rbindlist(lapply(list.files(raw("noaa-ghcnd-weather"), pattern = "csv$", full.names = TRUE), function(f) {
   x <- fread(f); data.table(station = x$STATION[1], name = x$NAME[1], date = as.Date(x$DATE),

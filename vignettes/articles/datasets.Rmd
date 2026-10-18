@@ -141,7 +141,7 @@ format(as.POSIXct(attr(college_msg, "unix_origin"), origin = "1970-01-01",
 ```{r licences}
 lic <- data.frame(
   object = c("`radoslaw_email`, `radoslaw_hierarchy`", "`copenhagen_*`", "`congress_bills_118`, `congress_members_118`",
-             "`us_leader_visits`", "`ucdp_dyads`", "`football_results`", "`alien_invasions`",
+             "`us_leader_visits`", "`ucdp_dyads`", "`football_results`", "`alien_invasions`, `alien_mammals`",
              "`daily_weather`, `oni`, `enso_nino34`", "`public_holidays`", "`dist_matrix`",
              "`college_msg`, `email_eu_core`", "`classroom_events`, `classroom_actors`",
              "`social_evolution_*`"),
