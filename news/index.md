@@ -63,6 +63,13 @@
 
 ### Datasets
 
+- New `alien_mammals`: the risk table of the first records of alien
+  mammals with the covariates of Juozaitienė et al. (2023) (distance to
+  the nearest invaded region, trade, temperature difference, colonial
+  ties, land use), and the never-at-risk pairs and species entry years
+  as attributes; used in the species-invasion section of the software
+  paper.
+
 - New event logs, all under licences that allow redistribution:
   `copenhagen_calls`, `copenhagen_sms` and `copenhagen_actors`
   (Copenhagen Networks Study, MIT); `us_leader_visits` (leader-to-leader

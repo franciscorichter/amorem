@@ -257,9 +257,9 @@ government’s other conflicts change over the eighty years.</p>
 <span><span class="va">gfit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="va">war_last</span> <span class="op">+</span> <span class="va">log_opp_past</span> <span class="op">+</span> <span class="fu">nl</span><span class="op">(</span><span class="va">gap</span>, k <span class="op">=</span> <span class="fl">6</span><span class="op">)</span> <span class="op">+</span> <span class="fu">tv</span><span class="op">(</span><span class="va">log_gov_other</span>, k <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
 <span>            data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"year"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">gfit</span><span class="op">)</span><span class="op">$</span><span class="va">s.table</span></span>
-<span><span class="co">#&gt;                             edf   Ref.df      Chi.sq   p-value</span></span>
-<span><span class="co">#&gt; s(.X_gap):.I           1.000296 1.000592 345.9482902 0.0000000</span></span>
-<span><span class="co">#&gt; s(.time):log_gov_other 2.000748 2.001496   0.8116265 0.6667807</span></span></code></pre></div>
+<span><span class="co">#&gt;                             edf   Ref.df      Chi.sq  p-value</span></span>
+<span><span class="co">#&gt; s(.X_gap):.I           1.000745 1.001489 345.9547167 0.000000</span></span>
+<span><span class="co">#&gt; s(.time):log_gov_other 2.001030 2.002059   0.8116351 0.666908</span></span></code></pre></div>
 <p><img src="case-conflict_files/figure-html/smooth-1.png" class="r-plt" alt="Smooth effect of years since the dyad last fought, and the time-varying effect of the government's other conflicts" width="864"></p>
 <p>The fitted smooth is close to a straight line in the log of the gap
 (1.0 effective degrees of freedom), so the rate falls as a power of the

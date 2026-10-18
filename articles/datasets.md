@@ -316,7 +316,7 @@ format(as.POSIXct(attr(college_msg, "unix_origin"), origin = "1970-01-01",
 | `us_leader_visits` | Harvard Dataverse <doi:10.7910/DVN/2ZNR5R> | CC0 1.0 |
 | `ucdp_dyads` | Uppsala Conflict Data Program | CC BY 4.0 |
 | `football_results` | github.com/martj42/international_results | CC0 1.0 |
-| `alien_invasions` | Dryad <doi:10.5061/dryad.x69p8czpv> | CC0 1.0 |
+| `alien_invasions`, `alien_mammals` | Dryad <doi:10.5061/dryad.x69p8czpv> | CC0 1.0 |
 | `daily_weather`, `oni`, `enso_nino34` | NOAA NCEI and CPC | public domain (US Government work) |
 | `public_holidays` | Nager.Date API | dates and names (facts) |
 | `dist_matrix` | US Census TIGER/Line | public domain (US Government work) |

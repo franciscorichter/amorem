@@ -114,6 +114,8 @@
   : UCDP dyadic conflict data, 1946–2025
 - [`alien_invasions`](https://franciscorichter.github.io/amorem/reference/alien_invasions.md)
   : Alien species first records, prepared for relational event models
+- [`alien_mammals`](https://franciscorichter.github.io/amorem/reference/alien_mammals.md)
+  : Alien mammals: risk table with covariates (Juozaitienė et al. 2023)
 
 ## Data: hyperevents
 
