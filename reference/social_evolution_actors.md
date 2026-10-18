@@ -35,5 +35,5 @@ A data frame with 84 rows and 4 columns:
 
 ## Source
 
-Madan et al. (2011), via `goldfish`. See
+Madan et al. (2012), via `goldfish`. See
 [social_evolution_calls](https://franciscorichter.github.io/amorem/reference/social_evolution_calls.md).

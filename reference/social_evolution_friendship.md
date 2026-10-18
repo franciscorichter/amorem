@@ -33,7 +33,7 @@ A data frame with 766 rows and 4 columns:
 
 ## Source
 
-Madan et al. (2011), via `goldfish`.
+Madan et al. (2012), via `goldfish`.
 
 ## See also
 

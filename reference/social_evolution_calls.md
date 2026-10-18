@@ -1,4 +1,4 @@
-# Phone calls in the Social Evolution study (Madan et al. 2011)
+# Phone calls in the Social Evolution study (Madan et al. 2012)
 
 Time-stamped directed phone calls among undergraduates in an MIT
 residence hall over the 2008–2009 academic year. Sourced from the
@@ -34,8 +34,9 @@ A data frame with 439 rows and 4 columns:
 
 ## Source
 
-Madan, A., Cebrian, M., Moturu, S., Farrahi, K. (2011). Sensing the
-"health state" of a community. *IEEE Pervasive Computing* 11(1), 36–45.
+Madan, A., Cebrian, M., Moturu, S., Farrahi, K., Pentland, A. (2012).
+Sensing the "health state" of a community. *IEEE Pervasive Computing*
+11(4), 36–45.
 [doi:10.1109/MPRV.2011.79](https://doi.org/10.1109/MPRV.2011.79) .
 Redistributed via the `goldfish` R package
 (github.com/snlab-ch/goldfish), dataset `Social_Evolution`.

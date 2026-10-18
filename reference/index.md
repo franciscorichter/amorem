@@ -88,7 +88,7 @@
 - [`classroom_actors`](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)
   : Classroom actor attributes (McFarland 2001)
 - [`social_evolution_calls`](https://franciscorichter.github.io/amorem/reference/social_evolution_calls.md)
-  : Phone calls in the Social Evolution study (Madan et al. 2011)
+  : Phone calls in the Social Evolution study (Madan et al. 2012)
 - [`social_evolution_actors`](https://franciscorichter.github.io/amorem/reference/social_evolution_actors.md)
   : Actor attributes for the Social Evolution study
 - [`social_evolution_friendship`](https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.md)

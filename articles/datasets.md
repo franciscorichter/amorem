@@ -14,7 +14,7 @@ allow amorem to redistribute them.
 | object | data | kind | events | actors | span |
 |:---|:---|:---|:---|:---|:---|
 | `classroom_events` | Classroom (McFarland 2001) | face-to-face, minutes | 691 | 20 | 43.9 minutes |
-| `social_evolution_calls` | Social Evolution calls (Madan et al. 2011) | phone calls | 439 | 54 | 42.1 days |
+| `social_evolution_calls` | Social Evolution calls (Madan et al. 2012) | phone calls | 439 | 54 | 42.1 days |
 | `social_evolution_friendship` | Social Evolution friendship survey | tie changes | 766 | 76 | 40.0 days |
 | `radoslaw_email` | Manufacturing company email (Nurek & Michalski 2020) | email | 82,927 | 167 | 271 days |
 | `college_msg` | CollegeMsg (Panzarasa et al. 2009) | instant messages | 59,835 | 1,899 | 194 days |

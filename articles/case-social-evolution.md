@@ -2,7 +2,7 @@
 
 ## Case study: Social Evolution
 
-The Social Evolution study (Madan et al. 2011) recorded phone calls
+The Social Evolution study (Madan et al. 2012) recorded phone calls
 among undergraduates in an MIT residence hall, together with each
 student’s floor and grade and two waves of a friendship survey. This
 page models who calls whom from three kinds of information:
@@ -236,6 +236,6 @@ number of calls the student made is 0.76.
 
 ### References
 
-Madan A, Cebrian M, Moturu S, Farrahi K, Pentland A (2011). Sensing the
-“health state” of a community. *IEEE Pervasive Computing* 11(1), 36–45.
+Madan A, Cebrian M, Moturu S, Farrahi K, Pentland A (2012). Sensing the
+“health state” of a community. *IEEE Pervasive Computing* 11(4), 36–45.
 <https://doi.org/10.1109/MPRV.2011.79>

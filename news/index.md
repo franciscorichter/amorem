@@ -4,6 +4,13 @@
 
 ### Bug fixes
 
+- `rem(method = "gam")` warns when rows with missing covariate values
+  are left out of the fit, and records which rows it used (`fit$rows`,
+  with `fit$n` counting only those).
+  [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  keeps the same rows when given the full data; it stopped with
+  “non-conformable arguments” before.
+
 - `sample_non_events(scope = "citation")` always draws the citing paper
   and the cited papers from separate pools. Under the `mode = "one"`
   default of 1.1.0 it pooled them, so most controls had a sender other
