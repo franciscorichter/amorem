@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
                       fig.height = 5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 ```
 
 # International football as an undirected event process
@@ -123,6 +124,35 @@ title_left("Rivalries accumulate over a century", "cumulative matches N(t) of th
 
 `r names(pc)[1]` have met `r pc[[1]]` times. The flat stretches of
 1914–1918 and 1939–1945 are the two world wars.
+
+The whole record, four years at a time, on a fixed layout of the 80 teams with
+most matches since 1872 (colours: the groups of the network above; grey: teams
+outside it):
+
+```{r anim-prep, include = FALSE}
+br4 <- seq(1872, 2028, by = 4)
+lab4 <- paste0(head(br4, -1), "\u2013", tail(br4, -1) - 1)
+n4 <- tabulate(findInterval(f$t, br4), length(br4) - 1)
+team_col <- setNames(gcol[as.character(lay$group)], lay$id)
+first_year <- tapply(c(f$t, f$t), c(f$a, f$b), min)
+debut <- sort(tapply(first_year[lay$id], gname[as.character(lay$group)], median))
+show <- c("Brazil", "England", "Germany", "Mexico", "Egypt", "Japan", "Saudi Arabia")
+ecol <- ifelse(!is.na(team_col[f$a]) & !is.na(team_col[f$b]) & team_col[f$a] == team_col[f$b],
+               team_col[f$a], "#C9CED2")
+```
+
+```{r anim, echo = FALSE}
+anim_events(f$a, f$b, f$t, breaks = br4, labels = lab4, node_col = team_col, edge_col = ecol,
+            node_label = setNames(show, show), n_nodes = 80,
+            title = "International matches, four years at a time",
+            sub = "line: teams that met in the window, in the group colour when both are in the same group; faint trail: the three windows before",
+            fps = 4, alt = "Animation of international football matches in four-year windows from 1872 to 2027")
+```
+
+From `r fmt(n4[1])` matches in `r lab4[1]`, the record grows to
+`r fmt(max(n4))` in `r lab4[which.max(n4)]`. The regional groups fill in one
+after another: the median team of each group played its first international in
+`r paste(sprintf("%.0f (%s group)", debut, names(debut)), collapse = ", ")`.
 
 ## A relational event model for pairings
 

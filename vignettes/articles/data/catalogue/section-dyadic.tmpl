@@ -27,6 +27,12 @@ if (!is.null(load_profile("{{id}}")$view)) plot_counts(load_profile("{{id}}")$vi
 
 `r if (!is.null(load_profile("{{id}}")$view)) paste("**Pairs as counting processes.**", cap_pairs(load_profile("{{id}}")))`
 
+```{r anim-{{id}}, echo = FALSE}
+if (!is.null(load_profile("{{id}}")$anim)) anim_catalogue(load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$anim)) paste("**Over time.**", cap_anim(load_profile("{{id}}")))`
+
 **Statistical profile.**
 
 ```{r fig-{{id}}, fig.width = 11, fig.height = 2.9, fig.alt = "{{title}}: activity over time, inter-event times, partners per actor, daily cycle or actor activity", echo = FALSE}

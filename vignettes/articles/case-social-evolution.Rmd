@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4.2, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
@@ -90,6 +91,25 @@ Both networks are drawn on one layout computed from the calls and the
 nominations together, so a student sits in the same place in the two panels.
 `r fmt(100 * call_floor, 0)`% of the calls and `r fmt(100 * fr_floor, 0)`% of
 the first-wave nominations join two students of the same floor.
+
+```{r calls-anim, echo = FALSE}
+o_se <- attr(social_evolution_calls, "unix_origin")
+o_lt <- as.POSIXlt(o_se, origin = "1970-01-01", tz = "America/New_York")
+off <- (o_lt$hour + o_lt$min / 60 + o_lt$sec / 3600) / 24     # local clock days of time 0
+tcl <- calls$time + off
+brd <- seq(floor(min(tcl)), ceiling(max(tcl)), by = 1)
+labd <- format(as.POSIXct(o_se - off * 86400 + head(brd, -1) * 86400, origin = "1970-01-01", tz = "America/New_York"),
+               "%a %d %b %Y")
+perd <- tabulate(findInterval(tcl, brd), length(brd) - 1)
+withr::with_preserve_seed(anim_events(calls$sender, calls$receiver, tcl, brd, labd,
+  node_col = setNames(floor_col[as.character(floor_of)], names(floor_of)), n_nodes = 84,
+  title = "Calls day by day", sub = "line: calls between the pair that day; grey: the three days before; colour: floor",
+  alt = "Animation of the call network day by day, students coloured by floor"))
+```
+
+The animation shows the calls one day at a time. Calls are recorded on
+`r sum(perd > 0)` of the `r length(perd)` days, and the busiest day,
+`r labd[which.max(perd)]`, has `r max(perd)` calls.
 
 ## Case-control sample and covariates
 

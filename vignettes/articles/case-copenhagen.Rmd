@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
                       fig.height = 5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 pfmt <- function(p) if (p < 0.001) "< 0.001" else paste("=", fmt(p, 3))
 ```
 
@@ -204,6 +205,33 @@ night <- function(t) mean(((t %% 1) * 24) >= 2 & ((t %% 1) * 24) < 7)
 Between 02:00 and 07:00 fall `r pct(night(calls$time))` of the calls and
 `r pct(night(sms$time))` of the text messages. Daily totals of the two layers
 have correlation `r fmt(cor(rowSums(hc), rowSums(hs)), 2)` over the 28 days.
+
+```{r anim-prep, include = FALSE}
+br12 <- seq(0, 28, by = 0.5)                          # 56 half-day windows
+lab12 <- sprintf("day %d, %s", floor(head(br12, -1)) + 1, ifelse(head(br12, -1) %% 1 == 0, "00:00-12:00", "12:00-24:00"))
+ev <- rbind(data.frame(a = calls$sender, b = calls$receiver, time = calls$time, layer = "call"),
+            data.frame(a = sms$sender,   b = sms$receiver,   time = sms$time,   layer = "text"))
+win <- findInterval(ev$time, br12)
+key <- paste(win, pmin(ev$a, ev$b), pmax(ev$a, ev$b))
+both_in_win <- ave(ev$layer == "call", key, FUN = function(z) any(z) && !all(z))
+ecol <- ifelse(both_in_win, ink, ifelse(ev$layer == "call", pal[6], pal[2]))
+ncol <- setNames(gcol[g_of(unique(c(ev$a, ev$b)))], unique(c(ev$a, ev$b)))
+per_win <- tabulate(win, length(br12) - 1)
+am <- per_win[seq(1, length(per_win), 2)]; pm <- per_win[seq(2, length(per_win), 2)]
+```
+
+```{r anim, echo = FALSE}
+anim_events(ev$a, ev$b, ev$time, br12, lab12, node_col = ncol, edge_col = ecol, n_nodes = 120,
+            title = "Calls and texts, half a day at a time",
+            sub = "120 most active students (pink: female, blue: male); lines: gold calls, purple texts, dark both; grey: the previous windows",
+            fps = 4, alt = "The call and text network of the 120 most active students, drawn in 56 half-day windows over the 28 days")
+```
+
+The animation steps through the 56 half-day windows on one layout of the 120
+most active students. The windows from 12:00 to 24:00 hold
+`r pct(sum(pm) / sum(per_win), 0)` of all calls and texts; the busiest window,
+`r lab12[which.max(per_win)]`, has `r fmt(max(per_win))` events, and the
+quietest of the afternoon-evening windows has `r fmt(min(pm))`.
 
 ## A case-control design per layer
 

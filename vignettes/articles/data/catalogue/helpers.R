@@ -3,6 +3,7 @@
 
 cat_dir <- "data/catalogue"
 knitr::opts_chunk$set(dev.args = list(bg = "white"))   # figures stay legible on a dark page
+source("anim.R")
 licences <- utils::read.csv(file.path(cat_dir, "licences.csv"), stringsAsFactors = FALSE)
 load_profile <- function(id) readRDS(file.path(cat_dir, paste0(id, ".rds")))
 fmt_n <- function(x, d = 0) formatC(x, format = "f", digits = d, big.mark = ",")
@@ -369,6 +370,28 @@ plot_hyper_zoom <- function(v, meta) {
   mtext(sprintf("%s  →  %s", .fmt_t(meta, v$zoom_time[1]), .fmt_t(meta, v$zoom_time[2])),
         side = 1, line = 0.6, cex = 0.62, col = ink_soft)
 }
+
+# --- animation: the network window by window ------------------------------------------
+party_colours <- c("#4F8CC9", "#C8729A", "#9AA0A6")
+anim_catalogue <- function(p) {
+  a <- p$anim; nd <- a$nodes
+  nd$col <- if (identical(p$id, "govinfo-billstatus-118")) party_colours[nd$group] else comm_col(nd$group)
+  ids <- sort(unique(a$frames$f)); n <- length(a$labels)
+  w <- .fmt_dur(p, a$width)
+  sub <- sprintf("%d most active actors, fixed layout \u00b7 lines: pairs active in this %s%s \u00b7 grey: the three windows before",
+                 nrow(nd), w, if (identical(p$id, "govinfo-billstatus-118")) " (sponsor to cosponsor), party colours" else ", group colours")
+  anim_video(function(k) {
+    cur <- a$frames[a$frames$f == k, ]
+    trail <- lapply(1:3, function(s) a$frames[a$frames$f == k - s, ])
+    anim_frame(nd, cur, trail, strip = a$strip, k = k, label = a$labels[k],
+               title = if (a$span == "all") "The whole record, window by window" else
+                 sprintf("The busiest %s, window by window", a$span), sub = sub)
+  }, n = n, fps = if (n > 45) 5 else 4, poster = which.max(a$strip),
+     alt = sprintf("Animation of the network over time, %d frames", n))
+}
+cap_anim <- function(p) { a <- p$anim
+  sprintf("%s to %s in windows of one %s (%s events in this span). Press play, or drag the bar to stop on a moment; the dark bar below the network marks the current window among all windows.",
+          a$labels[1], a$labels[length(a$labels)], .fmt_dur(p, a$width), fmt_n(a$n_events)) }
 
 cap_network <- function(p) { v <- p$view; n <- v$network
   sprintf("The %d actors of the busiest pairs, out of %s; events between two of them are %s of all events. Each actor's three strongest ties are drawn (%s of %s pairs that ever interacted): wider, darker lines carry more events, larger dots are more active actors, and colours are groups found by modularity (Louvain).",

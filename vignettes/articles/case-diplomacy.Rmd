@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
                       fig.height = 5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 col_to <- "#178E8E"; col_from <- "#8E7CC3"
 ```
 
@@ -131,6 +132,46 @@ Visits to the US rise from about `r fmt(early, 0)` a year in 1945–1959 to abou
 `r fmt(late, 0)` a year in 1990–2009. Presidential travel grows too, and it
 comes in bursts: a single trip covers several countries, so several
 `from_us` events share a few days.
+
+```{r anim-data, include = FALSE}
+br <- seq(1945, 2021, 2)
+win_lab <- paste0(br[-length(br)], "-", br[-1] - 1)
+# the ring of the star above, for the 80 most frequent partners, with the US at the centre
+ring <- names(partners)[1:80]
+n_to80 <- table(factor(v$partner[v$direction == "to_us"], levels = ring)); n80 <- table(factor(v$partner, levels = ring))
+bal80 <- 1 - as.numeric(n_to80) / as.numeric(n80)
+o80 <- ring[order(bal80)]
+a80 <- setNames(pi / 2 - 0.25 - (2 * pi - 0.5) * (seq_along(o80) - 1) / (length(o80) - 1), o80)
+ramp_all <- grDevices::colorRamp(c(col_to, "#C9CDD1", col_from))
+nodes_a <- data.frame(id = c("United States", ring), x = c(0.5, 0.5 + 0.45 * cos(a80[ring])),
+                      y = c(0.5, 0.5 + 0.45 * sin(a80[ring])),
+                      col = c(ink, grDevices::rgb(ramp_all(bal80) / 255)))
+nodes_a$label <- ifelse(nodes_a$id %in% names(partners)[1:12], nodes_a$id, NA)
+w <- findInterval(v$year, br)
+win_pairs <- function(k) {
+  d <- v[w == k & v$partner %in% ring, ]
+  if (!nrow(d)) return(data.frame(a = character(0), b = character(0), n = integer(0), col = character(0)))
+  n <- table(d$partner); pres <- tapply(d$direction == "from_us", d$partner, any)
+  data.frame(a = "United States", b = names(n), n = as.integer(n),
+             col = ifelse(pres[names(n)], col_from, col_to))
+}
+strip_a <- tabulate(w, length(br) - 1)
+per_win <- tapply(v$partner, w, function(z) length(unique(z)))
+```
+
+```{r anim, echo = FALSE}
+anim_video(function(k) {
+  anim_frame(nodes_a, win_pairs(k),
+             lapply(1:3, function(s) { p <- win_pairs(k - s); p[c("a", "b")] }),
+             strip = strip_a, k = k, label = win_lab[k], title = "Leader visits, two years at a time",
+             sub = "80 most frequent partners, placed as in the star above; teal: leader visits only; violet: the president visited; grey: earlier windows")
+}, n = length(win_lab), fps = 3, poster = which.max(strip_a),
+alt = "Animation of the visits between the United States and its 80 most frequent partners in two-year windows, 1945-2020")
+```
+
+The number of countries exchanging a visit with the United States within a
+two-year window grows from `r per_win[[1]]` in `r win_lab[1]` to a maximum of
+`r max(per_win)` in `r win_lab[as.integer(names(which.max(per_win)))]`.
 
 ```{r heat, echo = FALSE, fig.height = 7, fig.alt = "Heatmap of visits by partner and decade, partners ordered by the decade of their peak"}
 top40 <- names(partners)[1:40]

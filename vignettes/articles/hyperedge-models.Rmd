@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4, warning = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
 pct <- function(x) paste0(formatC(100 * x, format = "f", digits = 0), "%")
 chg <- function(from, to) if (to > from) "raises" else "lowers"
@@ -165,6 +166,30 @@ log. The largest recipient set has `r max(email_hl$size_J)` members. The figure
 draws the multi-recipient e-mails of the busiest hour; over the week,
 `r pct(mean(same_group))` of the recipients of multi-recipient e-mails belong
 to the sender's group of the e-mail network.
+
+```{r email-anim, echo = FALSE}
+# multi-recipient e-mails of the week as sender -> recipient pairs, in 3-hour windows of Warsaw time
+mr <- which(email_hl$size_J > 1)
+pr <- do.call(rbind, lapply(mr, function(k) data.frame(a = email_hl$I[[k]], b = email_hl$J[[k]], time = email_hl$time[k])))
+o_lt <- as.POSIXlt(origin_email, origin = "1970-01-01", tz = "Europe/Warsaw")
+off <- (o_lt$hour + o_lt$min / 60 + o_lt$sec / 3600) / 24      # clock days of the first e-mail
+tc <- pr$time + off                                              # days since midnight of 2 January
+br3 <- seq(floor(min(tc) * 8) / 8, ceiling(max(tc) * 8) / 8, by = 1 / 8)
+lab3 <- format(as.POSIXct(origin_email - off * 86400 + head(br3, -1) * 86400, origin = "1970-01-01", tz = "Europe/Warsaw"),
+               "%a %d %b %H:00")
+lab3 <- paste0(lab3, "\u2013", format(as.POSIXct(origin_email - off * 86400 + br3[-1] * 86400, origin = "1970-01-01",
+                                                   tz = "Europe/Warsaw"), "%H:00"))
+per3 <- tabulate(findInterval(email_hl$time[mr] + off, br3), length(br3) - 1)
+withr::with_preserve_seed(anim_events(pr$a, pr$b, tc, br3, lab3, node_col = member_col, n_nodes = 80,
+  title = "Multi-recipient e-mails of the first week, 3 hours at a time",
+  sub = "line: a sender reaching a recipient in this window; grey: the three windows before; colour: group",
+  alt = "Animation of the sender-recipient pairs of multi-recipient e-mails in 3-hour windows of the first week"))
+```
+
+The animation steps through the week in 3-hour windows of Warsaw time. The
+busiest window, `r lab3[which.max(per3)]`, holds `r max(per3)` of the
+`r length(mr)` multi-recipient e-mails, and `r sum(per3 == 0)` of the
+`r length(per3)` windows have none.
 
 The single-recipient e-mails form an ordinary dyadic log again, so the dyadic
 catalogue applies to them directly:

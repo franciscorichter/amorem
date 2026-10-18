@@ -138,3 +138,65 @@ view_hyper <- function(obj, n_rows = 40, n_bins = 300, n_zoom = 60, seed = 1) {
   list(rows = rows, raster = as.data.frame(raster), breaks = br, bin_total = tabulate(bin, length(br) - 1),
        zoom = zoom, zoom_time = range(e$time[idx]), n_events = nrow(e), n_actors = length(act))
 }
+
+# Frames for an animation of the evolving network: pair counts per time window
+# among the most active actors of the chosen span, on a layout fixed for the
+# whole span. span = "all", "day" or "week" (the busiest calendar day or week);
+# width is the window length in the object's time unit.
+view_frames <- function(obj, width, span = c("all", "day", "week"), n_nodes = 120, group_of = NULL, seed = 1) {
+  span <- match.arg(span)
+  e <- if (obj$kind == "hyper") {
+    ev <- obj$events
+    rbindlist(lapply(seq_len(nrow(ev)), function(k) {
+      J <- if (!is.null(ev$J)) ev$J[[k]] else character(0); I <- ev$I[[k]]
+      if (length(J)) CJ(sender = as.character(I), receiver = as.character(J))[, time := as.numeric(ev$time[k])]
+      else if (length(I) > 1) { cb <- utils::combn(sort(as.character(I)), 2); data.table(sender = cb[1, ], receiver = cb[2, ], time = as.numeric(ev$time[k])) }
+    }))
+  } else as.data.table(obj$events)[, .(sender = as.character(sender), receiver = as.character(receiver), time = as.numeric(time))]
+  e <- e[!is.na(time) & sender != receiver]
+  e[, `:=`(a = pmin(sender, receiver), b = pmax(sender, receiver))]
+  setorder(e, time)
+  u <- obj$time_unit; sec <- switch(u, seconds = 1, days = 86400, years = 365.25 * 86400, NA)
+  clock <- !is.null(obj$origin) || (u == "days")
+  tz <- if (is.null(obj$tz)) "UTC" else obj$tz
+  to_time <- function(t) if (!is.null(obj$origin)) as.POSIXct(as.numeric(obj$origin) + t * sec, origin = "1970-01-01", tz = tz)
+                         else if (u == "days") as.POSIXct(t * 86400, origin = "1970-01-01", tz = "UTC") else NULL
+  # span
+  if (span != "all") {
+    len <- if (span == "day") 86400 else 7 * 86400
+    if (clock) { ct <- to_time(e$time)
+      key <- if (span == "day") as.Date(ct, tz = tz) else as.Date(cut(as.Date(ct, tz = tz), "week"))
+      best <- names(which.max(table(key))); e <- e[as.character(key) == best]
+      s0 <- (as.numeric(as.POSIXct(paste(best, "00:00:00"), tz = tz)) - if (is.null(obj$origin)) 0 else as.numeric(obj$origin)) / sec
+      if (u == "days" && is.null(obj$origin)) s0 <- as.numeric(as.Date(best))
+    } else { key <- floor(e$time * sec / len); best <- as.numeric(names(which.max(table(key)))); e <- e[key == best]; s0 <- best * len / sec }
+    s1 <- s0 + len / sec
+    # trim to the hours with events
+    s0 <- s0 + floor((min(e$time) - s0) / width) * width; s1 <- min(s1, max(e$time) + width)
+  } else { s0 <- floor(min(e$time) / width) * width; s1 <- max(e$time) + width }
+  br <- seq(s0, s1, by = width); e[, f := findInterval(time, br)]; e <- e[f >= 1 & f < length(br)]
+  # nodes and layout
+  act <- sort(table(c(e$a, e$b)), decreasing = TRUE); top <- names(act)[seq_len(min(n_nodes, length(act)))]
+  w <- e[a %in% top & b %in% top, .(n = .N), by = .(a, b)]
+  g <- igraph::graph_from_data_frame(w, directed = FALSE, vertices = data.frame(name = top))
+  set.seed(seed); xy <- igraph::layout_with_fr(g, weights = log1p(igraph::E(g)$n), niter = 2000)
+  if (nrow(xy) > 2) xy <- stats::prcomp(xy)$x[, 1:2]
+  r <- max(diff(range(xy[, 1])), 1e-9); xy[, 1] <- (xy[, 1] - min(xy[, 1])) / r; xy[, 2] <- (xy[, 2] - min(xy[, 2])) / r
+  grp <- if (!is.null(group_of)) group_of(top) else {
+    cm <- igraph::membership(igraph::cluster_louvain(g, weights = igraph::E(g)$n))
+    match(cm, as.integer(names(sort(table(cm), decreasing = TRUE)))) }
+  nodes <- data.frame(id = top, x = xy[, 1], y = xy[, 2], group = grp, activity = as.integer(act[top]))
+  frames <- as.data.frame(e[a %in% top & b %in% top, .(n = .N), by = .(f, a, b)])
+  # window labels
+  st <- head(br, -1)
+  lab <- if (clock) { ct <- to_time(st); wsec <- width * sec
+    if (wsec < 86400) format(ct, if (span == "day") "%a %d %b %Y, %H:%M" else "%a %d %b %Y, %H:%M")
+    else if (wsec < 60 * 86400) format(ct, "%d %b %Y")
+    else if (wsec < 365 * 86400) format(ct, "%b %Y")
+    else paste0(format(ct, "%Y"), "–", format(to_time(st + width) - 86400, "%Y")) }
+  else if (u == "years") { if (width == 1) format(st) else paste0(st, "–", st + width - 1) }
+  else if (u == "seconds") sprintf("day %d, %02d:%02d from start", floor(st / 86400) + 1, floor((st %% 86400) / 3600), floor((st %% 3600) / 60))
+  else format(signif(st, 6))
+  list(nodes = nodes, frames = frames, labels = lab, strip = tabulate(e$f, length(br) - 1),
+       width = width, span = span, n_events = nrow(e), clock = clock)
+}

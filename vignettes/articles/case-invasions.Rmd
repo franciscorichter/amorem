@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
                       fig.height = 5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 ```
 
 # Alien species reaching new regions
@@ -128,6 +129,35 @@ Each row shows how one region's first records spread over the decades. The
 share recorded since 1980 is `r paste(sprintf("%s in the group of %s", pct(late[order(-late)], 0), names(late)[order(-late)]), collapse = ", ")`.
 Across the `r length(late)` groups it correlates at `r fmt(r_late, 2)` with the
 share of birds among the records.
+
+The first records five years at a time, between the 60 species recorded in
+most regions and the 60 regions with most records, on a fixed layout; each line
+joins a species to the region where it is first recorded in the window:
+
+```{r anim-prep, include = FALSE}
+br5 <- c(seq(1880, 2000, by = 5), 2006)
+lab5 <- paste0(head(br5, -1), "\u2013", tail(br5, -1) - 1)
+n5 <- tabulate(findInterval(a$stop, br5), length(br5) - 1)
+tcol <- c(Birds = pal[6], Mammals = pal[5], Insects = pal[2], Plants = pal[3])
+sp_tax <- tapply(a$taxonomy, a$species, `[`, 1)
+actor_col <- c(setNames(tcol[sp_tax], names(sp_tax)), setNames(rep("#4A5560", length(unique(a$region))), unique(a$region)))
+sp_n <- sort(table(a$species), decreasing = TRUE)
+in60 <- a$species %in% names(sp_n)[1:60] & a$region %in% names(reg_n)[1:60]
+a60 <- a[in60, ]
+top_reg <- intersect(c("Australia", "Hawaiian Islands", "Taiwan", "United Kingdom", "Lithuania", "Portugal"), names(reg_n)[1:60])
+```
+
+```{r anim, echo = FALSE}
+anim_events(a60$species, a60$region, a60$stop, breaks = br5, labels = lab5, node_col = actor_col,
+            edge_col = tcol[a60$taxonomy], node_label = setNames(top_reg, top_reg), n_nodes = 120,
+            title = "First records of alien species, five years at a time",
+            sub = "dark dots: regions; coloured dots and lines: species by group (gold birds, rose mammals, violet insects, green plants)",
+            fps = 4, alt = "Animation of first records of alien species in five-year windows from 1880 to 2005")
+```
+
+Over all species and regions, the busiest window, `r lab5[which.max(n5)]`, holds
+`r fmt(max(n5))` first records, against `r fmt(n5[1])` in `r lab5[1]`; the
+animation shows `r fmt(nrow(a60))` of the `r fmt(nrow(a))` records.
 
 ## Which kinds of species go where
 

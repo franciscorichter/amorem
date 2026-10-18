@@ -15,6 +15,12 @@ if (!is.null(load_profile("{{id}}")$view)) plot_hyper_zoom(load_profile("{{id}}"
 
 `r if (!is.null(load_profile("{{id}}")$view)) paste("**Hyperevent by hyperevent.**", cap_hyper_closeup(load_profile("{{id}}")))`
 
+```{r anim-{{id}}, echo = FALSE}
+if (!is.null(load_profile("{{id}}")$anim)) anim_catalogue(load_profile("{{id}}"))
+```
+
+`r if (!is.null(load_profile("{{id}}")$anim)) paste("**Over time.**", cap_anim(load_profile("{{id}}")))`
+
 **Statistical profile.**
 
 ```{r fig-{{id}}, fig.width = 10, fig.height = 3, fig.alt = "{{title}}: activity over time and set sizes", echo = FALSE}

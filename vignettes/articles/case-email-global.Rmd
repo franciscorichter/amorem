@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4.2, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
 pfmt <- function(p) if (p < 0.001) "< 0.001" else paste("=", fmt(p, 3))
 ```
@@ -100,6 +101,23 @@ wkend <- mean(floor(dow(ev$time)) >= 5)
 
 `r fmt(100 * work, 1)`% of the emails are sent between 07:00 and 16:00, and
 `r fmt(100 * wkend, 1)`% on Saturday or Sunday.
+
+```{r week-anim, echo = FALSE}
+how <- dow(ev$time) * 24                                   # hour of the week, 0 = Monday 00:00
+brw <- seq(0, 168, by = 2)
+dn <- c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+labw <- sprintf("%s %02d:00\u2013%02d:00", dn[head(brw, -1) %/% 24 + 1], head(brw, -1) %% 24, head(brw, -1) %% 24 + 2)
+perw <- tabulate(findInterval(how, brw), length(brw) - 1)
+withr::with_preserve_seed(anim_events(ev$sender, ev$receiver, how, brw, labw, n_nodes = 80,
+  title = "The average week: who emails whom, 2 hours at a time",
+  sub = "all 30 days pooled by hour of the week (Warsaw time); line: emails in this window; colour: group",
+  alt = "Animation of the email network by 2-hour window of the week, pooled over the 30 days"))
+```
+
+The animation pools the 30 days by hour of the week, so each frame shows the
+emails sent in one 2-hour window of a Monday-to-Sunday week. The busiest
+window, `r labw[which.max(perw)]`, carries `r fmt(100 * max(perw) / nrow(ev), 1)`%
+of the emails; `r sum(perw == 0)` of the `r length(perw)` windows have none.
 
 ## Ordinary sampling cannot see a global covariate
 

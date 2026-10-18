@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4.5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 fmt <- function(x, d = 3) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
@@ -69,6 +70,23 @@ title_left(sprintf("Who emails whom in the first %s emails", fmt(nrow(eu), 0)),
 mtext("dot size: emails sent and received  \u00b7  colour: group (modularity); grey lines join different groups",
       side = 1, line = 0.6, cex = 0.62, col = ink_soft)
 ```
+
+```{r eu-anim, echo = FALSE}
+full <- email_eu_core[email_eu_core$sender != email_eu_core$receiver, ]
+br14 <- seq(0, ceiling(max(full$time) / 14) * 14, by = 14)
+lab14 <- sprintf("days %d\u2013%d", head(br14, -1), br14[-1])
+per14 <- tabulate(findInterval(full$time, br14), length(br14) - 1)
+withr::with_preserve_seed(anim_events(full$sender, full$receiver, full$time, br14, lab14, n_nodes = 70,
+  title = "Email-EU-core over the whole record, two weeks at a time",
+  sub = "line: emails between the pair in these two weeks; grey: the three windows before; colour: group",
+  alt = "Animation of the Email-EU-core network in two-week windows"))
+```
+
+The animation covers the whole log, `r fmt(nrow(full), 0)` emails over
+`r round(max(full$time))` days, two weeks per frame; the analysis below uses
+its first `r fmt(nrow(eu), 0)` emails, which end on day `r round(max(eu$time))`.
+`r sum(per14 == 0)` of the `r length(per14)` windows have no email, and the
+busiest, `r lab14[which.max(per14)]`, has `r fmt(max(per14), 0)`.
 
 The strata are split in time: the first 80% of the emails train the models,
 the last 20% are held out.

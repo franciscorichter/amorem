@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
                       fig.height = 5, warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 type_lab <- c("1" = "extrasystemic", "2" = "interstate", "3" = "intrastate", "4" = "internationalized intrastate")
 type_col <- c("1" = "#C99A3B", "2" = "#C8729A", "3" = "#178E8E", "4" = "#8E7CC3")
 short <- function(x) gsub("Government of ", "", x)
@@ -96,6 +97,32 @@ axis(2, at = R:1, labels = lab, las = 1, tick = FALSE, cex.axis = 0.55, col.axis
 title_left("Dyads fight in spells separated by gaps, and move between minor conflict and war",
            "40 government-opponent dyads with most years of fighting, ordered by first year; light: minor conflict; dark: war")
 ```
+
+```{r anim-data, include = FALSE}
+br <- seq(1946, 2026, 2)
+win_lab <- paste0(br[-length(br)], "-", br[-1] - 1)
+role_col <- c(setNames(rep("#4A5560", length(unique(u$sender))), unique(u$sender)),
+              setNames(rep("#B9C0C5", length(unique(u$receiver))), unique(u$receiver)))
+role_col[unique(u$sender)] <- "#4A5560"
+glab12 <- c(names(sort(table(u$sender), decreasing = TRUE))[1:12],
+            names(sort(table(u$receiver[!u$receiver %in% u$sender]), decreasing = TRUE))[1:3])
+glab12 <- setdiff(glab12, "Government of DR Congo (Zaire)")   # drawn on top of the IS hub
+dy_win <- tapply(paste(u$sender, u$receiver), findInterval(u$year, br), function(z) length(unique(z)))
+```
+
+```{r anim, echo = FALSE}
+anim_events(u$sender, u$receiver, u$year, br, win_lab, node_col = role_col,
+            edge_col = type_col[as.character(u$type_of_conflict)], n_nodes = 120,
+            node_label = setNames(short(glab12), glab12),
+            title = "Armed conflicts, two years at a time",
+            sub = "dark: governments; light: opponents; line colour: extrasystemic (ochre), interstate (pink), intrastate (teal), internationalized (violet)",
+            fps = 3, alt = "Animation of the government-opponent dyads that fought in each two-year window, 1946-2025")
+```
+
+The number of dyads that fight within a two-year window is `r dy_win[[1]]` in
+`r win_lab[1]`, peaks at `r max(dy_win)` in
+`r win_lab[as.integer(names(which.max(dy_win)))]`, and is
+`r dy_win[[length(dy_win)]]` in `r win_lab[length(win_lab)]`.
 
 Most long dyads fight in spells: years of fighting, a gap, and fighting again
 with the same opponent. The next figure counts how often a dyad that has

@@ -7,6 +7,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9, fig.height
                       warning = FALSE, message = FALSE)
 library(amorem)
 source("case-helpers.R")
+source("anim.R")
 party_col <- c(D = "#4F8CC9", R = "#C8729A", I = "#9AA0A6")
 party_name <- c(D = "Democrat", R = "Republican", I = "Independent")
 # heat_adjacency() and forest() of case-helpers.R, with room for a title above the plot
@@ -419,6 +420,40 @@ text(min(d$x), par("usr")[3], "each tick below: one sampled bill", adj = c(0, -2
 title_left("Party homophily over the 118th Congress", "tv(same_party): change in the log-rate when all cosponsors, rather than none, share the sponsor's party; 95% band")
 par(op)
 ```
+
+```{r anim, echo = FALSE}
+d0 <- as.Date("2023-01-03")
+brk <- seq(0, as.numeric(as.Date("2025-01-04") - d0) + 14, by = 14)
+win_lab <- format(d0 + head(brk, -1), "%d %b %Y")
+caucus <- ifelse(party == "R", "R", "D")          # the independents caucus with the Democrats
+sen <- flows$ch == "Senate"
+t_sen <- rep(cb$time, size)[sen]
+cross_sen <- caucus[flows$s[sen]] != caucus[flows$j[sen]]
+sen_bridge <- tapply(cross_sen, flows$j[sen], mean, na.rm = TRUE)
+sen_n <- table(flows$j[sen])
+lab_ids <- names(sort(sen_bridge[names(sen_n)[sen_n >= 50]], decreasing = TRUE))[1:3]
+anim_events(flows$s[sen], flows$j[sen], t_sen, brk, win_lab,
+            node_col = setNames(party_col[caucus], names(caucus)),
+            n_nodes = 95, node_label = short[lab_ids],
+            title = "Senate cosponsorship, two weeks at a time",
+            sub = "95 most active senators; blue: Democratic caucus, pink: Republicans; grey line: across caucuses; faint: previous 3 windows",
+            fps = 4, alt = "Animation of the Senate cosponsorship network in two-week windows over the 118th Congress")
+```
+
+```{r anim-numbers, include = FALSE}
+wf <- findInterval(t_sen, brk)
+xw <- tapply(cross_sen, wf, mean, na.rm = TRUE)
+nw <- tabulate(wf, length(brk) - 1)
+xw <- xw[as.integer(names(xw)) %in% which(nw >= 100)]
+```
+
+Each frame is a two-week window of Senate bills, and the bar strip under it
+marks the window in the whole record. The labelled senators are the three
+(among those with at least 50 cosponsorships) whose cosponsorships most often
+go to the other caucus. Over the fortnights with at least 100 Senate
+cosponsorships, the share that crosses caucus lines ranges from
+`r pct(min(xw))` (fortnight from `r win_lab[as.integer(names(which.min(xw)))]`)
+to `r pct(max(xw))` (fortnight from `r win_lab[as.integer(names(which.max(xw)))]`).
 
 ```{r tv-numbers, include = FALSE}
 q <- function(dd) d$fit[which.min(abs(as.numeric(d$x - as.Date(dd))))]
