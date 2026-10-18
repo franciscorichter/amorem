@@ -1,7 +1,7 @@
 # amorem
 
 <p align="center">
-  <img src="man/figures/amorem.png" width="220" alt="amorem logo" />
+  <img src="man/figures/logo.png" width="220" alt="amorem logo" />
 </p>
 <p align="center">
   <a href="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml"><img src="https://github.com/franciscorichter/amorem/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check" /></a>

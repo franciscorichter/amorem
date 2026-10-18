@@ -4,7 +4,7 @@ template:
   bootstrap: 5
   bootswatch: flatly
   mathjax: true
-  favicon: man/figures/amorem.png
+  favicon: man/figures/logo.png
   bslib:
     base_font: {google: "Inter"}
     heading_font: {google: "Inter"}
