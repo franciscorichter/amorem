@@ -40,6 +40,10 @@ feat$recency[is.na(feat$recency)] <- 0
 for (s in setdiff(stats, "recency")) feat[[s]] <- log1p(feat[[s]])
 ```
 
+![Email network of the first 3,000 emails among the actors of the
+busiest pairs, each actor's three strongest
+ties](case-email-eu-models_files/figure-html/network-figure-1.png)
+
 The strata are split in time: the first 80% of the emails train the
 models, the last 20% are held out.
 
@@ -155,35 +159,8 @@ the other four at their training means, and shows the change in score
 centred at its mean over the range: the straight line of the conditional
 logit and the partial-dependence curves of the two neural models.
 
-``` r
-
-centre <- function(v) v - mean(v)
-mu <- colMeans(train[, stats])
-cols <- c(clogit = "grey40", nn_mlp = "#d62728", nn_spline = "#1f77b4")
-op <- par(mfrow = c(2, 3), mar = c(4, 4, 2, 1))
-for (s in stats) {
-  g  <- seq(stats::quantile(train[[s]], 0.01), stats::quantile(train[[s]], 0.99),
-            length.out = 60)
-  nd <- as.data.frame(matrix(rep(mu, each = 60), 60, length(stats),
-                             dimnames = list(NULL, stats)))
-  nd[[s]] <- g
-  y <- cbind(clogit    = centre(score_clogit(nd)),
-             nn_mlp    = centre(predict(fit_mlp$fit, nd)),
-             nn_spline = centre(predict(fit_add$fit, nd)))
-  matplot(g, y, type = "l", lty = 1, lwd = 2, col = cols, xlab = s,
-          ylab = "centred score", main = s)
-}
-plot.new()
-legend("center", legend = names(cols), col = cols, lwd = 2, bty = "n")
-```
-
 ![Effect of each statistic under clogit and the two neural
 models](case-email-eu-models_files/figure-html/curves-1.png)
-
-``` r
-
-par(op)
-```
 
 Between the 1st and the 99th percentile the score increases for 5 of the
 5 statistics under the conditional logit, 5 under the perceptron and 5
@@ -263,28 +240,13 @@ summary(fit_tv)$s.table
 The time-varying model’s AIC is 36.1 lower than that of the
 constant-effect model.
 
-``` r
-
-op <- par(mfrow = c(1, 2), mar = c(4, 4, 2.5, 1))
-plot(fit_tv$fit, select = 1, shade = TRUE, xlab = "day", ylab = "effect",
-     main = "tv(reciprocity_count)")
-abline(h = 0, col = "grey60")
-plot(fit_tv$fit, select = 2, scheme = 2, xlab = "day",
-     ylab = "transitivity_count (log1p)", main = "tvnl(transitivity_count)")
-```
-
-![Time-varying reciprocity effect and the time-by-transitivity
+![Time-varying reciprocity effect with a 95% band, and the
+time-by-transitivity
 surface](case-email-eu-models_files/figure-html/gam-figure-1.png)
 
-``` r
-
-par(op)
-```
-
 In the left panel the coefficient of `reciprocity_count` is 2.83 on day
-0 and 1.70 on day 158; the dashed lines are ±2 standard errors. The
-right panel shows the tensor-product surface of
-`tvnl(transitivity_count)` over day and count; mgcv leaves blank the
-combinations of day and count with no data near them, which includes the
-gap between a count of 0 and a count of 1 on the
-[`log1p()`](https://rdrr.io/r/base/Log.html) scale.
+0 and 1.70 on day 158; the band is a 95% interval. The right panel shows
+the tensor-product surface of `tvnl(transitivity_count)` over day and
+count; mgcv leaves blank the combinations of day and count with no data
+near them, which includes the gap between a count of 0 and a count of 1
+on the [`log1p()`](https://rdrr.io/r/base/Log.html) scale.

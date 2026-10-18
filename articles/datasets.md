@@ -21,7 +21,7 @@ allow amorem to redistribute them.
 | `email_eu_core` | Email-EU-core, one department (Paranjape et al. 2017) | email | 12,216 | 89 | 802 days |
 | `copenhagen_calls` | Copenhagen Networks Study calls | phone calls | 3,600 | 536 | 28.0 days |
 | `copenhagen_sms` | Copenhagen Networks Study text messages | text messages | 24,333 | 568 | 28.0 days |
-| `us_leader_visits` | US leader-to-leader visits 1945-2019 | state visits | 3,943 | 189 | 27,183 days |
+| `us_leader_visits` | US leader-to-leader visits 1945-2019 | state visits | 3,945 | 197 | 27,183 days |
 | `football_results` | Men’s international football since 1872 | matches | 49,945 | 337 | 56,192 days |
 | `ucdp_dyads` | UCDP armed conflict dyads 1946-2025 | conflict dyad-years | 3,518 | 704 | 79.0 years |
 | `alien_invasions` | Alien species first records 1880-2005 | species -\> region | 11,730 | 3,188 | 125 years |
@@ -163,8 +163,8 @@ part in during that stretch of time. The grey bars on top count all
 
 ![Network of the most active actors of
 us_leader_visits](datasets_files/figure-html/n-us_leader_visits-1.png)
-The 60 actors of the busiest pairs, out of 189; events between two of
-them are 74.3% of all events. Each actor’s three strongest ties are
+The 60 actors of the busiest pairs, out of 197; events between two of
+them are 74.0% of all events. Each actor’s three strongest ties are
 drawn (59 of 59 pairs that ever interacted): wider, darker lines carry
 more events, larger dots are more active actors, and colours are groups
 found by modularity (Louvain).
@@ -174,7 +174,7 @@ time](datasets_files/figure-html/t-us_leader_visits-1.png) Each row is
 one of the 30 most active actors of the network, coloured by its group
 there; a cell is darker the more events (with anyone) the actor took
 part in during that stretch of time. The grey bars on top count all
-3,943 events.
+3,945 events.
 
 #### `football_results`
 
@@ -252,7 +252,7 @@ equally active):
 | `email_eu_core`               | 34.3%                             | 0.53 |
 | `copenhagen_calls`            | 42.8%                             | 0.59 |
 | `copenhagen_sms`              | 61.3%                             | 0.73 |
-| `us_leader_visits`            | 71.3%                             | 0.78 |
+| `us_leader_visits`            | 72.0%                             | 0.79 |
 | `football_results`            | 30.2%                             | 0.54 |
 | `ucdp_dyads`                  | 58.9%                             | 0.70 |
 | `alien_invasions`             | 62.7%                             | 0.70 |

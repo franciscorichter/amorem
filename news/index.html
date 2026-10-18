@@ -72,7 +72,7 @@
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.1.0" id="amorem-110">amorem 1.1.0<a class="anchor" aria-label="anchor" href="#amorem-110"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.1.0" id="amorem-110">amorem 1.1.0<a class="anchor" aria-label="anchor" href="#amorem-110"></a></h2><p class="text-muted">CRAN release: 2026-10-17</p>
 <div class="section level3">
 <h3 id="bug-fixes-1-1-0">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-1-1-0"></a></h3>
 <ul><li><p><strong>Endogenous statistics on case-control data no longer count the sampled controls as events.</strong> <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> on the output of <code><a href="../reference/sample_non_events.html">sample_non_events()</a></code> (a 0/1 <code>event</code> column with control rows) now builds the network history from the <code>event == 1</code> rows only; the controls read it but never enter it. Before, every row updated the history, so each statistic also counted hypothetical dyads. This was the default path inside <code><a href="../reference/compare_models.html">compare_models()</a></code>, <code><a href="../reference/compare_models_smooth.html">compare_models_smooth()</a></code>, <code>gof()</code>, <code><a href="../reference/martingale_residuals.html">martingale_residuals()</a></code> and the vignettes. On six simulated datasets with a reciprocity effect of 0.3, the estimate moved from 0.20 to 0.31 on average. Results of those functions change and should be re-run. Pass <code>history_log = event_log</code> to treat every row as an event.</p></li>

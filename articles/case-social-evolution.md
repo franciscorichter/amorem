@@ -52,6 +52,15 @@ The friendship survey has two waves, on day 2.14 and day 42.14. The
 second wave comes after the last call (day 42.13), so only the first
 wave can inform a call.
 
+![The call network and the first-wave friendship network drawn on one
+layout, students coloured by
+floor](case-social-evolution_files/figure-html/networks-1.png)
+
+Both networks are drawn on one layout computed from the calls and the
+nominations together, so a student sits in the same place in the two
+panels. 21% of the calls and 40% of the first-wave nominations join two
+students of the same floor.
+
 ### Case-control sample and covariates
 
 Each call is matched with five non-events, dyads drawn uniformly among
@@ -151,25 +160,8 @@ The friendship specification has the lowest AIC. Adding friendship to
 the endogenous model lowers the AIC by 103.7; adding the two homophily
 indicators lowers it by 49.5.
 
-``` r
-
-est <- ct[, "coef"]; se <- ct[, "se(coef)"]
-o <- rev(seq_along(est))
-op <- par(mar = c(4, 10, 1, 1))
-plot(est[o], seq_along(est), xlim = range(est - 2 * se, est + 2 * se, 0),
-     yaxt = "n", pch = 16, xlab = "log hazard ratio (95% interval)", ylab = "")
-segments(est[o] - 1.96 * se[o], seq_along(est), est[o] + 1.96 * se[o], seq_along(est))
-axis(2, at = seq_along(est), labels = names(est)[o], las = 1, cex.axis = 0.85)
-abline(v = 0, col = "grey60", lty = 2)
-```
-
 ![Log hazard ratios of the full conditional logistic model with 95%
 intervals](case-social-evolution_files/figure-html/clogit-figure-1.png)
-
-``` r
-
-par(op)
-```
 
 The recency weight runs from 0 (no earlier call on the dyad) to 1 (a
 call just before), so its coefficient compares those two extremes:
@@ -230,20 +222,9 @@ The random effect has 31.9 effective degrees of freedom for 54 senders,
 and the model with it has an AIC 95.1 lower than the model without a
 sender term and 68.1 lower than the one with the sender’s earlier calls.
 
-``` r
-
-b <- stats::coef(g_re)
-b <- b[grep("RE_sender", names(b))]
-lev <- levels(factor(c(w$sender_ev, w$sender_nv)))
-n_sent <- table(factor(calls$sender, levels = lev))
-plot(as.integer(n_sent) + 1, b, log = "x", pch = 16,
-     col = grDevices::adjustcolor("#1d4e89", 0.7),
-     xlab = "calls made + 1 (log scale)", ylab = "sender random effect")
-abline(h = 0, col = "grey60", lty = 2)
-```
-
 ![Estimated sender random effects against the number of calls each
-student made](case-social-evolution_files/figure-html/re-figure-1.png)
+student made, coloured by
+floor](case-social-evolution_files/figure-html/re-figure-1.png)
 
 Each point is a student. Students who made no calls appear only as
 senders of sampled non-events, which places their effects below zero.

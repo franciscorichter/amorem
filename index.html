@@ -105,7 +105,7 @@
 <span><span class="co"># 1. Bundled datasets, ready to load</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span>        <span class="co"># 691 events,    20 actors  (McFarland 2001)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">social_evolution_calls</span><span class="op">)</span>  <span class="co"># 439 events,    54 actors  (Madan et al. 2011)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span>          <span class="co"># 82,927 emails, 167 actors (Michalski et al. 2014)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">radoslaw_email</span><span class="op">)</span>          <span class="co"># 82,927 emails, 167 actors (Nurek &amp; Michalski 2020)</span></span>
 <span></span>
 <span><span class="co"># 2. Compute endogenous features post-hoc from any (sender, receiver, time) log</span></span>
 <span><span class="va">feat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span></span>
@@ -212,6 +212,30 @@
 <td><a href="articles/case-email-eu-models.html">Case study: estimation backends</a></td>
 <td>
 <code>clogit</code>, neural (<code>nn</code>, MLP and additive splines, <code><a href="reference/nn_uncertainty.html">nn_uncertainty()</a></code>) and <code>gam</code> with <code>tv()</code> / <code>tvnl()</code> on Email-EU-core, compared on held-out e-mails</td>
+</tr>
+<tr>
+<td><a href="articles/case-congress.html">Case study: cosponsorship in the 118th Congress</a></td>
+<td>bills as directed hyperevents (sponsor → cosponsor set): hypergraph, party-coloured network, chord and adjacency views; a sender- and size-matched case-control fit of repetition, reciprocity, pair co-cosponsorship, party and state, and a <code>tv()</code> party-homophily curve</td>
+</tr>
+<tr>
+<td><a href="articles/case-copenhagen.html">Case study: calls and text messages</a></td>
+<td>two-layer (multiplex) REM on the Copenhagen Networks Study: cross-layer history as a covariate, reciprocity and repetition per layer, gender homophily, the daily cycle as a global effect with time-shifted sampling and cyclic smooths</td>
+</tr>
+<tr>
+<td><a href="articles/case-diplomacy.html">Case study: leader visits to and from the US</a></td>
+<td>a star-shaped event network, 1945–2019: per-direction case-control sampling (<code>mode = "two"</code>, <code>scope = "appearance"</code>), reciprocity and inertia by direction with <code>rem(method = "clogit")</code>, the <code>nl()</code> decay of reciprocity and <code>tv()</code> inertia over 75 years</td>
+</tr>
+<tr>
+<td><a href="articles/case-conflict.html">Case study: armed-conflict dyads</a></td>
+<td>yearly tied events scored from earlier years only (<code>prior_log</code>), a risk set of dyads with a past; recurrence, escalation, the decay of a conflict’s pull with <code>nl()</code>, and a <code>tv()</code> effect</td>
+</tr>
+<tr>
+<td><a href="articles/case-football.html">Case study: international football</a></td>
+<td>matches since 1872 as undirected events: rivalry network with regional groups, recency smooth, common opponents (triadic closure), friendlies against competitive matches</td>
+</tr>
+<tr>
+<td><a href="articles/case-invasions.html">Case study: first records of alien species</a></td>
+<td>observed species-to-region first records with <code>mode = "two"</code>, <code>risk = "remove"</code>, <code>prior_log</code> and time-shifted sampling; shared-invader network, timing heatmap, taxonomy by group, ENSO (ONI) as a global smooth</td>
 </tr>
 <tr>
 <td><a href="articles/species-invasion.html">Species invasions</a></td>

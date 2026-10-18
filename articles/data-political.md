@@ -23,7 +23,7 @@ the source and the code that reads it.
 | [Africa’s diplomatic visits (foreign ministers) 2010-2022](#africa-s-diplomatic-visits-foreign-ministers-2010-2022) | 3,892 | 183 | CC BY 4.0 | can bundle |
 | [Italy’s diplomatic visits 2000-2023](#italy-s-diplomatic-visits-2000-2023) | 2,631 | 158 | CC BY 4.0 | can bundle |
 | [Diplomatic visits of the foreign ministers of Russia and Ukraine 2021-2024](#diplomatic-visits-of-the-foreign-ministers-of-russia-and-ukraine-2021-2024) | 101 | 54 | CC0 1.0 | can bundle |
-| [US leader-to-leader diplomatic visits 1946-2019](#us-leader-to-leader-diplomatic-visits-1946-2019) | 3,943 | 189 | CC0 1.0 | bundled as `us_leader_visits` |
+| [US leader-to-leader diplomatic visits 1946-2019](#us-leader-to-leader-diplomatic-visits-1946-2019) | 3,945 | 197 | CC0 1.0 | bundled as `us_leader_visits` |
 | [goldfish package data: fisheries treaties, RFID validity, Social Evolution](#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution) | 69 | 33 | GPL-3.0 (source repository/package) | bundled as `social_evolution_calls`, `social_evolution_friendship`, `social_evolution_actors` since an earlier release; licence under review |
 | [UNHCR refugee population statistics (refugees R package)](#unhcr-refugee-population-statistics-refugees-r-package-) | 114,516 | 211 | CC BY 4.0 | can bundle |
 
@@ -667,7 +667,7 @@ active
 actors](data-political_files/figure-html/net-us-leader-visits-1.png)
 
 **Who interacts with whom.** The 60 actors of the busiest pairs, out of
-189; events between two of them are 74.3% of all events. Each actor’s
+197; events between two of them are 74.0% of all events. Each actor’s
 three strongest ties are drawn (59 of 59 pairs that ever interacted):
 wider, darker lines carry more events, larger dots are more active
 actors, and colours are groups found by modularity (Louvain).
@@ -679,7 +679,7 @@ time](data-political_files/figure-html/tl-us-leader-visits-1.png)
 **When.** Each row is one of the 30 most active actors of the network,
 coloured by its group there; a cell is darker the more events (with
 anyone) the actor took part in during that stretch of time. The grey
-bars on top count all 3,943 events.
+bars on top count all 3,945 events.
 
 ![US leader-to-leader diplomatic visits 1946-2019: close-up of the
 busiest stretch, event by
@@ -704,24 +704,24 @@ silences.
 inter-event times, partners per actor, daily cycle or actor
 activity](data-political_files/figure-html/fig-us-leader-visits-1.png)
 
-**3,943** directed events among **189** actors over 27,183.0 days (308
-distinct ordered pairs). 92.2% of events repeat an earlier ordered pair;
-if every event chose a pair at random the share would be 5.3%. 78.8% of
+**3,945** directed events among **197** actors over 27,183.0 days (323
+distinct ordered pairs). 91.8% of events repeat an earlier ordered pair;
+if every event chose a pair at random the share would be 4.9%. 79.9% of
 events answer an earlier event in the opposite direction. The burstiness
 coefficient of the gaps between successive events of the same pair is
-0.26 (0 for a Poisson process, positive when events cluster in bursts);
-the most active tenth of the actors take part in 71.3% of events (Gini
-0.78). 31.5% of events share their time stamp with an earlier one.
+0.25 (0 for a Poisson process, positive when events cluster in bursts);
+the most active tenth of the actors take part in 72.0% of events (Gini
+0.79). 31.6% of events share their time stamp with an earlier one.
 foreign leaders visiting the US and US presidents travelling abroad
 
-A conditional logit on the first 3,943 events (one sampled control per
+A conditional logit on the first 3,945 events (one sampled control per
 event) gives:
 
 | term                                     | estimate | s.e. |
 |:-----------------------------------------|---------:|-----:|
-| log(1 + sender’s past events)            |     2.23 | 0.41 |
-| log(1 + receiver’s past events received) |     1.95 | 0.33 |
-| log(1 + past events receiver -\> sender) |    -0.10 | 0.39 |
+| log(1 + sender’s past events)            |     2.38 | 0.49 |
+| log(1 + receiver’s past events received) |     2.32 | 0.45 |
+| log(1 + past events receiver -\> sender) |    -0.02 | 0.45 |
 
 Get the data
 

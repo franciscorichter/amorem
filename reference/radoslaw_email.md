@@ -1,4 +1,4 @@
-# Manufacturing-company email events (Michalski et al. 2014)
+# Manufacturing-company email events (Nurek & Michalski 2020)
 
 Time-stamped directed emails among the 167 employees of a mid-sized
 manufacturing company in Poland, January to September 2010. Each

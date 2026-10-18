@@ -125,6 +125,7 @@ the first 7 days.
 ``` r
 
 data(radoslaw_email)
+origin_email <- attr(radoslaw_email, "unix_origin")
 x <- radoslaw_email[radoslaw_email$time < 7 &
                     radoslaw_email$sender != radoslaw_email$receiver, ]
 key <- paste(x$sender, x$time)
@@ -141,31 +142,16 @@ c(rows = nrow(x), hyperevents = nrow(email_hl),
 #>            2794            1808             248             142
 ```
 
-``` r
-
-op <- par(mfrow = c(1, 2), mar = c(4, 4.5, 2.5, 1))
-tab <- table(pmin(email_hl$size_J, 11))
-names(tab)[names(tab) == "11"] <- "11+"
-barplot(tab, log = "y", col = "#5b9bd5", xlab = "recipients per e-mail",
-        ylab = "e-mails (log scale)", main = "recipient-set size",
-        ylim = c(1, 2 * max(tab)), cex.names = 0.6)
-per_sender <- sort(table(unlist(email_hl$I)), decreasing = TRUE)
-plot(seq_along(per_sender), as.numeric(per_sender), log = "y", type = "h",
-     col = "#1d4e89", xlab = "sender rank", ylab = "e-mails (log scale)",
-     main = "e-mails per sender")
-```
-
-![Distribution of recipient-set sizes and of e-mails per
-sender](hyperedge-models_files/figure-html/email-sizes-1.png)
-
-``` r
-
-par(op)
-```
+![The multi-recipient e-mails of the busiest hour drawn as a hypergraph,
+actors coloured by their group in the week's e-mail
+network](hyperedge-models_files/figure-html/email-hypergraph-1.png)
 
 Of the 1,808 e-mails, 248 (14%) have more than one recipient; they
 account for 44% of the 2,794 rows of the dyadic log. The largest
-recipient set has 135 members.
+recipient set has 135 members. The figure draws the multi-recipient
+e-mails of the busiest hour; over the week, 54% of the recipients of
+multi-recipient e-mails belong to the sender’s group of the e-mail
+network.
 
 The single-recipient e-mails form an ordinary dyadic log again, so the
 dyadic catalogue applies to them directly:
@@ -234,6 +220,9 @@ round(est, 3)
 #> log_reciprocity        4.377      0.323
 ```
 
+![Estimated effects of sender activity, repetition and reciprocity with
+95% intervals](hyperedge-models_files/figure-html/email-cc-figure-1.png)
+
 All three statistics enter on the `log(1 + count)` scale. Holding the
 other two fixed, the log-rate of an e-mail changes by 0.55 (standard
 error 0.08) per unit of sender activity, by 1.34 (s.e. 0.25) per unit of
@@ -283,17 +272,16 @@ round(sweep, 2)
 #> both                    1.07        1.10      0.95
 ```
 
-``` r
+![The 150 simulated events under each of the four specifications, one
+column per event with its senders and receivers
+marked](hyperedge-models_files/figure-html/directed-figure-1.png)
 
-counts <- sapply(sizes, function(s) table(factor(s$size_I, levels = 1:3)))
-barplot(counts, beside = TRUE, col = c("#1d4e89", "#5b9bd5", "#bcd4ec"),
-        ylab = "events", xlab = "specification",
-        legend.text = paste("|I| =", 1:3),
-        args.legend = list(x = "topleft", bty = "n"))
-```
-
-![Sender-set size distribution under the four
-specifications](hyperedge-models_files/figure-html/directed-figure-1.png)
+Each panel shows the 150 events of one simulation, one column per event:
+teal marks are its senders (authors A1–A4), purple marks its receivers
+(papers P1–P4, shaded band), so the number of teal marks in a column is
+the sender-set size. With `subrep_1_1 = 0.8` every event from event 39
+on repeats the same sender and receiver sets; with both effects, every
+event from event 18 on.
 
 With no endogenous effect, 30% of the events have a single sender. A
 negative `size_I` effect raises that share to 47%; a positive
@@ -337,22 +325,9 @@ sort(pair_counts, decreasing = TRUE)[1:4]
 #> 143   4   4   3
 ```
 
-``` r
-
-other <- names(sort(pair_counts))[1]
-running <- function(p) cumsum(vapply(meet$I, function(Im)
-  all(strsplit(p, "")[[1]] %in% Im), logical(1)))
-label <- function(p) paste0("{", paste(strsplit(p, "")[[1]], collapse = ", "), "}")
-plot(seq_len(nrow(meet)), running(top), type = "s", lwd = 2, col = "#d62728",
-     xlab = "meeting index", ylab = "meetings containing the pair so far",
-     ylim = c(0, max(pair_counts)))
-lines(seq_len(nrow(meet)), running(other), type = "s", lwd = 2, col = "#1d4e89")
-legend("topleft", bty = "n", lwd = 2, col = c("#d62728", "#1d4e89"),
-       legend = c(label(top), label(other)))
-```
-
-![Running co-attendance count of the most frequent pair and of another
-pair](hyperedge-models_files/figure-html/meetings-figure-1.png)
+![Co-attendance network of the five actors and the running count of
+meetings for two
+pairs](hyperedge-models_files/figure-html/meetings-figure-1.png)
 
 With `subrep_2 = 0.6`, a pair that meets is more likely to meet again.
 Of the 150 meetings, 143 contain the pair {A, D}, and 0 contain the pair
@@ -389,32 +364,12 @@ fit_tvnl <- rem(~ tv(cov_sender, k = 6) + nl(cov_receiver, k = 6),
                 data = wd, method = "gam", time = "event_time")
 ```
 
-``` r
+![Estimated time-varying and non-linear effects with 95% bands against
+the true effects](hyperedge-models_files/figure-html/tvnl-figure-1.png)
 
-truth <- attr(d, "truth")
-op <- par(mfrow = c(1, 2), mar = c(4, 4.5, 2.5, 1))
-plot(fit_tvnl$fit, select = 1, rug = FALSE, scale = 0,
-     xlab = "time", ylab = expression(alpha(t)), main = "time-varying effect")
-tg <- seq(0, truth$horizon, length.out = 200)
-lines(tg, truth$time_varying_effect(tg), col = "#d62728", lwd = 2, lty = 2)
-plot(fit_tvnl$fit, select = 2, rug = FALSE, scale = 0,
-     xlab = "receiver-group covariate", ylab = "f(x)", main = "non-linear effect")
-xg <- seq(min(d$cov_receiver), max(d$cov_receiver), length.out = 200)
-fx <- truth$nonlinear_effect(xg)
-lines(xg, fx - mean(fx), col = "#d62728", lwd = 2, lty = 2)
-```
-
-![Estimated time-varying and non-linear effects against the
-truth](hyperedge-models_files/figure-html/tvnl-figure-1.png)
-
-``` r
-
-par(op)
-```
-
-Solid lines are the estimates with ±2 standard-error bands, dashed red
-lines the true effects; the non-linear effect is identified up to an
-additive constant, so its truth is drawn centred.
+Solid lines are the estimates with 95% bands, dashed lines the true
+effects; the non-linear effect is identified up to an additive constant,
+so its truth is drawn centred.
 
 ------------------------------------------------------------------------
 

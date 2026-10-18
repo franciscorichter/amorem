@@ -3,13 +3,13 @@
 ## Time of day and day of week in company email
 
 `radoslaw_email` records the internal email of a manufacturing company
-(Michalski et al. 2014, a company in Poland). Email is sent during
-working hours and on working days, so the rate of every dyad depends on
-the clock. Time of day and day of week are **global covariates**: at any
-instant they take the same value for every sender–receiver pair. This
-case study estimates their effect next to an endogenous reciprocity
-effect, using time-shifted case-control sampling, and checks the fitted
-model with
+(Michalski et al. 2011; Nurek & Michalski 2020, a company in Poland).
+Email is sent during working hours and on working days, so the rate of
+every dyad depends on the clock. Time of day and day of week are
+**global covariates**: at any instant they take the same value for every
+sender–receiver pair. This case study estimates their effect next to an
+endogenous reciprocity effect, using time-shifted case-control sampling,
+and checks the fitted model with
 [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md),
 [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md)
 and
@@ -43,24 +43,13 @@ c(events = nrow(ev), actors = length(unique(c(ev$sender, ev$receiver))),
 #> "2010-02-01 17:35:37"
 ```
 
-``` r
+![Emails by hour of day and day of week, as a heatmap with totals per
+hour and per
+day](case-email-global_files/figure-html/clock-figure-1.png)
 
-op <- par(mfrow = c(1, 2), mar = c(4, 4, 2.5, 1))
-hist(tod(ev$time), breaks = 0:24, col = "#9ecae1", border = "white",
-     xlab = "hour of day", main = "emails by hour")
-barplot(table(factor(floor(dow(ev$time)), levels = 0:6,
-                     labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))),
-        col = "#9ecae1", border = "white", main = "emails by day of week",
-        cex.names = 0.8, las = 2)
-```
-
-![Number of emails by hour of day and by day of
-week](case-email-global_files/figure-html/clock-figure-1.png)
-
-``` r
-
-par(op)
-```
+![Email network of the 30 days among the actors of the busiest pairs,
+each actor's three strongest
+ties](case-email-global_files/figure-html/network-figure-1.png)
 
 92.6% of the emails are sent between 07:00 and 16:00, and 0.8% on
 Saturday or Sunday.
@@ -146,35 +135,17 @@ summary(fit)$s.table
 #> s(.TP):.XI_recip 2.000223  2.000444 301.06346 0.0000000000
 ```
 
-``` r
-
-op <- par(mfrow = c(2, 2), mar = c(4, 4, 2.5, 1))
-plot(fit, select = 1, scale = 0, xlab = "hour of day", ylab = "f(hour)",
-     main = "time of day")
-plot(fit, select = 2, scale = 0, xlab = "days since Monday 00:00",
-     ylab = "f(day)", main = "day of week")
-plot(fit, select = 3, scale = 0, xlab = "day of the slice", ylab = "f(t)",
-     main = "trend")
-plot(fit, select = 4, scale = 0, xlab = "day of the slice",
-     ylab = expression(beta(t)), main = "reciprocity effect over time")
-```
-
 ![Estimated smooth effects of time of day, day of week, the trend and
-time-varying
-reciprocity](case-email-global_files/figure-html/fit-figure-1.png)
-
-``` r
-
-par(op)
-```
+time-varying reciprocity, with 95%
+bands](case-email-global_files/figure-html/fit-figure-1.png)
 
 In the `mgcv` summary the largest p-value of the four smooth terms is
 3.2e-04. The time-of-day curve is lowest at about 3.1 h and ranges from
 -0.04 to 1.88 between 08:00 and 16:00. The day-of-week curve averages
 0.44 from Monday to Friday and -1.97 on Saturday and Sunday (log-rate
 scale, each curve centred by `mgcv`). Over the 30 days the reciprocity
-coefficient $`\beta(t)`$ ranges from 5.71 to 7.59. Dashed lines in the
-figure are ±2 standard errors.
+coefficient $`\beta(t)`$ ranges from 5.71 to 7.59. Shaded bands in the
+figure are 95% intervals.
 
 ### Goodness of fit of the fitted model
 
@@ -252,6 +223,12 @@ gives p = 0.057 for the sender’s out-degree.
 
 ### Reference
 
-Michalski R, Palus S, Kazienko P (2014). Matching organizational
-structure and social network extracted from email communication. *New
-Generation Computing* 32, 213–235.
+Michalski R, Palus S, Kazienko P (2011). Matching organizational
+structure and social network extracted from email communication.
+*Lecture Notes in Business Information Processing* 87, 197–206.
+<doi:10.1007/978-3-642-21863-7_17>.
+
+Nurek M, Michalski R (2020). Combining machine learning and social
+network analysis to reveal the organizational structures. *Applied
+Sciences* 10(5), 1699. Data: Harvard Dataverse, <doi:10.7910/DVN/6Z3CGX>
+(CC0 1.0).

@@ -25,7 +25,7 @@ End-to-end walkthroughs of the package.
 
 ### Case studies
 
-Analyses of the bundled datasets, run when the site is built.
+Models fitted to the bundled datasets, run when the site is built.
 
 - [Case study: time of day and day of week in company
   email](https://franciscorichter.github.io/amorem/articles/case-email-global.md):
@@ -33,6 +33,18 @@ Analyses of the bundled datasets, run when the site is built.
   Evolution](https://franciscorichter.github.io/amorem/articles/case-social-evolution.md):
 - [Case study: estimation backends on
   Email-EU-core](https://franciscorichter.github.io/amorem/articles/case-email-eu-models.md):
+- [Case study: cosponsorship in the 118th
+  Congress](https://franciscorichter.github.io/amorem/articles/case-congress.md):
+- [Case study: calls and text messages in the Copenhagen Networks
+  Study](https://franciscorichter.github.io/amorem/articles/case-copenhagen.md):
+- [Case study: leader visits to and from the United States,
+  1945–2019](https://franciscorichter.github.io/amorem/articles/case-diplomacy.md):
+- [Case study: armed-conflict dyads,
+  1946–2025](https://franciscorichter.github.io/amorem/articles/case-conflict.md):
+- [Case study: international football,
+  1872–2026](https://franciscorichter.github.io/amorem/articles/case-football.md):
+- [Case study: first records of alien species,
+  1880–2005](https://franciscorichter.github.io/amorem/articles/case-invasions.md):
 
 ### Data catalogue
 

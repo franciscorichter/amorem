@@ -87,14 +87,14 @@
 <h2 id="time-of-day-and-day-of-week-in-company-email">Time of day and day of week in company email<a class="anchor" aria-label="anchor" href="#time-of-day-and-day-of-week-in-company-email"></a>
 </h2>
 <p><code>radoslaw_email</code> records the internal email of a
-manufacturing company (Michalski et al. 2014, a company in Poland).
-Email is sent during working hours and on working days, so the rate of
-every dyad depends on the clock. Time of day and day of week are
-<strong>global covariates</strong>: at any instant they take the same
-value for every sender–receiver pair. This case study estimates their
-effect next to an endogenous reciprocity effect, using time-shifted
-case-control sampling, and checks the fitted model with
-<code><a href="../reference/gof_rem.html">gof_rem()</a></code>, <code><a href="../reference/gof_multivariate.html">gof_multivariate()</a></code> and
+manufacturing company (Michalski et al. 2011; Nurek &amp; Michalski
+2020, a company in Poland). Email is sent during working hours and on
+working days, so the rate of every dyad depends on the clock. Time of
+day and day of week are <strong>global covariates</strong>: at any
+instant they take the same value for every sender–receiver pair. This
+case study estimates their effect next to an endogenous reciprocity
+effect, using time-shifted case-control sampling, and checks the fitted
+model with <code><a href="../reference/gof_rem.html">gof_rem()</a></code>, <code><a href="../reference/gof_multivariate.html">gof_multivariate()</a></code> and
 <code><a href="../reference/gof_auxiliary.html">gof_auxiliary()</a></code>.</p>
 <div class="section level3">
 <h3 id="data-and-clock-time">Data and clock time<a class="anchor" aria-label="anchor" href="#data-and-clock-time"></a>
@@ -121,17 +121,8 @@ European clock time.</p>
 <span><span class="co">#&gt;               "10776"                 "151" "2010-01-02 17:40:10" </span></span>
 <span><span class="co">#&gt;                  last </span></span>
 <span><span class="co">#&gt; "2010-02-01 17:35:37"</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="fu">tod</span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">24</span>, col <span class="op">=</span> <span class="st">"#9ecae1"</span>, border <span class="op">=</span> <span class="st">"white"</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"hour of day"</span>, main <span class="op">=</span> <span class="st">"emails by hour"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/barplot.html" class="external-link">barplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="fu">dow</span><span class="op">(</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">)</span>, levels <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">6</span>,</span>
-<span>                     labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mon"</span>, <span class="st">"Tue"</span>, <span class="st">"Wed"</span>, <span class="st">"Thu"</span>, <span class="st">"Fri"</span>, <span class="st">"Sat"</span>, <span class="st">"Sun"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>        col <span class="op">=</span> <span class="st">"#9ecae1"</span>, border <span class="op">=</span> <span class="st">"white"</span>, main <span class="op">=</span> <span class="st">"emails by day of week"</span>,</span>
-<span>        cex.names <span class="op">=</span> <span class="fl">0.8</span>, las <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="case-email-global_files/figure-html/clock-figure-1.png" class="r-plt" alt="Number of emails by hour of day and by day of week" width="768"></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p><img src="case-email-global_files/figure-html/clock-figure-1.png" class="r-plt" alt="Emails by hour of day and day of week, as a heatmap with totals per hour and per day" width="768"></p>
+<p><img src="case-email-global_files/figure-html/network-figure-1.png" class="r-plt" alt="Email network of the 30 days among the actors of the busiest pairs, each actor's three strongest ties" width="768"></p>
 <p>92.6% of the emails are sent between 07:00 and 16:00, and 0.8% on
 Saturday or Sunday.</p>
 </div>
@@ -141,7 +132,7 @@ Saturday or Sunday.</p>
 <p>With ordinary nested case-control sampling each control gets its
 event’s time, so a covariate that depends on time alone takes the same
 value for the event and its control:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cc0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">ev</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">cc0</span><span class="op">$</span><span class="va">tod</span> <span class="op">&lt;-</span> <span class="fu">tod</span><span class="op">(</span><span class="va">cc0</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
 <span><span class="va">w0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/widen_case_control.html">widen_case_control</a></span><span class="op">(</span><span class="va">cc0</span>, covariates <span class="op">=</span> <span class="st">"tod"</span><span class="op">)</span></span>
@@ -158,7 +149,7 @@ effect drops out of the partial likelihood.</p>
 dyad and samples each control from the dyads whose back-shifted time
 falls in the observation window (here the 30 days of the slice). Each
 control is stored at its own time.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">ev</span>, seed <span class="op">=</span> <span class="fl">1</span>, shift <span class="op">=</span> <span class="st">"exponential"</span>, window <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">sh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">cc</span>, <span class="st">"shift"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>mean_shift_days <span class="op">=</span> <span class="va">sh</span><span class="op">$</span><span class="va">mean</span>, uninformative_events <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sh</span><span class="op">$</span><span class="va">uninformative</span><span class="op">)</span><span class="op">)</span></span>
@@ -172,7 +163,7 @@ receiver has not emailed the sender). On case-control data
 <code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> builds the history from the observed
 emails only, and each control is scored at its own time. Time of day and
 day of week are read from each row’s clock time.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/endogenous_features.html">endogenous_features</a></span><span class="op">(</span><span class="va">cc</span>, stats <span class="op">=</span> <span class="st">"reciprocity_time_recent"</span><span class="op">)</span></span>
 <span><span class="va">cc</span><span class="op">$</span><span class="va">recip</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transform_recency.html">transform_recency</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">reciprocity_time_recent</span><span class="op">)</span></span>
 <span><span class="va">cc</span><span class="op">$</span><span class="va">recip</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">recip</span><span class="op">)</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
@@ -197,7 +188,7 @@ with
 the event time and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>t</mi><mo>*</mo></msup><annotation encoding="application/x-tex">t^*</annotation></semantics></math>
 the control’s time.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rem.html">rem</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">nl</span><span class="op">(</span><span class="va">tod</span>, bs <span class="op">=</span> <span class="st">"cc"</span>, k <span class="op">=</span> <span class="fl">12</span><span class="op">)</span> <span class="op">+</span> <span class="fu">nl</span><span class="op">(</span><span class="va">dow</span>, bs <span class="op">=</span> <span class="st">"cc"</span>, k <span class="op">=</span> <span class="fl">8</span><span class="op">)</span> <span class="op">+</span></span>
 <span>             <span class="fu">nl</span><span class="op">(</span><span class="va">time</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> <span class="op">+</span> <span class="fu">tv</span><span class="op">(</span><span class="va">recip</span>, k <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
 <span>           data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
@@ -207,19 +198,7 @@ the control’s time.</p>
 <span><span class="co">#&gt; s(.X_dow):.I     5.931675  6.000000 433.23812 0.0000000000</span></span>
 <span><span class="co">#&gt; s(.X_time):.I    3.167483  3.640323  22.21318 0.0003238577</span></span>
 <span><span class="co">#&gt; s(.TP):.XI_recip 2.000223  2.000444 301.06346 0.0000000000</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">1</span>, scale <span class="op">=</span> <span class="fl">0</span>, xlab <span class="op">=</span> <span class="st">"hour of day"</span>, ylab <span class="op">=</span> <span class="st">"f(hour)"</span>,</span>
-<span>     main <span class="op">=</span> <span class="st">"time of day"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">2</span>, scale <span class="op">=</span> <span class="fl">0</span>, xlab <span class="op">=</span> <span class="st">"days since Monday 00:00"</span>,</span>
-<span>     ylab <span class="op">=</span> <span class="st">"f(day)"</span>, main <span class="op">=</span> <span class="st">"day of week"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">3</span>, scale <span class="op">=</span> <span class="fl">0</span>, xlab <span class="op">=</span> <span class="st">"day of the slice"</span>, ylab <span class="op">=</span> <span class="st">"f(t)"</span>,</span>
-<span>     main <span class="op">=</span> <span class="st">"trend"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">fit</span>, select <span class="op">=</span> <span class="fl">4</span>, scale <span class="op">=</span> <span class="fl">0</span>, xlab <span class="op">=</span> <span class="st">"day of the slice"</span>,</span>
-<span>     ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Special.html" class="external-link">beta</a></span><span class="op">(</span><span class="va">t</span><span class="op">)</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"reciprocity effect over time"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="case-email-global_files/figure-html/fit-figure-1.png" class="r-plt" alt="Estimated smooth effects of time of day, day of week, the trend and time-varying reciprocity" width="768"></p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p><img src="case-email-global_files/figure-html/fit-figure-1.png" class="r-plt" alt="Estimated smooth effects of time of day, day of week, the trend and time-varying reciprocity, with 95% bands" width="768"></p>
 <p>In the <code>mgcv</code> summary the largest p-value of the four
 smooth terms is 3.2e-04. The time-of-day curve is lowest at about 3.1 h
 and ranges from -0.04 to 1.88 between 08:00 and 16:00. The day-of-week
@@ -227,8 +206,8 @@ curve averages 0.44 from Monday to Friday and -1.97 on Saturday and
 Sunday (log-rate scale, each curve centred by <code>mgcv</code>). Over
 the 30 days the reciprocity coefficient
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo stretchy="false" form="prefix">(</mo><mi>t</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta(t)</annotation></semantics></math>
-ranges from 5.71 to 7.59. Dashed lines in the figure are ±2 standard
-errors.</p>
+ranges from 5.71 to 7.59. Shaded bands in the figure are 95%
+intervals.</p>
 </div>
 <div class="section level3">
 <h3 id="goodness-of-fit-of-the-fitted-model">Goodness of fit of the fitted model<a class="anchor" aria-label="anchor" href="#goodness-of-fit-of-the-fitted-model"></a>
@@ -238,7 +217,7 @@ functional-form test orders the residuals by the covariate’s value, and
 the time test cumulates the residuals of a term over event time; both
 use a multiplier bootstrap that accounts for the estimated
 coefficients.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">g_tod</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"tod"</span>, test <span class="op">=</span> <span class="st">"functional_form"</span>, n_sim <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g_dow</span>  <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"dow"</span>, test <span class="op">=</span> <span class="st">"functional_form"</span>, n_sim <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">g_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_rem.html">gof_rem</a></span><span class="op">(</span><span class="va">fit</span>, <span class="st">"recip"</span>, test <span class="op">=</span> <span class="st">"time"</span>, data <span class="op">=</span> <span class="va">w</span>, n_sim <span class="op">=</span> <span class="fl">1000</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -249,13 +228,13 @@ coefficients.</p>
 <span><span class="co">#&gt;   sup statistic = 0.5011, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)</span></span>
 <span><span class="co">#&gt; Martingale-residual GoF test of 'recip': time specification</span></span>
 <span><span class="co">#&gt;   sup statistic = 0.1370, p-value = 0.0020 (1000 bootstrap replicates, n = 10776)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_tod</span>, main <span class="op">=</span> <span class="st">"time of day: functional form"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_dow</span>, main <span class="op">=</span> <span class="st">"day of week: functional form"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">g_time</span>, main <span class="op">=</span> <span class="st">"reciprocity: time"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-email-global_files/figure-html/gof-rem-figure-1.png" class="r-plt" alt="Observed GoF processes against bootstrap processes" width="768"></p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p>The functional-form test gives p &lt; 0.001 for time of day and p
 &lt; 0.001 for day of week; the time test for the reciprocity term gives
@@ -271,7 +250,7 @@ statistics: <code><a href="../reference/gof_multivariate.html">gof_multivariate(
 <code>reciprocity_count</code> needs a smooth instead of a linear
 effect, and <code><a href="../reference/gof_auxiliary.html">gof_auxiliary()</a></code> tests whether an unmodelled
 statistic carries signal the model misses.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ev7</span> <span class="op">&lt;-</span> <span class="va">ev</span><span class="op">[</span><span class="va">ev</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fl">7</span>, <span class="op">]</span></span>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>reciprocity_count <span class="op">=</span> <span class="st">"linear"</span>, transitivity_count <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span></span>
 <span><span class="va">gm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/gof_multivariate.html">gof_multivariate</a></span><span class="op">(</span><span class="va">ev7</span>, <span class="va">m</span>, covariate <span class="op">=</span> <span class="st">"reciprocity_count"</span>, k_basis <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -290,9 +269,14 @@ gives p = 0.057 for the sender’s out-degree.</p>
 <div class="section level3">
 <h3 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
 </h3>
-<p>Michalski R, Palus S, Kazienko P (2014). Matching organizational
-structure and social network extracted from email communication. <em>New
-Generation Computing</em> 32, 213–235.</p>
+<p>Michalski R, Palus S, Kazienko P (2011). Matching organizational
+structure and social network extracted from email communication.
+<em>Lecture Notes in Business Information Processing</em> 87, 197–206.
+<a href="doi:10.1007/978-3-642-21863-7_17" class="uri">doi:10.1007/978-3-642-21863-7_17</a>.</p>
+<p>Nurek M, Michalski R (2020). Combining machine learning and social
+network analysis to reveal the organizational structures. <em>Applied
+Sciences</em> 10(5), 1699. Data: Harvard Dataverse, <a href="doi:10.7910/DVN/6Z3CGX" class="uri">doi:10.7910/DVN/6Z3CGX</a>
+(CC0 1.0).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

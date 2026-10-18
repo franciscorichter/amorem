@@ -90,6 +90,8 @@
 
 ## amorem 1.1.0
 
+CRAN release: 2026-10-17
+
 ### Bug fixes
 
 - **Endogenous statistics on case-control data no longer count the

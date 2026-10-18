@@ -94,7 +94,7 @@
 - [`social_evolution_friendship`](https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.md)
   : Friendship-survey events for the Social Evolution study
 - [`radoslaw_email`](https://franciscorichter.github.io/amorem/reference/radoslaw_email.md)
-  : Manufacturing-company email events (Michalski et al. 2014)
+  : Manufacturing-company email events (Nurek & Michalski 2020)
 - [`radoslaw_hierarchy`](https://franciscorichter.github.io/amorem/reference/radoslaw_hierarchy.md)
   : Reporting hierarchy of the manufacturing company (Nurek & Michalski
   2020)

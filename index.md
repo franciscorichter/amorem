@@ -40,7 +40,7 @@ library(amorem)
 # 1. Bundled datasets, ready to load
 data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
 data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
-data(radoslaw_email)          # 82,927 emails, 167 actors (Michalski et al. 2014)
+data(radoslaw_email)          # 82,927 emails, 167 actors (Nurek & Michalski 2020)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
 feat <- endogenous_features(
@@ -125,6 +125,12 @@ summary(fit)
 | [Case study: email and the clock](https://franciscorichter.github.io/amorem/articles/case-email-global.md) | time of day and day of week as global covariates in the Manufacturing e-mail log, time-shifted sampling, cyclic smooths, `tv()` on shifted data, [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md), [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md), [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md) |
 | [Case study: Social Evolution](https://franciscorichter.github.io/amorem/articles/case-social-evolution.md) | data intake, actor attributes and survey friendship as covariates, `rem(method = "clogit")`, a sender random effect with `re()` |
 | [Case study: estimation backends](https://franciscorichter.github.io/amorem/articles/case-email-eu-models.md) | `clogit`, neural (`nn`, MLP and additive splines, [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)) and `gam` with `tv()` / `tvnl()` on Email-EU-core, compared on held-out e-mails |
+| [Case study: cosponsorship in the 118th Congress](https://franciscorichter.github.io/amorem/articles/case-congress.md) | bills as directed hyperevents (sponsor → cosponsor set): hypergraph, party-coloured network, chord and adjacency views; a sender- and size-matched case-control fit of repetition, reciprocity, pair co-cosponsorship, party and state, and a `tv()` party-homophily curve |
+| [Case study: calls and text messages](https://franciscorichter.github.io/amorem/articles/case-copenhagen.md) | two-layer (multiplex) REM on the Copenhagen Networks Study: cross-layer history as a covariate, reciprocity and repetition per layer, gender homophily, the daily cycle as a global effect with time-shifted sampling and cyclic smooths |
+| [Case study: leader visits to and from the US](https://franciscorichter.github.io/amorem/articles/case-diplomacy.md) | a star-shaped event network, 1945–2019: per-direction case-control sampling (`mode = "two"`, `scope = "appearance"`), reciprocity and inertia by direction with `rem(method = "clogit")`, the `nl()` decay of reciprocity and `tv()` inertia over 75 years |
+| [Case study: armed-conflict dyads](https://franciscorichter.github.io/amorem/articles/case-conflict.md) | yearly tied events scored from earlier years only (`prior_log`), a risk set of dyads with a past; recurrence, escalation, the decay of a conflict’s pull with `nl()`, and a `tv()` effect |
+| [Case study: international football](https://franciscorichter.github.io/amorem/articles/case-football.md) | matches since 1872 as undirected events: rivalry network with regional groups, recency smooth, common opponents (triadic closure), friendlies against competitive matches |
+| [Case study: first records of alien species](https://franciscorichter.github.io/amorem/articles/case-invasions.md) | observed species-to-region first records with `mode = "two"`, `risk = "remove"`, `prior_log` and time-shifted sampling; shared-invader network, timing heatmap, taxonomy by group, ENSO (ONI) as a global smooth |
 | [Species invasions](https://franciscorichter.github.io/amorem/articles/species-invasion.md) | a one-shot (`risk = "remove"`) process with ENSO as a global driver, fitted by time-shifted sampling |
 
 Full per-function documentation is under

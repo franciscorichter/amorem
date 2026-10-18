@@ -38,7 +38,7 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Francisco Richter <richtf@usi.ch> \[copyright holder\]
+**Maintainer**: Francisco Richter <richtf@usi.ch>
 
 Authors:
 
