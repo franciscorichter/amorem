@@ -1,6 +1,4 @@
-## amorem
-
-![](reference/figures/logo.png)
+## amorem ![amorem logo](reference/figures/logo.png)
 
 **amorem** — end-to-end **simulation, sampling, feature engineering,
 model selection, and inference** for relational event models (REMs) in

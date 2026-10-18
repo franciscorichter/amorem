@@ -201,9 +201,9 @@ w <- widen_case_control(cc, covariates = c("gap", "war_last", "log_gov_other", "
 gfit <- rem(~ war_last + log_opp_past + nl(gap, k = 6) + tv(log_gov_other, k = 6),
             data = w, method = "gam", time = "year")
 summary(gfit)$s.table
-#>                             edf   Ref.df      Chi.sq  p-value
-#> s(.X_gap):.I           1.000745 1.001489 345.9547167 0.000000
-#> s(.time):log_gov_other 2.001030 2.002059   0.8116351 0.666908
+#>                             edf   Ref.df      Chi.sq   p-value
+#> s(.X_gap):.I           1.000296 1.000592 345.9482902 0.0000000
+#> s(.time):log_gov_other 2.000748 2.001496   0.8116265 0.6667807
 ```
 
 ![Smooth effect of years since the dyad last fought, and the
