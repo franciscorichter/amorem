@@ -383,10 +383,18 @@ rem <- function(formula, data,
   gam_args <- list(formula = fm, family = stats::binomial(), data = df)
   if (!is.null(gam_method)) gam_args$method <- gam_method
   fit <- do.call(mgcv::gam, gam_args)
+  # mgcv drops rows with missing values; record which rows the fit used so that
+  # gof_rem() and other consumers of `data` stay aligned with the fit.
+  rows <- rep(TRUE, n)
+  if (length(fit$na.action)) {
+    rows[as.integer(fit$na.action)] <- FALSE
+    warning(sum(!rows), " of ", n, " rows have missing covariate values and were ",
+            "left out of the fit.", call. = FALSE)
+  }
 
   structure(
     list(fit = fit, method = method, formula = formula,
-         terms = terms_info, n = n, gam_formula = fm, time = time),
+         terms = terms_info, n = sum(rows), rows = rows, gam_formula = fm, time = time),
     class = "rem")
 }
 

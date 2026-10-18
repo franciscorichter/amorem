@@ -35,7 +35,7 @@ library(amorem)
 
 # 1. Bundled datasets, ready to load
 data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
-data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2011)
+data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2012)
 data(radoslaw_email)          # 82,927 emails, 167 actors (Nurek & Michalski 2020)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log

@@ -13,7 +13,7 @@ year, 1880), \code{taxonomy}.
 Juozaitienė R, Seebens H, Latombe G, Essl F, Wit EC (2023).
 Analysing ecological dynamics with relational event models: the case of
 biological invasions. \emph{Diversity and Distributions} 29, 1208--1225,
-\doi{10.1111/ddi.13723}. Data: Dryad \doi{10.5061/dryad.x69p8czpv}
+\doi{10.1111/ddi.13752}. Data: Dryad \doi{10.5061/dryad.x69p8czpv}
 (CC0 1.0).
 }
 \usage{

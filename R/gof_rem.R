@@ -77,6 +77,9 @@ gof_rem <- function(fit, term,
                     test = c("time", "functional_form", "functional_form_score"),
                     data = NULL, time = NULL, n_sim = 2000, max_grid = 500,
                     seed = NULL) {
+  # keep the rows the fit used (rem() leaves out rows with missing values)
+  if (!is.null(data) && !is.null(fit$rows) && NROW(data) == length(fit$rows) && !all(fit$rows))
+    data <- data[fit$rows, , drop = FALSE]
   test <- match.arg(test)
   if (!inherits(fit, "rem") || !identical(fit$method, "gam")) {
     stop("`fit` must be a rem() fit with method = \"gam\".")

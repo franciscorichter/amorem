@@ -21,7 +21,7 @@ redistribute them.
 ```{r inventory}
 ev <- list(
   classroom_events = list("Classroom (McFarland 2001)", "face-to-face, minutes", "minutes"),
-  social_evolution_calls = list("Social Evolution calls (Madan et al. 2011)", "phone calls", "days"),
+  social_evolution_calls = list("Social Evolution calls (Madan et al. 2012)", "phone calls", "days"),
   social_evolution_friendship = list("Social Evolution friendship survey", "tie changes", "days"),
   radoslaw_email = list("Manufacturing company email (Nurek & Michalski 2020)", "email", "days"),
   college_msg = list("CollegeMsg (Panzarasa et al. 2009)", "instant messages", "days"),

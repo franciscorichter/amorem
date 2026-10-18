@@ -50,7 +50,7 @@
 #' @source McFarland (2001), via `networkDynamic`. See [classroom_events].
 "classroom_actors"
 
-#' Phone calls in the Social Evolution study (Madan et al. 2011)
+#' Phone calls in the Social Evolution study (Madan et al. 2012)
 #'
 #' Time-stamped directed phone calls among undergraduates in an MIT
 #' residence hall over the 2008–2009 academic year. Sourced from the
@@ -65,9 +65,9 @@
 #'   \item{receiver}{Same domain as `sender`.}
 #'   \item{increment}{Integer increment recorded for the call (typically 1).}
 #' }
-#' @source Madan, A., Cebrian, M., Moturu, S., Farrahi, K. (2011).
-#'   Sensing the "health state" of a community. *IEEE Pervasive
-#'   Computing* 11(1), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
+#' @source Madan, A., Cebrian, M., Moturu, S., Farrahi, K., Pentland, A.
+#'   (2012). Sensing the "health state" of a community. *IEEE Pervasive
+#'   Computing* 11(4), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
 #'   via the `goldfish` R package (github.com/snlab-ch/goldfish),
 #'   dataset `Social_Evolution`.
 #' @seealso [social_evolution_actors], [social_evolution_friendship]
@@ -87,7 +87,7 @@
 #'   \item{gradeType}{Factor — student grade type (freshman, sophomore,
 #'     junior, senior, graduate-tutor).}
 #' }
-#' @source Madan et al. (2011), via `goldfish`. See
+#' @source Madan et al. (2012), via `goldfish`. See
 #'   [social_evolution_calls].
 "social_evolution_actors"
 
@@ -105,7 +105,7 @@
 #'   \item{receiver}{Character actor id (the nominated friend).}
 #'   \item{replace}{Integer — `1` adds the tie, `0` removes it.}
 #' }
-#' @source Madan et al. (2011), via `goldfish`.
+#' @source Madan et al. (2012), via `goldfish`.
 #' @seealso [social_evolution_calls], [social_evolution_actors]
 "social_evolution_friendship"
 
@@ -350,7 +350,7 @@ NULL
 #' @source Juozaitienė R, Seebens H, Latombe G, Essl F, Wit EC (2023).
 #'   Analysing ecological dynamics with relational event models: the case of
 #'   biological invasions. *Diversity and Distributions* 29, 1208--1225,
-#'   \doi{10.1111/ddi.13723}. Data: Dryad \doi{10.5061/dryad.x69p8czpv}
+#'   \doi{10.1111/ddi.13752}. Data: Dryad \doi{10.5061/dryad.x69p8czpv}
 #'   (CC0 1.0).
 "alien_invasions"
 

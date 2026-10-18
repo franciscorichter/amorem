@@ -74,3 +74,17 @@ test_that("inputs are validated", {
   expect_error(gof_rem(fit, "x", "functional_form"), "needs `data`")
   expect_error(gof_rem(fit, "x", "time", data = w[1:10, ]), "rows")
 })
+
+test_that("gof_rem() keeps the rows rem() used when data has missing values", {
+  set.seed(3)
+  n <- 400
+  w <- data.frame(x_ev = rnorm(n, 0.5), x_nv = rnorm(n), z_ev = rnorm(n), z_nv = rnorm(n),
+                  time = sort(runif(n)))
+  w$z_ev[c(5, 50, 300)] <- NA
+  expect_warning(fit <- rem(~ x + z, data = w, method = "gam"), "3 of 400 rows")
+  expect_equal(fit$n, 397)
+  g <- gof_rem(fit, "x", test = "functional_form", data = w, n_sim = 200, seed = 1)
+  expect_true(is.finite(g$p_value))
+  g2 <- gof_rem(fit, "x", test = "time", data = w, time = "time", n_sim = 200, seed = 1)
+  expect_true(is.finite(g2$p_value))
+})

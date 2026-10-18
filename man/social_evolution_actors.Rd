@@ -16,7 +16,7 @@ junior, senior, graduate-tutor).}
 }
 }
 \source{
-Madan et al. (2011), via \code{goldfish}. See
+Madan et al. (2012), via \code{goldfish}. See
 \link{social_evolution_calls}.
 }
 \usage{

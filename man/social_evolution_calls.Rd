@@ -3,7 +3,7 @@
 \docType{data}
 \name{social_evolution_calls}
 \alias{social_evolution_calls}
-\title{Phone calls in the Social Evolution study (Madan et al. 2011)}
+\title{Phone calls in the Social Evolution study (Madan et al. 2012)}
 \format{
 A data frame with 439 rows and 4 columns:
 \describe{
@@ -16,9 +16,9 @@ A data frame with 439 rows and 4 columns:
 }
 }
 \source{
-Madan, A., Cebrian, M., Moturu, S., Farrahi, K. (2011).
-Sensing the "health state" of a community. \emph{IEEE Pervasive
-Computing} 11(1), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
+Madan, A., Cebrian, M., Moturu, S., Farrahi, K., Pentland, A.
+(2012). Sensing the "health state" of a community. \emph{IEEE Pervasive
+Computing} 11(4), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
 via the \code{goldfish} R package (github.com/snlab-ch/goldfish),
 dataset \code{Social_Evolution}.
 }
