@@ -61,6 +61,9 @@ nominations together, so a student sits in the same place in the two
 panels. 21% of the calls and 40% of the first-wave nominations join two
 students of the same floor.
 
+The animation shows the calls one day at a time. Calls are recorded on
+28 of the 43 days, and the busiest day, Mon 13 Oct 2008, has 39 calls.
+
 ### Case-control sample and covariates
 
 Each call is matched with five non-events, dyads drawn uniformly among

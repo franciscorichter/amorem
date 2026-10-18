@@ -381,6 +381,14 @@ Congress](case-congress_files/figure-html/tv-plot-1.png)
 par(op)
 ```
 
+Each frame is a two-week window of Senate bills, and the bar strip under
+it marks the window in the whole record. The labelled senators are the
+three (among those with at least 50 cosponsorships) whose cosponsorships
+most often go to the other caucus. Over the fortnights with at least 100
+Senate cosponsorships, the share that crosses caucus lines ranges from
+16.3% (fortnight from 14 Feb 2023) to 37.1% (fortnight from 17 Dec
+2024).
+
 The curve is the weight of the same-party share at each date, holding
 the other statistics fixed: 0.47 in June 2023 and 0.28 in September
 2024. `summary(fit_tv)$s.table` tests whether it departs from a

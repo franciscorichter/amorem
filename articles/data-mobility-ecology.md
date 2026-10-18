@@ -222,6 +222,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 0.1% of all events. Steep stretches are bursts and flat ones
 silences.
 
+**Over time.** 1880–1884 to 2005–2009 in windows of one 5 years (11,730
+events in this span). Press play, or drag the bar to stop on a moment;
+the dark bar below the network marks the current window among all
+windows.
+
 **Statistical profile.**
 
 ![Alien species first records prepared for REMs (Juozaitienė et al.):

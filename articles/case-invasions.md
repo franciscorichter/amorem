@@ -104,6 +104,15 @@ Azores, 28% in the group of Norway, Belgium, 27% in the group of
 Australia, Hawaiian Islands. Across the 6 groups it correlates at 0.93
 with the share of birds among the records.
 
+The first records five years at a time, between the 60 species recorded
+in most regions and the 60 regions with most records, on a fixed layout;
+each line joins a species to the region where it is first recorded in
+the window:
+
+Over all species and regions, the busiest window, 1995–1999, holds 948
+first records, against 86 in 1880–1884; the animation shows 923 of the
+11,730 records.
+
 ### Which kinds of species go where
 
 ``` r

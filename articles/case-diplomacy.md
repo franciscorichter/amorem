@@ -55,6 +55,10 @@ year in 1990–2009. Presidential travel grows too, and it comes in
 bursts: a single trip covers several countries, so several `from_us`
 events share a few days.
 
+The number of countries exchanging a visit with the United States within
+a two-year window grows from 11 in 1945-1946 to a maximum of 104 in
+2013-2014.
+
 ![Heatmap of visits by partner and decade, partners ordered by the
 decade of their peak](case-diplomacy_files/figure-html/heat-1.png)
 

@@ -203,6 +203,11 @@ Between 02:00 and 07:00 fall 2.9% of the calls and 1.4% of the text
 messages. Daily totals of the two layers have correlation 0.47 over the
 28 days.
 
+The animation steps through the 56 half-day windows on one layout of the
+120 most active students. The windows from 12:00 to 24:00 hold 73% of
+all calls and texts; the busiest window, day 12, 12:00-24:00, has 1,274
+events, and the quietest of the afternoon-evening windows has 378.
+
 ### A case-control design per layer
 
 Each layer gets its own case-control sample: five non-events per event,

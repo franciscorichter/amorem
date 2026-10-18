@@ -309,6 +309,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 8.0% of all events. Steep stretches are bursts and flat ones
 silences.
 
+**Over time.** 1946–1947 to 2024–2025 in windows of one 2 years (3,518
+events in this span). Press play, or drag the bar to stop on a moment;
+the dark bar below the network marks the current window among all
+windows.
+
 **Statistical profile.**
 
 ![UCDP conflict data (GED, dyadic, actor, interstate onsets): activity
@@ -466,6 +471,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 3.1% of all events. Steep stretches are bursts and flat ones
 silences. 2 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
+
+**Over time.** Jan 2010 to Jan 2028 in windows of one 6 months (3,892
+events in this span). Press play, or drag the bar to stop on a moment;
+the dark bar below the network marks the current window among all
+windows.
 
 **Statistical profile.**
 
@@ -697,6 +707,11 @@ pairs](data-political_files/figure-html/pairs-us-leader-visits-1.png)
 busiest pairs: the number of events of the pair up to time t. Together
 they make 14.0% of all events. Steep stretches are bursts and flat ones
 silences.
+
+**Over time.** 1944–1945 to 2018–2019 in windows of one 24 months (3,945
+events in this span). Press play, or drag the bar to stop on a moment;
+the dark bar below the network marks the current window among all
+windows.
 
 **Statistical profile.**
 

@@ -153,6 +153,10 @@ e-mails of the busiest hour; over the week, 54% of the recipients of
 multi-recipient e-mails belong to the sender’s group of the e-mail
 network.
 
+The animation steps through the week in 3-hour windows of Warsaw time.
+The busiest window, Wed 06 Jan 09:00–12:00, holds 25 of the 248
+multi-recipient e-mails, and 24 of the 49 windows have none.
+
 The single-recipient e-mails form an ordinary dyadic log again, so the
 dyadic catalogue applies to them directly:
 

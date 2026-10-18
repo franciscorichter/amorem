@@ -44,6 +44,11 @@ for (s in setdiff(stats, "recency")) feat[[s]] <- log1p(feat[[s]])
 busiest pairs, each actor's three strongest
 ties](case-email-eu-models_files/figure-html/network-figure-1.png)
 
+The animation covers the whole log, 12,216 emails over 802 days, two
+weeks per frame; the analysis below uses its first 3,000 emails, which
+end on day 158. 18 of the 58 windows have no email, and the busiest,
+days 196–210, has 584.
+
 The strata are split in time: the first 80% of the emails train the
 models, the last 20% are held out.
 

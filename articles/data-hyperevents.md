@@ -47,6 +47,11 @@ is its size, and the line joins its members among the rows above (dot:
 sender side, ring: receiver side). Members outside these 40 rows are
 counted in the bar but not drawn.
 
+**Over time.** 01 Nov 1998 to 02 Jun 2002 in windows of one month
+(38,388 events in this span). Press play, or drag the bar to stop on a
+moment; the dark bar below the network marks the current window among
+all windows.
+
 **Statistical profile.**
 
 ![Enron email with recipient lists (Perry & Wolfe): activity over time
@@ -249,6 +254,11 @@ to 23 March 2023, one per column: the bar on top is its size, and the
 line joins its members among the rows above (dot: sender side, ring:
 receiver side). Members outside these 40 rows are counted in the bar but
 not drawn.
+
+**Over time.** 05 Jan 2023 to 19 Dec 2024 in windows of one 14 days
+(162,424 events in this span). Press play, or drag the bar to stop on a
+moment; the dark bar below the network marks the current window among
+all windows.
 
 **Statistical profile.**
 

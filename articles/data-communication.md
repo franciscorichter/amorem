@@ -69,6 +69,11 @@ they make 6.0% of all events. Steep stretches are bursts and flat ones
 silences. 4 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
 
+**Over time.** Mon 15 Feb 2010, 06:00 to Sat 20 Feb 2010, 09:00 in
+windows of one 3 hours (2,942 events in this span). Press play, or drag
+the bar to stop on a moment; the dark bar below the network marks the
+current window among all windows.
+
 **Statistical profile.**
 
 ![Manufacturing company email metadata and corporate hierarchy: activity
@@ -152,6 +157,11 @@ they make 0.9% of all events. Steep stretches are bursts and flat ones
 silences. 2 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
 
+**Over time.** 11 Apr 2004 to 24 Oct 2004 in windows of one 4 days
+(59,835 events in this span). Press play, or drag the bar to stop on a
+moment; the dark bar below the network marks the current window among
+all windows.
+
 **Statistical profile.**
 
 ![SNAP: CollegeMsg (UC Irvine messages): activity over time, inter-event
@@ -230,6 +240,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 2.9% of all events. Steep stretches are bursts and flat ones
 silences. 4 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
+
+**Over time.** day 1, 00:00 from start to day 799, 00:00 from start in
+windows of one 14 days (332,334 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
 
 **Statistical profile.**
 
@@ -484,6 +499,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 8.5% of all events. Steep stretches are bursts and flat ones
 silences. 2 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
+
+**Over time.** day 1, 00:00 from start to day 28, 12:00 from start in
+windows of one 12 hours (3,600 events in this span). Press play, or drag
+the bar to stop on a moment; the dark bar below the network marks the
+current window among all windows.
 
 **Statistical profile.**
 

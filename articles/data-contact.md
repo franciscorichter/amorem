@@ -76,6 +76,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 6.9% of all events. Steep stretches are bursts and flat ones
 silences.
 
+**Over time.** Tue 03 Dec 2013, 08:00 to Tue 03 Dec 2013, 16:50 in
+windows of one 10 minutes (47,338 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
+
 **Statistical profile.**
 
 ![SocioPatterns: high school contacts, diaries, friendship, Facebook
@@ -223,6 +228,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 2.8% of all events. Steep stretches are bursts and flat ones
 silences.
 
+**Over time.** day 2, 08:30 from start to day 2, 17:00 from start in
+windows of one 10 minutes (65,150 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
+
 **Statistical profile.**
 
 ![SocioPatterns: primary school contacts (Lyon): activity over time,
@@ -292,6 +302,11 @@ pairs](data-contact_files/figure-html/pairs-sp-hospital-lyon-1.png)
 busiest pairs: the number of events of the pair up to time t. Together
 they make 11.9% of all events. Steep stretches are bursts and flat ones
 silences.
+
+**Over time.** day 2, 00:00 from start to day 2, 23:45 from start in
+windows of one 15 minutes (9,602 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
 
 **Statistical profile.**
 
@@ -501,6 +516,11 @@ busiest pairs: the number of events of the pair up to time t. Together
 they make 13.6% of all events. Steep stretches are bursts and flat ones
 silences.
 
+**Over time.** day 2, 00:00 from start to day 2, 17:45 from start in
+windows of one 15 minutes (7,131 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
+
 **Statistical profile.**
 
 ![SocioPatterns: ACM Hypertext 2009 conference contacts: activity over
@@ -570,6 +590,11 @@ pairs](data-contact_files/figure-html/pairs-sp-sfhh-conference-1.png)
 busiest pairs: the number of events of the pair up to time t. Together
 they make 6.4% of all events. Steep stretches are bursts and flat ones
 silences.
+
+**Over time.** day 1, 09:00 from start to day 1, 21:30 from start in
+windows of one 10 minutes (45,776 events in this span). Press play, or
+drag the bar to stop on a moment; the dark bar below the network marks
+the current window among all windows.
 
 **Statistical profile.**
 

@@ -54,6 +54,11 @@ ties](case-email-global_files/figure-html/network-figure-1.png)
 92.6% of the emails are sent between 07:00 and 16:00, and 0.8% on
 Saturday or Sunday.
 
+The animation pools the 30 days by hour of the week, so each frame shows
+the emails sent in one 2-hour window of a Monday-to-Sunday week. The
+busiest window, Mon 10:00–12:00, carries 6.2% of the emails; 31 of the
+84 windows have none.
+
 ### Ordinary sampling cannot see a global covariate
 
 With ordinary nested case-control sampling each control gets its event’s

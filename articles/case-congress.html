@@ -412,6 +412,13 @@ control per bill:</p>
 <p><img src="case-congress_files/figure-html/tv-plot-1.png" class="r-plt" alt="Effect of the same-party share over the 118th Congress" width="864"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<video src="case-congress_files/figure-html/anim-1.mp4" controls loop muted playsinline preload="metadata" poster="case-congress_files/figure-html/anim-1-poster.png" style="width:100%;max-width:960px;display:block;margin:0 auto" aria-label="Animation of the Senate cosponsorship network in two-week windows over the 118th Congress"></video><p>Each frame is a two-week window of Senate bills, and the bar strip
+under it marks the window in the whole record. The labelled senators are
+the three (among those with at least 50 cosponsorships) whose
+cosponsorships most often go to the other caucus. Over the fortnights
+with at least 100 Senate cosponsorships, the share that crosses caucus
+lines ranges from 16.3% (fortnight from 14 Feb 2023) to 37.1% (fortnight
+from 17 Dec 2024).</p>
 <p>The curve is the weight of the same-party share at each date, holding
 the other statistics fixed: 0.47 in June 2023 and 0.28 in September
 2024. <code>summary(fit_tv)$s.table</code> tests whether it departs from

@@ -213,6 +213,11 @@ they make 0.9% of all events. Steep stretches are bursts and flat ones
 silences. 4 of these pairs are the reverse of another, so replies run
 alongside the messages they answer.
 
+**Over time.** 1869–1873 to 2026–2029 in windows of one 48 months
+(49,945 events in this span). Press play, or drag the bar to stop on a
+moment; the dark bar below the network marks the current window among
+all windows.
+
 **Statistical profile.**
 
 ![International football results 1872-present: activity over time,

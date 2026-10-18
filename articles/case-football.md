@@ -105,6 +105,16 @@ title_left("Rivalries accumulate over a century", "cumulative matches N(t) of th
 Argentina – Uruguay have met 183 times. The flat stretches of 1914–1918
 and 1939–1945 are the two world wars.
 
+The whole record, four years at a time, on a fixed layout of the 80
+teams with most matches since 1872 (colours: the groups of the network
+above; grey: teams outside it):
+
+From 4 matches in 1872–1875, the record grows to 4,008 in 2008–2011. The
+regional groups fill in one after another: the median team of each group
+played its first international in 1922 (Germany, Sweden group), 1922
+(Mexico, United States group), 1953 (Saudi Arabia, South Korea group),
+1958 (Zambia, Egypt group).
+
 ### A relational event model for pairings
 
 We model the matches of 1990–2019 (26,282 matches). For each match,

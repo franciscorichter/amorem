@@ -51,6 +51,9 @@ each other and appear as the few lines between stars.
 the 40 dyads with the most years of
 fighting](case-conflict_files/figure-html/raster-1.png)
 
+The number of dyads that fight within a two-year window is 22 in
+1946-1947, peaks at 91 in 1990-1991, and is 87 in 2024-2025.
+
 Most long dyads fight in spells: years of fighting, a gap, and fighting
 again with the same opponent. The next figure counts how often a dyad
 that has fought before is active again, by the number of years since it
@@ -198,9 +201,9 @@ w <- widen_case_control(cc, covariates = c("gap", "war_last", "log_gov_other", "
 gfit <- rem(~ war_last + log_opp_past + nl(gap, k = 6) + tv(log_gov_other, k = 6),
             data = w, method = "gam", time = "year")
 summary(gfit)$s.table
-#>                             edf   Ref.df      Chi.sq  p-value
-#> s(.X_gap):.I           1.000745 1.001489 345.9547167 0.000000
-#> s(.time):log_gov_other 2.001030 2.002059   0.8116351 0.666908
+#>                             edf   Ref.df      Chi.sq   p-value
+#> s(.X_gap):.I           1.000296 1.000592 345.9482902 0.0000000
+#> s(.time):log_gov_other 2.000748 2.001496   0.8116265 0.6667807
 ```
 
 ![Smooth effect of years since the dyad last fought, and the
