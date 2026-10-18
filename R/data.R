@@ -109,7 +109,7 @@
 #' @seealso [social_evolution_calls], [social_evolution_actors]
 "social_evolution_friendship"
 
-#' Manufacturing-company email events (Michalski et al. 2014)
+#' Manufacturing-company email events (Nurek & Michalski 2020)
 #'
 #' Time-stamped directed emails among the 167 employees of a mid-sized
 #' manufacturing company in Poland, January to September 2010. Each recipient
@@ -289,9 +289,15 @@ NULL
 #' Visits of foreign heads of state or government to the United States, and
 #' travels of US presidents abroad, as directed visitor-to-host events.
 #'
-#' @format A data frame with 3,943 rows: `time` (days since the first visit),
+#' @format A data frame with 3,945 rows: `time` (days since the first visit),
 #'   `date`, `sender` (visiting country), `receiver` (host country),
 #'   `direction` (`"to_us"` or `"from_us"`).
+#' @details Country names follow the visits table's cleaned names. Where that
+#'   name is missing (microstates and a few presidential trips) the raw name is
+#'   used, or the country of the listed locales; the two source tables' spellings
+#'   are merged ("Korea, Republic of" is South Korea, "Zaire" is
+#'   Congo - Kinshasa). A 1998 presidential trip labelled Congo whose locales are
+#'   all in Uganda is coded as Uganda. See `data-raw/bundle_open_datasets.R`.
 #' @source US Leader-to-Leader Diplomatic Visits Dataset, 1946--2019. Harvard
 #'   Dataverse, \doi{10.7910/DVN/2ZNR5R}, licence CC0 1.0.
 "us_leader_visits"

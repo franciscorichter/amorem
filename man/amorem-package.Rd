@@ -20,7 +20,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Francisco Richter \email{richtf@usi.ch} [copyright holder]
+\strong{Maintainer}: Francisco Richter \email{richtf@usi.ch}
 
 Authors:
 \itemize{

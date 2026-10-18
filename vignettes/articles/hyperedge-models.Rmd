@@ -6,6 +6,7 @@ title: "Hyperedge models"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4, warning = FALSE)
 library(amorem)
+source("case-helpers.R")
 fmt <- function(x, d = 2) formatC(x, format = "f", digits = d, big.mark = ",")
 pct <- function(x) paste0(formatC(100 * x, format = "f", digits = 0), "%")
 chg <- function(from, to) if (to > from) "raises" else "lowers"
@@ -107,6 +108,7 @@ hyperevent: `I = {sender}`, `J = {recipients}`. We use the first 7 days.
 
 ```{r email-log}
 data(radoslaw_email)
+origin_email <- attr(radoslaw_email, "unix_origin")
 x <- radoslaw_email[radoslaw_email$time < 7 &
                     radoslaw_email$sender != radoslaw_email$receiver, ]
 key <- paste(x$sender, x$time)
@@ -126,24 +128,43 @@ n_multi <- sum(email_hl$size_J > 1)
 share_rows_multi <- sum(email_hl$size_J[email_hl$size_J > 1]) / nrow(x)
 ```
 
-```{r email-sizes, fig.alt = "Distribution of recipient-set sizes and of e-mails per sender"}
-op <- par(mfrow = c(1, 2), mar = c(4, 4.5, 2.5, 1))
-tab <- table(pmin(email_hl$size_J, 11))
-names(tab)[names(tab) == "11"] <- "11+"
-barplot(tab, log = "y", col = "#5b9bd5", xlab = "recipients per e-mail",
-        ylab = "e-mails (log scale)", main = "recipient-set size",
-        ylim = c(1, 2 * max(tab)), cex.names = 0.6)
-per_sender <- sort(table(unlist(email_hl$I)), decreasing = TRUE)
-plot(seq_along(per_sender), as.numeric(per_sender), log = "y", type = "h",
-     col = "#1d4e89", xlab = "sender rank", ylab = "e-mails (log scale)",
-     main = "e-mails per sender")
+```{r email-hypergraph, echo = FALSE, fig.width = 8, fig.height = 6.4, fig.alt = "The multi-recipient e-mails of the busiest hour drawn as a hypergraph, actors coloured by their group in the week's e-mail network"}
+# groups of the week's e-mail network give each actor a colour
+wk <- aggregate(list(w = rep(1, nrow(x))),
+                list(from = as.character(x$sender), to = as.character(x$receiver)), sum)
+grp <- withr::with_preserve_seed(layout_graph(wk))
+gcol <- group_colours(grp$group)
+member_col <- setNames(gcol[as.character(grp$group)], grp$id)
+member_col[is.na(member_col)] <- "#A6ABB0"
+# share of recipients of multi-recipient e-mails in the sender's group
+gid <- setNames(grp$group, grp$id)
+same_group <- unlist(lapply(which(email_hl$size_J > 1), function(k)
+  gid[email_hl$J[[k]]] == gid[email_hl$I[[k]]]))
+# the hour (counted from the first e-mail) with most multi-recipient e-mails
+hour <- floor(email_hl$time * 24)
+multi <- email_hl$size_J > 1
+busy <- as.integer(names(which.max(table(hour[multi]))))
+h <- email_hl[multi & hour == busy, ]
+start <- as.POSIXct(origin_email + busy * 3600, origin = "1970-01-01", tz = "Europe/Warsaw")
+snd <- table(unlist(h$I)); top3 <- sum(sort(snd, decreasing = TRUE)[1:min(3, length(snd))])
+n_groups <- length(unique(gid[unique(unlist(h$J))]))
+op <- par(mar = c(1.6, 0.5, 3, 0.5))
+draw_hypergraph(h, member_col)
+title_left(sprintf("%d e-mails to several recipients, %s to %s: %d senders, the top 3 send %d; recipients in %d groups",
+                   nrow(h), format(start, "%a %d %b %H:%M"), format(start + 3600, "%H:%M"), length(snd), top3, n_groups),
+           "square: one e-mail  \u00b7  thick line: its sender  \u00b7  thin lines: its recipients")
+mtext("dot size: e-mails the employee sends or receives in this hour  \u00b7  colour: the employee's group in the week's e-mail network",
+      side = 1, line = 0.4, cex = 0.62, col = ink_soft)
 par(op)
 ```
 
 Of the `r fmt(nrow(email_hl), 0)` e-mails, `r fmt(n_multi, 0)`
 (`r pct(n_multi / nrow(email_hl))`) have more than one recipient; they account
 for `r pct(share_rows_multi)` of the `r fmt(nrow(x), 0)` rows of the dyadic
-log. The largest recipient set has `r max(email_hl$size_J)` members.
+log. The largest recipient set has `r max(email_hl$size_J)` members. The figure
+draws the multi-recipient e-mails of the busiest hour; over the week,
+`r pct(mean(same_group))` of the recipients of multi-recipient e-mails belong
+to the sender's group of the e-mail network.
 
 The single-recipient e-mails form an ordinary dyadic log again, so the dyadic
 catalogue applies to them directly:
@@ -198,6 +219,14 @@ est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
 round(est, 3)
 ```
 
+```{r email-cc-figure, echo = FALSE, fig.height = 2.4, fig.alt = "Estimated effects of sender activity, repetition and reciprocity with 95% intervals"}
+k <- rownames(est) != "(Intercept)"
+forest(est[k, "Estimate"], est[k, "Std. Error"],
+       labels = c(log_sender_activity = "sender activity", log_repetition = "repetition",
+                  log_reciprocity = "reciprocity")[rownames(est)[k]],
+       xlab = "effect on the log-rate per unit of log(1 + count), 95% interval")
+```
+
 ```{r email-cc-numbers, include = FALSE}
 b <- est[, "Estimate"]; se <- est[, "Std. Error"]
 ```
@@ -246,13 +275,50 @@ sweep <- data.frame(
 round(sweep, 2)
 ```
 
-```{r directed-figure, fig.alt = "Sender-set size distribution under the four specifications"}
-counts <- sapply(sizes, function(s) table(factor(s$size_I, levels = 1:3)))
-barplot(counts, beside = TRUE, col = c("#1d4e89", "#5b9bd5", "#bcd4ec"),
-        ylab = "events", xlab = "specification",
-        legend.text = paste("|I| =", 1:3),
-        args.legend = list(x = "topleft", bty = "n"))
+```{r lock-in, include = FALSE}
+# first event from which every later event repeats the last event's (I, J)
+lock_in <- function(nm) {
+  key <- vapply(seq_len(nrow(sims[[nm]])), function(k)
+    paste(sort(sims[[nm]]$I[[k]]), collapse = ",") |> paste(paste(sort(sims[[nm]]$J[[k]]), collapse = ","), sep = "|"), "")
+  differ <- which(key != key[length(key)])
+  if (length(differ)) max(differ) + 1 else 1
+}
 ```
+
+```{r directed-figure, echo = FALSE, fig.width = 8, fig.height = 7.2, fig.alt = "The 150 simulated events under each of the four specifications, one column per event with its senders and receivers marked"}
+# one column per event; teal marks: senders (authors), purple marks: receivers (papers)
+incidence_strip <- function(hl, senders, receivers, main, sub) {
+  K <- nrow(hl); rows <- c(senders, receivers); y <- setNames(rev(seq_along(rows)), rows)
+  plot(NA, xlim = c(0.5, K + 0.5), ylim = c(0.4, length(rows) + 0.6), axes = FALSE, xlab = "", ylab = "", xaxs = "i")
+  rect(0.5, min(y[receivers]) - 0.5, K + 0.5, max(y[receivers]) + 0.5, col = "#F5F3FA", border = NA)
+  for (k in seq_len(K)) {
+    I <- hl$I[[k]]; J <- hl$J[[k]]; m <- y[c(I, J)]
+    segments(k, min(m), k, max(m), col = alpha(ink_soft, 0.3), lwd = 0.7)
+    points(rep(k, length(I)), y[I], pch = 15, cex = 0.5, col = pal[1])
+    points(rep(k, length(J)), y[J], pch = 15, cex = 0.5, col = pal[2])
+  }
+  axis(2, at = y, labels = sub("author", "A", sub("paper", "P", rows)), las = 1, tick = FALSE,
+       cex.axis = 0.62, line = -0.9, col.axis = ink)
+  title_left(main, sub)
+}
+op <- par(mfrow = c(4, 1), mar = c(0.6, 2.2, 2.9, 0.4))
+plain <- c("no effect" = "no endogenous effect",
+           "size_I = -0.6" = "smaller sender sets favoured (size_I = -0.6)",
+           "subrep_1_1 = 0.8" = "repeated author-paper pairs favoured (subrep_1_1 = 0.8)",
+           "both" = "both effects (size_I = -0.6, subrep_1_1 = 0.8)")
+for (nm in names(sims))
+  incidence_strip(sims[[nm]], paste0("author", 1:4), paste0("paper", 1:4), plain[[nm]],
+                  sprintf("single sender in %s of the 150 events  \u00b7  mean sender-set size %s",
+                          pct(sweep[nm, "share_I_1"]), fmt(sweep[nm, "mean_size_I"])))
+par(op)
+```
+
+Each panel shows the 150 events of one simulation, one column per event: teal
+marks are its senders (authors A1–A4), purple marks its receivers (papers
+P1–P4, shaded band), so the number of teal marks in a column is the
+sender-set size. With `subrep_1_1 = 0.8` every event from event
+`r lock_in("subrep_1_1 = 0.8")` on repeats the same sender and receiver sets;
+with both effects, every event from event `r lock_in("both")` on.
 
 With no endogenous effect, `r pct(sweep["no effect", "share_I_1"])` of the
 events have a single sender. A negative `size_I` effect
@@ -296,17 +362,33 @@ top <- names(which.max(pair_counts))
 sort(pair_counts, decreasing = TRUE)[1:4]
 ```
 
-```{r meetings-figure, fig.alt = "Running co-attendance count of the most frequent pair and of another pair"}
+```{r meetings-figure, echo = FALSE, fig.width = 8, fig.height = 3.8, fig.alt = "Co-attendance network of the five actors and the running count of meetings for two pairs"}
 other <- names(sort(pair_counts))[1]
 running <- function(p) cumsum(vapply(meet$I, function(Im)
   all(strsplit(p, "")[[1]] %in% Im), logical(1)))
 label <- function(p) paste0("{", paste(strsplit(p, "")[[1]], collapse = ", "), "}")
-plot(seq_len(nrow(meet)), running(top), type = "s", lwd = 2, col = "#d62728",
-     xlab = "meeting index", ylab = "meetings containing the pair so far",
-     ylim = c(0, max(pair_counts)))
-lines(seq_len(nrow(meet)), running(other), type = "s", lwd = 2, col = "#1d4e89")
-legend("topleft", bty = "n", lwd = 2, col = c("#d62728", "#1d4e89"),
-       legend = c(label(top), label(other)))
+ends <- do.call(rbind, strsplit(names(pair_counts), ""))
+pair_col <- ifelse(names(pair_counts) == top, pal[1], ifelse(names(pair_counts) == other, pal[2], "#9AA3AA"))
+lay <- layout_graph(data.frame(from = ends[, 1], to = ends[, 2], w = pair_counts), method = "circle")
+nodes <- data.frame(id = lay$id, x = lay$x, y = lay$y,
+                    size = vapply(lay$id, function(a) sum(vapply(meet$I, function(Im) a %in% Im, TRUE)), 0),
+                    col = "#4A5560", label = lay$id)
+layout(matrix(1:2, 1), widths = c(1, 1.4))
+par(mar = c(0.5, 0.5, 3, 0.5))
+draw_network(nodes, data.frame(from = ends[, 1], to = ends[, 2], w = pair_counts, col = pair_col),
+             max_lwd = 9, node_scale = c(2, 3.2), label_cex = 0.8)
+title_left("Meetings per pair", "line width: meetings the pair attended together")
+par(mar = c(3.6, 3.6, 3, 1))
+y1 <- running(top); y2 <- running(other)
+plot(seq_len(nrow(meet)), y1, type = "n", ylim = c(0, max(pair_counts)), axes = FALSE, xlab = "", ylab = "")
+lines(seq_len(nrow(meet)), y1, type = "s", lwd = 2.4, col = pal[1])
+lines(seq_len(nrow(meet)), y2, type = "s", lwd = 2.4, col = pal[2])
+axis(1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+axis(2, las = 1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+mtext("meeting index", side = 1, line = 2, cex = 0.75, col = ink_soft)
+text(nrow(meet), c(tail(y1, 1), tail(y2, 1)), c(label(top), label(other)), pos = 2, offset = 0.3,
+     col = pal[1:2], cex = 0.75, xpd = TRUE)
+title_left("Meetings containing the pair so far", "the most frequent pair and the least frequent")
 ```
 
 With `subrep_2 = 0.6`, a pair that meets is more likely to meet again. Of the
@@ -338,23 +420,28 @@ fit_tvnl <- rem(~ tv(cov_sender, k = 6) + nl(cov_receiver, k = 6),
                 data = wd, method = "gam", time = "event_time")
 ```
 
-```{r tvnl-figure, fig.height = 4, fig.alt = "Estimated time-varying and non-linear effects against the truth"}
+```{r tvnl-figure, echo = FALSE, fig.height = 4, fig.alt = "Estimated time-varying and non-linear effects with 95% bands against the true effects"}
 truth <- attr(d, "truth")
-op <- par(mfrow = c(1, 2), mar = c(4, 4.5, 2.5, 1))
-plot(fit_tvnl$fit, select = 1, rug = FALSE, scale = 0,
-     xlab = "time", ylab = expression(alpha(t)), main = "time-varying effect")
+op <- par(mfrow = c(1, 2), mar = c(3.6, 4, 3, 1))
 tg <- seq(0, truth$horizon, length.out = 200)
-lines(tg, truth$time_varying_effect(tg), col = "#d62728", lwd = 2, lty = 2)
-plot(fit_tvnl$fit, select = 2, rug = FALSE, scale = 0,
-     xlab = "receiver-group covariate", ylab = "f(x)", main = "non-linear effect")
+s1 <- smooth_data(fit_tvnl$fit, 1)
+draw_smooth(s1, xlab = "time", ylab = expression(alpha(t)),
+            ylim = range(s1$fit - 1.96 * s1$se, s1$fit + 1.96 * s1$se, truth$time_varying_effect(tg)))
+lines(tg, truth$time_varying_effect(tg), col = ink, lwd = 1.6, lty = 2)
+title_left("Sender-group covariate: time-varying effect")
 xg <- seq(min(d$cov_receiver), max(d$cov_receiver), length.out = 200)
 fx <- truth$nonlinear_effect(xg)
-lines(xg, fx - mean(fx), col = "#d62728", lwd = 2, lty = 2)
+s2 <- smooth_data(fit_tvnl$fit, 2)
+draw_smooth(s2, col = pal[2], xlab = "receiver-group covariate", ylab = "f(x)",
+            ylim = range(s2$fit - 1.96 * s2$se, s2$fit + 1.96 * s2$se, fx - mean(fx)))
+lines(xg, fx - mean(fx), col = ink, lwd = 1.6, lty = 2)
+title_left("Receiver-group covariate: non-linear effect")
+legend("topleft", legend = c("estimate, 95% band", "true effect"), lty = c(1, 2), lwd = c(2.2, 1.6),
+       col = c(pal[2], ink), bty = "n", cex = 0.7, inset = c(0, 0.02))
 par(op)
 ```
 
-Solid lines are the estimates with ±2 standard-error bands, dashed red lines
-the true effects; the non-linear effect is identified up to an additive
+Solid lines are the estimates with 95% bands, dashed lines the true effects; the non-linear effect is identified up to an additive
 constant, so its truth is drawn centred.
 
 ---

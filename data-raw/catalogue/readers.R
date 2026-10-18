@@ -179,11 +179,9 @@ readers2 <- list(
   "russia-ukraine-mfa-visits" = function() { x <- readxl::read_excel(.p("russia-ukraine-mfa-visits", "Russia and Ukraine MFAs 2021-2024.xlsx"))
     out <- x$Direction == "Outgoing"
     dyadic(ifelse(out, x$Country, x$`Partner Country`), ifelse(out, x$`Partner Country`, x$Country), .days(as.Date(x$Date)), TRUE, "days", note = "visitor -> host") },
-  "us-leader-visits" = function() { a <- fread(.p("us-leader-visits", "foreign_leader_visits_20221102.tab"))
-    b <- fread(.p("us-leader-visits", "president_travels_20221102.tab"))
-    bc <- intersect(c("country_clean", "country"), names(b))[1]; bd <- intersect(c("start_date", "date"), names(b))[1]
-    dyadic(c(a$country_clean, rep("United States", nrow(b))), c(rep("United States", nrow(a)), b[[bc]]),
-           c(.days(a$start_date), .days(b[[bd]])), TRUE, "days", note = "foreign leaders visiting the US and US presidents travelling abroad") },
+  "us-leader-visits" = function() {   # the bundled table: one name per country across the two source tables
+    v <- amorem::us_leader_visits
+    dyadic(v$sender, v$receiver, as.numeric(v$date), TRUE, "days", note = "foreign leaders visiting the US and US presidents travelling abroad") },
   "unhcr-refugees" = function() { e <- new.env(); f <- tempfile(fileext = ".rda")
     con <- pipe(paste("tar -xzOf", shQuote(.p("unhcr-refugees", "refugees_2025.12.2.tar.gz")), "refugees/data/population.rda"), "rb")
     raw <- readBin(con, "raw", 2e8); close(con); writeBin(raw, f); load(f, envir = e)

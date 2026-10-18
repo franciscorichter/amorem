@@ -27,6 +27,7 @@ jobs:
             any::pkgdown
             any::testthat
             any::waldo
+            any::igraph
           needs: check
       - name: Check
         uses: r-lib/actions/check-r-package@v2

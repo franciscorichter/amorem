@@ -3,7 +3,7 @@
 \docType{data}
 \name{radoslaw_email}
 \alias{radoslaw_email}
-\title{Manufacturing-company email events (Michalski et al. 2014)}
+\title{Manufacturing-company email events (Nurek & Michalski 2020)}
 \format{
 A data frame with 82,927 rows and 4 columns:
 \describe{

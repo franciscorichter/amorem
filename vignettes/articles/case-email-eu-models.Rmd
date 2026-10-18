@@ -6,6 +6,7 @@ title: "Case study: estimation backends on Email-EU-core"
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 8,
                       fig.height = 4.5, warning = FALSE, message = FALSE)
 library(amorem)
+source("case-helpers.R")
 fmt <- function(x, d = 3) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
@@ -41,6 +42,32 @@ feat <- endogenous_features(cc, stats = stats)
 feat$recency <- transform_recency(feat$recency)
 feat$recency[is.na(feat$recency)] <- 0
 for (s in setdiff(stats, "recency")) feat[[s]] <- log1p(feat[[s]])
+```
+
+```{r network-figure, echo = FALSE, fig.height = 5.6, fig.alt = "Email network of the first 3,000 emails among the actors of the busiest pairs, each actor's three strongest ties"}
+pairs_n <- aggregate(list(w = rep(1, nrow(eu))), list(from = eu$sender, to = eu$receiver), sum)
+pairs_n <- pairs_n[pairs_n$from != pairs_n$to, ]
+und <- transform(pairs_n, a = pmin(from, to), b = pmax(from, to))
+und <- aggregate(list(w = und$w), und[c("a", "b")], sum)
+und <- und[order(-und$w), ]
+ids <- head(unique(as.vector(rbind(und$a, und$b))), 60)
+keep <- unique(unlist(lapply(ids, function(i) {
+  r <- which((und$a == i | und$b == i) & und$a %in% ids & und$b %in% ids); head(r[order(-und$w[r])], 3) })))
+bb <- und[keep, ]
+lay <- withr::with_preserve_seed(layout_graph(data.frame(from = bb$a, to = bb$b, w = bb$w), ids = ids))
+gc <- group_colours(lay$group)
+act <- table(c(eu$sender, eu$receiver))
+nodes <- data.frame(id = lay$id, x = lay$x, y = lay$y, size = as.numeric(act[lay$id]),
+                    col = gc[as.character(lay$group)], label = NA)
+ed <- pairs_n[paste(pairs_n$from, pairs_n$to) %in% c(paste(bb$a, bb$b), paste(bb$b, bb$a)), ]
+same <- lay$group[match(ed$from, lay$id)] == lay$group[match(ed$to, lay$id)]
+ed$col <- ifelse(same, gc[as.character(lay$group[match(ed$from, lay$id)])], "#B4BBC0")
+par(mar = c(1.8, 0.4, 2.8, 0.4))
+draw_network(nodes, ed, directed = TRUE, max_lwd = 3)
+title_left(sprintf("Who emails whom in the first %s emails", fmt(nrow(eu), 0)),
+           "the 60 actors of the busiest pairs, each actor's three strongest ties; arrow: direction, width: emails")
+mtext("dot size: emails sent and received  \u00b7  colour: group (modularity); grey lines join different groups",
+      side = 1, line = 0.6, cex = 0.62, col = ink_soft)
 ```
 
 The strata are split in time: the first 80% of the emails train the models,
@@ -132,11 +159,14 @@ other four at their training means, and shows the change in score centred at
 its mean over the range: the straight line of the conditional logit and the
 partial-dependence curves of the two neural models.
 
-```{r curves, fig.height = 6.5, fig.alt = "Effect of each statistic under clogit and the two neural models"}
+```{r curves, echo = FALSE, fig.height = 6.2, fig.alt = "Effect of each statistic under clogit and the two neural models"}
 centre <- function(v) v - mean(v)
 mu <- colMeans(train[, stats])
-cols <- c(clogit = "grey40", nn_mlp = "#d62728", nn_spline = "#1f77b4")
-op <- par(mfrow = c(2, 3), mar = c(4, 4, 2, 1))
+cols <- c(clogit = "#4A5560", nn_mlp = pal[5], nn_spline = pal[1])
+nice <- c(reciprocity_count = "reciprocity count", transitivity_count = "transitivity count",
+          sender_outdegree = "sender out-degree", receiver_indegree = "receiver in-degree",
+          recency = "recency weight")
+op <- par(mfrow = c(2, 3), mar = c(3.4, 3.6, 2.6, 0.8))
 for (s in stats) {
   g  <- seq(stats::quantile(train[[s]], 0.01), stats::quantile(train[[s]], 0.99),
             length.out = 60)
@@ -146,11 +176,20 @@ for (s in stats) {
   y <- cbind(clogit    = centre(score_clogit(nd)),
              nn_mlp    = centre(predict(fit_mlp$fit, nd)),
              nn_spline = centre(predict(fit_add$fit, nd)))
-  matplot(g, y, type = "l", lty = 1, lwd = 2, col = cols, xlab = s,
-          ylab = "centred score", main = s)
+  plot(range(g), range(y), type = "n", axes = FALSE, xlab = "", ylab = "")
+  abline(h = 0, col = rule, lwd = 1.2)
+  for (m in colnames(y)) lines(g, y[, m], col = cols[m], lwd = if (m == "clogit") 1.6 else 2.2,
+                              lty = if (m == "clogit") 2 else 1)
+  axis(1, tick = FALSE, cex.axis = 0.7, col.axis = ink_soft, line = -0.6)
+  axis(2, las = 1, tick = FALSE, cex.axis = 0.7, col.axis = ink_soft, line = -0.6)
+  mtext(if (s == "recency") "weight" else "log(1 + count)", side = 1, line = 1.8, cex = 0.62, col = ink_soft)
+  mtext("centred score", side = 2, line = 2.2, cex = 0.62, col = ink_soft)
+  title_left(nice[[s]])
 }
 plot.new()
-legend("center", legend = names(cols), col = cols, lwd = 2, bty = "n")
+legend("center", legend = c("conditional logit (straight line)", "neural: multilayer perceptron",
+                            "neural: additive splines"),
+       col = cols, lwd = c(1.6, 2.2, 2.2), lty = c(2, 1, 1), bty = "n", cex = 0.85, text.col = ink)
 par(op)
 ```
 
@@ -235,19 +274,39 @@ b_ends <- beta_t(days)
 The time-varying model's AIC is `r fmt(abs(d_aic), 1)`
 `r if (d_aic > 0) "lower" else "higher"` than that of the constant-effect model.
 
-```{r gam-figure, fig.height = 4.2, fig.alt = "Time-varying reciprocity effect and the time-by-transitivity surface"}
-op <- par(mfrow = c(1, 2), mar = c(4, 4, 2.5, 1))
-plot(fit_tv$fit, select = 1, shade = TRUE, xlab = "day", ylab = "effect",
-     main = "tv(reciprocity_count)")
-abline(h = 0, col = "grey60")
-plot(fit_tv$fit, select = 2, scheme = 2, xlab = "day",
-     ylab = "transitivity_count (log1p)", main = "tvnl(transitivity_count)")
+```{r gam-figure, echo = FALSE, fig.height = 4.2, fig.alt = "Time-varying reciprocity effect with a 95% band, and the time-by-transitivity surface"}
+# the surface of a two-dimensional smooth as mgcv plots it (cells far from the data are NA)
+surface_data <- function(gamfit, select) {
+  grDevices::pdf(NULL); on.exit(grDevices::dev.off())
+  pd <- plot(gamfit, select = select, scheme = 2)[[select]]
+  list(x = pd$x, y = pd$y, z = matrix(pd$fit, length(pd$x), length(pd$y)))
+}
+op <- par(mfrow = c(1, 2), mar = c(3.6, 4, 3, 1))
+draw_smooth(smooth_data(fit_tv$fit, 1), col = pal[5], xlab = "day", ylab = "effect on the log-rate")
+title_left("tv(reciprocity_count)", "coefficient of log(1 + reciprocity count) by day; shaded: 95% band")
+sf <- surface_data(fit_tv$fit, 2)
+lim <- max(abs(sf$z), na.rm = TRUE)
+div <- grDevices::colorRampPalette(c("#7A4E8C", "#C9B7D6", "#FFFFFF", "#A9D3D3", "#0E6F6F"))(64)
+par(mar = c(3.6, 4, 3, 4.2))
+image(sf$x, sf$y, sf$z, col = div, zlim = c(-lim, lim), axes = FALSE, xlab = "", ylab = "", useRaster = TRUE)
+contour(sf$x, sf$y, sf$z, add = TRUE, col = alpha(ink, 0.7), lwd = 0.7, labcex = 0.7, vfont = c("sans serif", "bold"),
+        method = "flattest")
+axis(1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+axis(2, las = 1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+mtext("day", side = 1, line = 2, cex = 0.75, col = ink_soft)
+mtext("log(1 + transitivity count)", side = 2, line = 2.3, cex = 0.75, col = ink_soft)
+title_left("tvnl(transitivity_count)", "contribution to the log-rate; teal raises it, purple lowers it")
+yy <- seq(par("usr")[3], par("usr")[4], length.out = 65)
+rect(par("usr")[2] + 0.02 * diff(par("usr")[1:2]), head(yy, -1), par("usr")[2] + 0.06 * diff(par("usr")[1:2]), tail(yy, -1),
+     col = div, border = NA, xpd = TRUE)
+text(par("usr")[2] + 0.08 * diff(par("usr")[1:2]), range(yy), sprintf("%+.1f", c(-lim, lim)), adj = 0, cex = 0.6,
+     col = ink_soft, xpd = TRUE)
 par(op)
 ```
 
 In the left panel the coefficient of `reciprocity_count` is
 `r fmt(b_ends[1], 2)` on day `r fmt(days[1], 0)` and `r fmt(b_ends[2], 2)` on day
-`r fmt(days[2], 0)`; the dashed lines are ±2 standard errors. The right panel
+`r fmt(days[2], 0)`; the band is a 95% interval. The right panel
 shows the tensor-product surface of `tvnl(transitivity_count)` over day and
 count; mgcv leaves blank the combinations of day and count with no data near
 them, which includes the gap between a count of 0 and a count of 1 on the

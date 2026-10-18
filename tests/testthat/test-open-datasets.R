@@ -35,6 +35,10 @@ test_that("event tables have sender, receiver and ordered time", {
     expect_false(is.unsorted(x$time), info = nm)
     expect_gte(min(x$time), 0)
   }
+  data(us_leader_visits, envir = environment())
+  countries <- c(us_leader_visits$sender, us_leader_visits$receiver)
+  expect_false(any(is.na(countries) | countries %in% c("", "NA")))
+  expect_false(any(c("Korea, Republic of", "Zaire", "Vatican City") %in% countries))
   data(ucdp_dyads, envir = environment())
   expect_true(all(ucdp_dyads$intensity_level %in% 1:2))
   data(alien_invasions, envir = environment())

@@ -5,7 +5,7 @@
 \alias{us_leader_visits}
 \title{US leader-to-leader visits, 1945--2019}
 \format{
-A data frame with 3,943 rows: \code{time} (days since the first visit),
+A data frame with 3,945 rows: \code{time} (days since the first visit),
 \code{date}, \code{sender} (visiting country), \code{receiver} (host country),
 \code{direction} (\code{"to_us"} or \code{"from_us"}).
 }
@@ -19,5 +19,13 @@ us_leader_visits
 \description{
 Visits of foreign heads of state or government to the United States, and
 travels of US presidents abroad, as directed visitor-to-host events.
+}
+\details{
+Country names follow the visits table's cleaned names. Where that
+name is missing (microstates and a few presidential trips) the raw name is
+used, or the country of the listed locales; the two source tables' spellings
+are merged ("Korea, Republic of" is South Korea, "Zaire" is
+Congo - Kinshasa). A 1998 presidential trip labelled Congo whose locales are
+all in Uganda is coded as Uganda. See \code{data-raw/bundle_open_datasets.R}.
 }
 \keyword{datasets}

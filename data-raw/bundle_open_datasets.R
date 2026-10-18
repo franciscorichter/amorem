@@ -80,12 +80,24 @@ save_data(congress_bills_118, congress_members_118)
 # --- US leader-to-leader visits 1946-2019: CC0 1.0 (Harvard Dataverse doi:10.7910/DVN/2ZNR5R)
 a <- fread(raw("us-leader-visits", "foreign_leader_visits_20221102.tab"))
 p <- fread(raw("us-leader-visits", "president_travels_20221102.tab"))
-pc <- intersect(c("country_clean", "country"), names(p))[1]
-pd <- intersect(c("start_date", "date"), names(p))[1]
-v <- rbind(data.frame(date = as.Date(a$start_date), sender = a$country_clean, receiver = "United States",
-                      direction = "to_us"),
-           data.frame(date = as.Date(p[[pd]]), sender = "United States", receiver = p[[pc]],
-                      direction = "from_us"))
+# One name per country across the two tables. country_clean is missing ("NA") for
+# microstates and a few trips; fall back to the raw name, then to the locale.
+same_name <- c("Korea, Republic of" = "South Korea", "Zaire" = "Congo - Kinshasa", "Vatican City" = "Holy See",
+               "St. Christopher and Nevis" = "St. Kitts and Nevis", "Saint Lucia" = "St. Lucia",
+               "Western Samoa" = "Samoa", "Palestinian Authority" = "Palestine")
+clean_country <- function(clean, raw, locale = NULL) {
+  x <- ifelse(is.na(clean) | clean %in% c("", "NA"), raw, clean)
+  if (!is.null(locale)) {
+    x[(is.na(x) | x == "NA") & grepl("Geneva", locale)] <- "Switzerland"
+    x[(is.na(x) | x == "NA") & grepl("Berlin|Aachen", locale)] <- "Germany"
+    x[x %in% "Congo" & grepl("Kampala|Entebbe", locale)] <- "Uganda"   # 1998 trip: every locale is in Uganda
+  }
+  ifelse(x %in% names(same_name), same_name[x], x)
+}
+v <- rbind(data.frame(date = as.Date(a$start_date), sender = clean_country(a$country_clean, a$country),
+                      receiver = "United States", direction = "to_us"),
+           data.frame(date = as.Date(p$start_date), sender = "United States",
+                      receiver = clean_country(p$country_clean, p$country, p$locale), direction = "from_us"))
 v <- v[!is.na(v$date) & !is.na(v$receiver) & v$receiver != "", ]
 v <- v[order(v$date), ]
 us_leader_visits <- data.frame(time = days_from(v$date, min(v$date)), v, row.names = NULL)

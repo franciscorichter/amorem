@@ -136,11 +136,17 @@ articles:
       - articles/validation-experiments
       - articles/gof-calibration
   - title: "Case studies"
-    desc: "Analyses of the bundled datasets, run when the site is built."
+    desc: "Models fitted to the bundled datasets, run when the site is built."
     contents:
       - articles/case-email-global
       - articles/case-social-evolution
       - articles/case-email-eu-models
+      - articles/case-congress
+      - articles/case-copenhagen
+      - articles/case-diplomacy
+      - articles/case-conflict
+      - articles/case-football
+      - articles/case-invasions
   - title: "Data catalogue"
     desc: "Relational event data and global covariates: sources, licences and profiles."
     contents:

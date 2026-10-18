@@ -1,0 +1,347 @@
+---
+title: "Case study: armed-conflict dyads, 1946–2025"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
+                      fig.height = 5, warning = FALSE, message = FALSE)
+library(amorem)
+source("case-helpers.R")
+type_lab <- c("1" = "extrasystemic", "2" = "interstate", "3" = "intrastate", "4" = "internationalized intrastate")
+type_col <- c("1" = "#C99A3B", "2" = "#C8729A", "3" = "#178E8E", "4" = "#8E7CC3")
+short <- function(x) gsub("Government of ", "", x)
+```
+
+# Armed-conflict dyads, 1946–2025
+
+`ucdp_dyads` is the dyadic dataset of the Uppsala Conflict Data Program
+(UCDP, version 26.1, CC BY 4.0): one row for every year in which a
+government (`sender`, side A) and an opponent (`receiver`, side B) fought
+with at least 25 battle-related deaths. The opponent is a rebel group, or
+another government in an interstate conflict. `intensity_level` is 2 (war,
+1,000 or more deaths in the year) or 1 (minor conflict). This case study asks
+how strongly a dyad's own past predicts its fighting in a given year, how
+fast that memory fades once a conflict stops, and whether a government at war
+with one opponent is more likely to fight another.
+
+```{r data}
+data(ucdp_dyads)
+u <- ucdp_dyads
+c(dyad_years = nrow(u), dyads = length(unique(u$dyad_id)),
+  governments = length(unique(u$sender)), opponents = length(unique(u$receiver)),
+  first = min(u$year), last = max(u$year))
+table(type = type_lab[as.character(u$type_of_conflict)], intensity = u$intensity_level)
+```
+
+A few sides are coalitions (side A lists several governments, for example the
+Arab states in 1948); each is kept as one actor.
+
+## Who fights whom
+
+```{r network, echo = FALSE, fig.height = 7.4, fig.alt = "Network of governments and their opponents for the dyads with the most years of fighting, coloured by type of conflict"}
+dy <- aggregate(list(years = rep(1, nrow(u))), u[c("sender", "receiver")], sum)
+ty <- tapply(u$type_of_conflict, paste(u$sender, u$receiver, sep = "\r"), function(z) as.numeric(names(which.max(table(z)))))
+dy$type <- ty[paste(dy$sender, dy$receiver, sep = "\r")]
+dsel <- dy[order(-dy$years), ][1:150, ]
+lay <- layout_graph(data.frame(from = dsel$sender, to = dsel$receiver, w = dsel$years), seed = 3)
+gov <- lay$id %in% u$sender
+yrs <- tapply(c(dsel$years, dsel$years), c(dsel$sender, dsel$receiver), sum)
+nodes <- data.frame(id = lay$id, x = lay$x, y = lay$y, size = as.numeric(yrs[lay$id]),
+                    col = ifelse(gov, "#4A5560", "#B9C0C5"), label = NA)
+glab <- names(sort(yrs[names(yrs) %in% u$sender], decreasing = TRUE))[1:12]
+olab <- names(sort(yrs[!names(yrs) %in% u$sender], decreasing = TRUE))[1:4]
+nodes$label[match(c(glab, olab), nodes$id)] <- short(c(glab, olab))
+par(mar = c(0.5, 0.5, 2.6, 0.5))
+draw_network(nodes, data.frame(from = dsel$sender, to = dsel$receiver, w = dsel$years,
+                               col = type_col[as.character(dsel$type)]),
+             max_lwd = 3.5, node_scale = c(0.5, 3), label_cex = 0.6)
+gx <- nodes$x[gov]; gy <- nodes$y[gov]
+points(gx, gy, pch = 22, bg = "#4A5560", col = "white", cex = 0.5 + 2.5 * sqrt(nodes$size[gov] / max(nodes$size)), lwd = 0.8)
+n_inter <- sum(dsel$type == 2)
+title_left("Most conflicts are stars: one government against many opponents",
+           sprintf("150 dyads with most years of fighting, 1946-2025; %d of them interstate. Squares: governments; dots: opponents; line colour: type", n_inter))
+legend("bottomleft", legend = type_lab, col = type_col, lwd = 3, bty = "n", cex = 0.68, text.col = ink)
+```
+
+```{r network-numbers, include = FALSE}
+opp_per_gov <- sort(tapply(dy$receiver, dy$sender, function(z) length(unique(z))), decreasing = TRUE)
+```
+
+Intrastate conflicts make the network a set of stars: one government against
+many rebel groups. `r short(names(opp_per_gov)[1])` has fought
+`r opp_per_gov[[1]]` different opponents, `r short(names(opp_per_gov)[2])`
+`r opp_per_gov[[2]]` and `r short(names(opp_per_gov)[3])`
+`r opp_per_gov[[3]]`. Interstate dyads join governments to each other and
+appear as the few lines between stars.
+
+## Spells, gaps and recurrence
+
+```{r raster, echo = FALSE, fig.height = 7.6, fig.alt = "One row per dyad and one column per year, coloured by intensity, for the 40 dyads with the most years of fighting"}
+top <- dy[order(-dy$years), ][1:40, ]
+key <- paste(top$sender, top$receiver, sep = "\r")
+first <- tapply(u$year, paste(u$sender, u$receiver, sep = "\r"), min)[key]
+top <- top[order(first, -top$years), ]; key <- paste(top$sender, top$receiver, sep = "\r")
+R <- nrow(top); yy <- 1946:2025
+lab <- paste0(short(top$sender), " - ", short(top$receiver))
+lab <- ifelse(nchar(lab) > 46, paste0(substr(lab, 1, 45), "."), lab)
+par(mar = c(2.6, 16, 2.6, 0.8))
+plot(NA, xlim = range(yy) + c(-0.5, 0.5), ylim = c(0.5, R + 0.5), axes = FALSE, xlab = "", ylab = "", xaxs = "i", yaxs = "i")
+abline(h = 1:R, col = "#F1F3F4", lwd = 0.8)
+uk <- paste(u$sender, u$receiver, sep = "\r"); m <- match(uk, key)
+s <- !is.na(m)
+rect(u$year[s] - 0.5, R + 1 - m[s] - 0.4, u$year[s] + 0.5, R + 1 - m[s] + 0.4,
+     col = ifelse(u$intensity_level[s] == 2, "#0B4F4F", "#7FC1C1"), border = NA)
+axis(1, at = seq(1950, 2020, 10), tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.6)
+axis(2, at = R:1, labels = lab, las = 1, tick = FALSE, cex.axis = 0.55, col.axis = ink, line = -0.5)
+title_left("Dyads fight in spells separated by gaps, and move between minor conflict and war",
+           "40 government-opponent dyads with most years of fighting, ordered by first year; light: minor conflict; dark: war")
+```
+
+Most long dyads fight in spells: years of fighting, a gap, and fighting again
+with the same opponent. The next figure counts how often a dyad that has
+fought before is active again, by the number of years since it last fought.
+
+```{r hazard-data}
+active <- split(u$year, paste(u$sender, u$receiver, sep = "\r"))
+haz <- do.call(rbind, lapply(active, function(y) {
+  y <- sort(unique(y)); yrs <- (min(y) + 1):2025
+  last <- vapply(yrs, function(t) max(y[y < t]), 0)
+  data.frame(gap = yrs - last, active = yrs %in% y)
+}))
+h <- aggregate(list(active = haz$active, n = rep(1, nrow(haz))), list(gap = haz$gap), sum)
+h$rate <- h$active / h$n
+head(h, 4)
+```
+
+```{r hazard, echo = FALSE, fig.height = 4.4, fig.alt = "Share of dyads fighting again, by years since they last fought"}
+hh <- h[h$gap <= 30, ]
+par(mar = c(3.4, 3.8, 2.6, 0.8))
+plot(hh$gap, hh$rate, log = "y", type = "n", ylim = c(min(hh$rate[hh$rate > 0]), 1), axes = FALSE, xlab = "", ylab = "")
+lines(hh$gap, hh$rate, col = alpha(pal[1], 0.5), lwd = 1.2)
+points(hh$gap, hh$rate, pch = 21, bg = pal[1], col = "white", cex = 0.6 + 2.2 * sqrt(hh$n / max(hh$n)))
+axis(1, at = c(1, 5, 10, 15, 20, 25, 30), tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.6)
+axis(2, at = c(0.003, 0.01, 0.03, 0.1, 0.3, 1), labels = pct(c(0.003, 0.01, 0.03, 0.1, 0.3, 1), 1), las = 1,
+     tick = FALSE, cex.axis = 0.7, col.axis = ink_soft, line = -0.6)
+mtext("years since the dyad last fought", side = 1, line = 2, cex = 0.72, col = ink_soft)
+for (g in c(1, 2, 5, 10)) text(g, hh$rate[hh$gap == g], pct(hh$rate[hh$gap == g]), pos = if (g == 10) 1 else 4, cex = 0.62, col = ink, offset = 0.7)
+legend("topright", legend = fmt(c(100, 1000, 3000)), pt.cex = 0.6 + 2.2 * sqrt(c(100, 1000, 3000) / max(hh$n)), pch = 21,
+       pt.bg = pal[1], col = "white", bty = "n", cex = 0.62, text.col = ink_soft, title = "pair-years at risk", title.col = ink_soft,
+       y.intersp = 1.8, x.intersp = 1.6)
+title_left("A government-opponent pair that fought last year fights again; after a gap it rarely does",
+           "share of pair-years with fighting, by years since the pair last fought (log scale)")
+```
+
+```{r hazard-numbers, include = FALSE}
+r_at <- function(g) h$rate[h$gap == g]
+```
+
+A dyad that fought last year fights again with probability
+`r pct(r_at(1))`. After a gap of two years the share is `r pct(r_at(2))`,
+after five years `r pct(r_at(5))` and after ten years `r pct(r_at(10))`.
+
+### Escalation and de-escalation
+
+```{r transitions, echo = FALSE, fig.height = 4.6, fig.alt = "Diagram of yearly transitions between peace, minor conflict and war for dyads that have fought before"}
+st <- do.call(rbind, lapply(split(u, paste(u$sender, u$receiver, sep = "\r")), function(d) {
+  yrs <- min(d$year):2025
+  s <- ifelse(yrs %in% d$year[d$intensity_level == 2], "war", ifelse(yrs %in% d$year, "minor", "none"))
+  data.frame(from = head(s, -1), to = tail(s, -1))
+}))
+P <- prop.table(table(factor(st$from, c("none", "minor", "war")), factor(st$to, c("none", "minor", "war"))), 1)
+pos <- list(none = c(0.12, 0.45), minor = c(0.5, 0.45), war = c(0.88, 0.45))
+scol <- c(none = "#B9C0C5", minor = "#7FC1C1", war = "#0B4F4F")
+par(mar = c(0.5, 0.5, 2.6, 0.5))
+plot(NA, xlim = c(0, 1), ylim = c(0.2, 0.72), axes = FALSE, xlab = "", ylab = "", asp = 1)
+arrow_curve <- function(a, b, p, bend) {
+  bz <- .bezier(pos[[a]][1], pos[[a]][2], pos[[b]][1], pos[[b]][2], bend, 40)
+  d <- sqrt((bz$x - pos[[b]][1])^2 + (bz$y - pos[[b]][2])^2); k <- d > 0.075 & sqrt((bz$x - pos[[a]][1])^2 + (bz$y - pos[[a]][2])^2) > 0.075
+  bz$x <- bz$x[k]; bz$y <- bz$y[k]; n <- length(bz$x)
+  lines(bz$x, bz$y, lwd = 0.8 + 14 * p, col = alpha(scol[[a]], 0.75))
+  ang <- atan2(bz$y[n] - bz$y[n - 1], bz$x[n] - bz$x[n - 1]); hl <- 0.025 + 0.02 * p
+  polygon(bz$x[n] + hl * c(0, -cos(ang - 0.5), -cos(ang + 0.5)), bz$y[n] + hl * c(0, -sin(ang - 0.5), -sin(ang + 0.5)),
+          col = alpha(scol[[a]], 0.9), border = NA)
+  m <- ceiling(n / 2); up <- bz$y[m] > pos[[a]][2]
+  text(bz$x[m], bz$y[m] + if (up) 0.035 else -0.035, pct(p), cex = 0.62, col = ink)
+}
+for (a in names(pos)) for (b in names(pos)) if (a != b && P[a, b] > 0.003) {
+  far <- abs(match(a, names(pos)) - match(b, names(pos))) == 2
+  arrow_curve(a, b, P[a, b], if (far) -0.32 else -0.22)
+}
+for (a in names(pos)) {
+  symbols(pos[[a]][1], pos[[a]][2], circles = 0.07, inches = FALSE, add = TRUE, bg = scol[[a]], fg = "white")
+  text(pos[[a]][1], pos[[a]][2], c(none = "no\nfighting", minor = "minor\nconflict", war = "war")[a],
+       col = if (a == "none") ink else "white", cex = 0.7, font = 2)
+  text(pos[[a]][1], pos[[a]][2] - 0.105, sprintf("stays: %s", pct(P[a, a])), cex = 0.6, col = ink_soft)
+}
+title_left("From one year to the next", "transition shares between states of a dyad that has fought before; arrow width grows with the share")
+```
+
+```{r transition-numbers, include = FALSE}
+p_esc <- P["minor", "war"]; p_deesc <- P["war", "minor"]; p_war_stay <- P["war", "war"]
+```
+
+A minor conflict becomes a war the next year in `r pct(p_esc)` of cases; a war
+stays a war in `r pct(p_war_stay)` and drops to a minor conflict in
+`r pct(p_deesc)`.
+
+## Case-control design for yearly events
+
+The events are dyad-years: `(government, opponent, year)`. All events of a
+year share the same time, which matters for both the controls and the
+statistics.
+
+**Risk set.** The question is which of the dyads that have fought before is
+active in a given year. `sample_non_events(mode = "two")` would draw controls
+from every government × opponent pair, and most of those pairs never could
+fight (a government and a rebel group of another continent); the dyad's own
+past would then separate events from controls almost perfectly. The controls
+are therefore drawn from the dyads that fought in an earlier year: five per
+event, uniformly, excluding the event's own dyad. A dyad's first year (its
+onset) has no comparable risk set here and is left out. A control may be a
+dyad that also fought in the same year, as another row: this is the Breslow
+convention for tied times, which keeps a tied event at risk.
+
+```{r cc}
+ev <- u[order(u$year, u$dyad_id), ]
+el <- data.frame(sender = ev$sender, receiver = ev$receiver, time = ev$year)
+dk <- paste(el$sender, el$receiver, sep = "\r")
+first_year <- tapply(el$time, dk, min)
+set.seed(1)
+cc <- do.call(rbind, lapply(which(el$time > first_year[dk]), function(i) {
+  pool <- setdiff(names(first_year)[first_year < el$time[i]], dk[i])
+  sr <- do.call(rbind, strsplit(sample(pool, 5), "\r"))
+  data.frame(stratum = i, event = c(1L, rep(0L, 5)), sender = c(el$sender[i], sr[, 1]),
+             receiver = c(el$receiver[i], sr[, 2]), time = el$time[i])
+}))
+c(strata = length(unique(cc$stratum)), rows = nrow(cc), onsets_left_out = sum(el$time == first_year[dk]))
+```
+
+**Statistics.** `endogenous_features()` updates the history row by row, so
+an event would see the other rows of its own year. To use only earlier years,
+each year's rows are scored with `prior_log` holding the events of all earlier
+years and an empty `history_log`, so no row of the current year enters the
+history.
+
+```{r features}
+yrs <- sort(unique(cc$time))
+cc <- do.call(rbind, lapply(yrs, function(y)
+  endogenous_features(cc[cc$time == y, ], history_log = el[0, ],
+                      prior_log = if (any(el$time < y)) el[el$time < y, ],
+                      stats = c("recency", "sender_outdegree", "receiver_indegree"))))
+# the dyad's own past: number of earlier active years, and war last year
+dkey <- dk; ckey <- paste(cc$sender, cc$receiver, sep = "\r")
+cc$dyad_past <- mapply(function(k, t) sum(dkey == k & el$time < t), ckey, cc$time)
+war_key <- paste(dkey, el$time)[ev$intensity_level == 2]
+cc$war_last <- as.numeric(paste(ckey, cc$time - 1) %in% war_key)
+cc$last_year <- as.numeric(!is.na(cc$recency) & cc$recency == 1)
+# the government's other dyads active last year
+gov_last <- table(paste(el$sender, el$time))
+cc$gov_other <- as.numeric(gov_last[paste(cc$sender, cc$time - 1)]); cc$gov_other[is.na(cc$gov_other)] <- 0
+cc$gov_other <- cc$gov_other - cc$last_year
+cc$log_dyad_past <- log1p(cc$dyad_past)
+cc$log_gov_past <- log1p(cc$sender_outdegree); cc$log_opp_past <- log1p(cc$receiver_indegree)
+cc$log_gov_other <- log1p(cc$gov_other)
+```
+
+## Linear model
+
+```{r clogit}
+covs <- c("last_year", "war_last", "log_dyad_past", "log_gov_other", "log_gov_past", "log_opp_past")
+fit <- rem(reformulate(covs, response = "event"), data = cc, method = "clogit")
+ct <- summary(fit$fit)$coefficients
+round(ct[, c("coef", "exp(coef)", "se(coef)")], 2)
+```
+
+```{r forest, echo = FALSE, fig.height = 4, fig.alt = "Coefficients of the conditional logit with 95% intervals"}
+lab <- c(last_year = "dyad fought last year", war_last = "dyad at war last year",
+         log_dyad_past = "log(1 + earlier years of the dyad)", log_gov_other = "log(1 + government's other conflicts last year)",
+         log_gov_past = "log(1 + government's earlier dyad-years)", log_opp_past = "log(1 + opponent's earlier dyad-years)")
+est <- ct[covs, "coef"]; se <- ct[covs, "se(coef)"]; y <- length(covs):1
+par(mar = c(3.4, 18, 2.8, 1))
+plot(est, y, xlim = range(c(est - 2 * se, est + 2 * se, 0)), ylim = c(0.5, length(covs) + 0.5), type = "n", axes = FALSE, xlab = "", ylab = "")
+abline(v = 0, col = rule, lwd = 1.2)
+segments(est - 1.96 * se, y, est + 1.96 * se, y, col = pal[1], lwd = 2.2)
+points(est, y, pch = 21, bg = "white", col = pal[1], cex = 1.3, lwd = 1.6)
+text(est, y + 0.3, sprintf("x%.2f", exp(est)), cex = 0.6, col = ink_soft)
+axis(1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+axis(2, at = y, labels = lab[covs], las = 1, tick = FALSE, cex.axis = 0.72, col.axis = ink, line = -0.6)
+mtext("effect on the log-rate (95% interval); labels: factor on the rate", side = 1, line = 2, cex = 0.72, col = ink_soft)
+title_left("Which of the dyads that fought before fights this year", "conditional logit, five controls per dyad-year from the dyads with a past")
+```
+
+```{r clogit-numbers, include = FALSE}
+hr <- function(v) fmt(exp(ct[v, "coef"]), 1)
+```
+
+Fighting last year multiplies the rate by `r hr("last_year")`, holding the
+other terms fixed, and war last year by a further `r hr("war_last")`. Each unit
+of `log(1 + earlier years)` of the dyad multiplies it by
+`r hr("log_dyad_past")`. The government's other conflicts last year multiply
+the rate of fighting a given opponent by `r hr("log_gov_other")` per unit, and
+its total earlier dyad-years by `r hr("log_gov_past")`.
+
+## How fast the memory of a conflict fades
+
+The recurrence shares above do not separate the gap from the other terms. In
+the `gam` backend (one control per dyad-year) the gap enters as a smooth
+`nl()` of the log of the years since the dyad last fought; a gap of one year
+is "fought last year", so the smooth replaces that indicator. `tv()` lets the
+effect of the government's other conflicts change over the eighty years.
+
+```{r gam}
+cc$gap <- log(cc$recency)
+cc$year <- cc$time
+w <- widen_case_control(cc, covariates = c("gap", "war_last", "log_gov_other", "log_opp_past", "year"))
+gfit <- rem(~ war_last + log_opp_past + nl(gap, k = 6) + tv(log_gov_other, k = 6),
+            data = w, method = "gam", time = "year")
+summary(gfit)$s.table
+```
+
+```{r smooth, echo = FALSE, fig.height = 4.2, fig.alt = "Smooth effect of years since the dyad last fought, and the time-varying effect of the government's other conflicts"}
+op <- par(mfrow = c(1, 2), mar = c(3.4, 3.6, 2.6, 1))
+d1 <- smooth_data(gfit$fit, 1); d1 <- d1[d1$x <= log(60), ]
+lo <- d1$fit - 1.96 * d1$se; hi <- d1$fit + 1.96 * d1$se
+plot(d1$x, d1$fit, type = "n", ylim = range(lo, hi), axes = FALSE, xlab = "", ylab = "")
+abline(h = 0, col = rule, lwd = 1.2)
+polygon(c(d1$x, rev(d1$x)), c(lo, rev(hi)), col = alpha(pal[1], 0.18), border = NA)
+lines(d1$x, d1$fit, col = pal[1], lwd = 2.2)
+axis(1, at = log(c(1, 2, 5, 10, 20, 50)), labels = c(1, 2, 5, 10, 20, 50), tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.5)
+axis(2, las = 1, tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.5)
+mtext("years since the dyad last fought (log scale)", side = 1, line = 2, cex = 0.7, col = ink_soft)
+mtext("effect on the log-rate", side = 2, line = 2.3, cex = 0.7, col = ink_soft)
+title_left("The pull of a past conflict fades with the gap", "smooth effect with 95% band")
+d2 <- smooth_data(gfit$fit, 2)
+draw_smooth(d2, col = pal[2], xlab = "year", ylab = expression(beta(t)))
+title_left("A government's other conflicts, over time", "effect of log(1 + other conflicts of the government last year)")
+par(op)
+```
+
+```{r smooth-numbers, include = FALSE}
+f_at <- function(d, x) approx(d$x, d$fit, xout = x)$y
+slope <- coef(lm(fit ~ x, data = d1))[["x"]]
+st <- summary(gfit)$s.table
+drop <- f_at(d1, log(1)) - f_at(d1, log(10))
+b <- c(f_at(d2, 1960), f_at(d2, 1990), f_at(d2, 2020))
+```
+
+The fitted smooth is close to a straight line in the log of the gap
+(`r fmt(st[1, "edf"], 1)` effective degrees of freedom), so the rate falls as
+a power of the gap, about gap^`r fmt(slope, 1)`. On the log-rate scale it
+falls by `r fmt(drop, 2)` between a dyad
+that fought one year ago and one that last fought ten years ago, a
+factor of `r fmt(exp(drop), 0)` on the rate. The effect of the government's
+other conflicts is `r fmt(b[1], 2)` around 1960, `r fmt(b[2], 2)` around 1990
+and `r fmt(b[3], 2)` around 2020 (log-rate per unit of `log(1 + conflicts)`);
+the test of the time-varying term gives p = `r fmt(st[2, "p-value"], 2)`, so
+the data do not show a change over time.
+
+## What the design leaves out
+
+- **Onset of new dyads.** First years of dyads are left out; the model
+  describes which dyads with a past fight again, not how new conflicts start.
+- **Deaths.** The data give only the intensity class; the number of deaths
+  is in the UCDP battle-related deaths dataset.
+- **Global trends** (the end of the Cold War, the year itself) cancel within
+  a stratum, since every row of a stratum has the same year; `tv()` above
+  captures how an effect changes, not how the overall number of conflicts
+  changes.

@@ -1,0 +1,368 @@
+---
+title: "Case study: leader visits to and from the United States, 1945–2019"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 9,
+                      fig.height = 5, warning = FALSE, message = FALSE)
+library(amorem)
+source("case-helpers.R")
+col_to <- "#178E8E"; col_from <- "#8E7CC3"
+```
+
+# Leader visits to and from the United States
+
+`us_leader_visits` lists every visit by a foreign head of state or government
+to the United States, and every foreign trip of a US president, from July 1945
+to December 2019 (Harvard Dataverse, CC0). Each row is a directed event: the
+visitor's country is the `sender`, the host the `receiver`. This case study asks
+whether a visit in one direction raises the rate of a visit back, how long that
+effect lasts, and how much of a partner's rate is carried by its own past
+visits.
+
+## The data
+
+```{r data}
+data(us_leader_visits)
+v <- us_leader_visits
+v$partner <- ifelse(v$sender == "United States", v$receiver, v$sender)
+c(visits = nrow(v), to_us = sum(v$direction == "to_us"),
+  from_us = sum(v$direction == "from_us"))
+```
+
+```{r clean, include = FALSE}
+v$year <- as.numeric(format(v$date, "%Y")) + (as.numeric(format(v$date, "%j")) - 0.5) / 366
+partners <- sort(table(v$partner), decreasing = TRUE)
+```
+
+The `r fmt(nrow(v))` visits involve `r length(partners)` partner countries.
+The bundled table uses one name per country across its two source tables (see
+`?us_leader_visits`), which reciprocity needs: a visit and the visit back must
+name the same partner.
+
+Every event has the United States at one end, so the network is a star. What
+the model can learn is **which partner, in which direction, and when**: given
+that a foreign leader visits Washington at time *t*, why that country rather
+than another; given that the president travels, why to that country.
+
+```{r star, echo = FALSE, fig.height = 7.6, fig.alt = "Radial network: the United States at the centre and its 60 most frequent partners around it, with lines for visits in each direction"}
+top <- names(partners)[1:60]
+n_to <- table(factor(v$partner[v$direction == "to_us"], levels = top))
+n_from <- table(factor(v$partner[v$direction == "from_us"], levels = top))
+bal <- as.numeric(n_from) / (as.numeric(n_to) + as.numeric(n_from))   # share of visits by the president
+tot <- as.numeric(n_to) + as.numeric(n_from)
+o <- order(bal)
+ang <- pi / 2 - 0.25 - (2 * pi - 0.5) * (seq_along(top) - 1) / (length(top) - 1)   # clockwise, gap at the top
+ang <- setNames(ang, top[o])
+x <- cos(ang[top]); y <- sin(ang[top])
+ramp <- grDevices::colorRamp(c(col_to, "#C9CDD1", col_from))
+pcol <- grDevices::rgb(ramp(bal) / 255)
+par(mar = c(0.5, 0.5, 2.6, 0.5))
+plot(NA, xlim = c(-1.45, 1.45), ylim = c(-1.4, 1.4), asp = 1, axes = FALSE, xlab = "", ylab = "")
+for (k in seq_along(top)) {
+  b_in <- .bezier(x[k], y[k], 0, 0, 0.10); b_out <- .bezier(0, 0, x[k], y[k], 0.10)
+  lines(b_in, col = alpha(col_to, 0.35), lwd = 0.3 + 4.5 * sqrt(n_to[k] / max(n_to)))
+  lines(b_out, col = alpha(col_from, 0.45), lwd = 0.3 + 4.5 * sqrt(n_from[k] / max(n_to)))
+}
+points(x, y, pch = 21, bg = pcol, col = "white", cex = 0.8 + 2.4 * sqrt(tot / max(tot)), lwd = 0.8)
+points(0, 0, pch = 21, bg = ink, col = "white", cex = 3.4)
+text(0, 0, "US", col = "white", cex = 0.6, font = 2)
+lab <- top
+r_lab <- 1.06 + 0.03 * sqrt(tot / max(tot))
+for (k in seq_along(top)) {
+  a <- ang[top[k]]; left <- cos(a) < 0
+  text(r_lab[k] * cos(a), r_lab[k] * sin(a), lab[k], cex = 0.5, col = ink,
+       srt = if (left) a * 180 / pi - 180 else a * 180 / pi, adj = c(if (left) 1 else 0, 0.5), xpd = TRUE)
+}
+title_left("Partners send their leaders to Washington more often than presidents visit them",
+           "60 most frequent partners, 1945-2019; teal: leader visits to the US; violet: presidential visits; width and dot size grow with visits")
+legend("bottomright", title = "dot colour: share of visits by the president", title.adj = 0,
+       legend = c("0% (all visits to the US)", "50%", "100%"),
+       pt.bg = grDevices::rgb(ramp(c(0, 0.5, 1)) / 255), pch = 21, col = "white", pt.cex = 1.6,
+       bty = "n", cex = 0.7, text.col = ink, title.col = ink_soft, xpd = TRUE)
+aa <- seq(pi / 2 - 0.2, pi / 2 - 1.1, length.out = 30)
+lines(1.33 * cos(aa), 1.33 * sin(aa), col = ink_soft, lwd = 0.9)
+n <- length(aa); arrows(1.33 * cos(aa[n - 1]), 1.33 * sin(aa[n - 1]), 1.33 * cos(aa[n]), 1.33 * sin(aa[n]), length = 0.07, col = ink_soft)
+text(0.05, 1.38, "clockwise from the top: share of visits by the president, lowest to highest", adj = 0, cex = 0.6, col = ink_soft, xpd = TRUE)
+```
+
+```{r star-numbers, include = FALSE}
+share_to <- mean(v$direction == "to_us")
+n_mostly_to <- sum(bal < 0.5)
+most_from <- top[order(-bal)][1:3]
+```
+
+Leaders come to the United States more often than presidents travel:
+`r pct(share_to)` of the visits are to the US, and `r n_mostly_to` of the 60
+partners in the figure send more leaders to Washington than they receive
+presidents. The partners whose share of presidential visits is highest are
+`r paste(most_from, collapse = ", ")`.
+
+## Visits over time
+
+```{r timeline, echo = FALSE, fig.height = 4.4, fig.alt = "Visits per year in each direction, with the presidential terms marked"}
+terms <- data.frame(name = c("Truman", "Eisenhower", "Kennedy", "Johnson", "Nixon", "Ford", "Carter",
+                             "Reagan", "Bush", "Clinton", "Bush", "Obama", "Trump"),
+                    start = c(1945.28, 1953.05, 1961.05, 1963.89, 1969.05, 1974.61, 1977.05,
+                              1981.05, 1989.05, 1993.05, 2001.05, 2009.05, 2017.05))
+terms$end <- c(terms$start[-1], 2020)
+yr <- 1945:2019
+to <- table(factor(floor(v$year[v$direction == "to_us"]), levels = yr))
+fr <- table(factor(floor(v$year[v$direction == "from_us"]), levels = yr))
+par(mar = c(3, 3.4, 2.6, 0.8))
+plot(NA, xlim = c(1945, 2020), ylim = c(-max(fr) * 1.15, max(to) * 1.45), axes = FALSE, xlab = "", ylab = "")
+rect(terms$start, par("usr")[3], terms$end, par("usr")[4], col = c("#F4F6F7", "#FFFFFF"), border = NA)
+text((terms$start + terms$end) / 2, par("usr")[4] * 0.97, terms$name, cex = 0.55, col = ink_soft, srt = 90, adj = 1)
+rect(yr, 0, yr + 0.85, to, col = col_to, border = NA)
+rect(yr, 0, yr + 0.85, -fr, col = col_from, border = NA)
+abline(h = 0, col = ink_soft, lwd = 0.6)
+axis(1, at = seq(1950, 2020, 10), tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.6)
+at <- pretty(c(-max(fr), max(to)), 6)
+axis(2, at = at, labels = abs(at), las = 1, tick = FALSE, cex.axis = 0.7, col.axis = ink_soft, line = -0.6)
+title_left("Visits per year", "above the line: foreign leaders visiting the US; below: presidential visits abroad; bands: presidential terms")
+```
+
+```{r timeline-numbers, include = FALSE}
+dec <- function(a, b, d) sum(v$year >= a & v$year < b & v$direction == d)
+early <- dec(1945, 1960, "to_us") / 15; late <- dec(1990, 2010, "to_us") / 20
+```
+
+Visits to the US rise from about `r fmt(early, 0)` a year in 1945–1959 to about
+`r fmt(late, 0)` a year in 1990–2009. Presidential travel grows too, and it
+comes in bursts: a single trip covers several countries, so several
+`from_us` events share a few days.
+
+```{r heat, echo = FALSE, fig.height = 7, fig.alt = "Heatmap of visits by partner and decade, partners ordered by the decade of their peak"}
+top40 <- names(partners)[1:40]
+dcd <- seq(1940, 2010, 10)
+M <- table(factor(v$partner, levels = top40), factor(floor(v$year / 10) * 10, levels = dcd))
+M <- M[order(apply(M, 1, which.max), -rowSums(M)), ]
+par(mar = c(4.4, 8.5, 2.6, 0.8))
+brk <- c(-0.5, 0.5, 1.5, 4.5, 9.5, 19.5, 1e4)
+cls <- c("#FFFFFF", "#DCEFEF", "#A9D6D6", "#5FB3B3", "#178E8E", "#0B4F4F")
+image(seq_along(dcd), seq_len(nrow(M)), t(M[nrow(M):1, ]), col = cls, breaks = brk, axes = FALSE, xlab = "", ylab = "")
+abline(v = seq_along(dcd) + 0.5, h = seq_len(nrow(M)) + 0.5, col = "white", lwd = 0.6)
+legend("bottom", inset = c(0, -0.115), horiz = TRUE, xpd = TRUE, legend = c("0", "1", "2-4", "5-9", "10-19", "20+"),
+       fill = cls, border = "#D5D9DC", bty = "n", cex = 0.6, text.col = ink_soft, title = "visits in the decade", title.col = ink_soft)
+axis(1, at = seq_along(dcd), labels = paste0(dcd, "s"), tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.6)
+axis(2, at = nrow(M):1, labels = rownames(M), las = 1, tick = FALSE, cex.axis = 0.62, col.axis = ink, line = -0.5)
+big <- which(M >= 20, arr.ind = TRUE)
+text(big[, 2], nrow(M) + 1 - big[, 1], M[big], cex = 0.5, col = "white")
+title_left("Visits by partner and decade (both directions)",
+           "40 most frequent partners, ordered by the decade of their peak; numbers: cells with 20 or more")
+```
+
+```{r heat-numbers, include = FALSE}
+peak <- dcd[apply(M, 1, which.max)]; names(peak) <- rownames(M)
+first <- dcd[apply(M > 0, 1, which.max)]; names(first) <- rownames(M)
+late <- names(peak)[peak >= 2000]; new <- names(first)[first >= 1960]
+```
+
+Of the 40 partners, `r sum(peak <= 1980)` have their busiest decade in the
+1980s or earlier and `r length(late)` in the 2000s or 2010s
+(`r paste(head(late, 8), collapse = ", ")`). `r length(new)` of them have no
+visit before 1960, among them `r paste(head(new, 5), collapse = ", ")`.
+
+## Reciprocity: how long after a visit does the visit back come?
+
+For every visit we measure the time since the last visit **in the opposite
+direction** with the same partner (`reciprocity_time_recent`). Visits with
+no earlier visit in the other direction are counted separately.
+
+```{r lag-data}
+ev <- v[order(v$time), c("sender", "receiver", "time", "direction", "partner", "year")]
+lag <- endogenous_features(ev, stats = c("reciprocity_time_recent", "recency"))
+lag$gap_years <- lag$reciprocity_time_recent / 365.25
+tapply(is.na(lag$gap_years), lag$direction, mean)
+```
+
+```{r lag, echo = FALSE, fig.height = 4.4, fig.alt = "Cumulative distribution of the years since the last visit in the opposite direction, for both directions"}
+par(mar = c(3.4, 3.6, 2.6, 0.8))
+xs <- 10^seq(-2, log10(60), length.out = 400)
+cdf <- function(d) { g <- lag$gap_years[lag$direction == d & !is.na(lag$gap_years)]; ecdf(g)(xs) }
+plot(xs, cdf("from_us"), log = "x", type = "l", lwd = 2.4, col = col_from, ylim = c(0, 1),
+     axes = FALSE, xlab = "", ylab = "")
+lines(xs, cdf("to_us"), lwd = 2.4, col = col_to)
+abline(h = 0.5, col = rule)
+axis(1, at = c(0.01, 0.1, 1, 10, 50), labels = c("4 days", "5 weeks", "1 year", "10 years", "50 years"),
+     tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.6)
+axis(2, at = seq(0, 1, 0.25), labels = pct(seq(0, 1, 0.25), 0), las = 1, tick = FALSE, cex.axis = 0.7, col.axis = ink_soft, line = -0.6)
+mtext("time since the partner's last visit in the other direction (log scale)", side = 1, line = 2, cex = 0.72, col = ink_soft)
+med <- c(from_us = median(lag$gap_years[lag$direction == "from_us"], na.rm = TRUE),
+         to_us = median(lag$gap_years[lag$direction == "to_us"], na.rm = TRUE))
+points(med, c(0.5, 0.5), pch = 21, bg = c(col_from, col_to), col = "white", cex = 1.5)
+text(med["from_us"], 0.5, sprintf("president travels: median %.1f years", med["from_us"]), pos = 2, cex = 0.68, col = col_from)
+text(med["to_us"], 0.5, sprintf("leader visits the US: median %.1f years", med["to_us"]), pos = 4, cex = 0.68, col = col_to)
+nl <- table(lag$direction[!is.na(lag$gap_years)])
+title_left("Presidents travel sooner after a leader's visit than leaders come after a president's",
+           sprintf("share of visits whose last visit the other way lies within the time on the x axis; %s presidential trips and %s leader visits with an earlier visit the other way",
+                   fmt(nl[["from_us"]]), fmt(nl[["to_us"]])))
+```
+
+```{r lag-numbers, include = FALSE}
+within1 <- function(d) mean(lag$gap_years[lag$direction == d] < 1, na.rm = TRUE)
+```
+
+When the president travels to a country, the last visit of that country's
+leader to the US is a median of `r fmt(med[["from_us"]], 1)` years back
+(`r pct(within1("from_us"))` within a year). A leader's visit to the US comes
+a median of `r fmt(med[["to_us"]], 1)` years after the last presidential
+visit to that country. These raw lags mix reciprocity with how often each
+partner visits at all; the model below separates the two.
+
+## Case-control design
+
+The risk set follows the star. For a visit **to** the US, the controls are
+other countries that could have sent their leader at that moment; for a
+presidential visit, other countries the president could have gone to. We
+sample each direction separately with `mode = "two"` (the US is the only
+receiver of `to_us` visits and the only sender of `from_us` visits, so a
+control changes only the partner) and `scope = "appearance"` (a country enters
+the risk set after its first visit in that direction, which keeps out states
+that do not exist yet). Five controls per visit.
+
+```{r cc}
+el <- ev[, c("sender", "receiver", "time")]
+cc_to <- sample_non_events(el[ev$direction == "to_us", ], n_controls = 5, mode = "two",
+                           scope = "appearance", seed = 1)
+cc_fr <- sample_non_events(el[ev$direction == "from_us", ], n_controls = 5, mode = "two",
+                           scope = "appearance", seed = 2)
+cc_to$dir <- "to_us"; cc_fr$dir <- "from_us"
+cc_fr$stratum <- cc_fr$stratum + max(cc_to$stratum)
+cc <- rbind(cc_to, cc_fr)
+c(strata = length(unique(cc$stratum)), rows = nrow(cc))
+```
+
+The statistics are computed for every row against the observed visits of both
+directions (`history_log`), so a control is scored on the real history only.
+Visits on the same day are not separated: a statistic counts earlier rows of
+the same day. With daily dates and one visit per partner per day in all but
+`r sum(duplicated(ev[c("partner", "time")]))` cases, this affects almost no
+row.
+
+```{r features}
+cc <- endogenous_features(cc, history_log = el,
+        stats = c("sender_outdegree", "receiver_indegree", "reciprocity_count",
+                  "reciprocity_time_recent", "recency"))
+to_us <- cc$dir == "to_us"
+cc$inertia <- log1p(ifelse(to_us, cc$sender_outdegree, cc$receiver_indegree))  # partner's past visits, same direction
+cc$recip <- log1p(cc$reciprocity_count)                                         # past visits in the other direction
+cc$recip_recent <- transform_recency(cc$reciprocity_time_recent, half_life = 365.25)
+cc$recip_recent[is.na(cc$recip_recent)] <- 0                                    # 1 just after a visit back, 0.5 after a year
+cc$same_recent <- transform_recency(cc$recency, half_life = 365.25)
+cc$same_recent[is.na(cc$same_recent)] <- 0
+for (k in c("inertia", "recip", "recip_recent", "same_recent")) {
+  cc[[paste0(k, "_to")]] <- cc[[k]] * to_us
+  cc[[paste0(k, "_from")]] <- cc[[k]] * !to_us
+}
+```
+
+## Linear model
+
+Each statistic gets its own coefficient in each direction (a stratum holds
+one direction only, so the direction itself cancels).
+
+```{r clogit}
+covs <- c("inertia_to", "recip_to", "recip_recent_to", "same_recent_to",
+          "inertia_from", "recip_from", "recip_recent_from", "same_recent_from")
+fit <- rem(reformulate(covs, response = "event"), data = cc, method = "clogit")
+ct <- summary(fit$fit)$coefficients
+est <- ct[, "coef"]; se <- ct[, "se(coef)"]
+round(cbind(estimate = est, se = se), 2)
+```
+
+```{r forest, echo = FALSE, fig.height = 4.6, fig.alt = "Coefficients and 95% intervals of the four statistics, for visits to the US and presidential visits"}
+lab <- c(inertia = "log(1 + past visits, same direction)", recip = "log(1 + past visits, other direction)",
+         recip_recent = "recency of the last visit back (1 = just now)", same_recent = "recency of the last visit, same direction")
+k <- c("inertia", "recip", "recip_recent", "same_recent")
+par(mar = c(3.4, 15, 2.6, 1))
+y <- c(4:1 + 0.15, 4:1 - 0.15)
+e <- c(est[paste0(k, "_to")], est[paste0(k, "_from")]); s <- c(se[paste0(k, "_to")], se[paste0(k, "_from")])
+plot(e, y, xlim = range(c(e - 2 * s, e + 2 * s, 0)), ylim = c(0.5, 4.5), type = "n", axes = FALSE, xlab = "", ylab = "")
+abline(v = 0, col = rule, lwd = 1.2)
+cl <- rep(c(col_to, col_from), each = 4)
+segments(e - 1.96 * s, y, e + 1.96 * s, y, col = cl, lwd = 2.2)
+points(e, y, pch = 21, bg = "white", col = cl, cex = 1.3, lwd = 1.6)
+axis(1, tick = FALSE, cex.axis = 0.75, col.axis = ink_soft, line = -0.5)
+axis(2, at = 4:1, labels = lab[k], las = 1, tick = FALSE, cex.axis = 0.72, col.axis = ink, line = -0.6)
+mtext("effect on the log-rate (95% interval)", side = 1, line = 2, cex = 0.72, col = ink_soft)
+legend("bottomright", legend = c("partner's leader -> US", "US president -> partner"), col = c(col_to, col_from),
+       lwd = 2.2, pch = 21, pt.bg = "white", bty = "n", cex = 0.72, text.col = ink)
+title_left("What raises the rate of a visit to one partner rather than another",
+           "conditional logit, five controls per visit")
+```
+
+```{r forest-numbers, include = FALSE}
+hr <- function(n) exp(est[[n]])
+```
+
+For a visit to the US, each unit of `log(1 + the partner's earlier visits to
+the US)` multiplies the rate by `r fmt(hr("inertia_to"), 2)`, and each unit
+of `log(1 + earlier presidential visits to the partner)` by
+`r fmt(hr("recip_to"), 2)`. A presidential visit in the past year raises the
+rate of a visit back by a factor of `r fmt(hr("recip_recent_to"), 2)` at
+recency 1. For presidential trips, the recency of the partner's last visit to
+Washington multiplies the rate by `r fmt(hr("recip_recent_from"), 2)`, and the
+president's own recent visit to the same country by
+`r fmt(hr("same_recent_from"), 2)`.
+
+## How fast reciprocity fades, and how inertia changes over the decades
+
+The recency weight above fixes a one-year half-life. A smooth term lets the
+data choose the shape: `nl()` of the log-time since the last visit in the
+other direction, for visits with such a visit, next to an indicator for
+partners without one. `tv(inertia)` lets the inertia effect change over the
+75 years. The `gam` backend uses one control per visit.
+
+```{r gam}
+cc$gap <- log10(pmax(cc$reciprocity_time_recent, 1) / 365.25)    # log10 years
+cc$never <- as.numeric(is.na(cc$gap))
+cc$gap[is.na(cc$gap)] <- log10(80)
+cc$year <- 1945.537 + cc$time / 365.25
+w <- widen_case_control(cc, covariates = c("inertia", "gap", "never", "year"))
+gfit <- rem(~ never + nl(gap, k = 6) + tv(inertia, k = 6), data = w, method = "gam", time = "year")
+summary(gfit)$s.table
+```
+
+```{r smooth, echo = FALSE, fig.height = 4.2, fig.alt = "Smooth effect of the time since the last visit in the other direction, and the time-varying inertia effect"}
+op <- par(mfrow = c(1, 2), mar = c(3.4, 3.6, 2.6, 1))
+d1 <- smooth_data(gfit$fit, 1); d1 <- d1[d1$x < log10(75), ]
+lo <- d1$fit - 1.96 * d1$se; hi <- d1$fit + 1.96 * d1$se
+plot(d1$x, d1$fit, type = "n", ylim = range(lo, hi), axes = FALSE, xlab = "", ylab = "")
+abline(h = 0, col = rule, lwd = 1.2)
+polygon(c(d1$x, rev(d1$x)), c(lo, rev(hi)), col = alpha(col_to, 0.18), border = NA)
+lines(d1$x, d1$fit, col = col_to, lwd = 2.2)
+at <- c(1 / 52, 1 / 12, 0.25, 1, 3, 10, 30)
+axis(1, at = log10(at), labels = c("1 week", "1 month", "3 months", "1 year", "3 years", "10 years", "30 years"),
+     tick = FALSE, cex.axis = 0.62, col.axis = ink_soft, line = -0.5)
+axis(2, las = 1, tick = FALSE, cex.axis = 0.72, col.axis = ink_soft, line = -0.5)
+mtext("time since the last visit in the other direction (log scale)", side = 1, line = 2, cex = 0.7, col = ink_soft)
+mtext("effect on the log-rate", side = 2, line = 2.3, cex = 0.7, col = ink_soft)
+title_left("Reciprocity fades after about a year", "smooth effect with 95% band; partners with a visit back only")
+d2 <- smooth_data(gfit$fit, 2)
+draw_smooth(d2, col = col_from, xlab = "year", ylab = expression(beta(t)~"of inertia"))
+title_left("Inertia over time", "effect of log(1 + past visits, same direction)")
+par(op)
+```
+
+```{r smooth-numbers, include = FALSE}
+f_at <- function(d, x) approx(d$x, d$fit, xout = x)$y
+drop_10 <- f_at(d1, log10(0.25)) - f_at(d1, log10(10))
+b_early <- f_at(d2, 1960); b_late <- f_at(d2, 2010)
+```
+
+The smooth reciprocity effect falls by `r fmt(drop_10, 2)` on the log scale
+between a visit back three months ago and one ten years ago. The inertia
+coefficient is `r fmt(b_early, 2)` around 1960 and `r fmt(b_late, 2)` around
+2010.
+
+## What the design leaves out
+
+- **Global effects.** Within a stratum every row has the same time, so a
+  covariate that depends on time alone (the president in office, the year)
+  cancels. The overall rate of visits in each presidency would need
+  time-shifted sampling (`shift = "exponential"`); see the
+  [email and the clock](case-email-global.html) case study.
+- **Trips.** A presidential trip to several countries appears as several
+  `from_us` events a few days apart; each is scored against the history before
+  it, so the second stop of a trip sees the first.
