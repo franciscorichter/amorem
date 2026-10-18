@@ -1,7 +1,6 @@
 <!-- pkgdown home page. Edit here, not on the GitHub wiki. -->
 
-## amorem 
-<img src="man/figures/logo.png" height="118" alt="" />
+## amorem <img src="man/figures/logo.png" align="right" alt="amorem logo" style="width:139px;height:auto;margin-left:1rem" />
 
 **amorem** — end-to-end **simulation,
 sampling, feature engineering, model selection, and inference** for relational
