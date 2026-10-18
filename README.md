@@ -64,8 +64,9 @@ build.
 
 ## Status
 
-- **CRAN:** 1.1.0, published 2026-10-17. The main branch is 1.2.0 (new
-  `gof_rem()`, thirteen new datasets, the data catalogue), not yet submitted.
+- **CRAN:** 1.1.0, published 2026-10-17. Version 1.2.0 was submitted on
+  2026-10-18 (`CRAN-SUBMISSION` records the commit) and awaits the maintainer's
+  email confirmation and CRAN review.
 - **Planned:** a hyper-event case-control sampler with history-aware masking,
   so that hyper-event data can be fitted with `rem()`; resolving the S3 class
   clash on `"rem"` with `relevent::rem()` and `redeem::rem()`.
