@@ -1,5 +1,11 @@
 # Articles
 
+### Videos
+
+Two video series: the Night Sky Atlas and Time, Rate, History.
+
+- [Videos](https://franciscorichter.github.io/amorem/articles/videos.md):
+
 ### Guides
 
 End-to-end walkthroughs of the package.
