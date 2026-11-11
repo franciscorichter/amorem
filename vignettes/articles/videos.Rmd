@@ -66,6 +66,13 @@ watched in any order.
 <p class="vid-idea">Try it in R: <code>amorem::radoslaw_email</code></p>
 </div>
 <div class="sky-card">
+<video src="../videos/sky-06-rome.mp4" poster="../videos/sky-06-rome-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 6: Over Rome"></video>
+<p class="vid-n">No. 6</p>
+<p class="vid-title">Over Rome</p>
+<p class="vid-idea">Italy's diplomatic visits, 2000–2023. Next to come to Rome: a country Italy had visited two times since 2000 comes at 2.02 times the rate of one it had not visited (95% interval 1.78 to 2.28).</p>
+<p class="vid-idea">Data: Corda &amp; Casiraghi, Italy's Diplomatic Visits, CC BY 4.0</p>
+</div>
+<div class="sky-card">
 <video src="../videos/sky-07-copenhagen.mp4" poster="../videos/sky-07-copenhagen-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 7: Over Copenhagen"></video>
 <p class="vid-n">No. 7</p>
 <p class="vid-title">Over Copenhagen</p>
