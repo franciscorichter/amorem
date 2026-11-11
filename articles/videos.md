@@ -68,6 +68,16 @@ they have not (95% interval 5.61 to 8.82).
 Try it in R:
 [`amorem::radoslaw_email`](https://franciscorichter.github.io/amorem/reference/radoslaw_email.md)
 
+No. 6
+
+Over Rome
+
+Italy's diplomatic visits, 2000–2023. Next to come to Rome: a country
+Italy had visited two times since 2000 comes at 2.02 times the rate of
+one it had not visited (95% interval 1.78 to 2.28).
+
+Data: Corda & Casiraghi, Italy's Diplomatic Visits, CC BY 4.0
+
 No. 7
 
 Over Copenhagen
