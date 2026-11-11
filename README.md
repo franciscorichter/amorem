@@ -21,7 +21,8 @@ simulation and inference in relational event models (REMs) and relational
 
 Installation, the quick-start tutorial, the full guide set (simulation,
 endogenous catalogue, estimation, hyperedge models, datasets, analyses of
-bundled event logs, validation experiments), and the complete function reference are
+bundled event logs, validation experiments), the complete function reference, and
+the two video series (the Night Sky Atlas and Time, Rate, History, under *Videos*) are
 all there.
 
 ## What the package covers

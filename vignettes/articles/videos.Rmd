@@ -1,0 +1,119 @@
+---
+title: "Videos"
+---
+
+```{=html}
+<style>
+.vid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.6rem; margin: 1.2rem 0 2.4rem; }
+.vid-card p { margin: 0.25rem 0; }
+.vid-frame { position: relative; aspect-ratio: 16 / 9; background: #151F36; border-radius: 6px; overflow: hidden; }
+.vid-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.vid-n { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; margin-top: 0.6rem !important; }
+.vid-title { font-weight: 600; }
+.vid-idea { font-size: 0.92rem; opacity: 0.85; }
+.sky-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.6rem; margin: 1.2rem 0 2.4rem; }
+.sky-card video { width: 100%; aspect-ratio: 1 / 1; display: block; background: #1F2E4D; border-radius: 6px; }
+.sky-card p { margin: 0.25rem 0; }
+.sky-card code { font-size: 0.85rem; }
+</style>
+```
+
+Two series of short videos about amorem. Every number on screen is computed
+by running the package; the narration is in English.
+
+## Night Sky Atlas
+
+One real dataset per card, seen as a night sky: actors are stars, each event is
+a streak of light between two of them, and time runs along the horizon. Each
+card ends on one finding computed with amorem. The cards stand alone and can be
+watched in any order.
+
+```{=html}
+<div class="sky-grid">
+<div class="sky-card">
+<video src="../videos/sky-01-washington.mp4" poster="../videos/sky-01-washington-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 1: Over Washington"></video>
+<p class="vid-n">No. 1</p>
+<p class="vid-title">Over Washington</p>
+<p class="vid-idea">Every leader-to-leader visit of the United States, 1945–2019. A country whose leader has just visited Washington is about twice as likely to be the president's next stop (2.08 times the rate, 95% interval 1.60 to 2.69).</p>
+<p class="vid-idea">Try it in R: <code>amorem::us_leader_visits</code></p>
+</div>
+</div>
+```
+
+## Time, Rate, History
+
+Eleven short lectures that build relational event models from the ground up:
+events, rates, history as a covariate, the partial likelihood, case-control
+sampling, smooth effects, goodness of fit and global covariates. They are meant
+to be watched in order. They also play on the Luche channel on YouTube.
+
+```{=html}
+<div class="vid-grid">
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/KNtNJKfxA_A" title="The data are events, not a network" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 1</p>
+<p class="vid-title">The data are events, not a network</p>
+<p class="vid-idea">A relational event model starts from a log: who acted towards whom, and when.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/wO8_QVBW0yM" title="Every pair has a clock" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 2</p>
+<p class="vid-title">Every pair has a clock</p>
+<p class="vid-idea">Give every ordered pair its own exponential clock.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/MW0kxcuTy3A" title="Coefficients multiply rates" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 3</p>
+<p class="vid-title">Coefficients multiply rates</p>
+<p class="vid-idea">Each pair&#x27;s rate is a baseline times exp(beta times x).</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/VldfD8CfZ7s" title="History becomes a covariate" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 4</p>
+<p class="vid-title">History becomes a covariate</p>
+<p class="vid-idea">Endogenous statistics turn a log&#x27;s own past into covariates: reciprocity, transitivity, recency and their variants.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/hz3p6etTF8Y" title="Which dyad fired?" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 5</p>
+<p class="vid-title">Which dyad fired?</p>
+<p class="vid-idea">Given that an event happened, which pair was it? The partial likelihood asks only that question.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/GFSHrGwxaMw" title="Compare with a few who did not" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 6</p>
+<p class="vid-title">Compare with a few who did not</p>
+<p class="vid-idea">The partial likelihood sums over every pair at risk.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/Kkh3IyhdlCM" title="How many controls?" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 7</p>
+<p class="vid-title">How many controls?</p>
+<p class="vid-idea">How many non-events should be sampled per event? On a fixed history, more controls narrow the spread of the estimate without moving its centre: from one control to ten, the spread falls about three times.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/SYzo2UsBfBQ" title="Ghosts read the past but never write it" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 8</p>
+<p class="vid-title">Ghosts read the past but never write it</p>
+<p class="vid-idea">A sampled non-event did not happen, so it must read the history to get its covariates but must never write into it.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/yqE_-8DbZok" title="With one control, a regression on differences" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 9</p>
+<p class="vid-title">With one control, a regression on differences</p>
+<p class="vid-idea">With one control per event, the conditional logit becomes a logistic regression without intercept on case-minus-control differences.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/ss0mP7pEdQA" title="Is the model wrong?" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 10</p>
+<p class="vid-title">Is the model wrong?</p>
+<p class="vid-idea">Rank the candidate models by AIC on one shared case-control sample, then check the winner.</p>
+</div>
+<div class="vid-card">
+<div class="vid-frame"><iframe src="https://www.youtube-nocookie.com/embed/kEimYOC_ilU" title="Why the weekday cancels" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<p class="vid-n">Episode 11</p>
+<p class="vid-title">Why the weekday cancels</p>
+<p class="vid-idea">A covariate shared by every pair at the same moment, such as the weekday or El Nino, takes the same value for an event and its controls, so it cancels like the baseline.</p>
+</div>
+</div>
+```

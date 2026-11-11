@@ -12,7 +12,7 @@ template:
 
 navbar:
   structure:
-    left: [get-started, reference, articles]
+    left: [get-started, reference, articles, videos]
     right: [search, github]
   components:
     get-started:
@@ -25,6 +25,9 @@ navbar:
     reference:
       text: Reference
       href: reference/index.html
+    videos:
+      text: Videos
+      href: articles/videos.html
     articles:
       text: Guides
       menu:
@@ -123,6 +126,10 @@ reference:
       - dist_matrix
 
 articles:
+  - title: "Videos"
+    desc: "Two video series: the Night Sky Atlas and Time, Rate, History."
+    contents:
+      - articles/videos
   - title: "Guides"
     desc: "End-to-end walkthroughs of the package."
     contents:
