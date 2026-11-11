@@ -37,6 +37,76 @@ watched in any order.
 <p class="vid-idea">Every leader-to-leader visit of the United States, 1945–2019. A country whose leader has just visited Washington is about twice as likely to be the president's next stop (2.08 times the rate, 95% interval 1.60 to 2.69).</p>
 <p class="vid-idea">Try it in R: <code>amorem::us_leader_visits</code></p>
 </div>
+<div class="sky-card">
+<video src="../videos/sky-02-classroom.mp4" poster="../videos/sky-02-classroom-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 2: Over a Classroom"></video>
+<p class="vid-n">No. 2</p>
+<p class="vid-title">Over a Classroom</p>
+<p class="vid-idea">One 44-minute US high-school class period, 16 October 1996: 20 people and 511 turns of talk. A turn back to someone who spoke to you in the last minute comes at 9.69 times the rate of an otherwise similar pair where that did not happen (95% interval 7.95 to 11.83).</p>
+<p class="vid-idea">Try it in R: <code>amorem::classroom_events</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-03-football.mp4" poster="../videos/sky-03-football-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 3: Over the football world"></video>
+<p class="vid-n">No. 3</p>
+<p class="vid-title">Over the football world</p>
+<p class="vid-idea">Men&#x27;s international football, 1872 to 2026: 49,945 matches between 337 teams. A pair that met a year ago plays again at 2.3 times the rate of a pair that last met ten years ago (95% interval 2.2 to 2.5).</p>
+<p class="vid-idea">Try it in R: <code>amorem::football_results</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-04-europe-lockdown.mp4" poster="../videos/sky-04-europe-lockdown-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 4: Over Europe"></video>
+<p class="vid-n">No. 4</p>
+<p class="vid-title">Over Europe</p>
+<p class="vid-idea">18,703 flights the OpenSky Network recorded between 60 European airports in April 2020. A route flown the other way in the last 12 hours carries the next flight at 3.83 times the rate of one flown the other way only earlier (95% interval 3.64 to 4.03).</p>
+<p class="vid-idea">Data: OpenSky Network, CC BY 4.0</p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-05-the-office.mp4" poster="../videos/sky-05-the-office-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 5: Over the Office"></video>
+<p class="vid-n">No. 5</p>
+<p class="vid-title">Over the Office</p>
+<p class="vid-idea">The first 60 days of e-mail in a manufacturing company in Poland, 2010: 14,962 e-mails among 167 employees. Copies flow to someone who has already written to the sender at 7.04 times the rate of a pair where they have not (95% interval 5.61 to 8.82).</p>
+<p class="vid-idea">Try it in R: <code>amorem::radoslaw_email</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-07-copenhagen.mp4" poster="../videos/sky-07-copenhagen-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 7: Over Copenhagen"></video>
+<p class="vid-n">No. 7</p>
+<p class="vid-title">Over Copenhagen</p>
+<p class="vid-idea">28 days of calls and texts among 608 students of the Technical University of Denmark. 20.9% of all calls (754 of 3,600) go back to someone who called the caller in the hour before.</p>
+<p class="vid-idea">Try it in R: <code>amorem::copenhagen_calls</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-08-invasions.mp4" poster="../videos/sky-08-invasions-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 8: Over the Earth"></video>
+<p class="vid-n">No. 8</p>
+<p class="vid-title">Over the Earth</p>
+<p class="vid-idea">11,730 first records of alien species in 259 regions of the world, 1880 to 2005. A species already in 4 regions reaches its next region at 1.97 times the rate of a species in 1 (95% interval 1.76 to 2.20).</p>
+<p class="vid-idea">Try it in R: <code>amorem::alien_invasions</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-09-congress.mp4" poster="../videos/sky-09-congress-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 9: Over Capitol Hill"></video>
+<p class="vid-n">No. 9</p>
+<p class="vid-title">Over Capitol Hill</p>
+<p class="vid-idea">Every bill of the 118th US Congress, 2023 to 2025: 16,213 bills and 162,424 cosponsor signatures. 21.7% of the signatures cross party lines (35,300 of 162,424): 20.4% in the House, 28.2% in the Senate.</p>
+<p class="vid-idea">Try it in R: <code>amorem::congress_bills_118</code></p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-10-london-bikes.mp4" poster="../videos/sky-10-london-bikes-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 10: Over London"></video>
+<p class="vid-n">No. 10</p>
+<p class="vid-title">Over London</p>
+<p class="vid-idea">19,120 bike journeys between London&#x27;s 60 busiest docking stations, February 2026. Riding back along a journey made in the last 12 hours comes at 2.42 times the rate of riding back along one made only earlier (95% interval 2.31 to 2.54).</p>
+<p class="vid-idea">Data: TfL cycle hire journeys, February 2026. Powered by TfL Open Data.</p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-11-lichess.mp4" poster="../videos/sky-11-lichess-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 11: Over Lichess"></video>
+<p class="vid-n">No. 11</p>
+<p class="vid-title">Over Lichess</p>
+<p class="vid-idea">7,025 rated games between the 60 most active Lichess players, January 2013. A pair that met in the last hour is more than ten times as likely to play next as one that met only earlier (seed 1: 17, 95% interval 12 to 24; five random draws: 14 to 21).</p>
+<p class="vid-idea">Data: Lichess open database, CC0</p>
+</div>
+<div class="sky-card">
+<video src="../videos/sky-12-africa.mp4" poster="../videos/sky-12-africa-poster.jpg" controls playsinline preload="none" aria-label="Night Sky Atlas No. 12: Over Africa"></video>
+<p class="vid-n">No. 12</p>
+<p class="vid-title">Over Africa</p>
+<p class="vid-idea">2,959 foreign-minister visits between 170 countries, reported by 30 African ministries, 2010 to 2022. A minister whose counterpart came in the past year visits back next at 1.38 times the rate (95% interval 1.19 to 1.59).</p>
+<p class="vid-idea">Data: Burman Roy et al., CC BY 4.0</p>
+</div>
 </div>
 ```
 
