@@ -104,9 +104,9 @@ rem(
 
 ## Value
 
-An object of class `"rem"`: a list with the fitted model (`$fit`), the
-`method`, the original `formula`, the parsed `terms`, and the number of
-observations `n`. Has
+An object of class `"amorem_rem"`: a list with the fitted model
+(`$fit`), the `method`, the original `formula`, the parsed `terms`, and
+the number of observations `n`. Has
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`coef()`](https://rdrr.io/r/stats/coef.html),
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
@@ -146,8 +146,8 @@ Two estimation backends are provided:
   STREAM construction of Filippi-Mazzola & Wit (2024, JRSS-C). No
   coefficient table; [`summary()`](https://rdrr.io/r/base/summary.html)
   reports in-sample (and, with a validation split, held-out) concordance
-  and `plot(type = "pdp")` shows per-feature curves. Pure-R
-  implementation, no extra dependencies.
+  and `plot(type = "pdp")` shows per-feature curves. Trained by the
+  built-in R engine, or by torch with `nn_control(engine = "torch")`.
 
 ## Formula syntax
 
@@ -201,17 +201,10 @@ The name `rem()` is used by three CRAN packages: this one, relevent (on
 CRAN since 2010) and redeem (2026). Attaching more than one of them
 masks the others, and R will say so at load time.
 
-The deeper issue is dispatch rather than masking. `amorem`'s fitted
-object has class `"rem"`, and relevent and redeem register S3 methods on
-that same class name, so merely *loading* one of them — attaching is not
-required — can re-point [`print()`](https://rdrr.io/r/base/print.html),
-[`summary()`](https://rdrr.io/r/base/summary.html),
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html),
-[`predict()`](https://rdrr.io/r/stats/predict.html) and
-[`logLik()`](https://rdrr.io/r/stats/logLik.html) for objects fitted
-here. If you work with more than one of these packages in a session,
-call `amorem::rem()` explicitly and be deliberate about which package is
-loaded when you print or plot a fit.
+Fits from `amorem` have class `"amorem_rem"`, which the other two
+packages do not use, so their S3 methods for class `"rem"` never apply
+to them. When more than one of these packages is attached, call
+`amorem::rem()` explicitly.
 
 ## See also
 

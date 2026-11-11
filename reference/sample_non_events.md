@@ -56,13 +56,14 @@ sample_non_events(
 
 - risk:
 
-  Strategy governing the risk set. `"standard"` (default) keeps all
-  unrealized dyads available across strata, whereas `"remove"` deletes a
-  dyad from the candidate pool after it has occurred (useful for
-  processes such as species invasions where a pair cannot reoccur).
-  Under `"remove"`, dyads firing at the focal event's own timestamp are
-  also kept out of its control pool (concurrent events are not valid
-  non-events at that instant).
+  Strategy governing the risk set. `"standard"` (default) keeps every
+  dyad at risk at every event, including dyads that have already fired
+  (recurrent events), whereas `"remove"` deletes a dyad from the
+  candidate pool after its first event (useful for processes such as
+  species invasions where a pair cannot reoccur; a dyad that fires more
+  than once gives a warning). Under `"remove"`, dyads firing at the
+  focal event's own timestamp are also kept out of its control pool
+  (concurrent events are not valid non-events at that instant).
 
 - exclude_pairs:
 
@@ -122,7 +123,11 @@ sample_non_events(
 ## Value
 
 A data.frame containing the original events (`event = 1`) and the
-sampled controls (`event = 0`), grouped by `stratum` identifiers. With
+sampled controls (`event = 0`), grouped by `stratum` identifiers.
+`attr(, "no_control")` lists the strata whose event got no control: they
+contribute nothing to the partial likelihood, and a warning gives their
+number (except for events before any actor has appeared under
+`scope = "appearance"`, which never have controls). With
 `shift = "exponential"` it carries `attr(, "shift")`: a list with the
 shift `mean`, the `window`, the per-dyad `shifts` (named
 `"sender->receiver"`) and the `uninformative` strata that got no
