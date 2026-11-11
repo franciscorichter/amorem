@@ -4,6 +4,7 @@ title: "Videos"
 
 ```{=html}
 <style>
+.page-header small.dont-index { display: none; }
 .vid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.6rem; margin: 1.2rem 0 2.4rem; }
 .vid-card p { margin: 0.25rem 0; }
 .vid-frame { position: relative; aspect-ratio: 16 / 9; background: #151F36; border-radius: 6px; overflow: hidden; }
@@ -11,10 +12,13 @@ title: "Videos"
 .vid-n { font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.65; margin-top: 0.6rem !important; }
 .vid-title { font-weight: 600; }
 .vid-idea { font-size: 0.92rem; opacity: 0.85; }
-.sky-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.6rem; margin: 1.2rem 0 2.4rem; }
-.sky-card video { width: 100%; aspect-ratio: 1 / 1; display: block; background: #1F2E4D; border-radius: 6px; }
-.sky-card p { margin: 0.25rem 0; }
-.sky-card code { font-size: 0.85rem; }
+.sky-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; margin: 1.6rem 0 3rem; }
+.sky-card { width: 100%; max-width: 720px; margin: 0 auto; }
+.sky-card video { width: 100%; aspect-ratio: 1 / 1; display: block; background: #1F2E4D; border-radius: 8px; }
+.sky-card p { margin: 0.3rem 0; }
+.sky-card .vid-title { font-size: 1.25rem; }
+.sky-card .vid-idea { font-size: 1rem; }
+.sky-card code { font-size: 0.9rem; }
 </style>
 ```
 
