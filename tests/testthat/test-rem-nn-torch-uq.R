@@ -57,7 +57,7 @@ test_that("nn_uncertainty returns valid bands and a concordance interval", {
   expect_true(all(u$bands$x1$hi >= u$bands$x1$lo))
   expect_length(u$concordance, 3L)
   expect_true(all(u$concordance >= 0 & u$concordance <= 1))
-  expect_error(nn_uncertainty(structure(list(method = "clogit"), class = "rem"), df),
+  expect_error(nn_uncertainty(structure(list(method = "clogit"), class = "amorem_rem"), df),
                "method = \"nn\"")
 })
 

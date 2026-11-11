@@ -31,7 +31,7 @@
 #' @export
 nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
                            n_grid = 50L, level = 0.95, seed = NULL) {
-  if (!inherits(object, "rem") || !identical(object$method, "nn")) {
+  if (!inherits(object, "amorem_rem") || !identical(object$method, "nn")) {
     stop("`object` must be a rem(method = \"nn\") fit.", call. = FALSE)
   }
   fit <- object$fit; control <- fit$control; vars <- fit$features

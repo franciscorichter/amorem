@@ -64,15 +64,10 @@ build.
 
 ## Status
 
-- **CRAN:** 1.1.0, published 2026-10-17. Version 1.2.0 was submitted on
-  2026-10-18 (`CRAN-SUBMISSION` records the commit) and awaits the maintainer's
-  email confirmation and CRAN review.
+- **CRAN:** 1.2.0, published 2026-10-18. Version 1.3.0 is on `main` and not
+  submitted.
 - **Planned:** a hyper-event case-control sampler with history-aware masking,
-  so that hyper-event data can be fitted with `rem()`; resolving the S3 class
-  clash on `"rem"` with `relevent::rem()` and `redeem::rem()`.
-- **Open check:** the `coxme` path with two random-effect axes
-  (`random_effects = c("sender", "receiver")`) has not been re-validated since
-  the stratification fix.
+  so that hyper-event data can be fitted with `rem()`.
 - **Companion paper:** the software paper describing version 1.0.0 is being
   revised outside this repository (host `air`,
   `~/System/Research/amorem-revision-20260812/`). The local `paper/` folder is

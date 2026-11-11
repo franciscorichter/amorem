@@ -16,7 +16,7 @@ test_that("rem(clogit) fits a case-k-control conditional logit and recovers the 
   fit <- rem(event ~ reciprocity_count, data = cc,
              method = "clogit", case = "event", stratum = "stratum")
 
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   expect_equal(fit$method, "clogit")
   cf <- coef(fit)
   expect_named(cf, "reciprocity_count")

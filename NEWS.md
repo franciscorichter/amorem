@@ -1,3 +1,31 @@
+# amorem 1.3.0
+
+## Changes in behaviour
+
+* **`rem()` fits have class `"amorem_rem"`** instead of `"rem"`. The packages
+  **relevent** and **redeem** register S3 methods on class `"rem"`, so loading
+  either of them re-pointed `print()`, `summary()`, `coef()`, `plot()`,
+  `predict()` and `logLik()` for amorem fits. Code that tests
+  `inherits(fit, "rem")` must test `inherits(fit, "amorem_rem")`.
+
+## Bug fixes
+
+* `sample_non_events()` warns when events get no control because their risk
+  set holds no valid alternative (every other dyad excluded, removed or
+  concurrent). Such events contribute nothing to the partial likelihood and
+  were dropped without notice. Their strata are listed in
+  `attr(, "no_control")`, also with `shift = "exponential"`, where it equals
+  `attr(, "shift")$uninformative`. Events before any actor has appeared under
+  `scope = "appearance"` have no controls by construction and give no warning.
+
+* `sample_non_events(risk = "remove")` warns when a dyad fires more than once
+  in the event log, which contradicts the one-event-per-dyad assumption of
+  `"remove"`.
+
+* The documentation of `risk = "standard"` says that dyads that have already
+  fired stay at risk; it described them as "unrealized". The documentation of
+  `rem(method = "nn")` names the optional **torch** engine.
+
 # amorem 1.2.0
 
 ## Bug fixes

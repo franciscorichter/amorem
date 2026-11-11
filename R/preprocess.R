@@ -1067,10 +1067,12 @@ endogenous_features <- function(
 #'   receiver from separate pools (two-mode): an actor seen only as a receiver
 #'   is never a control sender, and vice versa, as in bipartite networks (e.g.
 #'   species invading regions).
-#' @param risk Strategy governing the risk set. `"standard"` (default) keeps all
-#'   unrealized dyads available across strata, whereas `"remove"` deletes a dyad
-#'   from the candidate pool after it has occurred (useful for processes such as
-#'   species invasions where a pair cannot reoccur). Under `"remove"`, dyads
+#' @param risk Strategy governing the risk set. `"standard"` (default) keeps
+#'   every dyad at risk at every event, including dyads that have already fired
+#'   (recurrent events), whereas `"remove"` deletes a dyad from the candidate
+#'   pool after its first event (useful for processes such as species invasions
+#'   where a pair cannot reoccur; a dyad that fires more than once gives a
+#'   warning). Under `"remove"`, dyads
 #'   firing at the focal event's own timestamp are also kept out of its control
 #'   pool (concurrent events are not valid non-events at that instant).
 #' @param exclude_pairs Optional two-column data.frame/matrix of
@@ -1137,7 +1139,11 @@ endogenous_features <- function(
 #' \doi{10.1093/jrsssc/qlaf058}.
 #'
 #' @return A data.frame containing the original events (`event = 1`) and the
-#'   sampled controls (`event = 0`), grouped by `stratum` identifiers. With
+#'   sampled controls (`event = 0`), grouped by `stratum` identifiers.
+#'   `attr(, "no_control")` lists the strata whose event got no control: they
+#'   contribute nothing to the partial likelihood, and a warning gives their
+#'   number (except for events before any actor has appeared under
+#'   `scope = "appearance"`, which never have controls). With
 #'   `shift = "exponential"` it carries `attr(, "shift")`: a list with the
 #'   shift `mean`, the `window`, the per-dyad `shifts` (named
 #'   `"sender->receiver"`) and the `uninformative` strata that got no control.
@@ -1200,6 +1206,17 @@ sample_non_events <- function(
     }
     if (any(ev_time < window[1] | ev_time > window[2])) {
       stop("Every event time must lie inside `window`.")
+    }
+  }
+  if (risk == "remove") {
+    ev_dyads <- paste0(event_log$sender, "->", event_log$receiver)
+    repeated <- unique(ev_dyads[duplicated(ev_dyads)])
+    if (length(repeated)) {
+      warning(length(repeated), " dyad(s) fire more than once (e.g. ",
+              paste(utils::head(repeated, 3L), collapse = ", "),
+              "), but risk = \"remove\" assumes each dyad fires at most once. ",
+              "After its first event such a dyad is never drawn as a control.",
+              call. = FALSE)
     }
   }
   if (is.null(exclude_concurrent)) exclude_concurrent <- risk == "remove"
@@ -1404,6 +1421,7 @@ sample_non_events <- function(
     out <- out[order(out$stratum, -out$event), , drop = FALSE]
     rownames(out) <- NULL
     attr(out, "shift") <- sh$info
+    attr(out, "no_control") <- sh$info$uninformative
     return(out)
   }
 
@@ -1436,12 +1454,20 @@ sample_non_events <- function(
   }
 
   ctrl_index <- 0L
+  no_control <- integer(0)        # strata that got no control
+  no_control_expected <- 0L       # of those, events before any actor appeared
 
   for (i in seq_len(n_events)) {
     cand_sets <- get_candidates(scope, events_df$time[i], events_df$sender[i], events_df$receiver[i])
     concurrent_keys_i <- concurrent_keys[[i]]
     viable <- has_viable_pair(cand_sets, mode, events_df$sender[i], events_df$receiver[i],
                               concurrent_keys_i)
+    if (!viable) {
+      no_control <- c(no_control, events_df$stratum[i])
+      if (scope == "appearance" && !length(appearance_combined)) {
+        no_control_expected <- no_control_expected + 1L
+      }
+    }
 
     if (viable) {
       for (j in seq_len(n_controls)) {
@@ -1484,6 +1510,14 @@ sample_non_events <- function(
   out <- rbind(events_df, control_df)
   out <- out[order(out$stratum, -out$event), , drop = FALSE]
   rownames(out) <- NULL
+  attr(out, "no_control") <- no_control
+  n_unexpected <- length(no_control) - no_control_expected
+  if (n_unexpected > 0L) {
+    warning(n_unexpected, " of ", n_events, " event(s) have no valid control ",
+            "in their risk set and contribute nothing to the partial ",
+            "likelihood; their strata are in attr(, \"no_control\").",
+            call. = FALSE)
+  }
   out
 }
 

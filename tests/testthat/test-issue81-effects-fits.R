@@ -12,7 +12,7 @@ test_that("G4: rem() builds an re() random-effect smooth", {
   # re() builds the matched event/control random-effect smooth
   # s(cbind(sender_ev, sender_nv), by = c(1,-1), bs = "re").
   fit <- rem(~ reciprocity_count + re(sender), data = w, method = "gam")
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   expect_gt(length(fit$fit$smooth), 0L)            # the random-effect smooth
   expect_true(is.finite(logLik(fit)))
 })

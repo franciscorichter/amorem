@@ -42,10 +42,12 @@ receiver from separate pools (two-mode): an actor seen only as a receiver
 is never a control sender, and vice versa, as in bipartite networks (e.g.
 species invading regions).}
 
-\item{risk}{Strategy governing the risk set. \code{"standard"} (default) keeps all
-unrealized dyads available across strata, whereas \code{"remove"} deletes a dyad
-from the candidate pool after it has occurred (useful for processes such as
-species invasions where a pair cannot reoccur). Under \code{"remove"}, dyads
+\item{risk}{Strategy governing the risk set. \code{"standard"} (default) keeps
+every dyad at risk at every event, including dyads that have already fired
+(recurrent events), whereas \code{"remove"} deletes a dyad from the candidate
+pool after its first event (useful for processes such as species invasions
+where a pair cannot reoccur; a dyad that fires more than once gives a
+warning). Under \code{"remove"}, dyads
 firing at the focal event's own timestamp are also kept out of its control
 pool (concurrent events are not valid non-events at that instant).}
 
@@ -90,7 +92,11 @@ true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known.}
 }
 \value{
 A data.frame containing the original events (\code{event = 1}) and the
-sampled controls (\code{event = 0}), grouped by \code{stratum} identifiers. With
+sampled controls (\code{event = 0}), grouped by \code{stratum} identifiers.
+\code{attr(, "no_control")} lists the strata whose event got no control: they
+contribute nothing to the partial likelihood, and a warning gives their
+number (except for events before any actor has appeared under
+\code{scope = "appearance"}, which never have controls). With
 \code{shift = "exponential"} it carries \code{attr(, "shift")}: a list with the
 shift \code{mean}, the \code{window}, the per-dyad \code{shifts} (named
 \code{"sender->receiver"}) and the \code{uninformative} strata that got no control.

@@ -63,7 +63,7 @@ hyper-parameters for \code{method = "nn"}. Ignored by the other backends.}
 \item{...}{Reserved for future use.}
 }
 \value{
-An object of class \code{"rem"}: a list with the fitted model (\verb{$fit}),
+An object of class \code{"amorem_rem"}: a list with the fitted model (\verb{$fit}),
 the \code{method}, the original \code{formula}, the parsed \code{terms}, and the number of
 observations \code{n}. Has \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}}, \code{\link[=plot]{plot()}} and \code{\link[=logLik]{logLik()}}
 methods.
@@ -97,8 +97,8 @@ full covariate vector jointly (interaction-capable), or an
 by stochastic gradient, the STREAM construction of Filippi-Mazzola &
 Wit (2024, JRSS-C). No coefficient table; \code{summary()} reports
 in-sample (and, with a validation split, held-out) concordance and
-\code{plot(type = "pdp")} shows per-feature curves. Pure-R implementation,
-no extra dependencies.}
+\code{plot(type = "pdp")} shows per-feature curves. Trained by the built-in
+R engine, or by \pkg{torch} with \code{nn_control(engine = "torch")}.}
 }
 }
 \section{Formula syntax}{
@@ -147,13 +147,10 @@ The name \code{rem()} is used by three CRAN packages: this one,
 \pkg{relevent} (on CRAN since 2010) and \pkg{redeem} (2026). Attaching
 more than one of them masks the others, and R will say so at load time.
 
-The deeper issue is dispatch rather than masking. \code{amorem}'s fitted object
-has class \code{"rem"}, and \pkg{relevent} and \pkg{redeem} register S3 methods
-on that same class name, so merely \emph{loading} one of them --- attaching is
-not required --- can re-point \code{print()}, \code{summary()}, \code{plot()}, \code{predict()}
-and \code{logLik()} for objects fitted here. If you work with more than one of
-these packages in a session, call \code{amorem::rem()} explicitly and be
-deliberate about which package is loaded when you print or plot a fit.
+Fits from \code{amorem} have class \code{"amorem_rem"}, which the other two packages
+do not use, so their S3 methods for class \code{"rem"} never apply to them. When
+more than one of these packages is attached, call \code{amorem::rem()}
+explicitly.
 }
 
 \examples{

@@ -27,8 +27,8 @@
 #'     by stochastic gradient, the STREAM construction of Filippi-Mazzola &
 #'     Wit (2024, JRSS-C). No coefficient table; `summary()` reports
 #'     in-sample (and, with a validation split, held-out) concordance and
-#'     `plot(type = "pdp")` shows per-feature curves. Pure-R implementation,
-#'     no extra dependencies.}
+#'     `plot(type = "pdp")` shows per-feature curves. Trained by the built-in
+#'     R engine, or by \pkg{torch} with `nn_control(engine = "torch")`.}
 #' }
 #'
 #' @section Formula syntax:
@@ -72,13 +72,10 @@
 #' \pkg{relevent} (on CRAN since 2010) and \pkg{redeem} (2026). Attaching
 #' more than one of them masks the others, and R will say so at load time.
 #'
-#' The deeper issue is dispatch rather than masking. `amorem`'s fitted object
-#' has class `"rem"`, and \pkg{relevent} and \pkg{redeem} register S3 methods
-#' on that same class name, so merely *loading* one of them --- attaching is
-#' not required --- can re-point `print()`, `summary()`, `plot()`, `predict()`
-#' and `logLik()` for objects fitted here. If you work with more than one of
-#' these packages in a session, call `amorem::rem()` explicitly and be
-#' deliberate about which package is loaded when you print or plot a fit.
+#' Fits from `amorem` have class `"amorem_rem"`, which the other two packages
+#' do not use, so their S3 methods for class `"rem"` never apply to them. When
+#' more than one of these packages is attached, call `amorem::rem()`
+#' explicitly.
 #'
 #' @param formula A formula; see *Formula syntax*.
 #' @param data A data.frame of preprocessed case-control data (wide for the
@@ -113,7 +110,7 @@
 #'   hyper-parameters for `method = "nn"`. Ignored by the other backends.
 #' @param ... Reserved for future use.
 #'
-#' @return An object of class `"rem"`: a list with the fitted model (`$fit`),
+#' @return An object of class `"amorem_rem"`: a list with the fitted model (`$fit`),
 #'   the `method`, the original `formula`, the parsed `terms`, and the number of
 #'   observations `n`. Has [summary()], [coef()], [plot()] and [logLik()]
 #'   methods.
@@ -184,7 +181,7 @@ rem <- function(formula, data,
     return(structure(
       list(fit = fit, method = method, formula = formula,
            terms = terms_info, n = nrow(data), gam_formula = fm),
-      class = "rem"))
+      class = "amorem_rem"))
   }
 
   if (method == "nn") {
@@ -222,7 +219,7 @@ rem <- function(formula, data,
     return(structure(
       list(fit = fit, method = method, formula = formula,
            terms = terms_info, n = nrow(data), gam_formula = NULL),
-      class = "rem"))
+      class = "amorem_rem"))
   }
 
   if (!requireNamespace("mgcv", quietly = TRUE)) {
@@ -395,11 +392,11 @@ rem <- function(formula, data,
   structure(
     list(fit = fit, method = method, formula = formula,
          terms = terms_info, n = sum(rows), rows = rows, gam_formula = fm, time = time),
-    class = "rem")
+    class = "amorem_rem")
 }
 
 #' @export
-print.rem <- function(x, ...) {
+print.amorem_rem <- function(x, ...) {
   cat("Relational event model (rem)\n")
   cat("  method : ", x$method, "\n", sep = "")
   cat("  formula: ", deparse(x$formula), "\n", sep = "")
@@ -408,19 +405,19 @@ print.rem <- function(x, ...) {
 }
 
 #' @export
-summary.rem <- function(object, ...) summary(object$fit, ...)
+summary.amorem_rem <- function(object, ...) summary(object$fit, ...)
 
 #' @export
-coef.rem <- function(object, ...) stats::coef(object$fit, ...)
+coef.amorem_rem <- function(object, ...) stats::coef(object$fit, ...)
 
 #' @export
-plot.rem <- function(x, ...) plot(x$fit, ...)
+plot.amorem_rem <- function(x, ...) plot(x$fit, ...)
 
 #' @export
-logLik.rem <- function(object, ...) stats::logLik(object$fit)
+logLik.amorem_rem <- function(object, ...) stats::logLik(object$fit)
 
 #' @export
-predict.rem <- function(object, ...) stats::predict(object$fit, ...)
+predict.amorem_rem <- function(object, ...) stats::predict(object$fit, ...)
 
 # Parse one formula term label. `tv(x, ...)`, `nl(x, ...)`, `tvnl(x, ...)` and
 # `re(x)` become list(type, var, args), where `args` holds the named basis

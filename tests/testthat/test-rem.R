@@ -18,7 +18,7 @@ test_that("rem() fits a linear degenerate-logistic model and exposes coef/summar
   w <- make_wide()
   fit <- rem(~ reciprocity_count, data = w, method = "gam")
 
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   expect_equal(fit$method, "gam")
   expect_equal(fit$n, nrow(w))
   cf <- coef(fit)
@@ -43,7 +43,7 @@ test_that("rem() builds a tv (time-varying) smooth term", {
   w <- make_wide()
   fit <- rem(~ tv(reciprocity_count), data = w, method = "gam",
              time = "time")
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   # a smooth term shows up in the fitted gam
   expect_gt(length(fit$fit$smooth), 0L)
   expect_s3_class(logLik(fit), "logLik")
@@ -61,7 +61,7 @@ test_that("rem() mixes linear and smooth terms", {
   w <- make_wide()
   fit <- rem(~ reciprocity_binary + tv(reciprocity_count),
              data = w, method = "gam", time = "time")
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   expect_gt(length(fit$fit$smooth), 0L)
 })
 

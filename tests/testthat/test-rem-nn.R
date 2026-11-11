@@ -72,7 +72,7 @@ test_that("nn backend recovers a planted linear effect", {
   cc <- make_nn_cc(S = 400L, eta = function(x) 1.5 * x[1], seed = 2)
   fit <- rem(event ~ x1 + x2, data = cc, method = "nn",
              nn = nn_control(hidden = c(8L), epochs = 200L, seed = 3))
-  expect_s3_class(fit, "rem")
+  expect_s3_class(fit, "amorem_rem")
   expect_equal(fit$method, "nn")
   expect_true(is.finite(logLik(fit)))
   expect_gt(fit$fit$concordance$all, 0.6)

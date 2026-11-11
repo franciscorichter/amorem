@@ -5,9 +5,12 @@ test_that("exclude_pairs that remove every valid pair skip the stratum instead o
                    stringsAsFactors = FALSE)
   # mode = "two": the only alternative to each event is the other event's dyad.
   forbidden <- data.frame(sender = c("a", "b"), receiver = c("b", "a"))
-  cc <- sample_non_events(el, n_controls = 1, mode = "two",
-                          exclude_pairs = forbidden, max_attempts = 50, seed = 1)
+  expect_warning(
+    cc <- sample_non_events(el, n_controls = 1, mode = "two",
+                            exclude_pairs = forbidden, max_attempts = 50, seed = 1),
+    "2 of 2 event")
   expect_equal(sum(cc$event == 0L), 0L)
+  expect_equal(attr(cc, "no_control"), 1:2)
   expect_equal(sum(cc$event == 1L), 2L)
 })
 
@@ -16,8 +19,10 @@ test_that("a stratum whose only alternatives are concurrent events is skipped", 
   # only alternative, and both are concurrent under risk = "remove".
   el <- data.frame(sender = c("a", "b"), receiver = c("b", "a"), time = c(1, 1),
                    stringsAsFactors = FALSE)
-  cc <- sample_non_events(el, n_controls = 1, mode = "two", risk = "remove",
-                          max_attempts = 50, seed = 1)
+  expect_warning(
+    cc <- sample_non_events(el, n_controls = 1, mode = "two", risk = "remove",
+                            max_attempts = 50, seed = 1),
+    "no valid control")
   expect_equal(sum(cc$event == 0L), 0L)
 })
 
@@ -92,13 +97,14 @@ test_that("scope = 'citation' keeps citing and cited pools apart under the defau
     data.frame(sender = paste0("p", k), receiver = paste0("p", cited), time = k)
   })
   cit <- do.call(rbind, rows)
-  cc <- sample_non_events(cit, n_controls = 2, scope = "citation", seed = 5)
+  # the earliest papers have nothing earlier to cite, so they get no controls
+  cc <- suppressWarnings(sample_non_events(cit, n_controls = 2, scope = "citation", seed = 5))
   ctrl <- cc[cc$event == 0L, ]
   ev <- cc[cc$event == 1L, ]
   citing <- ev$sender[match(ctrl$stratum, ev$stratum)]
   expect_true(all(ctrl$sender == citing))
   pub <- tapply(cit$time, cit$sender, min)
   expect_true(all(pub[ctrl$receiver] < ctrl$time))
-  expect_identical(cc, sample_non_events(cit, n_controls = 2, scope = "citation",
-                                         mode = "two", seed = 5))
+  expect_identical(cc, suppressWarnings(sample_non_events(cit, n_controls = 2, scope = "citation",
+                                                          mode = "two", seed = 5)))
 })
