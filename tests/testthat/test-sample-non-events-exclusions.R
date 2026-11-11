@@ -50,8 +50,11 @@ test_that("G1b leaves distinct-timestamp behaviour unchanged (reproducible)", {
   el <- simulate_relational_events(n_events = 40, senders = paste0("a", 1:10),
                                    receivers = paste0("a", 1:10))
   el <- el[, c("sender", "receiver", "time")]
-  a <- sample_non_events(el, n_controls = 2, risk = "remove", seed = 3)
-  b <- sample_non_events(el, n_controls = 2, risk = "remove", seed = 3)
+  # the simulated log repeats dyads, which risk = "remove" flags
+  expect_warning(a <- sample_non_events(el, n_controls = 2, risk = "remove", seed = 3),
+                 "fire more than once")
+  expect_warning(b <- sample_non_events(el, n_controls = 2, risk = "remove", seed = 3),
+                 "fire more than once")
   expect_equal(a, b)
 })
 

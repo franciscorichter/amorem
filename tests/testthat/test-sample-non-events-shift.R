@@ -105,9 +105,11 @@ test_that("risk = 'remove' and scope = 'appearance' are applied at the shifted t
   el <- shift_log(n = 80)
   first_fire <- tapply(el$time, paste0(el$sender, "->", el$receiver), min)
   first_seen <- tapply(c(el$time, el$time), c(el$sender, el$receiver), min)
-  cc <- sample_non_events(el, n_controls = 2, mode = "one", risk = "remove",
-                          scope = "appearance", seed = 6,
-                          shift = "exponential", window = c(0, 10))
+  expect_warning(
+    cc <- sample_non_events(el, n_controls = 2, mode = "one", risk = "remove",
+                            scope = "appearance", seed = 6,
+                            shift = "exponential", window = c(0, 10)),
+    "fire more than once")
   allow <- function(key, tstar) {
     ff <- first_fire[key]
     s <- sub("->.*", "", key); r <- sub(".*->", "", key)

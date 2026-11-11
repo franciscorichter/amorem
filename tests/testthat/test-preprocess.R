@@ -30,12 +30,15 @@ test_that("sample_non_events supports citation scope and removal risk", {
     time = c(1, 2, 2, 3)
   )
 
-  citation <- sample_non_events(events,
-    n_controls = 1,
-    scope = "citation",
-    mode = "two",
-    seed = 42
-  )
+  # p2 cites the only earlier paper, so its event has no alternative
+  expect_warning(
+    citation <- sample_non_events(events,
+      n_controls = 1,
+      scope = "citation",
+      mode = "two",
+      seed = 42
+    ),
+    "1 of 4 event")
 
   controls_cite <- subset(citation, event == 0)
   first_time <- tapply(events$time, events$sender, min)
