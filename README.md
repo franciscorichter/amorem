@@ -71,7 +71,7 @@ build.
   so that hyper-event data can be fitted with `rem()`.
 - **Companion paper:** the software paper describing version 1.0.0 is being
   revised outside this repository (host `air`,
-  `~/System/Research/amorem-revision-20260812/`). The local `paper/` folder is
+  `~/System/Archive/Research/amorem-revision-20260812/`). The local `paper/` folder is
   gitignored.
 
 ## References
