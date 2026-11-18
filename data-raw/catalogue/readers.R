@@ -3,7 +3,7 @@
 # files exactly as downloaded (see the folder's SOURCES/URLS and SHA256SUMS).
 
 suppressPackageStartupMessages(library(data.table))
-RAW <- file.path(path.expand("~/System/Research/REM/data-raw/raw"))
+RAW <- file.path(path.expand("~/System/Academic/Research/REM/data-raw/raw"))
 .p <- function(...) file.path(RAW, ...)
 .unix <- as.POSIXct("1970-01-01", tz = "UTC")
 

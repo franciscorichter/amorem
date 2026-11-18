@@ -1,9 +1,9 @@
 # Views (network, timeline, close-up, pairs) of the event logs bundled in amorem,
 # for vignettes/articles/datasets.Rmd: Rscript data-raw/catalogue/build_bundled_views.R
-suppressPackageStartupMessages(devtools::load_all("~/System/Research/REM", quiet = TRUE))
-source("~/System/Research/REM/data-raw/catalogue/readers.R")
-source("~/System/Research/REM/data-raw/catalogue/view.R")
-out <- path.expand("~/System/Research/REM/vignettes/articles/data/bundled")
+suppressPackageStartupMessages(devtools::load_all("~/System/Academic/Research/REM", quiet = TRUE))
+source("~/System/Academic/Research/REM/data-raw/catalogue/readers.R")
+source("~/System/Academic/Research/REM/data-raw/catalogue/view.R")
+out <- path.expand("~/System/Academic/Research/REM/vignettes/articles/data/bundled")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 org <- function(x) as.POSIXct(attr(x, "unix_origin"), origin = "1970-01-01", tz = "UTC")
 cm <- amorem::congress_members_118

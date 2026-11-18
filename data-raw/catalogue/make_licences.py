@@ -144,11 +144,11 @@ in_amorem = {
  "ucdp": "ucdp_dyads",
  "us-leader-visits": "us_leader_visits",
 }
-raw = os.path.expanduser("~/System/Research/REM/data-raw/raw")
+raw = os.path.expanduser("~/System/Academic/Research/REM/data-raw/raw")
 folders = sorted(d for d in os.listdir(raw) if os.path.isdir(os.path.join(raw, d)))
 missing = [f for f in folders if f not in rows]
 assert not missing, missing
-out = os.path.expanduser("~/System/Research/REM/data-raw/catalogue/licences.csv")
+out = os.path.expanduser("~/System/Academic/Research/REM/data-raw/catalogue/licences.csv")
 with open(out, "w", newline="") as fh:
     w = csv.writer(fh)
     w.writerow(["id", "title", "kind", "licence", "licence_url", "evidence", "verdict", "checked", "in_amorem"])

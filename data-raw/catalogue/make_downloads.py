@@ -1,7 +1,7 @@
 # downloads.csv: id, file, url — every file fetched into data-raw/raw/, from the
 # folders' SOURCES.tsv / SOURCES.txt / URLS.txt notes.
 import csv, os, re
-raw = os.path.expanduser("~/System/Research/REM/data-raw/raw")
+raw = os.path.expanduser("~/System/Academic/Research/REM/data-raw/raw")
 rows = []
 for d in sorted(os.listdir(raw)):
     p = os.path.join(raw, d)
@@ -17,7 +17,7 @@ for d in sorted(os.listdir(raw)):
             parts = line.split("\t")
             fname = parts[1] if name == "SOURCES.tsv" and len(parts) >= 3 else (line.split("->")[-1].strip() if "->" in line else os.path.basename(url.split("?")[0]))
             rows.append((d, fname, url))
-out = os.path.expanduser("~/System/Research/REM/vignettes/articles/data/catalogue/downloads.csv")
+out = os.path.expanduser("~/System/Academic/Research/REM/vignettes/articles/data/catalogue/downloads.csv")
 with open(out, "w", newline="") as fh:
     w = csv.writer(fh); w.writerow(["id", "file", "url"]); w.writerows(rows)
 have = {r[0] for r in rows}

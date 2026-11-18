@@ -3,10 +3,10 @@
 # existing profiles; --frames-only only the animation frames (datasets in anim_config).
 # Reads raw data from data-raw/raw/ and writes aggregates only to
 # vignettes/articles/data/catalogue/<id>.rds.
-suppressPackageStartupMessages(devtools::load_all("~/System/Research/REM", quiet = TRUE))
-source("~/System/Research/REM/data-raw/catalogue/profile.R")
-source("~/System/Research/REM/data-raw/catalogue/readers.R")
-source("~/System/Research/REM/data-raw/catalogue/view.R")
+suppressPackageStartupMessages(devtools::load_all("~/System/Academic/Research/REM", quiet = TRUE))
+source("~/System/Academic/Research/REM/data-raw/catalogue/profile.R")
+source("~/System/Academic/Research/REM/data-raw/catalogue/readers.R")
+source("~/System/Academic/Research/REM/data-raw/catalogue/view.R")
 # Readable labels for the actors of the view figures (the profiles keep the ids)
 relabel <- list(
   "govinfo-billstatus-118" = function(id) {
@@ -44,7 +44,7 @@ view_of <- function(id, obj) {
   }
   switch(obj$kind, dyadic = view_dyadic(obj), hyper = view_hyper(obj), NULL)
 }
-out <- path.expand("~/System/Research/REM/vignettes/articles/data/catalogue")
+out <- path.expand("~/System/Academic/Research/REM/vignettes/articles/data/catalogue")
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 ids <- commandArgs(TRUE)
 views_only <- any(c("--views-only", "--frames-only") %in% ids); frames_only <- "--frames-only" %in% ids
