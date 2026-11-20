@@ -8,7 +8,10 @@
 #' @param event_log A data.frame (or tibble) containing at least one row per
 #'   event.
 #' @param sender_col,receiver_col,time_col Column names storing the sender,
-#'   receiver, and time information.
+#'   receiver, and time information. Times may be numeric, `Date` or `POSIXct`
+#'   (converted to days / seconds), a factor (read by its labels) or text
+#'   holding numbers; other text, such as unconverted date strings, is an
+#'   error.
 #' @param sort Logical; should the output be sorted by time (ties are kept in
 #'   input order)?
 #' @param drop_nas Logical; if `TRUE`, rows with missing sender/receiver/time are
@@ -70,7 +73,7 @@ standardize_event_log <- function(
   base_cols <- c("sender", "receiver", "time")
   out$sender <- as.character(out$sender)
   out$receiver <- as.character(out$receiver)
-  out$time <- as.numeric(out$time)
+  out$time <- .time_as_numeric(out$time, time_col)
 
   na_rows <- !stats::complete.cases(out[, base_cols])
   if (any(na_rows)) {
@@ -105,6 +108,32 @@ standardize_event_log <- function(
   rownames(out) <- NULL
   class(out) <- unique(c("amorem_event_log", class(out)))
   out
+}
+
+# Numeric event times for standardize_event_log(). Numbers, Date and POSIXct
+# convert directly (days / seconds). A factor is read by its labels, not its
+# level codes. Text is accepted when every non-missing entry is a number;
+# other text (e.g. "2024-01-05") is an error, since guessing a date format
+# could silently reorder events.
+.time_as_numeric <- function(x, time_col = "time") {
+  if (is.factor(x)) x <- as.character(x)
+  if (inherits(x, "POSIXlt")) x <- as.POSIXct(x)
+  if (is.character(x)) {
+    num <- suppressWarnings(as.numeric(x))
+    bad <- is.na(num) & !is.na(x) & nzchar(trimws(x))
+    if (any(bad)) {
+      stop("Time column `", time_col, "` holds text that is not a number (e.g. \"",
+           x[bad][1L], "\"). Convert it first, e.g. with as.Date() or ",
+           "as.POSIXct().", call. = FALSE)
+    }
+    return(num)
+  }
+  if (!is.numeric(x) && !inherits(x, c("Date", "POSIXt", "difftime")) &&
+      !is.logical(x)) {
+    stop("Time column `", time_col, "` must be numeric, Date, POSIXct or ",
+         "numeric text; got class ", class(x)[1L], ".", call. = FALSE)
+  }
+  as.numeric(x)
 }
 
 #' Attach static covariates to an event log
@@ -231,19 +260,18 @@ attach_static_covariates <- function(
 #' @param half_life Positive numeric; the half-life parameter \eqn{T} for
 #'   exponential-decay statistics (`*_exp_decay*`).
 #' @param sort Logical; when `TRUE`, events are ordered by time prior to
-#'   computing summaries (ties preserve input order).
-#' @param history_log Optional data.frame giving the authoritative event
-#'   history (columns `sender`, `receiver`, `time`). When supplied, only rows
-#'   of `event_log` whose `(sender, receiver, time)` triple appears in
-#'   `history_log` update the running network state; all other rows (e.g.
-#'   sampled non-events / controls) have their statistics computed against
-#'   that history but never enter it. This makes it possible to evaluate
-#'   endogenous statistics for non-events without those non-events polluting
-#'   the history. When `NULL` (default) and `event_log` is case-control data
-#'   -- a 0/1 `event` column with control rows, as written by
-#'   [sample_non_events()] -- only the `event == 1` rows update the history;
-#'   otherwise every row is treated as an event. Pass
-#'   `history_log = event_log` to treat every row as an event regardless.
+#'   computing summaries (ties preserve input order). Times must not be `NA`.
+#' @param history_log Optional data.frame of real events (columns `sender`,
+#'   `receiver`, `time`) used to mark which rows of an `event_log` **without**
+#'   an `event` column are events: only rows whose `(sender, receiver, time)`
+#'   triple appears in `history_log` update the running network state; all
+#'   other rows (e.g. sampled non-events) have their statistics computed
+#'   against that history but never enter it. When `event_log` has a 0/1
+#'   `event` column (case-control data, as written by [sample_non_events()]),
+#'   the `event == 1` rows are the events and the control rows never enter
+#'   the history, whether or not `history_log` is given; a control that
+#'   coincides with another stratum's event at the same time is still a
+#'   control. With neither, every row is an event.
 #' @param prior_log Optional data.frame of events that precede the study window
 #'   (columns `sender`, `receiver`, `time`), used to **warm-start** the network
 #'   state. Its rows always update the running state but never appear in the
@@ -253,7 +281,10 @@ attach_static_covariates <- function(
 #'   events. Defaults to `NULL`.
 #'
 #' @details All statistics are evaluated immediately **before** the event is
-#'   logged.  They are grouped into five families.
+#'   logged: the statistics of a row at time \eqn{t}{t} use only events with
+#'   time strictly less than \eqn{t}{t}. Events sharing a timestamp never
+#'   enter each other's history, for event and control rows alike and in both
+#'   the compiled and the pure-R engine. They are grouped into five families.
 #'
 #'   **Degree / baseline:**
 #'   \describe{
@@ -366,80 +397,53 @@ endogenous_features <- function(
          paste(missing_cols, collapse = ", "))
   }
 
-  # Case-control input: the sampled controls are hypothetical dyads, not
-  # events, so by default only the observed events build the network history.
-  # Counting the controls as past events biases every statistic (on simulated
-  # data, reciprocity 0.20 instead of 0.31 against a true 0.3).
-  controls_only_read <- is.null(history_log) && .has_control_rows(event_log)
-
-  # Warm-start support (issue #94). `prior_log` holds events that precede the
-  # study window: they must update the running network state but never appear
-  # in the output. We internalize the documented prepend-and-trim recipe ---
-  # prepend the prior events, treat them (and the usual events) as history, run
-  # the normal machinery, then strip the prior rows. This keeps `history_log`
-  # free to do non-event masking on `event_log` alone. Restoring the original
-  # event_log rows by a private row id (not by sender/receiver/time key) makes
-  # the strip robust even if a prior event shares a triple with a real row.
-  if (!is.null(prior_log)) {
-    if (!is.data.frame(prior_log)) {
-      stop("`prior_log` must be a data.frame or NULL.")
-    }
-    pl_missing <- setdiff(required_cols, names(prior_log))
-    if (length(pl_missing)) {
-      stop("`prior_log` is missing required column(s): ",
-           paste(pl_missing, collapse = ", "))
-    }
-    eid <- ".__amore_eid__"
-    event_aug <- event_log
-    event_aug[[eid]] <- seq_len(nrow(event_log))
-    # Prior rows aligned to event_log's columns (extra columns left NA via
-    # NA-row indexing, which preserves each column's type); they carry no event
-    # id so they are dropped after the computation.
-    prior_aug <- event_aug[rep(NA_integer_, nrow(prior_log)), , drop = FALSE]
-    prior_aug$sender   <- as.character(prior_log$sender)
-    prior_aug$receiver <- as.character(prior_log$receiver)
-    prior_aug$time     <- as.numeric(prior_log$time)
-    prior_aug[[eid]]   <- NA_integer_
-    combined <- rbind(prior_aug, event_aug)
-    # Effective history: prior rows always update state; among event_log rows,
-    # those that update state are the ones history_log already designates
-    # (every row, when history_log is NULL).
-    base_hist <- if (!is.null(history_log)) history_log
-                 else if (controls_only_read) event_log[as.integer(event_log$event) == 1L, , drop = FALSE]
-                 else event_log
-    eff_hist <- rbind(
-      data.frame(sender = as.character(prior_log$sender),
-                 receiver = as.character(prior_log$receiver),
-                 time = as.numeric(prior_log$time),
-                 stringsAsFactors = FALSE),
-      data.frame(sender = as.character(base_hist$sender),
-                 receiver = as.character(base_hist$receiver),
-                 time = as.numeric(base_hist$time),
-                 stringsAsFactors = FALSE))
-    res <- endogenous_features(
-      combined, stats = stats, half_life = half_life, sort = sort,
-      history_log = eff_hist, prior_log = NULL)
-    res <- res[!is.na(res[[eid]]), , drop = FALSE]
-    res <- res[order(res[[eid]]), , drop = FALSE]
-    res[[eid]] <- NULL
-    rownames(res) <- NULL
-    return(res)
+  if (anyNA(event_log$time)) {
+    stop("`event_log` has missing (NA) times in row(s) ",
+         paste(utils::head(which(is.na(event_log$time)), 5L), collapse = ", "),
+         "; remove them (e.g. with standardize_event_log()) before computing ",
+         "statistics.")
   }
-  # Optional authoritative event history. When supplied, only rows of
-  # `event_log` whose (sender, receiver, time) triple appears in
-  # `history_log` update the running state; all other rows (e.g. sampled
-  # non-events / controls) have their statistics computed but never enter
-  # the history. This lets the statistics for non-events be evaluated
-  # against the true event history without those non-events polluting it.
-  if (!is.null(history_log)) {
-    if (!is.data.frame(history_log)) {
-      stop("`history_log` must be a data.frame or NULL.")
+  check_aux_log <- function(x, arg) {
+    if (is.null(x)) return(invisible(NULL))
+    if (!is.data.frame(x)) {
+      stop("`", arg, "` must be a data.frame or NULL.")
     }
-    hl_missing <- setdiff(required_cols, names(history_log))
-    if (length(hl_missing)) {
-      stop("`history_log` is missing required column(s): ",
-           paste(hl_missing, collapse = ", "))
+    x_missing <- setdiff(required_cols, names(x))
+    if (length(x_missing)) {
+      stop("`", arg, "` is missing required column(s): ",
+           paste(x_missing, collapse = ", "))
     }
+    if (anyNA(x$time)) {
+      stop("`", arg, "` has missing (NA) times.")
+    }
+    invisible(NULL)
+  }
+  check_aux_log(history_log, "history_log")
+  check_aux_log(prior_log, "prior_log")
+
+  # Which rows of `event_log` are events, i.e. update the running history.
+  # Case-control input (a 0/1 `event` column, as written by
+  # sample_non_events()): the `event == 1` rows, whatever `history_log` says.
+  # The sampled controls are hypothetical dyads, not events; counting them as
+  # past events biases every statistic (on simulated data, reciprocity 0.20
+  # instead of 0.31 against a true 0.3), and matching rows to `history_log`
+  # by (sender, receiver, time) would admit a control that coincides with
+  # another stratum's event at the same time. Without an `event` column,
+  # `history_log` marks the event rows by their (sender, receiver, time)
+  # triple; with neither, every row is an event.
+  ev_flag <- .event_flag(event_log)
+  is_event_mask <- if (!is.null(ev_flag)) {
+    ev_flag == 1L
+  } else if (!is.null(history_log)) {
+    history_keys <- paste(as.character(history_log$sender),
+                          as.character(history_log$receiver),
+                          as.numeric(history_log$time), sep = "\r")
+    row_keys <- paste(as.character(event_log$sender),
+                      as.character(event_log$receiver),
+                      as.numeric(event_log$time), sep = "\r")
+    row_keys %in% history_keys
+  } else {
+    rep(TRUE, nrow(event_log))
   }
 
   allowed <- c(
@@ -519,26 +523,46 @@ endogenous_features <- function(
          "exponential-decay statistics are requested.")
   }
 
+  # Warm-start support (issue #94). `prior_log` holds events that precede the
+  # study window: they update the running network state but never appear in
+  # the output. The prior rows are prepended as events, the statistics are
+  # computed on the combined log, and the prior rows are dropped again by a
+  # private row id (not by sender/receiver/time key, so a prior event sharing
+  # a triple with a real row is handled too).
   log_df <- event_log
+  eid <- ".__amore_eid__"
+  if (!is.null(prior_log)) {
+    log_df[[eid]] <- seq_len(nrow(event_log))
+    # Prior rows aligned to event_log's columns (extra columns left NA via
+    # NA-row indexing, which preserves each column's type).
+    prior_aug <- log_df[rep(NA_integer_, nrow(prior_log)), , drop = FALSE]
+    prior_aug$sender   <- as.character(prior_log$sender)
+    prior_aug$receiver <- as.character(prior_log$receiver)
+    prior_aug$time     <- as.numeric(prior_log$time)
+    prior_aug[[eid]]   <- NA_integer_
+    log_df <- rbind(prior_aug, log_df)
+    is_event_mask <- c(rep(TRUE, nrow(prior_log)), is_event_mask)
+  }
+
+  res <- .endogenous_core(log_df, stats, half_life, sort, is_event_mask)
+
+  if (!is.null(prior_log)) {
+    res <- res[!is.na(res[[eid]]), , drop = FALSE]
+    res <- res[order(res[[eid]]), , drop = FALSE]
+    res[[eid]] <- NULL
+    rownames(res) <- NULL
+  }
+  res
+}
+
+# Internal engine of endogenous_features(): `log_df` is the (validated) log,
+# `is_event_mask` flags, in log_df's row order, the rows that update the
+# history. Statistics at time t read only rows with time strictly before t.
+.endogenous_core <- function(log_df, stats, half_life, sort, is_event_mask) {
   if (sort && nrow(log_df)) {
     ord <- order(log_df$time, seq_len(nrow(log_df)))
     log_df <- log_df[ord, , drop = FALSE]
-  }
-
-  # Build the per-row event mask (aligned to log_df's row order). Empty when
-  # no history_log is supplied, which the C++ engine reads as "all rows are
-  # events" (the original, history-free behaviour).
-  is_event_mask <- logical(0)
-  if (controls_only_read) {
-    is_event_mask <- as.integer(log_df$event) == 1L
-  } else if (!is.null(history_log)) {
-    history_keys <- paste(as.character(history_log$sender),
-                          as.character(history_log$receiver),
-                          as.numeric(history_log$time), sep = "\r")
-    row_keys <- paste(as.character(log_df$sender),
-                      as.character(log_df$receiver),
-                      as.numeric(log_df$time), sep = "\r")
-    is_event_mask <- row_keys %in% history_keys
+    is_event_mask <- is_event_mask[ord]
   }
 
   # G2/G3: `sender_receivers_set` is a list-column -- the set of receivers each
@@ -869,137 +893,150 @@ endogenous_features <- function(
   }
 
   # --- Main loop -------------------------------------------------------
-  for (i in seq_len(n)) {
+  # Rows are processed in runs of equal time: every row of a run is read
+  # first, then the run's events update the state, so rows sharing a
+  # timestamp see only the history strictly before it (as the C++ engine).
+  run_id <- cumsum(c(TRUE, log_df$time[-1L] != log_df$time[-n]))
+  runs <- split(seq_len(n), run_id)
+  step_row <- unlist(lapply(runs, function(ix) c(ix, ix)), use.names = FALSE)
+  step_write <- unlist(lapply(runs, function(ix) rep(c(FALSE, TRUE), each = length(ix))),
+                       use.names = FALSE)
+  for (step in seq_along(step_row)) {
+    i  <- step_row[step]
     s  <- as.character(log_df$sender[i])
     r  <- as.character(log_df$receiver[i])
     ti <- log_df$time[i]
     key_sr <- dyad_key(s, r)
     key_rs <- dyad_key(r, s)
 
-    # Degree
-    if ("sender_outdegree" %in% stats)
-      log_df$sender_outdegree[i] <- get_count(sender_counts, s)
-    if ("receiver_indegree" %in% stats)
-      log_df$receiver_indegree[i] <- get_count(receiver_counts, r)
+    if (!step_write[step]) {
+      # Degree
+      if ("sender_outdegree" %in% stats)
+        log_df$sender_outdegree[i] <- get_count(sender_counts, s)
+      if ("receiver_indegree" %in% stats)
+        log_df$receiver_indegree[i] <- get_count(receiver_counts, r)
 
-    # Recency (same-direction dyad)
-    if ("recency" %in% stats) {
-      lt <- dyad_last_time[[key_sr]]
-      if (!is.null(lt)) log_df$recency[i] <- ti - lt
-    }
-
-    # Reciprocity family (reverse-dyad)
-    has_reverse <- !is.null(dyad_event_count[[key_rs]])
-    if ("reciprocity" %in% stats)
-      log_df$reciprocity[i] <- as.integer(has_reverse)
-    if ("reciprocity_binary" %in% stats)
-      log_df$reciprocity_binary[i] <- as.integer(has_reverse)
-    if ("reciprocity_count" %in% stats) {
-      rc <- dyad_event_count[[key_rs]]
-      log_df$reciprocity_count[i] <- if (is.null(rc)) 0 else rc
-    }
-    if ("reciprocity_exp_decay" %in% stats) {
-      rs_t <- dyad_times[[key_rs]]
-      log_df$reciprocity_exp_decay[i] <-
-        if (is.null(rs_t)) 0 else sum(exp(-(ti - rs_t) * log(2) / half_life))
-    }
-    if ("reciprocity_time_recent" %in% stats) {
-      lt_rs <- dyad_last_time[[key_rs]]
-      if (!is.null(lt_rs)) log_df$reciprocity_time_recent[i] <- ti - lt_rs
-    }
-    if ("reciprocity_time_first" %in% stats) {
-      ft_rs <- dyad_first_time[[key_rs]]
-      if (!is.null(ft_rs)) log_df$reciprocity_time_first[i] <- ti - ft_rs
-    }
-
-    # Interrupted reciprocity family: each variant reads the SAME-DIRECTION
-    # state slot (dyad (s, r)) — the state was populated by reverse-direction
-    # events (r, s) since the most recent (s, r) event. The corresponding
-    # update step below resets state[key_sr] and bumps state[key_rs].
-    if (need_interrupted) {
-      if ("reciprocity_count_interrupted" %in% stats) {
-        v <- dyad_int_count[[key_sr]]
-        log_df$reciprocity_count_interrupted[i] <- if (is.null(v)) 0 else v
-      }
-      if ("reciprocity_binary_interrupted" %in% stats) {
-        v <- dyad_int_count[[key_sr]]
-        log_df$reciprocity_binary_interrupted[i] <-
-          if (is.null(v) || v == 0) 0L else 1L
-      }
-      if ("reciprocity_exp_decay_interrupted" %in% stats) {
-        ts <- dyad_int_times[[key_sr]]
-        log_df$reciprocity_exp_decay_interrupted[i] <-
-          if (is.null(ts)) 0 else sum(exp(-(ti - ts) * log(2) / half_life))
-      }
-      if ("reciprocity_time_recent_interrupted" %in% stats) {
-        lt <- dyad_int_last[[key_sr]]
-        if (!is.null(lt))
-          log_df$reciprocity_time_recent_interrupted[i] <- ti - lt
-      }
-      if ("reciprocity_time_first_interrupted" %in% stats) {
-        ft <- dyad_int_first[[key_sr]]
-        if (!is.null(ft))
-          log_df$reciprocity_time_first_interrupted[i] <- ti - ft
-      }
-    }
-
-    # Triadic statistics
-    if (need_triadic) {
-      s_out <- out_targets[[s]]; if (is.null(s_out)) s_out <- character(0)
-      r_out <- out_targets[[r]]; if (is.null(r_out)) r_out <- character(0)
-      s_in  <- in_sources[[s]];  if (is.null(s_in))  s_in  <- character(0)
-      r_in  <- in_sources[[r]];  if (is.null(r_in))  r_in  <- character(0)
-
-      # Time of the most recent same-direction (s, r) event -- the
-      # closure event for every triadic family's interrupted variants.
-      # `-Inf` if (s, r) has never fired before this row.
-      last_sr <- dyad_last_time[[key_sr]]
-      t_closure <- if (is.null(last_sr)) -Inf else last_sr
-
-      # Transitivity: s -> k -> r
-      if (any(trans_names %in% stats)) {
-        ks <- setdiff(intersect(s_out, r_in), c(s, r))
-        tri <- compute_triadic(s, r, ti, "transitivity", ks,
-          function(k) dyad_times[[dyad_key(s, k)]],
-          function(k) dyad_times[[dyad_key(k, r)]],
-          t_closure = t_closure)
-        for (nm in names(tri)) log_df[[nm]][i] <- tri[[nm]]
+      # Recency (same-direction dyad)
+      if ("recency" %in% stats) {
+        lt <- dyad_last_time[[key_sr]]
+        if (!is.null(lt)) log_df$recency[i] <- ti - lt
       }
 
-      # Cyclic closure: r -> k -> s, closed by s -> r
-      if (any(cyc_names %in% stats)) {
-        ks <- setdiff(intersect(r_out, s_in), c(s, r))
-        cyc <- compute_triadic(s, r, ti, "cyclic", ks,
-          function(k) dyad_times[[dyad_key(r, k)]],
-          function(k) dyad_times[[dyad_key(k, s)]],
-          t_closure = t_closure)
-        for (nm in names(cyc)) log_df[[nm]][i] <- cyc[[nm]]
+      # Reciprocity family (reverse-dyad)
+      has_reverse <- !is.null(dyad_event_count[[key_rs]])
+      if ("reciprocity" %in% stats)
+        log_df$reciprocity[i] <- as.integer(has_reverse)
+      if ("reciprocity_binary" %in% stats)
+        log_df$reciprocity_binary[i] <- as.integer(has_reverse)
+      if ("reciprocity_count" %in% stats) {
+        rc <- dyad_event_count[[key_rs]]
+        log_df$reciprocity_count[i] <- if (is.null(rc)) 0 else rc
+      }
+      if ("reciprocity_exp_decay" %in% stats) {
+        rs_t <- dyad_times[[key_rs]]
+        log_df$reciprocity_exp_decay[i] <-
+          if (is.null(rs_t)) 0 else sum(exp(-(ti - rs_t) * log(2) / half_life))
+      }
+      if ("reciprocity_time_recent" %in% stats) {
+        lt_rs <- dyad_last_time[[key_rs]]
+        if (!is.null(lt_rs)) log_df$reciprocity_time_recent[i] <- ti - lt_rs
+      }
+      if ("reciprocity_time_first" %in% stats) {
+        ft_rs <- dyad_first_time[[key_rs]]
+        if (!is.null(ft_rs)) log_df$reciprocity_time_first[i] <- ti - ft_rs
       }
 
-      # Sending balance: s -> k AND r -> k
-      if (any(sb_names %in% stats)) {
-        ks <- setdiff(intersect(s_out, r_out), c(s, r))
-        sb <- compute_triadic(s, r, ti, "sending_balance", ks,
-          function(k) dyad_times[[dyad_key(s, k)]],
-          function(k) dyad_times[[dyad_key(r, k)]],
-          t_closure = t_closure)
-        for (nm in names(sb)) log_df[[nm]][i] <- sb[[nm]]
+      # Interrupted reciprocity family: each variant reads the SAME-DIRECTION
+      # state slot (dyad (s, r)) — the state was populated by reverse-direction
+      # events (r, s) since the most recent (s, r) event. The corresponding
+      # update step below resets state[key_sr] and bumps state[key_rs].
+      if (need_interrupted) {
+        if ("reciprocity_count_interrupted" %in% stats) {
+          v <- dyad_int_count[[key_sr]]
+          log_df$reciprocity_count_interrupted[i] <- if (is.null(v)) 0 else v
+        }
+        if ("reciprocity_binary_interrupted" %in% stats) {
+          v <- dyad_int_count[[key_sr]]
+          log_df$reciprocity_binary_interrupted[i] <-
+            if (is.null(v) || v == 0) 0L else 1L
+        }
+        if ("reciprocity_exp_decay_interrupted" %in% stats) {
+          ts <- dyad_int_times[[key_sr]]
+          log_df$reciprocity_exp_decay_interrupted[i] <-
+            if (is.null(ts)) 0 else sum(exp(-(ti - ts) * log(2) / half_life))
+        }
+        if ("reciprocity_time_recent_interrupted" %in% stats) {
+          lt <- dyad_int_last[[key_sr]]
+          if (!is.null(lt))
+            log_df$reciprocity_time_recent_interrupted[i] <- ti - lt
+        }
+        if ("reciprocity_time_first_interrupted" %in% stats) {
+          ft <- dyad_int_first[[key_sr]]
+          if (!is.null(ft))
+            log_df$reciprocity_time_first_interrupted[i] <- ti - ft
+        }
       }
 
-      # Receiving balance: k -> s AND k -> r
-      if (any(rb_names %in% stats)) {
-        ks <- setdiff(intersect(s_in, r_in), c(s, r))
-        rb <- compute_triadic(s, r, ti, "receiving_balance", ks,
-          function(k) dyad_times[[dyad_key(k, s)]],
-          function(k) dyad_times[[dyad_key(k, r)]],
-          t_closure = t_closure)
-        for (nm in names(rb)) log_df[[nm]][i] <- rb[[nm]]
+      # Triadic statistics
+      if (need_triadic) {
+        s_out <- out_targets[[s]]; if (is.null(s_out)) s_out <- character(0)
+        r_out <- out_targets[[r]]; if (is.null(r_out)) r_out <- character(0)
+        s_in  <- in_sources[[s]];  if (is.null(s_in))  s_in  <- character(0)
+        r_in  <- in_sources[[r]];  if (is.null(r_in))  r_in  <- character(0)
+
+        # Time of the most recent same-direction (s, r) event -- the
+        # closure event for every triadic family's interrupted variants.
+        # `-Inf` if (s, r) has never fired before this row.
+        last_sr <- dyad_last_time[[key_sr]]
+        t_closure <- if (is.null(last_sr)) -Inf else last_sr
+
+        # Transitivity: s -> k -> r
+        if (any(trans_names %in% stats)) {
+          ks <- setdiff(intersect(s_out, r_in), c(s, r))
+          tri <- compute_triadic(s, r, ti, "transitivity", ks,
+            function(k) dyad_times[[dyad_key(s, k)]],
+            function(k) dyad_times[[dyad_key(k, r)]],
+            t_closure = t_closure)
+          for (nm in names(tri)) log_df[[nm]][i] <- tri[[nm]]
+        }
+
+        # Cyclic closure: r -> k -> s, closed by s -> r
+        if (any(cyc_names %in% stats)) {
+          ks <- setdiff(intersect(r_out, s_in), c(s, r))
+          cyc <- compute_triadic(s, r, ti, "cyclic", ks,
+            function(k) dyad_times[[dyad_key(r, k)]],
+            function(k) dyad_times[[dyad_key(k, s)]],
+            t_closure = t_closure)
+          for (nm in names(cyc)) log_df[[nm]][i] <- cyc[[nm]]
+        }
+
+        # Sending balance: s -> k AND r -> k
+        if (any(sb_names %in% stats)) {
+          ks <- setdiff(intersect(s_out, r_out), c(s, r))
+          sb <- compute_triadic(s, r, ti, "sending_balance", ks,
+            function(k) dyad_times[[dyad_key(s, k)]],
+            function(k) dyad_times[[dyad_key(r, k)]],
+            t_closure = t_closure)
+          for (nm in names(sb)) log_df[[nm]][i] <- sb[[nm]]
+        }
+
+        # Receiving balance: k -> s AND k -> r
+        if (any(rb_names %in% stats)) {
+          ks <- setdiff(intersect(s_in, r_in), c(s, r))
+          rb <- compute_triadic(s, r, ti, "receiving_balance", ks,
+            function(k) dyad_times[[dyad_key(k, s)]],
+            function(k) dyad_times[[dyad_key(k, r)]],
+            t_closure = t_closure)
+          for (nm in names(rb)) log_df[[nm]][i] <- rb[[nm]]
+        }
       }
+
+      next
     }
 
     # --- Update state ---
-    # Rows that are not in `history_log` (sampled non-events) read the history
-    # but never enter it.
+    # Rows that are not events (sampled non-events) read the history but
+    # never enter it.
     if (length(is_event_mask) && !is_event_mask[i]) next
     sender_counts[s]  <- get_count(sender_counts, s) + 1
     receiver_counts[r] <- get_count(receiver_counts, r) + 1
@@ -1037,12 +1074,17 @@ endogenous_features <- function(
   log_df
 }
 
-# TRUE when `x` is case-control data: a 0/1 `event` column holding at least
-# one control row.
-.has_control_rows <- function(x) {
-  if (!"event" %in% names(x)) return(FALSE)
-  ev <- suppressWarnings(as.integer(x$event))
-  !anyNA(ev) && all(ev %in% c(0L, 1L)) && any(ev == 0L)
+# The 0/1 `event` column of case-control data as an integer vector, or NULL
+# when `x` has no such column (absent, NA, or values other than 0/1). A factor
+# or character column is read by its labels, so factor(c("0", "1")) gives
+# 0, 1 rather than its level codes.
+.event_flag <- function(x) {
+  if (!"event" %in% names(x)) return(NULL)
+  v <- x$event
+  if (is.factor(v)) v <- as.character(v)
+  ev <- if (is.logical(v)) as.numeric(v) else suppressWarnings(as.numeric(as.character(v)))
+  if (!length(ev) || anyNA(ev) || !all(ev %in% c(0, 1))) return(NULL)
+  as.integer(ev)
 }
 
 #' Sample non-events for inference
@@ -1052,14 +1094,19 @@ endogenous_features <- function(
 #'
 #' @param event_log Data frame with columns `sender`, `receiver`, and `time`.
 #' @param n_controls Number of non-events (controls) to sample per realized
-#'   event.
+#'   event; a positive whole number. Controls are drawn with replacement, so
+#'   a stratum whose risk set is small can hold the same control more than
+#'   once.
 #' @param scope Candidate set definition. `"all"` uses every actor observed in
 #'   the data; `"appearance"` restricts to actors that have appeared in prior
 #'   events (so the first event, with no prior events, gets no controls);
 #'   `"citation"` matches citation networks where senders are restricted
-#'   to the papers that debut at the current time and receivers must have
-#'   appeared earlier; it always draws senders and receivers from these two
-#'   separate pools, whatever `mode` says.
+#'   to the papers that debut at the current time and receivers are the
+#'   papers that appeared in the log, as citing or as cited papers, before
+#'   that time (papers that are only ever cited are eligible); it always draws
+#'   senders and receivers from these two separate pools, whatever `mode`
+#'   says. Under `"appearance"` and `"citation"` an actor first seen at time
+#'   \eqn{t}{t} is not in the pool of events at \eqn{t}{t}.
 #' @param mode `"one"` (default) draws both sender and receiver from the same
 #'   candidate pool (single-mode): every actor seen in either role can be a
 #'   control sender or receiver, as in networks whose senders and receivers are
@@ -1072,7 +1119,8 @@ endogenous_features <- function(
 #'   (recurrent events), whereas `"remove"` deletes a dyad from the candidate
 #'   pool after its first event (useful for processes such as species invasions
 #'   where a pair cannot reoccur; a dyad that fires more than once gives a
-#'   warning). Under `"remove"`, dyads
+#'   warning). A dyad leaves the pool after the timestamp of its first event.
+#'   Under `"remove"`, dyads
 #'   firing at the focal event's own timestamp are also kept out of its control
 #'   pool (concurrent events are not valid non-events at that instant).
 #' @param exclude_pairs Optional two-column data.frame/matrix of
@@ -1087,10 +1135,10 @@ endogenous_features <- function(
 #' @param allow_loops Logical; can sampled non-events have identical sender and
 #'   receiver?
 #' @param seed Optional seed for reproducibility.
-#' @param max_attempts Maximum resampling attempts per control before giving up
-#'   (prevents infinite loops when candidate sets are small). With
-#'   `shift = "exponential"` it is the number of rejection draws tried before
-#'   the valid candidates are enumerated, so sampling never fails there.
+#' @param max_attempts Number of rejection draws tried per control before the
+#'   valid candidates of the stratum are enumerated and the control is drawn
+#'   uniformly among them, so a valid control is always found when one
+#'   exists.
 #' @param shift `"none"` (default) gives every control its event's time, so a
 #'   global covariate (a function of time only, e.g. weather or time of day)
 #'   takes the same value within each stratum and cancels from the partial
@@ -1105,7 +1153,11 @@ endogenous_features <- function(
 #'   Used only with `shift = "exponential"`.
 #' @param window Observation window `c(start, end)` for
 #'   `shift = "exponential"`. Defaults to `c(min(time), max(time))`; pass the
-#'   true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known.
+#'   true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known. `Date`
+#'   and `POSIXct` times (and windows) are handled in days / seconds, and the
+#'   returned `time` column keeps the input class. When every event lies at
+#'   the start of the window (for example a log with a single timestamp and
+#'   the default window), no event gets a control.
 #'
 #' @section Time-shifted sampling:
 #' With `shift = "exponential"`, every dyad of the risk set (all sender
@@ -1139,11 +1191,17 @@ endogenous_features <- function(
 #' \doi{10.1093/jrsssc/qlaf058}.
 #'
 #' @return A data.frame containing the original events (`event = 1`) and the
-#'   sampled controls (`event = 0`), grouped by `stratum` identifiers.
-#'   `attr(, "no_control")` lists the strata whose event got no control: they
-#'   contribute nothing to the partial likelihood, and a warning gives their
-#'   number (except for events before any actor has appeared under
-#'   `scope = "appearance"`, which never have controls). With
+#'   sampled controls (`event = 0`), grouped by `stratum` identifiers. The
+#'   input is first ordered by time (ties keep their input order), and
+#'   stratum \eqn{k}{k} is the \eqn{k}{k}-th event in that order; rows are
+#'   returned by stratum, each event before its controls. Times must not be
+#'   `NA`. `attr(, "no_control")` lists the strata whose event got no
+#'   control: they contribute nothing to the partial likelihood, and a
+#'   warning gives their number. Events at the start of the log that come
+#'   before the first event with a control are listed but not counted in the
+#'   warning, since there the risk set is still being built (no actor has
+#'   appeared yet, or every dyad seen so far has fired); when no event has a
+#'   control, all are counted. With
 #'   `shift = "exponential"` it carries `attr(, "shift")`: a list with the
 #'   shift `mean`, the `window`, the per-dyad `shifts` (named
 #'   `"sender->receiver"`) and the `uninformative` strata that got no control.
@@ -1179,10 +1237,25 @@ sample_non_events <- function(
   event_log$sender <- as.character(event_log$sender)
   event_log$receiver <- as.character(event_log$receiver)
 
-  if (!is.numeric(n_controls) || length(n_controls) != 1 || n_controls < 1) {
+  if (!is.numeric(n_controls) || length(n_controls) != 1L || is.na(n_controls) ||
+      n_controls < 1 || n_controls != round(n_controls)) {
     stop("`n_controls` must be a positive integer.")
   }
   n_controls <- as.integer(n_controls)
+
+  if (anyNA(event_log$time)) {
+    stop("`event_log` has missing (NA) times in row(s) ",
+         paste(utils::head(which(is.na(event_log$time)), 5L), collapse = ", "),
+         "; remove them (e.g. with standardize_event_log()) before sampling.")
+  }
+  # Every risk-set rule (appearance, removal, concurrency) is evaluated in time
+  # order, so the log is put in time order first; ties keep their input order.
+  # Stratum k is the k-th event in this order.
+  if (nrow(event_log) > 1L) {
+    t_ord <- order(as.numeric(event_log$time), seq_len(nrow(event_log)))
+    event_log <- event_log[t_ord, , drop = FALSE]
+    rownames(event_log) <- NULL
+  }
 
   scope <- match.arg(scope)
   mode <- match.arg(mode)
@@ -1198,11 +1271,17 @@ sample_non_events <- function(
         !is.finite(shift_scale) || shift_scale <= 0) {
       stop("`shift_scale` must be a positive number.")
     }
+    # Date / POSIXct times are handled on their numeric scale (days /
+    # seconds) and the returned times are given their class back.
     ev_time <- as.numeric(event_log$time)
-    if (is.null(window)) window <- range(ev_time)
-    if (!is.numeric(window) || length(window) != 2L || any(!is.finite(window)) ||
-        window[1] >= window[2]) {
-      stop("`window` must be c(start, end) with start < end.")
+    if (is.null(window)) {
+      window <- range(ev_time)
+    } else {
+      if (inherits(window, c("Date", "POSIXt"))) window <- as.numeric(window)
+      if (!is.numeric(window) || length(window) != 2L || any(!is.finite(window)) ||
+          window[1] >= window[2]) {
+        stop("`window` must be c(start, end) with start < end.")
+      }
     }
     if (any(ev_time < window[1] | ev_time > window[2])) {
       stop("Every event time must lie inside `window`.")
@@ -1276,11 +1355,13 @@ sample_non_events <- function(
     names(sender_first_time)[matches]
   }
 
+  # A paper is citable from the first time it appears in the log, as a citing
+  # paper or as a cited one.
+  actor_first_time <- tapply(c(event_log$time, event_log$time),
+                             c(event_log$sender, event_log$receiver), min)
+
   get_citation_receivers <- function(time_val) {
-    if (!length(sender_first_time)) {
-      return(character(0))
-    }
-    names(sender_first_time)[sender_first_time < time_val]
+    names(actor_first_time)[actor_first_time < time_val]
   }
 
   appearance_senders <- character(0)
@@ -1396,6 +1477,28 @@ sample_non_events <- function(
     FALSE
   }
 
+  # Every valid control of a stratum, as a two-column data.frame. Used when
+  # `max_attempts` rejection draws have not found one, so a valid control that
+  # is rare in the candidate pool is still drawn, uniformly among the valid
+  # pairs (the distribution the rejection draws have).
+  enumerate_valid <- function(cands, mode_choice, current_sender, current_receiver,
+                              concurrent) {
+    if (mode_choice == "one") {
+      pool_s <- cands$combined; pool_r <- cands$combined
+    } else {
+      pool_s <- unique(cands$senders); pool_r <- unique(cands$receivers)
+    }
+    if (!length(pool_s) || !length(pool_r)) {
+      return(data.frame(sender = character(0), receiver = character(0)))
+    }
+    ps <- rep(pool_s, times = length(pool_r))
+    pr <- rep(pool_r, each = length(pool_s))
+    ok <- vapply(seq_along(ps), function(k) {
+      is_valid_control(ps[k], pr[k], current_sender, current_receiver, concurrent)
+    }, logical(1))
+    data.frame(sender = ps[ok], receiver = pr[ok], stringsAsFactors = FALSE)
+  }
+
   extra_cols <- setdiff(names(event_log), required_cols)
 
   events_df <- event_log
@@ -1409,6 +1512,8 @@ sample_non_events <- function(
     } else {
       pool_s <- sender_all; pool_r <- receiver_all
     }
+    time_attr <- attributes(events_df$time)
+    events_df$time <- as.numeric(events_df$time)
     sh <- .shifted_controls(
       events_df, n_controls = n_controls, mode = mode, scope = scope,
       risk = risk, senders = pool_s, receivers = pool_r,
@@ -1420,8 +1525,10 @@ sample_non_events <- function(
     out <- rbind(events_df, control_df)
     out <- out[order(out$stratum, -out$event), , drop = FALSE]
     rownames(out) <- NULL
+    attributes(out$time) <- time_attr
     attr(out, "shift") <- sh$info
     attr(out, "no_control") <- sh$info$uninformative
+    .warn_no_control(sh$info$uninformative, events_df$stratum)
     return(out)
   }
 
@@ -1455,7 +1562,11 @@ sample_non_events <- function(
 
   ctrl_index <- 0L
   no_control <- integer(0)        # strata that got no control
-  no_control_expected <- 0L       # of those, events before any actor appeared
+  # Time groups: the appearance pool and the removed dyads are updated only
+  # after every event of a timestamp has been sampled, so events sharing a
+  # time never enter each other's risk set through these rules.
+  time_group <- match(events_df$time, unique(events_df$time))
+  group_end <- c(time_group[-1L] != time_group[-n_events], TRUE)
 
   for (i in seq_len(n_events)) {
     cand_sets <- get_candidates(scope, events_df$time[i], events_df$sender[i], events_df$receiver[i])
@@ -1464,25 +1575,31 @@ sample_non_events <- function(
                               concurrent_keys_i)
     if (!viable) {
       no_control <- c(no_control, events_df$stratum[i])
-      if (scope == "appearance" && !length(appearance_combined)) {
-        no_control_expected <- no_control_expected + 1L
-      }
     }
 
     if (viable) {
+      valid_pool <- NULL          # every valid pair, once enumerated
       for (j in seq_len(n_controls)) {
-        attempts <- 0L
-        repeat {
-          attempts <- attempts + 1L
-          if (attempts > max_attempts) {
-            stop("Unable to sample a valid non-event after ", max_attempts, " attempts.")
+        sampled <- NULL
+        if (is.null(valid_pool)) {
+          for (attempt in seq_len(max_attempts)) {
+            cand <- choose_pair(cand_sets, mode)
+            if (is_valid_control(cand$sender, cand$receiver,
+                                 events_df$sender[i], events_df$receiver[i],
+                                 concurrent_keys_i)) {
+              sampled <- cand
+              break
+            }
           }
-          sampled <- choose_pair(cand_sets, mode)
-          if (is_valid_control(sampled$sender, sampled$receiver,
-                               events_df$sender[i], events_df$receiver[i],
-                               concurrent_keys_i)) {
-            break
+          if (is.null(sampled)) {
+            valid_pool <- enumerate_valid(cand_sets, mode, events_df$sender[i],
+                                          events_df$receiver[i], concurrent_keys_i)
           }
+        }
+        if (is.null(sampled)) {
+          k <- sample.int(nrow(valid_pool), 1L)
+          sampled <- list(sender = valid_pool$sender[k],
+                          receiver = valid_pool$receiver[k])
         }
 
         ctrl_index <- ctrl_index + 1L
@@ -1494,12 +1611,17 @@ sample_non_events <- function(
       }
     }
 
-    appearance_senders <- union(appearance_senders, events_df$sender[i])
-    appearance_receivers <- union(appearance_receivers, events_df$receiver[i])
-    appearance_combined <- union(appearance_combined, c(events_df$sender[i], events_df$receiver[i]))
-
-    if (risk == "remove") {
-      removed_dyads[[dyad_key(events_df$sender[i], events_df$receiver[i])]] <- TRUE
+    if (group_end[i]) {
+      grp <- which(time_group == time_group[i])
+      appearance_senders <- union(appearance_senders, events_df$sender[grp])
+      appearance_receivers <- union(appearance_receivers, events_df$receiver[grp])
+      appearance_combined <- union(appearance_combined,
+                                   c(events_df$sender[grp], events_df$receiver[grp]))
+      if (risk == "remove") {
+        for (key in dyad_key(events_df$sender[grp], events_df$receiver[grp])) {
+          removed_dyads[[key]] <- TRUE
+        }
+      }
     }
   }
 
@@ -1511,14 +1633,28 @@ sample_non_events <- function(
   out <- out[order(out$stratum, -out$event), , drop = FALSE]
   rownames(out) <- NULL
   attr(out, "no_control") <- no_control
-  n_unexpected <- length(no_control) - no_control_expected
-  if (n_unexpected > 0L) {
-    warning(n_unexpected, " of ", n_events, " event(s) have no valid control ",
+  .warn_no_control(no_control, events_df$stratum)
+  out
+}
+
+# Warning for events whose risk set holds no valid control. `strata` lists
+# every stratum in time order. Events at the start of the log that precede
+# the first event with a control are not counted: there the risk set is still
+# being built (no actor has appeared yet, or every dyad seen so far has
+# fired), which is structural rather than a sign of a misspecified risk set.
+# When no event has a control at all, every event is counted.
+.warn_no_control <- function(no_control, strata) {
+  if (!length(no_control)) return(invisible(NULL))
+  has_ctrl <- !strata %in% no_control
+  n_lead <- if (any(has_ctrl)) which(has_ctrl)[1L] - 1L else 0L
+  n_counted <- length(no_control) - n_lead
+  if (n_counted > 0L) {
+    warning(n_counted, " of ", length(strata), " event(s) have no valid control ",
             "in their risk set and contribute nothing to the partial ",
             "likelihood; their strata are in attr(, \"no_control\").",
             call. = FALSE)
   }
-  out
+  invisible(NULL)
 }
 
 # Time-shifted nested case-control sampling (Lembo, Juozaitiene, Vinciotti &
@@ -1531,9 +1667,19 @@ sample_non_events <- function(
 .shifted_controls <- function(events, n_controls, mode, scope, risk, senders,
                               receivers, allow_loops, excluded, shift_mean,
                               window, max_attempts) {
-  if (!is.finite(shift_mean) || shift_mean <= 0) {
-    stop("The shift mean is not positive: every event time equals the start ",
-         "of `window`.")
+  if (!is.finite(shift_mean)) {
+    stop("The shift mean is not finite.")
+  }
+  if (shift_mean <= 0) {
+    # Every event lies at the start of `window` (for example a log with a
+    # single timestamp and the default window): no dyad can be shifted back
+    # into the window at another time, so no event has a control.
+    return(list(
+      controls = data.frame(stratum = integer(0), event = integer(0),
+                            sender = character(0), receiver = character(0),
+                            time = numeric(0), stringsAsFactors = FALSE),
+      info = list(mean = shift_mean, window = window, shifts = numeric(0),
+                  uninformative = events$stratum)))
   }
   ev_s <- events$sender; ev_r <- events$receiver; ev_t <- as.numeric(events$time)
   ev_key <- paste0(ev_s, "->", ev_r)

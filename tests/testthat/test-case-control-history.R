@@ -23,12 +23,17 @@ test_that("on case-control data only the events build the history by default", {
   expect_equal(unname(dflt$reciprocity_count), unname(brute))
 })
 
-test_that("history_log = event_log still treats every row as an event", {
+test_that("with an event column, history_log never turns controls into events", {
   f <- cc_fixture()
   all_rows <- endogenous_features(f$cc, stats = "sender_outdegree",
                                   history_log = f$cc)
   dflt <- endogenous_features(f$cc, stats = "sender_outdegree")
-  expect_gt(max(all_rows$sender_outdegree), max(dflt$sender_outdegree))
+  expect_equal(all_rows, dflt)
+  # Without the event column every row matched by history_log is an event.
+  no_flag <- f$cc[, c("sender", "receiver", "time")]
+  every <- endogenous_features(no_flag, stats = "sender_outdegree",
+                               history_log = no_flag)
+  expect_gt(max(every$sender_outdegree), max(dflt$sender_outdegree))
 })
 
 test_that("the default also holds on the pure-R path and with prior_log", {

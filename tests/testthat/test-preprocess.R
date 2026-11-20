@@ -30,18 +30,22 @@ test_that("sample_non_events supports citation scope and removal risk", {
     time = c(1, 2, 2, 3)
   )
 
-  # p2 cites the only earlier paper, so its event has no alternative
-  expect_warning(
+  # The first paper has nothing earlier to cite, so it gets no control; it
+  # precedes every event with a control, so it is not counted in a warning.
+  expect_no_warning(
     citation <- sample_non_events(events,
       n_controls = 1,
       scope = "citation",
       mode = "two",
       seed = 42
-    ),
-    "1 of 4 event")
+    ))
+  expect_equal(attr(citation, "no_control"), 1L)
 
   controls_cite <- subset(citation, event == 0)
   first_time <- tapply(events$time, events$sender, min)
+  # Receivers: any paper seen before t, as citing or cited ("seed" included).
+  seen_time <- tapply(c(events$time, events$time),
+                      c(events$sender, events$receiver), min)
   tol <- sqrt(.Machine$double.eps)
 
   for (row in seq_len(nrow(controls_cite))) {
@@ -49,7 +53,7 @@ test_that("sample_non_events supports citation scope and removal risk", {
     t_i <- events$time[stratum]
     eligible_senders <- names(first_time)[abs(first_time - t_i) < tol]
     expect_true(controls_cite$sender[row] %in% eligible_senders)
-    eligible_receivers <- names(first_time)[first_time < t_i]
+    eligible_receivers <- names(seen_time)[seen_time < t_i]
     expect_true(controls_cite$receiver[row] %in% unique(c(eligible_receivers, events$receiver[stratum])))
   }
 

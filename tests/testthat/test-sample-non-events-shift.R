@@ -1,6 +1,14 @@
 # Tests for time-shifted case-control sampling, sample_non_events(shift =
 # "exponential") (issue #101; Lembo, Juozaitiene, Vinciotti & Wit 2025, Sec. 4).
 
+# Shifted designs leave some events without a control by construction; those
+# tests are about other properties, so the no-control warning is muffled.
+quiet_nc <- function(expr) {
+  withCallingHandlers(expr, warning = function(w) {
+    if (grepl("no valid control", conditionMessage(w))) invokeRestart("muffleWarning")
+  })
+}
+
 shift_log <- function(seed = 1, n = 60, actors = letters[1:6]) {
   set.seed(seed)
   ev <- data.frame(sender   = sample(actors, n, replace = TRUE),
@@ -46,7 +54,7 @@ test_that("shifted controls carry their own times (the issue #101 example)", {
   ev <- ev[ev$sender != ev$receiver, ]
   none <- sample_non_events(ev, n_controls = 1, seed = 1)
   expect_true(all(tapply(none$time, none$stratum, function(x) length(unique(x))) == 1L))
-  sh <- sample_non_events(ev, n_controls = 1, seed = 1, shift = "exponential")
+  sh <- quiet_nc(sample_non_events(ev, n_controls = 1, seed = 1, shift = "exponential"))
   ctrl <- sh[sh$event == 0L, ]
   ev_time <- sh$time[sh$event == 1L][match(ctrl$stratum, sh$stratum[sh$event == 1L])]
   expect_true(all(ctrl$time != ev_time))
@@ -64,9 +72,9 @@ test_that("every control is drawn from the shifted risk set, for both modes", {
   el <- shift_log()
   for (m in c("one", "two")) {
     for (nu in c(1, 30)) {
-      cc <- sample_non_events(el, n_controls = 3, mode = m, seed = 2,
-                              shift = "exponential", shift_scale = nu,
-                              window = c(0, 10))
+      cc <- quiet_nc(sample_non_events(el, n_controls = 3, mode = m, seed = 2,
+                                       shift = "exponential", shift_scale = nu,
+                                       window = c(0, 10)))
       expect_equal(shift_violations(cc), 0L)
     }
   }
@@ -74,8 +82,8 @@ test_that("every control is drawn from the shifted risk set, for both modes", {
 
 test_that("one shift per dyad, with mean shift_scale x the average event time", {
   el <- shift_log(n = 80)
-  cc <- sample_non_events(el, mode = "one", seed = 3, shift = "exponential",
-                          shift_scale = 2, window = c(0, 10))
+  cc <- quiet_nc(sample_non_events(el, mode = "one", seed = 3, shift = "exponential",
+                                   shift_scale = 2, window = c(0, 10)))
   info <- attr(cc, "shift")
   expect_equal(info$mean, 2 * mean(el$time))
   expect_equal(info$window, c(0, 10))
@@ -106,9 +114,9 @@ test_that("risk = 'remove' and scope = 'appearance' are applied at the shifted t
   first_fire <- tapply(el$time, paste0(el$sender, "->", el$receiver), min)
   first_seen <- tapply(c(el$time, el$time), c(el$sender, el$receiver), min)
   expect_warning(
-    cc <- sample_non_events(el, n_controls = 2, mode = "one", risk = "remove",
-                            scope = "appearance", seed = 6,
-                            shift = "exponential", window = c(0, 10)),
+    cc <- quiet_nc(sample_non_events(el, n_controls = 2, mode = "one", risk = "remove",
+                                     scope = "appearance", seed = 6,
+                                     shift = "exponential", window = c(0, 10))),
     "fire more than once")
   allow <- function(key, tstar) {
     ff <- first_fire[key]
@@ -122,14 +130,16 @@ test_that("risk = 'remove' and scope = 'appearance' are applied at the shifted t
 test_that("exclude_pairs are never controls, and an empty risk set skips the stratum", {
   el <- shift_log()
   forbidden <- data.frame(sender = c("a", "b"), receiver = c("b", "c"))
-  cc <- sample_non_events(el, n_controls = 4, seed = 7, shift = "exponential",
-                          exclude_pairs = forbidden)
+  cc <- quiet_nc(sample_non_events(el, n_controls = 4, seed = 7, shift = "exponential",
+                                   exclude_pairs = forbidden))
   ctrl_keys <- with(cc[cc$event == 0L, ], paste0(sender, "->", receiver))
   expect_false(any(ctrl_keys %in% c("a->b", "b->c")))
   # Two actors in mode "two": each event's only alternative is excluded.
   two <- data.frame(sender = c("a", "b"), receiver = c("b", "a"), time = c(1, 2))
-  cc2 <- sample_non_events(two, mode = "two", seed = 1, shift = "exponential",
-                           exclude_pairs = two[, 1:2], max_attempts = 20)
+  expect_warning(
+    cc2 <- sample_non_events(two, mode = "two", seed = 1, shift = "exponential",
+                             exclude_pairs = two[, 1:2], max_attempts = 20),
+    "2 of 2 event")
   expect_equal(sum(cc2$event == 0L), 0L)
   expect_setequal(attr(cc2, "shift")$uninformative, 1:2)
 })
@@ -193,8 +203,8 @@ test_that("a global effect is recovered from the shifted design", {
                                    baseline_rate = 0.1, global_covariates = g,
                                    global_effects = c(x = 1))
   ev <- ev[, c("sender", "receiver", "time")]
-  cc <- sample_non_events(ev, mode = "one", seed = 1, shift = "exponential",
-                          window = c(0, max(ev$time)))
+  cc <- quiet_nc(sample_non_events(ev, mode = "one", seed = 1, shift = "exponential",
+                                   window = c(0, max(ev$time))))
   cc$x <- g$x[findInterval(cc$time, g$time_start)]
   w <- suppressMessages(widen_case_control(cc, covariates = "x"))
   fit <- rem(~ x, data = w, method = "gam")

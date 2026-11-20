@@ -107,8 +107,8 @@ test_that("endogenous_features rejects unsupported stat names with a useful mess
 })
 
 test_that("endogenous_features handles ties in event times deterministically", {
-  # Two events at the same timestamp -- the engine must process them in
-  # row order and produce well-defined output (never an error).
+  # Two events at the same timestamp -- statistics at t read only events
+  # strictly before t, so tied events never see each other.
   log <- data.frame(
     sender   = c("A", "B", "B"),
     receiver = c("B", "A", "A"),
@@ -119,9 +119,11 @@ test_that("endogenous_features handles ties in event times deterministically", {
   expect_equal(nrow(out), 3L)
   # Row 1: A -> B at t = 1; no prior reverse -> count 0.
   expect_equal(out$reciprocity_count[1], 0)
-  # Row 2: B -> A at t = 1; row 1 (A -> B at t = 1) is the reverse and
-  # is *prior* in row order, so reciprocity_count = 1.
-  expect_equal(out$reciprocity_count[2], 1)
+  # Row 2: B -> A at t = 1; row 1 (A -> B) shares its time, so it is not
+  # in B -> A's history: reciprocity_count = 0.
+  expect_equal(out$reciprocity_count[2], 0)
+  # Row 3: B -> A at t = 2 sees A -> B at t = 1.
+  expect_equal(out$reciprocity_count[3], 1)
 })
 
 # ----- sample_non_events() -----------------------------------------------

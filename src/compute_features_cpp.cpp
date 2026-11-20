@@ -973,24 +973,21 @@ List compute_features_cpp(CharacterVector senders,
     }
   };  // end do_write
 
-  if (!mask_active) {
-    // History-free behaviour: process rows in row order, reading then
-    // immediately writing, so tied timestamps resolve in row order. This
-    // is identical to the original single-pass loop.
-    for (R_xlen_t i = 0; i < n; ++i) { do_read(i); do_write(i); }
-  } else {
-    // History-aware behaviour: process in time groups. Every row at time t
-    // runs its READ phase before any WRITE, so all rows sharing t see the
-    // state as it stood strictly before t; only actual events
-    // (is_event[i]) update the history, so sampled non-events never
-    // pollute it.
-    for (R_xlen_t g = 0; g < n; ) {
-      R_xlen_t g_end = g;
-      while (g_end < n && times[g_end] == times[g]) ++g_end;
-      for (R_xlen_t i = g; i < g_end; ++i) do_read(i);
-      for (R_xlen_t i = g; i < g_end; ++i) if (is_event[i] == TRUE) do_write(i);
-      g = g_end;
+  // Process rows in time groups. Every row at time t runs its READ phase
+  // before any WRITE, so all rows sharing t see the state as it stood
+  // strictly before t: events at one timestamp never see each other, with or
+  // without a mask. With a mask, only actual events (is_event[i]) update the
+  // history, so sampled non-events never pollute it. A group always holds at
+  // least one row, so a non-finite time (NaN never equals itself) forms a
+  // group of its own instead of stalling the loop.
+  for (R_xlen_t g = 0; g < n; ) {
+    R_xlen_t g_end = g + 1;
+    while (g_end < n && times[g_end] == times[g]) ++g_end;
+    for (R_xlen_t i = g; i < g_end; ++i) do_read(i);
+    for (R_xlen_t i = g; i < g_end; ++i) {
+      if (!mask_active || is_event[i] == TRUE) do_write(i);
     }
+    g = g_end;
   }
 
   // 5. Assemble the named output list.
