@@ -45,6 +45,12 @@ normals, the test statistic
 computed, and the empirical p-value is the fraction of replicates
 with \eqn{T_{\phi,b}^* \ge T_\phi}{T*_{φ,b} >= T_φ}.
 }
+\examples{
+data(classroom_events)
+gof_auxiliary(classroom_events,
+  model = c(reciprocity_count = "linear"),
+  auxiliary = "transitivity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
+}
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).

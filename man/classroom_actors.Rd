@@ -15,7 +15,8 @@ of \link{classroom_events}.}
 }
 }
 \source{
-McFarland (2001), via \code{networkDynamic}. See \link{classroom_events}.
+McFarland (2001), via \code{networkDynamic}. Licence: none stated
+for the data; \code{networkDynamic} is GPL-3. See \link{classroom_events}.
 }
 \usage{
 classroom_actors

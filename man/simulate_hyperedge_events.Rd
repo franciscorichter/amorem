@@ -16,7 +16,7 @@ simulate_hyperedge_events(
 )
 }
 \arguments{
-\item{n_events}{Number of events to simulate.}
+\item{n_events}{Number of events to simulate: a positive whole number.}
 
 \item{actors}{Character vector of actor names.}
 
@@ -55,7 +55,7 @@ in \verb{1..max_size}, fired with rate
 }
 where each \eqn{x_k(t, I)}{x_k(t, I)} is one of the hyperedge-native
 covariates supported by \code{hyperedge_features()}
-(\code{activity}, \verb{subrep_<rho>} for undirected events) or \code{size}
+(\code{activity}, \verb{subrep_<rho>} with \code{rho >= 1} for undirected events) or \code{size}
 (the event's cardinality \eqn{|I|}{|I|}).
 }
 \details{

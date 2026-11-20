@@ -11,12 +11,12 @@ A data frame with 84 rows and 4 columns:
 \item{present}{Logical — whether the actor was present at the start
 of the study window.}
 \item{floor}{Integer dormitory floor.}
-\item{gradeType}{Factor — student grade type (freshman, sophomore,
-junior, senior, graduate-tutor).}
+\item{gradeType}{Factor with levels \code{"1"} to \code{"5"}: the grade-type
+codes as distributed by \code{goldfish}, which does not label them.}
 }
 }
 \source{
-Madan et al. (2012), via \code{goldfish}. See
+Madan et al. (2012), via \code{goldfish}. Licence and terms as for
 \link{social_evolution_calls}.
 }
 \usage{

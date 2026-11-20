@@ -16,7 +16,8 @@ Unix epoch of \code{time = 0}.}
 }
 }
 \source{
-Madan et al. (2012), via \code{goldfish}.
+Madan et al. (2012), via \code{goldfish}. Licence and terms as for
+\link{social_evolution_calls}.
 }
 \usage{
 social_evolution_friendship

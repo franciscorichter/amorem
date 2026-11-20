@@ -29,7 +29,9 @@ format" above).}
 plus one column per global covariate referenced in \code{models}.
 The function evaluates each covariate at the focal event time
 and at the non-event's shifted time by stepwise lookup (LOCF on
-the \code{time} axis).}
+the \code{time} axis): the value at the last grid time at or before that
+time. A time before the first grid time takes the value at the first
+grid time.}
 
 \item{scope, mode}{Passed through to \code{\link[=sample_non_events]{sample_non_events()}}.}
 

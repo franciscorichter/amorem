@@ -19,7 +19,8 @@ widen_case_control(
 \item{case}{Optional name of the 0/1 event-indicator column. If \code{NULL}
 (default), it is auto-detected from the package's \code{event} column (as
 produced by \code{\link[=sample_non_events]{sample_non_events()}}) or eventnet's \code{IS_OBSERVED}, preferring
-\code{event} when both are present.}
+\code{event} when both are present. The column may be numeric 0/1, logical, or
+character/factor \code{"0"}/\code{"1"} or \code{"FALSE"}/\code{"TRUE"}; it is read by value.}
 
 \item{stratum}{Optional name of the column grouping each case with its
 controls. When \code{NULL}, a column named \code{stratum} (as written by

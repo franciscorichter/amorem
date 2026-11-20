@@ -48,6 +48,15 @@ standard Brownian bridge via \eqn{T_\psi = \sup_u \lVert\hat W\rVert^2}{T_psi = 
 The p-value is computed empirically by simulating \code{n_sim} Brownian
 bridge trajectories.
 }
+\examples{
+if (requireNamespace("mgcv", quietly = TRUE)) {
+  data(classroom_events)
+  gof_multivariate(classroom_events,
+    model = c(reciprocity_count  = "linear",
+              transitivity_count = "linear"),
+    covariate = "reciprocity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
+}
+}
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).

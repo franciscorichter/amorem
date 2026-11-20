@@ -25,7 +25,10 @@ rem(
 \code{gam} method; long with a case indicator and stratum for \code{clogit}). For
 \code{method = "gam"}, long case-control input (a \code{event}/\code{IS_OBSERVED}
 indicator with control rows) is detected and widened automatically via
-\code{\link[=widen_case_control]{widen_case_control()}}, with a message.}
+\code{\link[=widen_case_control]{widen_case_control()}}, with a message. The \code{gam} design pairs each case
+with one control, so widening keeps the first control of each stratum;
+when a stratum has several controls \code{rem()} warns, and
+\code{method = "clogit"} uses them all.}
 
 \item{method}{Estimation backend; see \emph{Description}.}
 
@@ -64,9 +67,17 @@ hyper-parameters for \code{method = "nn"}. Ignored by the other backends.}
 }
 \value{
 An object of class \code{"amorem_rem"}: a list with the fitted model (\verb{$fit}),
-the \code{method}, the original \code{formula}, the parsed \code{terms}, and the number of
-observations \code{n}. Has \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}}, \code{\link[=plot]{plot()}} and \code{\link[=logLik]{logLik()}}
-methods.
+the \code{method}, the original \code{formula}, the parsed \code{terms}, the number of
+rows used by the fit \code{n} and, for \code{gam} and \code{clogit}, the logical vector
+\code{rows} marking which rows of \code{data} (after widening, for \code{gam}) the fit
+used. \code{clogit} and \code{nn} fits also store the resolved event-indicator
+column \code{case} and the \code{stratum} argument. Has \code{\link[=summary]{summary()}}, \code{\link[=coef]{coef()}},
+\code{\link[=plot]{plot()}}, \code{\link[=logLik]{logLik()}} and \code{\link[=predict]{predict()}} methods. For \code{gam} fits,
+\code{predict(fit, newdata)} takes wide data in the form \code{rem()} accepts
+(the columns named in \emph{Column resolution}) and returns the linear
+predictor of each row, event minus control; further arguments go to
+\code{\link[mgcv:predict.gam]{mgcv::predict.gam()}}. For \code{clogit} and \code{nn} fits, \code{predict()} passes
+its arguments to the fitted model's own method.
 }
 \description{
 \code{rem()} is the unified front-end for fitting relational event models from
@@ -113,9 +124,10 @@ a name to request a smooth effect (\code{gam} method only):
 sender), built from the matched \code{x_ev} / \code{x_nv} levels as
 \code{s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")}, contributing
 \code{f(event_level) - f(control_level)} (following the REM tutorial's
-species-invasiveness term). Falls back to a single column \code{x} when
-\code{x_ev} / \code{x_nv} are absent. Identified only when the event and control
-differ on \code{x}.
+species-invasiveness term). Needs both \code{x_ev} and \code{x_nv} (as written
+by \code{\link[=widen_case_control]{widen_case_control()}}); a single column \code{x} is an error, since it
+gives the event and its control the same level and the term would be
+zero. Identified only when the event and control differ on \code{x}.
 }
 Smooth terms take the basis settings of \code{\link[mgcv:s]{mgcv::s()}} / \code{\link[mgcv:te]{mgcv::te()}} as
 named arguments after the covariate, so each term can use its own basis
@@ -130,6 +142,15 @@ formula's environment. A term without its own \code{k} / \code{bs} uses the glob
 For the \code{gam} method the left-hand side is ignored (the response is the
 constant case indicator); for \code{clogit} the left-hand side names the 0/1 event
 indicator column (e.g. \code{event ~ x}), unless \code{case} is given explicitly.
+The event indicator may be numeric or integer 0/1, logical, or a character
+or factor column with values \code{"0"}/\code{"1"} or \code{"FALSE"}/\code{"TRUE"}; it is read
+by value, and any other value is an error.
+
+\code{offset()} terms enter the linear predictor with coefficient 1. For
+\code{clogit} the expression is evaluated on the rows of \code{data}, as in
+\code{\link[survival:clogit]{survival::clogit()}}. For \code{gam} it must name a column, \code{offset(o)}, which is
+resolved like a linear term (an event-minus-control difference: column \code{o},
+else \code{d_o}, else \code{o_ev - o_nv}). The \code{nn} method does not take offsets.
 }
 
 \section{Column resolution}{
@@ -154,13 +175,16 @@ explicitly.
 }
 
 \examples{
-set.seed(1)
-w <- simulate_relational_events(
-  n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
-  n_controls = 1, endogenous_stats = "reciprocity_count",
-  endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
-fit <- rem(~ reciprocity_count, data = w, method = "gam")
-coef(fit)
+if (requireNamespace("mgcv", quietly = TRUE)) {
+  set.seed(1)
+  w <- simulate_relational_events(
+    n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
+    n_controls = 1, endogenous_stats = "reciprocity_count",
+    endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
+  fit <- rem(~ reciprocity_count, data = w, method = "gam")
+  coef(fit)
+  summary(predict(fit, w))
+}
 
 }
 \seealso{

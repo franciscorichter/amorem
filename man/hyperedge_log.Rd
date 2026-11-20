@@ -54,7 +54,8 @@ receiver set.
 \details{
 The constructor \code{\link[=hyperedge_log]{hyperedge_log()}} accepts list-columns directly and
 performs validation (character members, non-empty sets, finite
-times, sorted by time). \code{\link[=as_hyperedge_log]{as_hyperedge_log()}} promotes a dyadic
+times, sorted by time, no NA or empty actor name, no actor listed twice
+within one event's sender set or receiver set). \code{\link[=as_hyperedge_log]{as_hyperedge_log()}} promotes a dyadic
 \verb{(sender, receiver, time)} data frame to the hyperedge form by
 wrapping each \code{sender} and \code{receiver} in a length-1 character
 vector. \code{\link[=as_dyadic_log]{as_dyadic_log()}} is the inverse: it succeeds only when

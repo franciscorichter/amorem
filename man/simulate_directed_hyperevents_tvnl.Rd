@@ -31,8 +31,8 @@ Defaults to \code{function(t) sin(2 * t)}.}
 
 \item{horizon}{Positive numeric; the simulation end time (start is 0).}
 
-\item{dt}{Positive numeric; the time-grid step used by the thinning scheme
-(must be smaller than \code{horizon}).}
+\item{dt}{Positive numeric; the width of the time grid on which the rates
+are held constant (must be smaller than \code{horizon}).}
 
 \item{n_controls}{Non-negative integer; number of non-event pairs sampled per
 event. Defaults to 1 (a case-1-control design).}
@@ -70,10 +70,15 @@ mean of its members' actor attributes. For an ordered group pair
 where \eqn{\alpha(t)} is the time-varying sender effect
 (\code{time_varying_effect}), \eqn{f(\cdot)} is the non-linear receiver effect
 (\code{nonlinear_effect}), and \eqn{x} denotes a group covariate. Events are drawn
-on a fixed time grid of width \code{dt} by a thinning scheme: within each step the
-next inter-event time is sampled from an exponential with the total rate
-evaluated at the step midpoint, and the firing pair is chosen with
-probability proportional to its rate. For every realised event,
+under a piecewise-constant approximation of the rates on a time grid of
+width \code{dt} (the last cell ends at \code{horizon}): within a cell the rates are
+held at their value at the midpoint of the part of the cell not yet
+simulated, the next inter-event time is drawn from an exponential with the
+resulting total rate, and the firing pair is chosen with probability
+proportional to its rate; after each event the rates are re-evaluated at the
+midpoint of the rest of the cell. This is not exact for a time-varying
+\eqn{\alpha(t)}; the approximation error vanishes as \code{dt} decreases. No event
+time exceeds \code{horizon}. For every realised event,
 \code{n_controls} non-event pairs are sampled uniformly from the remaining group
 pairs, yielding a case-\code{n_controls}-control design.
 

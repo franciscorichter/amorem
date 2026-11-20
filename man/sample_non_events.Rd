@@ -24,15 +24,20 @@ sample_non_events(
 \item{event_log}{Data frame with columns \code{sender}, \code{receiver}, and \code{time}.}
 
 \item{n_controls}{Number of non-events (controls) to sample per realized
-event.}
+event; a positive whole number. Controls are drawn with replacement, so
+a stratum whose risk set is small can hold the same control more than
+once.}
 
 \item{scope}{Candidate set definition. \code{"all"} uses every actor observed in
 the data; \code{"appearance"} restricts to actors that have appeared in prior
 events (so the first event, with no prior events, gets no controls);
 \code{"citation"} matches citation networks where senders are restricted
-to the papers that debut at the current time and receivers must have
-appeared earlier; it always draws senders and receivers from these two
-separate pools, whatever \code{mode} says.}
+to the papers that debut at the current time and receivers are the
+papers that appeared in the log, as citing or as cited papers, before
+that time (papers that are only ever cited are eligible); it always draws
+senders and receivers from these two separate pools, whatever \code{mode}
+says. Under \code{"appearance"} and \code{"citation"} an actor first seen at time
+\eqn{t}{t} is not in the pool of events at \eqn{t}{t}.}
 
 \item{mode}{\code{"one"} (default) draws both sender and receiver from the same
 candidate pool (single-mode): every actor seen in either role can be a
@@ -47,7 +52,8 @@ every dyad at risk at every event, including dyads that have already fired
 (recurrent events), whereas \code{"remove"} deletes a dyad from the candidate
 pool after its first event (useful for processes such as species invasions
 where a pair cannot reoccur; a dyad that fires more than once gives a
-warning). Under \code{"remove"}, dyads
+warning). A dyad leaves the pool after the timestamp of its first event.
+Under \code{"remove"}, dyads
 firing at the focal event's own timestamp are also kept out of its control
 pool (concurrent events are not valid non-events at that instant).}
 
@@ -67,10 +73,10 @@ receiver?}
 
 \item{seed}{Optional seed for reproducibility.}
 
-\item{max_attempts}{Maximum resampling attempts per control before giving up
-(prevents infinite loops when candidate sets are small). With
-\code{shift = "exponential"} it is the number of rejection draws tried before
-the valid candidates are enumerated, so sampling never fails there.}
+\item{max_attempts}{Number of rejection draws tried per control before the
+valid candidates of the stratum are enumerated and the control is drawn
+uniformly among them, so a valid control is always found when one
+exists.}
 
 \item{shift}{\code{"none"} (default) gives every control its event's time, so a
 global covariate (a function of time only, e.g. weather or time of day)
@@ -88,15 +94,25 @@ Used only with \code{shift = "exponential"}.}
 
 \item{window}{Observation window \code{c(start, end)} for
 \code{shift = "exponential"}. Defaults to \code{c(min(time), max(time))}; pass the
-true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known.}
+true window (the paper's \eqn{[0, T]}{[0, T]}) when it is known. \code{Date}
+and \code{POSIXct} times (and windows) are handled in days / seconds, and the
+returned \code{time} column keeps the input class. When every event lies at
+the start of the window (for example a log with a single timestamp and
+the default window), no event gets a control.}
 }
 \value{
 A data.frame containing the original events (\code{event = 1}) and the
-sampled controls (\code{event = 0}), grouped by \code{stratum} identifiers.
-\code{attr(, "no_control")} lists the strata whose event got no control: they
-contribute nothing to the partial likelihood, and a warning gives their
-number (except for events before any actor has appeared under
-\code{scope = "appearance"}, which never have controls). With
+sampled controls (\code{event = 0}), grouped by \code{stratum} identifiers. The
+input is first ordered by time (ties keep their input order), and
+stratum \eqn{k}{k} is the \eqn{k}{k}-th event in that order; rows are
+returned by stratum, each event before its controls. Times must not be
+\code{NA}. \code{attr(, "no_control")} lists the strata whose event got no
+control: they contribute nothing to the partial likelihood, and a
+warning gives their number. Events at the start of the log that come
+before the first event with a control are listed but not counted in the
+warning, since there the risk set is still being built (no actor has
+appeared yet, or every dyad seen so far has fired); when no event has a
+control, all are counted. With
 \code{shift = "exponential"} it carries \code{attr(, "shift")}: a list with the
 shift \code{mean}, the \code{window}, the per-dyad \code{shifts} (named
 \code{"sender->receiver"}) and the \code{uninformative} strata that got no control.

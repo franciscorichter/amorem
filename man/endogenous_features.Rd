@@ -24,20 +24,19 @@ the full list of allowed values.}
 exponential-decay statistics (\verb{*_exp_decay*}).}
 
 \item{sort}{Logical; when \code{TRUE}, events are ordered by time prior to
-computing summaries (ties preserve input order).}
+computing summaries (ties preserve input order). Times must not be \code{NA}.}
 
-\item{history_log}{Optional data.frame giving the authoritative event
-history (columns \code{sender}, \code{receiver}, \code{time}). When supplied, only rows
-of \code{event_log} whose \verb{(sender, receiver, time)} triple appears in
-\code{history_log} update the running network state; all other rows (e.g.
-sampled non-events / controls) have their statistics computed against
-that history but never enter it. This makes it possible to evaluate
-endogenous statistics for non-events without those non-events polluting
-the history. When \code{NULL} (default) and \code{event_log} is case-control data
--- a 0/1 \code{event} column with control rows, as written by
-\code{\link[=sample_non_events]{sample_non_events()}} -- only the \code{event == 1} rows update the history;
-otherwise every row is treated as an event. Pass
-\code{history_log = event_log} to treat every row as an event regardless.}
+\item{history_log}{Optional data.frame of real events (columns \code{sender},
+\code{receiver}, \code{time}) used to mark which rows of an \code{event_log} \strong{without}
+an \code{event} column are events: only rows whose \verb{(sender, receiver, time)}
+triple appears in \code{history_log} update the running network state; all
+other rows (e.g. sampled non-events) have their statistics computed
+against that history but never enter it. When \code{event_log} has a 0/1
+\code{event} column (case-control data, as written by \code{\link[=sample_non_events]{sample_non_events()}}),
+the \code{event == 1} rows are the events and the control rows never enter
+the history, whether or not \code{history_log} is given; a control that
+coincides with another stratum's event at the same time is still a
+control. With neither, every row is an event.}
 
 \item{prior_log}{Optional data.frame of events that precede the study window
 (columns \code{sender}, \code{receiver}, \code{time}), used to \strong{warm-start} the network
@@ -61,7 +60,10 @@ even after a closure event).
 }
 \details{
 All statistics are evaluated immediately \strong{before} the event is
-logged.  They are grouped into five families.
+logged: the statistics of a row at time \eqn{t}{t} use only events with
+time strictly less than \eqn{t}{t}. Events sharing a timestamp never
+enter each other's history, for event and control rows alike and in both
+the compiled and the pure-R engine. They are grouped into five families.
 
 \strong{Degree / baseline:}
 \describe{

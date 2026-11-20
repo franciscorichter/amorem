@@ -9,8 +9,8 @@ transform_recency(delta, half_life = NULL, reference = NULL)
 \arguments{
 \item{delta}{Numeric vector of non-negative time gaps. NAs propagate.}
 
-\item{half_life}{Optional positive scalar. If supplied, used directly
-as the kernel scale \eqn{2 m}{2 m}, bypassing the median rule.}
+\item{half_life}{Optional positive scalar, possibly \code{Inf}: the gap at
+which the weight is 0.5. Bypasses the median rule.}
 
 \item{reference}{Optional numeric vector. If supplied, the median is
 computed on \code{reference} instead of \code{delta}. Useful when transforming
@@ -30,11 +30,19 @@ weights via
 }
 where \eqn{m}{m} is the median of the supplied (or reference) gaps.
 Large gaps map toward 0; gaps near 0 map toward 1. The half-life of
-the kernel is \eqn{2 m \log 2}{2 * m * log(2)}, so the median gap
+this kernel is \eqn{2 m \log 2}{2 * m * log(2)}, so the median gap
 itself is mapped to approximately
 \eqn{e^{-1/2} \approx 0.607}{exp(-1/2) ~ 0.607}.
 }
 \details{
+When \code{half_life} \eqn{T}{T} is supplied, the weights are
+\eqn{w(\delta) = \exp(-\delta \log 2 / T) = 2^{-\delta/T}}{w(delta) =
+exp(-delta * log(2) / T) = 2^(-delta / T)}: a gap of \eqn{T}{T} maps to
+0.5, the same half-life convention as the \verb{*_exp_decay} statistics of
+\code{\link[=endogenous_features]{endogenous_features()}} and \code{\link[=simulate_relational_events]{simulate_relational_events()}}.
+\code{half_life = Inf} means no decay: every non-missing gap, including
+\code{Inf}, maps to 1.
+
 This is the data-driven recency parametrisation used as a preprocessing
 step for global and exogenous covariates in
 Lembo, Juozaitiene, Vinciotti & Wit (2025) and matches the

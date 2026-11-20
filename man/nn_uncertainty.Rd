@@ -22,9 +22,8 @@ nn_uncertainty(
 
 \item{B}{Number of bootstrap resamples.}
 
-\item{case, stratum}{Event-indicator and stratum columns, resolved exactly as
-in \code{\link[=rem]{rem()}} (defaults: the formula's left-hand side, and
-\code{cumsum(case == 1)}).}
+\item{case, stratum}{Event-indicator and stratum columns. When \code{NULL}
+(default), the ones the \code{\link[=rem]{rem()}} fit used are taken from \code{object}.}
 
 \item{n_grid}{Number of grid points of each partial-dependence curve, which
 spans the 1st to 99th percentile of the feature in \code{data}.}
@@ -52,6 +51,15 @@ Each bootstrap partial-dependence curve is centred (its grid-mean removed)
 before the pointwise quantiles are taken, so the bands describe uncertainty
 in the \emph{shape} of each effect, not the conditional-logit's unidentified
 per-stratum offset.
+}
+\examples{
+cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
+fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
+           method = "nn", nn = nn_control(hidden = 4, epochs = 50, seed = 1))
+u <- nn_uncertainty(fit, cc, B = 5, seed = 1)
+u
+plot(u)
 }
 \seealso{
 \code{\link[=rem]{rem()}}, \code{\link[=nn_control]{nn_control()}}

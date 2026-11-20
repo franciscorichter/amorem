@@ -22,7 +22,10 @@ standardize_event_log(
 event.}
 
 \item{sender_col, receiver_col, time_col}{Column names storing the sender,
-receiver, and time information.}
+receiver, and time information. Times may be numeric, \code{Date} or \code{POSIXct}
+(converted to days / seconds), a factor (read by its labels) or text
+holding numbers; other text, such as unconverted date strings, is an
+error.}
 
 \item{sort}{Logical; should the output be sorted by time (ties are kept in
 input order)?}

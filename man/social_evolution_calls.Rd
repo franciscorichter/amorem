@@ -20,15 +20,21 @@ Madan, A., Cebrian, M., Moturu, S., Farrahi, K., Pentland, A.
 (2012). Sensing the "health state" of a community. \emph{IEEE Pervasive
 Computing} 11(4), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
 via the \code{goldfish} R package (github.com/snlab-ch/goldfish),
-dataset \code{Social_Evolution}.
+dataset \code{Social_Evolution}. Licence: no licence is stated for the
+data; the \code{goldfish} package, which distributes them, is licensed
+GPL (>= 3). The original MIT Reality Commons download
+(\url{http://realitycommons.media.mit.edu/socialevolution.html}) asks
+users not to distribute the data to others and not to attempt to
+re-identify participants.
 }
 \usage{
 social_evolution_calls
 }
 \description{
 Time-stamped directed phone calls among undergraduates in an MIT
-residence hall over the 2008–2009 academic year. Sourced from the
-\code{goldfish} R package (\code{Social_Evolution$calls}).
+residence hall from 6 September to 18 October 2008, the abbreviated
+window of the Social Evolution study distributed by the \code{goldfish} R
+package (\code{Social_Evolution$calls}).
 }
 \seealso{
 \link{social_evolution_actors}, \link{social_evolution_friendship}

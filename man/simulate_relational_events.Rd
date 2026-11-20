@@ -30,7 +30,7 @@ simulate_relational_events(
 )
 }
 \arguments{
-\item{n_events}{Number of events to generate.}
+\item{n_events}{Number of events to generate: a non-negative whole number.}
 
 \item{senders}{Character vector listing the sender set \eqn{\mathcal{S}}.}
 
@@ -63,7 +63,7 @@ receiver.}
 
 \item{allow_loops}{Logical; whether sender and receiver can coincide.}
 
-\item{n_controls}{Integer; number of non-events (controls) to sample
+\item{n_controls}{Non-negative whole number; number of non-events (controls) to sample
 uniformly at random for each realized event. If \code{n_controls > 0}, the
 function returns a case-control data frame suitable for conditional logistic
 regression / GAM modeling. Defaults to 0.}
@@ -273,9 +273,32 @@ distribution.  When combined with \code{endogenous_stats}, the
 per-dyad rates are recomputed at every step from the current endogenous
 state and then rescaled by the global multiplier.
 
+Statistics that change between events -- the \code{*_exp_decay} family,
+\code{recency} and the \code{*_time_*} family -- make the rates
+time-varying, and the Gillespie method then draws waiting times by
+thinning: candidate times come from a Poisson process whose rate bounds
+the total rate on a time window, and a candidate at time \eqn{t} is
+accepted with probability equal to the total rate at \eqn{t} (state
+decayed to \eqn{t}) divided by the bound; the firing dyad is drawn
+in proportion to the rates at \eqn{t}, and the recorded statistics are
+their values at \eqn{t}. The bound uses that each such term is monotone
+in time between events. The result is exact for these statistics. With a
+negative effect on \code{recency} or a \code{*_time_*} statistic the
+rates can decay toward zero, so the process may stop firing; the
+simulation then stops with a message once every rate is below
+\eqn{e^{-700}}.
+
+Under \code{risk = "remove"} with \code{n_controls > 0}, the simulation
+stops with a message when fewer than \code{n_controls + 1} dyads remain
+in the risk set, and returns the events produced so far.
+
 The \code{"tau_leap"} algorithm advances the clock by a user-chosen step
 \eqn{\tau} and draws, for every dyad, a \eqn{\mathrm{Poisson}(\lambda_{sr}(t)\,\tau)}
-number of events using the rates at the \emph{start} of the step. Multiple
+number of events using the rates at the \emph{start} of the step.
+Elapsed-time statistics (\code{recency} and every \code{*_time_*}
+statistic, ordered ones included) are recorded at each event's own time
+from the start-of-step state; the other statistics carry their
+start-of-step values. Multiple
 events can fire in the same step; they are placed at uniform times within
 \eqn{[t, t+\tau)} and reported in time order, but they share the
 start-of-step endogenous state and global multiplier. Endogenous state is

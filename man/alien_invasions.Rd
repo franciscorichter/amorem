@@ -6,8 +6,9 @@
 \title{Alien species first records, prepared for relational event models}
 \format{
 A data frame with 11,730 rows, ordered by \code{stop}: \code{species},
-\code{region}, \code{start}, \code{stop} (years; equal when the record falls in the first
-year, 1880), \code{taxonomy}.
+\code{region}, \code{start}, \code{stop} (years), \code{taxonomy}. \code{start} equals \code{stop} in
+421 rows: the 14 records of 1880 and 407 later records whose last
+at-risk interval in the release begins in the year of the record.
 }
 \source{
 Juozaitienė R, Seebens H, Latombe G, Essl F, Wit EC (2023).
@@ -21,7 +22,7 @@ alien_invasions
 }
 \description{
 First records of established alien species (mammals, birds, plants, insects)
-in 272 regions, 1880--2005, as one-shot species-to-region events: each pair
+in 259 regions, 1880--2005, as one-shot species-to-region events: each pair
 fires at most once (\code{risk = "remove"}). The first record is dated \code{stop};
 \code{start} is the start of the last interval over which the pair was at risk
 with unchanged covariates in the counting-process release.

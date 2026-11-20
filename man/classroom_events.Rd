@@ -12,7 +12,9 @@ A data frame with 691 rows and 5 columns:
 \item{receiver}{Character actor id matching \link{classroom_actors}\verb{$id}.}
 \item{interaction_type}{Factor with levels \code{"social"}, \code{"sanction"},
 \code{"task"}.}
-\item{weight}{Integer weight of the interaction.}
+\item{weight}{Numeric weight assigned by the observer: 1 for direct
+communication focused on particular others (501 rows), 0.2 for
+indirect "broadcast" communication such as lecturing (190 rows).}
 }
 }
 \source{
@@ -20,7 +22,10 @@ McFarland, D. (2001). Student resistance: How the formal and
 informal organization of classrooms facilitate everyday forms of
 student defiance. \emph{American Journal of Sociology} 107(3), 612–678.
 \doi{10.1086/338779}. Redistributed via the \code{networkDynamic} R
-package (CRAN), dataset \code{McFarland_cls33_10_16_96}.
+package (CRAN), dataset \code{McFarland_cls33_10_16_96},
+\url{https://cran.r-project.org/package=networkDynamic}. Licence: no
+licence is stated for the data themselves; the \code{networkDynamic}
+package, which distributes them, is licensed GPL-3.
 }
 \usage{
 classroom_events

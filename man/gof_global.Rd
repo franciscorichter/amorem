@@ -33,6 +33,12 @@ combines the resulting p-values via the Cauchy combination
 (Liu & Xie 2020), with analytic p-value
 \eqn{\tfrac{1}{2} - \arctan(T_o)/\pi}{0.5 - atan(T_o)/pi}.
 }
+\examples{
+data(classroom_events)
+gof_global(classroom_events,
+  model = c(reciprocity_count  = "linear",
+            transitivity_count = "linear"), seed = 1)
+}
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).

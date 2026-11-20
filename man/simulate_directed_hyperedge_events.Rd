@@ -19,7 +19,7 @@ simulate_directed_hyperedge_events(
 )
 }
 \arguments{
-\item{n_events}{Number of events to simulate.}
+\item{n_events}{Number of events to simulate: a positive whole number.}
 
 \item{senders}{Character vector of sender names \eqn{V^I}{V^I}.}
 

@@ -19,7 +19,9 @@ dynamics of users' behavior and interaction: Network analysis of
 an online community. \emph{Journal of the American Society for
 Information Science and Technology} 60(5), 911–932.
 Distributed via SNAP:
-\url{https://snap.stanford.edu/data/CollegeMsg.html}.
+\url{https://snap.stanford.edu/data/CollegeMsg.html}, derived from the
+data set hosted by Tore Opsahl (\url{https://toreopsahl.com/datasets/}).
+Licence: none stated; SNAP and Opsahl ask users to cite the source.
 }
 \usage{
 college_msg
