@@ -81,7 +81,7 @@ hyperedge_log <- function(I, J, time) {
   dup_J <- which(vapply(J, anyDuplicated, integer(1)) > 0L)
   if (length(dup_I) || length(dup_J)) {
     stop("An actor appears more than once within one event's `I` or `J` ",
-         "(event(s) ", paste(head(sort(unique(c(dup_I, dup_J))), 5),
+         "(event(s) ", paste(utils::head(sort(unique(c(dup_I, dup_J))), 5),
          collapse = ", "), "). Each set must list distinct actors.")
   }
   ord <- order(time)
