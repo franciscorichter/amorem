@@ -180,6 +180,14 @@ gof_univariate <- function(event_log, model, covariate,
 #'   `W` (n x q matrix), `u`, and `covariate`.
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#' @examples
+#' if (requireNamespace("mgcv", quietly = TRUE)) {
+#'   data(classroom_events)
+#'   gof_multivariate(classroom_events,
+#'     model = c(reciprocity_count  = "linear",
+#'               transitivity_count = "linear"),
+#'     covariate = "reciprocity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
+#' }
 #' @export
 gof_multivariate <- function(event_log, model, covariate,
                               k_basis = 5, n_sim = 1000,
@@ -284,6 +292,11 @@ gof_multivariate <- function(event_log, model, covariate,
 #'   `statistic`, `p_value`).
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#' @examples
+#' data(classroom_events)
+#' gof_global(classroom_events,
+#'   model = c(reciprocity_count  = "linear",
+#'             transitivity_count = "linear"), seed = 1)
 #' @export
 gof_global <- function(event_log, model,
                         scope = "all", mode = "one",
@@ -334,6 +347,11 @@ gof_global <- function(event_log, model,
 #'   `G`, `u`, and `auxiliary`.
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#' @examples
+#' data(classroom_events)
+#' gof_auxiliary(classroom_events,
+#'   model = c(reciprocity_count = "linear"),
+#'   auxiliary = "transitivity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
 #' @export
 gof_auxiliary <- function(event_log, model, auxiliary,
                            n_sim = 1000,

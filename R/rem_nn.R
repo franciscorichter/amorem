@@ -55,6 +55,13 @@
 #'
 #' @return A list of class `"nn_control"`.
 #' @seealso [rem()]
+#' @examples
+#' ctrl <- nn_control(hidden = 4, epochs = 50, seed = 1)
+#' cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+#' cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
+#' fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
+#'            method = "nn", nn = ctrl)
+#' fit$fit
 #' @export
 nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
                        architecture = c("mlp", "additive_spline"),
@@ -309,6 +316,9 @@ nn_control <- function(hidden = c(16L, 8L), activation = c("relu", "tanh"),
   # A seed makes the fit reproducible; the caller's random-number state is
   # restored on exit (CRAN policy: do not change the user's RNG stream).
   if (!is.null(control$seed)) withr::local_preserve_seed()
+  # Loading torch draws from the RNG; load it before seeding so that the first
+  # torch fit of a session matches later ones.
+  if (identical(control$engine, "torch")) requireNamespace("torch", quietly = TRUE)
   strat_id <- as.integer(factor(strat_id))
   # Range of the data, on the original scale, for partial-dependence grids.
   x_range <- apply(X, 2L, stats::quantile, probs = c(0.01, 0.99), names = FALSE)

@@ -16,9 +16,8 @@
 #' @param object A fitted [rem()] object with `method = "nn"`.
 #' @param data The case-control data frame the model was fit on (same columns).
 #' @param B Number of bootstrap resamples.
-#' @param case,stratum Event-indicator and stratum columns, resolved exactly as
-#'   in [rem()] (defaults: the formula's left-hand side, and
-#'   `cumsum(case == 1)`).
+#' @param case,stratum Event-indicator and stratum columns. When `NULL`
+#'   (default), the ones the [rem()] fit used are taken from `object`.
 #' @param n_grid Number of grid points of each partial-dependence curve, which
 #'   spans the 1st to 99th percentile of the feature in `data`.
 #' @param level Confidence level for the bands and the concordance interval.
@@ -28,6 +27,14 @@
 #'   `data.frame(x, lo, med, hi)` bands, a `concordance` quantile interval, and
 #'   the settings `B`, `level`. Has `print()` and `plot()` methods.
 #' @seealso [rem()], [nn_control()]
+#' @examples
+#' cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+#' cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
+#' fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
+#'            method = "nn", nn = nn_control(hidden = 4, epochs = 50, seed = 1))
+#' u <- nn_uncertainty(fit, cc, B = 5, seed = 1)
+#' u
+#' plot(u)
 #' @export
 nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
                            n_grid = 50L, level = 0.95, seed = NULL) {
@@ -41,12 +48,22 @@ nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
   # Drop it here and make the whole procedure reproducible via this function's
   # own `seed` argument instead.
   control$seed <- NULL
-  if (is.null(case)) case <- all.vars(object$formula)[1L]
+  # Use the event indicator and strata the fit used; fits made before rem()
+  # stored them fall back to the formula's left-hand side.
+  if (is.null(case)) case <- object$case
+  if (is.null(case)) case <- .rem_case_name(object$formula, NULL, "nn")
+  if (is.null(stratum)) stratum <- object$stratum
   ci <- data[[case]]
   if (is.null(ci)) stop("case column '", case, "' not found in `data`.", call. = FALSE)
+  ci <- .as_event01(ci, case)
   strat <- .derive_stratum(data, case, stratum)
+  miss <- setdiff(vars, names(data))
+  if (length(miss)) {
+    stop("`data` is missing feature column(s): ", paste(miss, collapse = ", "),
+         call. = FALSE)
+  }
   X <- as.matrix(data[, vars, drop = FALSE]); storage.mode(X) <- "double"
-  is_event <- as.integer(ci) == 1L
+  is_event <- ci == 1L
   strata <- unique(strat)
 
   mu <- colMeans(X); sdv <- apply(X, 2L, stats::sd); sdv[sdv == 0] <- 1
@@ -70,6 +87,8 @@ nn_uncertainty <- function(object, data, B = 200L, case = NULL, stratum = NULL,
 
   if (!is.null(seed)) {
     withr::local_preserve_seed()
+    # Loading torch draws from the RNG; load it before seeding.
+    if (identical(control$engine, "torch")) requireNamespace("torch", quietly = TRUE)
     set.seed(seed)
   }
   curves <- array(NA_real_, c(n_grid, length(vars), B))
