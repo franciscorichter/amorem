@@ -182,10 +182,17 @@ compare_models_global <- function(event_log,
   # non-event per event), re-used across specs. Each control carries its own
   # back-shifted time t*_k, and events whose shifted risk set holds no other
   # dyad get no control and drop out.
-  cc <- sample_non_events(event_log, n_controls = 1L,
-                          scope = scope, mode = mode, seed = seed,
-                          shift = "exponential", shift_scale = shift_scale,
-                          window = window)
+  # Those events are expected here, so the sampler's no-control warning is
+  # muffled; their strata stay in attr(cc, "no_control").
+  cc <- withCallingHandlers(
+    sample_non_events(event_log, n_controls = 1L,
+                      scope = scope, mode = mode, seed = seed,
+                      shift = "exponential", shift_scale = shift_scale,
+                      window = window),
+    warning = function(w) {
+      if (grepl("no valid control", conditionMessage(w), fixed = TRUE))
+        invokeRestart("muffleWarning")
+    })
   # Dyadic statistics of every row, events and controls alike, against the
   # real events strictly before that row's own time.
   history <- event_log[, c("sender", "receiver", "time")]

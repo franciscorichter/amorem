@@ -90,8 +90,11 @@ share a case-control draw.
 `endogenous_features()` on a case-control table (a 0/1 `event` column with
 control rows, as `sample_non_events()` returns) builds the network history
 from the observed events only: the sampled non-events are scored against it
-but never enter it. `history_log` overrides this with an explicit history
-(only rows present in `history_log` update the running network state).
+but never enter it, and rows at the same time never see each other: every
+statistic at time t uses only events strictly before t. `history_log` supplies
+an explicit history for logs without an `event` column (only rows present in
+`history_log` update the running network state); when the `event` column is
+present, it decides which rows are events.
 
 For set-valued covariates, the `"sender_receivers_set"` statistic returns a
 **list-column**: for each row, the set of receivers the row's sender has reached
