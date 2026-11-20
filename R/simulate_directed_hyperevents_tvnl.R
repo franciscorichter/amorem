@@ -17,10 +17,15 @@
 #' where \eqn{\alpha(t)} is the time-varying sender effect
 #' (`time_varying_effect`), \eqn{f(\cdot)} is the non-linear receiver effect
 #' (`nonlinear_effect`), and \eqn{x} denotes a group covariate. Events are drawn
-#' on a fixed time grid of width `dt` by a thinning scheme: within each step the
-#' next inter-event time is sampled from an exponential with the total rate
-#' evaluated at the step midpoint, and the firing pair is chosen with
-#' probability proportional to its rate. For every realised event,
+#' under a piecewise-constant approximation of the rates on a time grid of
+#' width `dt` (the last cell ends at `horizon`): within a cell the rates are
+#' held at their value at the midpoint of the part of the cell not yet
+#' simulated, the next inter-event time is drawn from an exponential with the
+#' resulting total rate, and the firing pair is chosen with probability
+#' proportional to its rate; after each event the rates are re-evaluated at the
+#' midpoint of the rest of the cell. This is not exact for a time-varying
+#' \eqn{\alpha(t)}; the approximation error vanishes as `dt` decreases. No event
+#' time exceeds `horizon`. For every realised event,
 #' `n_controls` non-event pairs are sampled uniformly from the remaining group
 #' pairs, yielding a case-`n_controls`-control design.
 #'
@@ -36,8 +41,8 @@
 #' @param nonlinear_effect Function of one argument giving the non-linear effect
 #'   \eqn{f(x)} of the receiver-group covariate. Defaults to a Gaussian bump.
 #' @param horizon Positive numeric; the simulation end time (start is 0).
-#' @param dt Positive numeric; the time-grid step used by the thinning scheme
-#'   (must be smaller than `horizon`).
+#' @param dt Positive numeric; the width of the time grid on which the rates
+#'   are held constant (must be smaller than `horizon`).
 #' @param n_controls Non-negative integer; number of non-event pairs sampled per
 #'   event. Defaults to 1 (a case-1-control design).
 #' @param max_group_size_sender,max_group_size_receiver Integers; the largest
@@ -91,10 +96,12 @@ simulate_directed_hyperevents_tvnl <- function(
   if (length(dt) != 1 || !is.finite(dt) || dt <= 0 || dt >= horizon) {
     stop("`dt` must be a positive scalar smaller than `horizon`.")
   }
-  n_controls <- as.integer(n_controls)
-  if (length(n_controls) != 1 || is.na(n_controls) || n_controls < 0) {
+  if (!is.numeric(n_controls) || length(n_controls) != 1 ||
+      is.na(n_controls) || !is.finite(n_controls) || n_controls < 0 ||
+      n_controls != round(n_controls)) {
     stop("`n_controls` must be a non-negative integer.")
   }
+  n_controls <- as.integer(n_controls)
 
   # Enumerate non-empty subsets (groups) up to the requested size, returning
   # the label and the mean attribute of each group.
@@ -136,24 +143,41 @@ simulate_directed_hyperevents_tvnl <- function(
   cov_r_pair <- rg$cov[pair_gr]
   f_r_pair <- nonlinear_effect(cov_r_pair)        # receiver effect (static in t)
 
-  rate_at <- function(t) exp(time_varying_effect(t) * cov_s_pair + f_r_pair)
+  # Rates at time t on a log scale: `w` = exp(log-rate - max), so the
+  # largest weight is 1 and no rate overflows; `log_tot` is the log of the
+  # total rate, used for the waiting times.
+  rate_at <- function(t) {
+    lr <- time_varying_effect(t) * cov_s_pair + f_r_pair
+    if (anyNA(lr) || any(lr == Inf)) {
+      stop("The log-rate is NaN or +Inf at time ", format(t), ".")
+    }
+    m <- max(lr)
+    w <- exp(lr - m)
+    list(w = w, log_tot = m + log(sum(w)))
+  }
 
-  # Thinning simulation on a grid of width dt.
+  # Piecewise-constant-rate simulation on a grid of width dt; the last
+  # cell is cut at `horizon`.
   ev <- list()   # realised events
   nv <- list()   # sampled non-events
   event_count <- 0L
   tl <- 0
   while (tl < horizon) {
-    tu <- tl + dt
-    l_sr <- rate_at(tl + dt / 2)
-    tot <- sum(l_sr)
-    tm <- stats::rexp(1, rate = tot)
+    tu <- min(tl + dt, horizon)
+    l_sr <- rate_at((tl + tu) / 2)
+    # A total rate this large cannot be simulated event by event.
+    if (l_sr$log_tot + log(tu - tl) > log(1e7)) {
+      stop(sprintf(paste0(
+        "The cell starting at time %.4g expects more than 1e7 events; ",
+        "the rates are too large to simulate."), tl), call. = FALSE)
+    }
+    tm <- stats::rexp(1) * exp(-l_sr$log_tot)
     tl_r <- tl
-    dt_r <- dt
+    dt_r <- tu - tl
     while (tm < dt_r && tl_r < horizon) {
       event_count <- event_count + 1L
       st <- tl_r + tm
-      pair_id <- sample.int(n_pairs, size = 1, prob = l_sr / tot)
+      pair_id <- sample.int(n_pairs, size = 1, prob = l_sr$w)
       ev[[event_count]] <- data.frame(
         event_id = event_count, event_time = st, event = 1L,
         sender_group   = sg$labels[pair_gs[pair_id]],
@@ -163,7 +187,10 @@ simulate_directed_hyperevents_tvnl <- function(
         stringsAsFactors = FALSE
       )
       if (n_controls > 0L) {
-        non_ids <- sample(setdiff(seq_len(n_pairs), pair_id), n_controls)
+        # Index into the pool: sample(x, n) on a length-1 `x` would draw
+        # from 1:x instead.
+        pool <- setdiff(seq_len(n_pairs), pair_id)
+        non_ids <- pool[sample.int(length(pool), n_controls)]
         nv[[event_count]] <- data.frame(
           event_id = event_count, event_time = st, event = 0L,
           sender_group   = sg$labels[pair_gs[non_ids]],
@@ -176,8 +203,7 @@ simulate_directed_hyperevents_tvnl <- function(
       tl_r <- st
       dt_r <- tu - tl_r
       l_sr <- rate_at(tl_r + dt_r / 2)
-      tot <- sum(l_sr)
-      tm <- stats::rexp(1, rate = tot)
+      tm <- stats::rexp(1) * exp(-l_sr$log_tot)
     }
     tl <- tu
   }

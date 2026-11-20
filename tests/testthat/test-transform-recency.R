@@ -9,10 +9,16 @@ test_that("median rule maps zero to 1 and median to exp(-1/2)", {
   expect_true(all(diff(w) < 0))
 })
 
-test_that("explicit half_life overrides the median rule", {
+test_that("explicit half_life is a half-life: weight 0.5 at T", {
   x <- c(0, 1, 2, 4, 8)
   w <- transform_recency(x, half_life = 4)
-  expect_equal(w, exp(-x / 4), tolerance = 1e-12)
+  expect_equal(w, 2^(-x / 4), tolerance = 1e-12)
+  expect_equal(w[4], 0.5, tolerance = 1e-12)
+})
+
+test_that("half_life = Inf means no decay", {
+  expect_equal(transform_recency(c(0, 3, Inf, NA), half_life = Inf),
+               c(1, 1, 1, NA))
 })
 
 test_that("reference argument fixes the scale", {
@@ -36,8 +42,8 @@ test_that("NAs in delta propagate, NAs in reference are dropped", {
 test_that("rejects malformed inputs", {
   expect_error(transform_recency("a"), "must be a numeric")
   expect_error(transform_recency(c(1, -1)), "non-negative")
-  expect_error(transform_recency(c(1, 2), half_life = -1), "positive finite")
-  expect_error(transform_recency(c(1, 2), half_life = c(1, 2)), "positive finite")
+  expect_error(transform_recency(c(1, 2), half_life = -1), "positive scalar")
+  expect_error(transform_recency(c(1, 2), half_life = c(1, 2)), "positive scalar")
   expect_error(transform_recency(c(1, 2), reference = c(0, 0)),
                "must be positive and finite")
 })
