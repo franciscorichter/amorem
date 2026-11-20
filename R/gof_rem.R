@@ -62,16 +62,18 @@
 #' @seealso [rem()], [gof_univariate()], [martingale_residuals()].
 #'
 #' @examples
-#' set.seed(1)
-#' w <- simulate_relational_events(
-#'   n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
-#'   n_controls = 1, endogenous_stats = "reciprocity_count",
-#'   endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
-#' fit <- rem(~ reciprocity_count, data = w, method = "gam", time = "time")
-#' g <- gof_rem(fit, "reciprocity_count", test = "functional_form", data = w,
-#'              n_sim = 500, seed = 1)
-#' g
-#' plot(g)
+#' if (requireNamespace("mgcv", quietly = TRUE)) {
+#'   set.seed(1)
+#'   w <- simulate_relational_events(
+#'     n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
+#'     n_controls = 1, endogenous_stats = "reciprocity_count",
+#'     endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
+#'   fit <- rem(~ reciprocity_count, data = w, method = "gam", time = "time")
+#'   g <- gof_rem(fit, "reciprocity_count", test = "functional_form", data = w,
+#'                n_sim = 500, seed = 1)
+#'   g
+#'   plot(g)
+#' }
 #' @export
 gof_rem <- function(fit, term,
                     test = c("time", "functional_form", "functional_form_score"),

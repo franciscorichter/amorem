@@ -65,7 +65,9 @@
 #'   plus one column per global covariate referenced in `models`.
 #'   The function evaluates each covariate at the focal event time
 #'   and at the non-event's shifted time by stepwise lookup (LOCF on
-#'   the `time` axis).
+#'   the `time` axis): the value at the last grid time at or before that
+#'   time. A time before the first grid time takes the value at the first
+#'   grid time.
 #' @param scope,mode Passed through to [sample_non_events()].
 #' @param half_life Required when any dyadic spec uses an exp-decay
 #'   stat.
@@ -207,12 +209,11 @@ compare_models_global <- function(event_log,
   # 2. The non-event's time in the design is its back-shifted time.
   ctrl_shifted_time <- ctrls$time
 
-  # 3. Global-covariate evaluation by LOCF lookup on the time axis.
+  # 3. Global-covariate evaluation by LOCF lookup on the time axis: the value
+  # at the last grid time at or before t; times before the first grid time
+  # take the first value.
   eval_global <- function(name, t) {
-    g <- global_covariates
-    ord <- order(g$time)
-    idx <- findInterval(t, g$time[ord], all.inside = TRUE)
-    g[[name]][ord][idx]
+    .global_locf(global_covariates$time, global_covariates[[name]], t)
   }
 
   # 4. Per-spec design + mgcv::gam fit.
@@ -304,4 +305,13 @@ compare_models_global <- function(event_log,
   rownames(out) <- NULL
   if (keep_fits) attr(out, "fits") <- fits
   out
+}
+
+# Step (last observation carried forward) lookup of a global covariate: the
+# value at the last grid time at or before each `t`; a `t` before the first
+# grid time takes the first value.
+.global_locf <- function(grid_time, value, t) {
+  ord <- order(grid_time)
+  idx <- pmax(findInterval(t, grid_time[ord]), 1L)
+  value[ord][idx]
 }

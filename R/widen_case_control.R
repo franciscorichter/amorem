@@ -14,7 +14,8 @@
 #' @param case Optional name of the 0/1 event-indicator column. If `NULL`
 #'   (default), it is auto-detected from the package's `event` column (as
 #'   produced by [sample_non_events()]) or eventnet's `IS_OBSERVED`, preferring
-#'   `event` when both are present.
+#'   `event` when both are present. The column may be numeric 0/1, logical, or
+#'   character/factor `"0"`/`"1"` or `"FALSE"`/`"TRUE"`; it is read by value.
 #' @param stratum Optional name of the column grouping each case with its
 #'   controls. When `NULL`, a column named `stratum` (as written by
 #'   [sample_non_events()]) is used if present, so rows may be in any order;
@@ -66,7 +67,7 @@ widen_case_control <- function(data, case = NULL, stratum = NULL,
   }
   ci <- data[[case]]
   if (is.null(ci)) stop("case column '", case, "' not found in `data`.")
-  ci <- as.integer(ci)
+  ci <- .as_event01(ci, case)
   if (is.null(stratum) && "stratum" %in% names(data)) stratum <- "stratum"
   strat <- .derive_stratum(data, case, stratum)
 
