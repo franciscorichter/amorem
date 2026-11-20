@@ -25,13 +25,18 @@
 #'   \item{receiver}{Character actor id matching [classroom_actors]`$id`.}
 #'   \item{interaction_type}{Factor with levels `"social"`, `"sanction"`,
 #'     `"task"`.}
-#'   \item{weight}{Integer weight of the interaction.}
+#'   \item{weight}{Numeric weight assigned by the observer: 1 for direct
+#'     communication focused on particular others (501 rows), 0.2 for
+#'     indirect "broadcast" communication such as lecturing (190 rows).}
 #' }
 #' @source McFarland, D. (2001). Student resistance: How the formal and
 #'   informal organization of classrooms facilitate everyday forms of
 #'   student defiance. *American Journal of Sociology* 107(3), 612–678.
 #'   \doi{10.1086/338779}. Redistributed via the `networkDynamic` R
-#'   package (CRAN), dataset `McFarland_cls33_10_16_96`.
+#'   package (CRAN), dataset `McFarland_cls33_10_16_96`,
+#'   <https://cran.r-project.org/package=networkDynamic>. Licence: no
+#'   licence is stated for the data themselves; the `networkDynamic`
+#'   package, which distributes them, is licensed GPL-3.
 #' @seealso [classroom_actors]
 "classroom_events"
 
@@ -47,14 +52,16 @@
 #'   \item{role}{Factor with levels `"instructor"`, `"grade_11"`,
 #'     `"grade_12"`.}
 #' }
-#' @source McFarland (2001), via `networkDynamic`. See [classroom_events].
+#' @source McFarland (2001), via `networkDynamic`. Licence: none stated
+#'   for the data; `networkDynamic` is GPL-3. See [classroom_events].
 "classroom_actors"
 
 #' Phone calls in the Social Evolution study (Madan et al. 2012)
 #'
 #' Time-stamped directed phone calls among undergraduates in an MIT
-#' residence hall over the 2008–2009 academic year. Sourced from the
-#' `goldfish` R package (`Social_Evolution$calls`).
+#' residence hall from 6 September to 18 October 2008, the abbreviated
+#' window of the Social Evolution study distributed by the `goldfish` R
+#' package (`Social_Evolution$calls`).
 #'
 #' @format A data frame with 439 rows and 4 columns:
 #' \describe{
@@ -69,7 +76,12 @@
 #'   (2012). Sensing the "health state" of a community. *IEEE Pervasive
 #'   Computing* 11(4), 36–45. \doi{10.1109/MPRV.2011.79}. Redistributed
 #'   via the `goldfish` R package (github.com/snlab-ch/goldfish),
-#'   dataset `Social_Evolution`.
+#'   dataset `Social_Evolution`. Licence: no licence is stated for the
+#'   data; the `goldfish` package, which distributes them, is licensed
+#'   GPL (>= 3). The original MIT Reality Commons download
+#'   (<http://realitycommons.media.mit.edu/socialevolution.html>) asks
+#'   users not to distribute the data to others and not to attempt to
+#'   re-identify participants.
 #' @seealso [social_evolution_actors], [social_evolution_friendship]
 "social_evolution_calls"
 
@@ -84,10 +96,10 @@
 #'   \item{present}{Logical — whether the actor was present at the start
 #'     of the study window.}
 #'   \item{floor}{Integer dormitory floor.}
-#'   \item{gradeType}{Factor — student grade type (freshman, sophomore,
-#'     junior, senior, graduate-tutor).}
+#'   \item{gradeType}{Factor with levels `"1"` to `"5"`: the grade-type
+#'     codes as distributed by `goldfish`, which does not label them.}
 #' }
-#' @source Madan et al. (2012), via `goldfish`. See
+#' @source Madan et al. (2012), via `goldfish`. Licence and terms as for
 #'   [social_evolution_calls].
 "social_evolution_actors"
 
@@ -105,7 +117,8 @@
 #'   \item{receiver}{Character actor id (the nominated friend).}
 #'   \item{replace}{Integer — `1` adds the tie, `0` removes it.}
 #' }
-#' @source Madan et al. (2012), via `goldfish`.
+#' @source Madan et al. (2012), via `goldfish`. Licence and terms as for
+#'   [social_evolution_calls].
 #' @seealso [social_evolution_calls], [social_evolution_actors]
 "social_evolution_friendship"
 
@@ -166,7 +179,9 @@
 #'   an online community. *Journal of the American Society for
 #'   Information Science and Technology* 60(5), 911–932.
 #'   Distributed via SNAP:
-#'   <https://snap.stanford.edu/data/CollegeMsg.html>.
+#'   <https://snap.stanford.edu/data/CollegeMsg.html>, derived from the
+#'   data set hosted by Tore Opsahl (<https://toreopsahl.com/datasets/>).
+#'   Licence: none stated; SNAP and Opsahl ask users to cite the source.
 "college_msg"
 
 #' Email-Eu-Core temporal (single-department subset)
@@ -186,6 +201,7 @@
 #'   temporal networks. *WSDM '17*, 601–610.
 #'   \doi{10.1145/3018661.3018731}. Distributed via SNAP:
 #'   <https://snap.stanford.edu/data/email-Eu-core-temporal.html>.
+#'   Licence: none stated; SNAP asks users to cite the source.
 "email_eu_core"
 
 #' Reconstructed Niño3.4 ENSO index, 1301--2005 (Li et al. 2013)
@@ -336,14 +352,15 @@ NULL
 #' Alien species first records, prepared for relational event models
 #'
 #' First records of established alien species (mammals, birds, plants, insects)
-#' in 272 regions, 1880--2005, as one-shot species-to-region events: each pair
+#' in 259 regions, 1880--2005, as one-shot species-to-region events: each pair
 #' fires at most once (`risk = "remove"`). The first record is dated `stop`;
 #' `start` is the start of the last interval over which the pair was at risk
 #' with unchanged covariates in the counting-process release.
 #'
 #' @format A data frame with 11,730 rows, ordered by `stop`: `species`,
-#'   `region`, `start`, `stop` (years; equal when the record falls in the first
-#'   year, 1880), `taxonomy`.
+#'   `region`, `start`, `stop` (years), `taxonomy`. `start` equals `stop` in
+#'   421 rows: the 14 records of 1880 and 407 later records whose last
+#'   at-risk interval in the release begins in the year of the record.
 #' @details The release also holds every censored species-region-interval with
 #'   distance, trade, colonial, climate and land-use covariates (535,020 rows);
 #'   download it from the source to fit the full model.

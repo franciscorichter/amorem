@@ -11,7 +11,8 @@
 #'
 #' The constructor [hyperedge_log()] accepts list-columns directly and
 #' performs validation (character members, non-empty sets, finite
-#' times, sorted by time). [as_hyperedge_log()] promotes a dyadic
+#' times, sorted by time, no NA or empty actor name, no actor listed twice
+#' within one event's sender set or receiver set). [as_hyperedge_log()] promotes a dyadic
 #' `(sender, receiver, time)` data frame to the hyperedge form by
 #' wrapping each `sender` and `receiver` in a length-1 character
 #' vector. [as_dyadic_log()] is the inverse: it succeeds only when
@@ -70,6 +71,18 @@ hyperedge_log <- function(I, J, time) {
   if (!all(vapply(J, is.character, logical(1)))) {
     stop("Every element of `J` must be a character vector ",
          "(empty character(0) is allowed and means undirected).")
+  }
+  has_na <- function(v) anyNA(v) || any(v == "")
+  if (any(vapply(I, has_na, logical(1))) ||
+      any(vapply(J, has_na, logical(1)))) {
+    stop("Actor names in `I` and `J` must not be NA or empty strings.")
+  }
+  dup_I <- which(vapply(I, anyDuplicated, integer(1)) > 0L)
+  dup_J <- which(vapply(J, anyDuplicated, integer(1)) > 0L)
+  if (length(dup_I) || length(dup_J)) {
+    stop("An actor appears more than once within one event's `I` or `J` ",
+         "(event(s) ", paste(head(sort(unique(c(dup_I, dup_J))), 5),
+         collapse = ", "), "). Each set must list distinct actors.")
   }
   ord <- order(time)
   df <- data.frame(time = time[ord], stringsAsFactors = FALSE)

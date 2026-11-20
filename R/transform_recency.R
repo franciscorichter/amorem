@@ -9,9 +9,17 @@
 #' }
 #' where \eqn{m}{m} is the median of the supplied (or reference) gaps.
 #' Large gaps map toward 0; gaps near 0 map toward 1. The half-life of
-#' the kernel is \eqn{2 m \log 2}{2 * m * log(2)}, so the median gap
+#' this kernel is \eqn{2 m \log 2}{2 * m * log(2)}, so the median gap
 #' itself is mapped to approximately
 #' \eqn{e^{-1/2} \approx 0.607}{exp(-1/2) ~ 0.607}.
+#'
+#' When `half_life` \eqn{T}{T} is supplied, the weights are
+#' \eqn{w(\delta) = \exp(-\delta \log 2 / T) = 2^{-\delta/T}}{w(delta) =
+#' exp(-delta * log(2) / T) = 2^(-delta / T)}: a gap of \eqn{T}{T} maps to
+#' 0.5, the same half-life convention as the `*_exp_decay` statistics of
+#' [endogenous_features()] and [simulate_relational_events()].
+#' `half_life = Inf` means no decay: every non-missing gap, including
+#' `Inf`, maps to 1.
 #'
 #' This is the data-driven recency parametrisation used as a preprocessing
 #' step for global and exogenous covariates in
@@ -19,8 +27,8 @@
 #' "recency" axis of [endogenous_features()].
 #'
 #' @param delta Numeric vector of non-negative time gaps. NAs propagate.
-#' @param half_life Optional positive scalar. If supplied, used directly
-#'   as the kernel scale \eqn{2 m}{2 m}, bypassing the median rule.
+#' @param half_life Optional positive scalar, possibly `Inf`: the gap at
+#'   which the weight is 0.5. Bypasses the median rule.
 #' @param reference Optional numeric vector. If supplied, the median is
 #'   computed on `reference` instead of `delta`. Useful when transforming
 #'   new data using a scale fitted on training data.
@@ -45,10 +53,13 @@ transform_recency <- function(delta, half_life = NULL, reference = NULL) {
   }
   if (!is.null(half_life)) {
     if (!is.numeric(half_life) || length(half_life) != 1L ||
-        !is.finite(half_life) || half_life <= 0) {
-      stop("`half_life` must be a positive finite scalar.")
+        is.na(half_life) || half_life <= 0) {
+      stop("`half_life` must be a positive scalar (Inf for no decay).")
     }
-    scale <- half_life
+    if (is.infinite(half_life)) {
+      return(ifelse(is.na(delta), NA_real_, 1))
+    }
+    scale <- half_life / log(2)
   } else {
     ref <- if (is.null(reference)) delta else reference
     if (!is.numeric(ref)) {

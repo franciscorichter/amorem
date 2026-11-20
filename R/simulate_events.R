@@ -5,7 +5,7 @@
 #' the Gillespie algorithm, where the time between events is drawn from an
 #' exponential distribution with rate equal to the sum of all dyadic intensities.
 #'
-#' @param n_events Number of events to generate.
+#' @param n_events Number of events to generate: a non-negative whole number.
 #' @param senders Character vector listing the sender set \eqn{\mathcal{S}}.
 #' @param receivers Character vector listing the receiver set \eqn{\mathcal{R}}.
 #' @param baseline_rate Positive scalar. A constant baseline hazard multiplier
@@ -26,7 +26,7 @@
 #' @param receiver_effects Optional numeric vector of coefficients for
 #'   \code{receiver_covariates}. Required when receiver covariates are supplied.
 #' @param allow_loops Logical; whether sender and receiver can coincide.
-#' @param n_controls Integer; number of non-events (controls) to sample
+#' @param n_controls Non-negative whole number; number of non-events (controls) to sample
 #'   uniformly at random for each realized event. If \code{n_controls > 0}, the
 #'   function returns a case-control data frame suitable for conditional logistic
 #'   regression / GAM modeling. Defaults to 0.
@@ -219,9 +219,32 @@
 #'   per-dyad rates are recomputed at every step from the current endogenous
 #'   state and then rescaled by the global multiplier.
 #'
+#'   Statistics that change between events -- the \code{*_exp_decay} family,
+#'   \code{recency} and the \code{*_time_*} family -- make the rates
+#'   time-varying, and the Gillespie method then draws waiting times by
+#'   thinning: candidate times come from a Poisson process whose rate bounds
+#'   the total rate on a time window, and a candidate at time \eqn{t} is
+#'   accepted with probability equal to the total rate at \eqn{t} (state
+#'   decayed to \eqn{t}) divided by the bound; the firing dyad is drawn
+#'   in proportion to the rates at \eqn{t}, and the recorded statistics are
+#'   their values at \eqn{t}. The bound uses that each such term is monotone
+#'   in time between events. The result is exact for these statistics. With a
+#'   negative effect on \code{recency} or a \code{*_time_*} statistic the
+#'   rates can decay toward zero, so the process may stop firing; the
+#'   simulation then stops with a message once every rate is below
+#'   \eqn{e^{-700}}.
+#'
+#'   Under \code{risk = "remove"} with \code{n_controls > 0}, the simulation
+#'   stops with a message when fewer than \code{n_controls + 1} dyads remain
+#'   in the risk set, and returns the events produced so far.
+#'
 #'   The \code{"tau_leap"} algorithm advances the clock by a user-chosen step
 #'   \eqn{\tau} and draws, for every dyad, a \eqn{\mathrm{Poisson}(\lambda_{sr}(t)\,\tau)}
-#'   number of events using the rates at the *start* of the step. Multiple
+#'   number of events using the rates at the *start* of the step.
+#'   Elapsed-time statistics (\code{recency} and every \code{*_time_*}
+#'   statistic, ordered ones included) are recorded at each event's own time
+#'   from the start-of-step state; the other statistics carry their
+#'   start-of-step values. Multiple
 #'   events can fire in the same step; they are placed at uniform times within
 #'   \eqn{[t, t+\tau)} and reported in time order, but they share the
 #'   start-of-step endogenous state and global multiplier. Endogenous state is
@@ -299,8 +322,18 @@ simulate_relational_events <- function(
     risk = c("standard", "remove"),
     wide = FALSE) {
   risk <- match.arg(risk)
-  stopifnot(length(n_events) == 1, n_events >= 0)
+  is_count <- function(x) {
+    is.numeric(x) && length(x) == 1L && !is.na(x) && is.finite(x) &&
+      x >= 0 && x == round(x)
+  }
+  if (!is_count(n_events)) {
+    stop("`n_events` must be a single non-negative whole number.")
+  }
   n_events <- as.integer(n_events)
+  if (!is_count(n_controls)) {
+    stop("`n_controls` must be a single non-negative whole number.")
+  }
+  n_controls <- as.integer(n_controls)
 
   stopifnot(length(wide) == 1L, is.logical(wide), !is.na(wide))
   if (wide && (length(n_controls) != 1L || n_controls != 1L)) {
@@ -341,13 +374,13 @@ simulate_relational_events <- function(
     # Degenerate request: nothing to simulate. Return an empty event
     # log so downstream pipelines that conditionally generate data
     # don't have to guard with `if (n > 0)` before the call.
-    out <- data.frame(sender = character(0),
-                      receiver = character(0),
-                      time = numeric(0),
-                      stringsAsFactors = FALSE)
-    if (n_controls > 0) {
-      out$stratum <- integer(0)
-      out$event   <- integer(0)
+    out <- if (n_controls > 0) {
+      data.frame(stratum = integer(0), event = integer(0),
+                 sender = character(0), receiver = character(0),
+                 time = numeric(0), stringsAsFactors = FALSE)
+    } else {
+      data.frame(sender = character(0), receiver = character(0),
+                 time = numeric(0), stringsAsFactors = FALSE)
     }
     if (!is.null(endogenous_stats) && length(endogenous_stats)) {
       for (st in endogenous_stats) out[[st]] <- numeric(0)
@@ -361,7 +394,6 @@ simulate_relational_events <- function(
   stopifnot(length(baseline_rate) == 1, baseline_rate > 0)
   stopifnot(length(start_time) == 1)
   stopifnot(length(horizon) == 1)
-  stopifnot(length(n_controls) == 1, n_controls >= 0)
 
   method <- match.arg(method)
   if (method == "tau_leap") {
@@ -683,15 +715,26 @@ simulate_relational_events <- function(
     static_log_weights[same_actor] <- -Inf
   }
 
-  compute_weights <- function(log_w) {
-    w <- exp(log_w) * baseline_rate
-    w[!is.finite(w)] <- 0
-    tot <- sum(w)
-    if (tot <= 0) {
-      stop("No admissible dyads with positive intensity.")
+  # Dyad weights from log-intensities. `log_w` is the S x R matrix of
+  # log-intensities without the baseline and the global multiplier; -Inf
+  # marks a dyad outside the risk set (a loop, or a dyad removed under
+  # risk = "remove"). The weights are exp(log_w - max(log_w)), so the
+  # largest is 1: a large finite log-intensity cannot overflow to Inf and
+  # a small one is not confused with a dyad outside the risk set. The
+  # log of the total rate (baseline included) is returned separately so
+  # waiting times are drawn on the original scale. Returns NULL when no
+  # dyad is in the risk set.
+  lse_weights <- function(log_w) {
+    if (anyNA(log_w) || any(log_w == Inf)) {
+      stop("A dyad has a log-intensity of NaN or +Inf; check the effects, ",
+           "covariates and contribution_logits.")
     }
-    list(weights = w, total = tot, probs = as.vector(w) / tot,
-         valid = which(w > 0))
+    valid <- which(log_w > -Inf)
+    if (!length(valid)) return(NULL)
+    m <- max(log_w[valid])
+    w <- exp(log_w - m)
+    list(weights = w, valid = valid,
+         log_total = m + log(sum(w)) + log(baseline_rate))
   }
 
   endo_state <- list()
@@ -1026,11 +1069,17 @@ simulate_relational_events <- function(
     invisible()
   }
 
-  endo_stat_values <- function() {
+  endo_stat_values <- function(t_eval = current_time) {
     # Returns a named list of S x R stat-value matrices, one per requested
-    # stat, evaluated at the current clock time and state. Used by both
-    # score (linear predictor) and snapshot (output columns). Recomputed
-    # whenever called -- callers should reuse the result within a step.
+    # stat, evaluated at time `t_eval` (default: the current clock time)
+    # from the state left by the last event. Between events the only
+    # stats that change are the exp-decay family (the state stored at
+    # `last_state_time` is attenuated to `t_eval` here, without writing
+    # it back) and the elapsed-time family (`recency`, `*_time_*`), which
+    # are read as `t_eval` minus a stored timestamp. Used by both score
+    # (linear predictor) and snapshot (output columns), and by the
+    # thinning step of the Gillespie loop, which evaluates the rates at
+    # candidate times that may be rejected.
     if (!endogenous_active) return(NULL)
     needs_AA  <- any(endogenous_stats %in% c("transitivity_count",
                                               "transitivity_binary",
@@ -1051,7 +1100,7 @@ simulate_relational_events <- function(
     # Helper: time-elapsed stat with NA -> 0 replacement so the score stays
     # numeric for never-seen cells. Used by the reciprocity_time_* family.
     time_elapsed_or_zero <- function(state_mat) {
-      v <- current_time - state_mat
+      v <- t_eval - state_mat
       v[is.na(v)] <- 0
       v
     }
@@ -1064,7 +1113,7 @@ simulate_relational_events <- function(
     closure_to_rate_space <- function(M) M[S_pos, R_pos, drop = FALSE]
     for (st in endogenous_stats) {
       vals[[st]] <- switch(st,
-        "recency"                   = current_time - endo_state[[st]],
+        "recency"                   = t_eval - endo_state[[st]],
         "reciprocity_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_time_recent"      = time_elapsed_or_zero(endo_state[[st]]),
@@ -1140,15 +1189,18 @@ simulate_relational_events <- function(
       if (st %in% closure_family_stats) {
         vals[[st]] <- closure_to_rate_space(vals[[st]])
       }
+      if (has_exp_decay && st %in% active_exp_decay_stats &&
+          t_eval > last_state_time) {
+        vals[[st]] <- vals[[st]] * exp(-(t_eval - last_state_time) * decay_rate)
+      }
     }
     vals
   }
 
-  endo_score_matrix <- function() {
+  endo_score_matrix <- function(vals = endo_stat_values()) {
     if (!endogenous_active) {
       return(NULL)
     }
-    vals <- endo_stat_values()
     es <- matrix(0, nrow = S, ncol = R)
     for (st in endogenous_stats) {
       es <- es + endogenous_effects[[st]] * vals[[st]]
@@ -1156,10 +1208,10 @@ simulate_relational_events <- function(
     es
   }
 
-  ww <- compute_weights(static_log_weights)
-  weights <- ww$weights
-  total_weight <- ww$total
-  probs <- ww$probs
+  ww <- lse_weights(static_log_weights)
+  if (is.null(ww)) {
+    stop("No admissible dyads with positive intensity.")
+  }
   valid_dyads <- ww$valid
   n_valid_dyads <- length(valid_dyads)
   if (n_controls > 0 && n_controls >= n_valid_dyads) {
@@ -1219,12 +1271,27 @@ simulate_relational_events <- function(
       if (endogenous_active) {
         log_w <- log_w + endo_score_matrix()
       }
-      weights <- exp(log_w) * baseline_rate
-      weights[!is.finite(weights)] <- 0
-      if (sum(weights) <= 0) {
+      if (anyNA(log_w) || any(log_w == Inf)) {
+        stop("A dyad has a log-intensity of NaN or +Inf; check the effects, ",
+             "covariates and contribution_logits.")
+      }
+      # The risk set is every dyad with a finite log-intensity, however
+      # small its rate. A rate that overflows to Inf is caught by the
+      # expected-events check below rather than dropped.
+      valid_dyads_step <- which(log_w > -Inf)
+      if (!length(valid_dyads_step)) {
         if (risk == "remove") break
         stop("No admissible dyads with positive intensity.")
       }
+      if (risk == "remove" && n_controls > 0 &&
+          n_controls >= length(valid_dyads_step)) {
+        message(sprintf(paste0(
+          "Stopping after %d events: under risk = \"remove\" only %d ",
+          "dyads remain in the risk set, too few to draw %d controls."),
+          event_counter, length(valid_dyads_step), n_controls))
+        break
+      }
+      weights <- exp(log_w) * baseline_rate
       if (global_active) {
         idx_step <- interval_at(current_time)
         g_mult <- exp(global_log_mult[idx_step])
@@ -1256,7 +1323,6 @@ simulate_relational_events <- function(
       n_in_step <- sum(counts)
 
       if (n_in_step > 0L) {
-        valid_dyads_step <- which(weights > 0)
         if (n_controls > 0 && n_controls >= length(valid_dyads_step)) {
           stop("Requested n_controls is >= the number of admissible dyads ",
                "during a tau-leap step.")
@@ -1278,27 +1344,9 @@ simulate_relational_events <- function(
         step_vals_snapshot <- if (endogenous_active) endo_stat_values() else NULL
         time_state_snapshots <- if (endogenous_active) {
           snap <- list()
-          for (ts in c("recency", "reciprocity_time_recent",
-                       "reciprocity_time_first",
-                       "transitivity_time_recent",
-                       "transitivity_time_first",
-                       "cyclic_time_recent", "cyclic_time_first",
-                       "sending_balance_time_recent",
-                       "sending_balance_time_first",
-                       "receiving_balance_time_recent",
-                       "receiving_balance_time_first",
-                       "transitivity_time_recent_ordered",
-                       "transitivity_time_first_ordered",
-                       "reciprocity_time_recent_interrupted",
-                       "reciprocity_time_first_interrupted",
-                       "transitivity_time_recent_interrupted",
-                       "transitivity_time_first_interrupted",
-                       "cyclic_time_recent_interrupted",
-                       "cyclic_time_first_interrupted",
-                       "sending_balance_time_recent_interrupted",
-                       "sending_balance_time_first_interrupted",
-                       "receiving_balance_time_recent_interrupted",
-                       "receiving_balance_time_first_interrupted")) {
+          # Every elapsed-time stat: `recency` and the whole
+          # `*_time_*` family (continuous, ordered and interrupted).
+          for (ts in c("recency", time_recent_first_stats)) {
             if (ts %in% endogenous_stats) {
               snap[[ts]] <- endo_state[[ts]]
             }
@@ -1365,8 +1413,10 @@ simulate_relational_events <- function(
             if (length(non_event_pool) < n_controls) {
               non_event_choices <- non_event_pool
             } else {
-              non_event_choices <- sample(non_event_pool, size = n_controls,
-                                          replace = FALSE)
+              # Index into the pool: sample(x, n) on a length-1 `x`
+              # would draw from 1:x instead.
+              non_event_choices <- non_event_pool[
+                sample.int(length(non_event_pool), size = n_controls)]
             }
             ctrl_start_idx <- (event_counter - 1L) * n_controls + 1L
             ctrl_end_idx <- event_counter * n_controls
@@ -1487,16 +1537,97 @@ simulate_relational_events <- function(
     }
   } else {
 
+  # ---- Exact Gillespie with thinning -----------------------------------
+  # Between two events the endogenous state does not change, but two
+  # families of statistics move with the clock:
+  #   * exp-decay stats: v(t) = v0 * exp(-r (t - t0)) with v0 >= 0 and
+  #     r = log 2 / half_life;
+  #   * elapsed-time stats (`recency`, `*_time_*`): v(t) = v0 + (t - t0) on
+  #     cells whose reference event exists, and the constant 0 elsewhere.
+  # The waiting time to the next event is therefore not exponential with
+  # the rate at the last event. The loop below draws it by thinning
+  # (Lewis & Shedler 1979; Ogata 1981). On a window [t0, t1] each term
+  # beta * v(t) is monotone in t, so its maximum over the window is
+  # attained at t0 or t1:
+  #   * exp-decay:    max(beta * v0, beta * v0 * exp(-r (t1 - t0)));
+  #                   with t1 = Inf the second value is 0, so the bound
+  #                   for a dyad is max(eta at t0, eta with the decaying
+  #                   part at 0);
+  #   * elapsed time: beta * v0 when beta <= 0, beta * (v0 + t1 - t0)
+  #                   when beta > 0 (on cells whose reference exists);
+  # and every other term is constant. Summing the per-term maxima bounds
+  # each dyad's log-rate on the whole window, and the sum of the bounded
+  # dyad rates bounds the total rate. Candidate times are drawn from a
+  # Poisson process at that bounding rate; a candidate t is accepted with
+  # probability Lambda(t) / Lambda_bar, where Lambda(t) is the total rate
+  # evaluated from the state decayed to t, and the dyad is then drawn
+  # with probability proportional to its rate at t. A candidate beyond t1
+  # moves the clock to t1, and a new bound is computed there. The window
+  # length L = 1 / (sum of |elapsed-time effects|
+  #                 + r * max over dyads of sum_k |beta_k| v0_k)
+  # keeps every dyad's bound within a factor e of its rate on the window,
+  # so each candidate is accepted with probability at least 1/e. Without
+  # time-varying stats the bound is the rate itself, L = Inf, and every
+  # candidate is accepted (the algorithm reduces to direct Gillespie).
+  # A negative elapsed-time effect can drive every rate toward 0, in
+  # which case the process may never fire again; the loop stops with a
+  # message once the bound on the total rate falls below exp(-700).
+  if (endogenous_active) {
+    decaying_stats <- intersect(endogenous_stats, exp_decay_stats)
+    elapsed_stats  <- intersect(endogenous_stats,
+                                c("recency", time_recent_first_stats))
+  } else {
+    decaying_stats <- character(0)
+    elapsed_stats  <- character(0)
+  }
+  time_varying <- length(decaying_stats) + length(elapsed_stats) > 0L
+  elapsed_abs_effect <- if (length(elapsed_stats)) {
+    sum(abs(endogenous_effects[elapsed_stats]))
+  } else 0
+  rates_vanished <- FALSE
+
+  # 1 on the S x R cells where an elapsed-time stat grows with the clock.
+  elapsed_grows <- function(st) {
+    if (st == "recency") return(matrix(1, nrow = S, ncol = R))
+    (!is.na(endo_state[[st]][S_pos, R_pos, drop = FALSE])) * 1
+  }
+  window_length <- function(vals0) {
+    drift <- elapsed_abs_effect
+    if (length(decaying_stats)) {
+      tot <- matrix(0, nrow = S, ncol = R)
+      for (st in decaying_stats) {
+        tot <- tot + abs(endogenous_effects[[st]]) * vals0[[st]]
+      }
+      drift <- drift + decay_rate * max(tot)
+    }
+    if (drift > 0) 1 / drift else Inf
+  }
+  log_rate_bound <- function(vals0, t0, t1) {
+    lb <- static_log_weights
+    for (st in endogenous_stats) {
+      b  <- endogenous_effects[[st]]
+      v0 <- vals0[[st]]
+      if (st %in% decaying_stats) {
+        v1 <- if (is.finite(t1)) v0 * exp(-(t1 - t0) * decay_rate) else 0 * v0
+        lb <- lb + pmax(b * v0, b * v1)
+      } else if (st %in% elapsed_stats && b > 0) {
+        lb <- lb + b * (v0 + (t1 - t0) * elapsed_grows(st))
+      } else {
+        lb <- lb + b * v0
+      }
+    }
+    lb
+  }
+
   for (i in seq_len(n_events)) {
+    vals_t <- if (endogenous_active) endo_stat_values(current_time) else NULL
     if (endogenous_active || risk == "remove") {
       log_w <- static_log_weights
       if (endogenous_active) {
-        log_w <- log_w + endo_score_matrix()
+        log_w <- log_w + endo_score_matrix(vals_t)
       }
-      weights <- exp(log_w) * baseline_rate
-      weights[!is.finite(weights)] <- 0
-      total_weight <- sum(weights)
-      if (total_weight <= 0) {
+      ww <- lse_weights(log_w)
+      if (is.null(ww)) {
         if (risk == "remove") {
           # All admissible dyads have fired and been removed -- stop
           # gracefully and return whatever was produced so far.
@@ -1504,53 +1635,97 @@ simulate_relational_events <- function(
         }
         stop("No admissible dyads with positive intensity.")
       }
-      probs <- as.vector(weights) / total_weight
-      valid_dyads <- which(weights > 0)
+      valid_dyads <- ww$valid
       if (n_controls > 0 && n_controls >= length(valid_dyads)) {
+        if (risk == "remove") {
+          message(sprintf(paste0(
+            "Stopping after %d events: under risk = \"remove\" only %d ",
+            "dyads remain in the risk set, too few to draw %d controls."),
+            event_counter, length(valid_dyads), n_controls))
+          break
+        }
         stop("Requested n_controls is >= the number of admissible dyads at step ", i, ".")
       }
     }
 
-    if (global_active) {
-      # Boundary-aware waiting time: redraw whenever a sampled dt would
-      # cross into the next interval. Each boundary crossing advances
-      # `current_time` to the boundary without emitting an event.
-      repeat {
-        idx <- interval_at(current_time)
-        g_mult <- exp(global_log_mult[idx])
+    accepted <- FALSE
+    repeat {
+      # One window [current_time, t1]: t1 is the earliest of the next
+      # global-covariate boundary and current_time + L.
+      t0 <- current_time
+      if (global_active) {
+        idx <- interval_at(t0)
+        g_log <- global_log_mult[idx]
         next_boundary <- if (idx < length(time_breaks)) {
           time_breaks[idx + 1L]
         } else {
           Inf
         }
-        rate_eff <- total_weight * g_mult
-        dt <- stats::rexp(1, rate = rate_eff)
-        t_new <- current_time + dt
-        if (t_new < next_boundary) {
-          if (t_new > horizon) {
-            exceeded_horizon <- TRUE
-            break
-          }
-          current_time <- t_new
-          break
-        }
-        if (next_boundary > horizon) {
-          exceeded_horizon <- TRUE
-          break
-        }
-        current_time <- next_boundary
+      } else {
+        g_log <- 0
+        next_boundary <- Inf
       }
-      if (exceeded_horizon) break
-    } else {
-      # Gillespie timing: rexp(1, rate = sum of all hazards)
-      dt <- stats::rexp(1, rate = total_weight)
-      current_time <- current_time + dt
-      if (current_time > horizon) {
+      if (time_varying) {
+        t1 <- min(t0 + window_length(vals_t), next_boundary)
+        lb <- log_rate_bound(vals_t, t0, t1)
+        wb <- lse_weights(lb)
+        lb_max <- max(lb[wb$valid])
+        lb_sum <- sum(wb$weights)
+      } else {
+        t1 <- next_boundary
+        wb <- ww
+      }
+      log_rate_bar <- wb$log_total + g_log
+      if (time_varying && log_rate_bar < -700) {
+        rates_vanished <- TRUE
         break
       }
+      repeat {
+        t_cand <- current_time + stats::rexp(1) * exp(-log_rate_bar)
+        if (t_cand >= t1 || t_cand > horizon) break
+        if (!time_varying) {
+          current_time <- t_cand
+          accepted <- TRUE
+          break
+        }
+        vals_c <- endo_stat_values(t_cand)
+        log_w_c <- static_log_weights + endo_score_matrix(vals_c)
+        p_acc <- sum(exp(log_w_c - lb_max)) / lb_sum
+        if (!is.finite(p_acc) || p_acc > 1 + 1e-8) {
+          stop("Internal error: the thinning bound is below the rate ",
+               "(acceptance probability ", format(p_acc), ").")
+        }
+        current_time <- t_cand
+        if (stats::runif(1) < p_acc) {
+          vals_t <- vals_c
+          ww <- lse_weights(log_w_c)
+          accepted <- TRUE
+          break
+        }
+      }
+      if (accepted) break
+      if (t_cand > horizon && t_cand < t1) {
+        exceeded_horizon <- TRUE
+        break
+      }
+      # The candidate fell past the window end.
+      if (t1 > horizon) {
+        exceeded_horizon <- TRUE
+        break
+      }
+      current_time <- t1
+      if (time_varying) vals_t <- endo_stat_values(current_time)
+    }
+    if (exceeded_horizon) break
+    if (rates_vanished) {
+      message(sprintf(paste0(
+        "Stopping after %d events: by time %.4g every dyad's rate has ",
+        "decayed below exp(-700), so no further event is expected."),
+        event_counter, current_time))
+      break
     }
 
-    choice <- sample.int(S * R, size = 1, prob = probs)
+    choice <- sample.int(S * R, size = 1, prob = ww$weights)
     s_idx <- ((choice - 1L) %% S) + 1L
     r_idx <- ((choice - 1L) %/% S) + 1L
 
@@ -1563,10 +1738,10 @@ simulate_relational_events <- function(
     # so the value carried on the output row reflects the time elapsed
     # since the previous event.
     apply_exp_decay()
-    # Compute the full stat-value matrices once per event so the same
-    # values are reused for both the event row and any control rows
-    # below.
-    step_vals <- if (endogenous_active) endo_stat_values() else NULL
+    # The stat values at the event time are the ones the accepted rates
+    # were computed from; reuse them for the event row and the control
+    # rows below.
+    step_vals <- vals_t
 
     if (endogenous_active) {
       for (st in endogenous_stats) {
@@ -1589,8 +1764,10 @@ simulate_relational_events <- function(
         # taking into account `choice` is one valid dyad.
         non_event_choices <- non_event_pool
       } else {
-        # uniform sampling of non-events
-        non_event_choices <- sample(non_event_pool, size = n_controls, replace = FALSE)
+        # Uniform sampling of non-events. Index into the pool:
+        # sample(x, n) on a length-1 `x` would draw from 1:x instead.
+        non_event_choices <- non_event_pool[
+          sample.int(length(non_event_pool), size = n_controls)]
       }
 
       ctrl_start_idx <- (event_counter - 1L) * n_controls + 1L

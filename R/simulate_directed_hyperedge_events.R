@@ -26,7 +26,7 @@
 #' \eqn{|V^I|}{|V^I|} and \eqn{|V^J|}{|V^J|}, so practical use is
 #' limited to small actor / item universes.
 #'
-#' @param n_events Number of events to simulate.
+#' @param n_events Number of events to simulate: a positive whole number.
 #' @param senders Character vector of sender names \eqn{V^I}{V^I}.
 #' @param receivers Character vector of receiver names \eqn{V^J}{V^J}.
 #'   Must be non-empty.
@@ -69,9 +69,11 @@ simulate_directed_hyperedge_events <- function(
     endogenous_effects = numeric(0),
     start_time = 0) {
 
-  if (!is.numeric(n_events) || length(n_events) != 1 || n_events < 1) {
+  if (!is.numeric(n_events) || length(n_events) != 1 || is.na(n_events) ||
+      !is.finite(n_events) || n_events < 1 || n_events != round(n_events)) {
     stop("`n_events` must be a positive integer.")
   }
+  n_events <- as.integer(n_events)
   if (!is.character(senders) || !length(senders) || anyDuplicated(senders)) {
     stop("`senders` must be a non-empty character vector with unique entries.")
   }
@@ -94,13 +96,13 @@ simulate_directed_hyperedge_events <- function(
     stop("`endogenous_stats` and `endogenous_effects` must be the same length.")
   }
   allowed <- c("size_I", "size_J", "activity")
-  is_subrep <- grepl("^subrep_[0-9]+_[0-9]+$", endogenous_stats)
+  is_subrep <- grepl("^subrep_[1-9][0-9]*_[0-9]+$", endogenous_stats)
   bad <- !(endogenous_stats %in% allowed | is_subrep)
   if (any(bad)) {
     stop("Unsupported stat(s): ",
          paste(endogenous_stats[bad], collapse = ", "),
          ". Allowed: size_I, size_J, activity, ",
-         "subrep_<rho>_<l> for integer rho >= 1 and l >= 1.")
+         "subrep_<rho>_<l> for integers rho >= 1 and l >= 0.")
   }
   beta <- setNames(as.numeric(endogenous_effects), endogenous_stats)
   rho_by_stat <- setNames(integer(length(endogenous_stats)), endogenous_stats)
@@ -191,15 +193,23 @@ simulate_directed_hyperedge_events <- function(
         }
       }
     }
-    rates <- baseline_rate * exp(log_rates)
-    rates[!is.finite(rates)] <- 0
-    total <- sum(rates)
-    if (total <= 0) {
+    # Weights exp(log_rate - max): the largest is 1, so no finite
+    # log-rate overflows to Inf and drops the candidate; -Inf marks a
+    # candidate whose statistic is undefined. The waiting time uses the
+    # total rate on its original scale, exp(max) * sum(weights) * baseline.
+    if (anyNA(log_rates) || any(log_rates == Inf)) {
+      stop("A candidate hyperedge has a log-rate of NaN or +Inf at step ",
+           m, ".")
+    }
+    if (!any(log_rates > -Inf)) {
       stop("No candidate hyperedge has positive intensity at step ", m, ".")
     }
-    dt <- stats::rexp(1L, rate = total)
+    m_log <- max(log_rates)
+    rates <- exp(log_rates - m_log)
+    log_total <- m_log + log(sum(rates)) + log(baseline_rate)
+    dt <- stats::rexp(1L) * exp(-log_total)
     current_time <- current_time + dt
-    idx <- sample.int(C, size = 1L, prob = rates / total)
+    idx <- sample.int(C, size = 1L, prob = rates)
     i_pick <- ((idx - 1L) %/% n_J) + 1L
     j_pick <- ((idx - 1L) %%  n_J) + 1L
     history_I[[m]]  <- I_cands[[i_pick]]
