@@ -70,6 +70,10 @@
 
 ## Bug fixes
 
+* `print()` and `plot()` of `gof_rem()` results report a bootstrap p-value
+  of 0 as a bound, `p < 1/n_sim` (for example `p < 0.001`); they printed
+  `p = 0.000`.
+
 * `sample_non_events()` warns when events get no control because their risk
   set holds no valid alternative (every other dyad excluded, removed or
   concurrent). Such events contribute nothing to the partial likelihood and

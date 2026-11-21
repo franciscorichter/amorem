@@ -205,3 +205,9 @@ test_that("clogit fits report the rows used in n and $rows", {
   expect_identical(f$rows, !is.na(cc$x1))
   expect_equal(f$n, f$fit$n)
 })
+
+test_that("bootstrap p-values of zero are reported as a bound", {
+  expect_identical(amorem:::.format_boot_p(0, 1000, "p"), "p < 0.001")
+  expect_identical(amorem:::.format_boot_p(0.25, 1000, "p"), "p = 0.250")
+  expect_identical(amorem:::.format_boot_p(0, 200, "p-value", 4L), "p-value < 0.005")
+})

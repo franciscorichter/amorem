@@ -254,8 +254,9 @@ print.rem_gof <- function(x, ...) {
     functional_form = "functional form",
     functional_form_score = "functional form (score)")
   cat("Martingale-residual GoF test of '", x$term, "': ", label, "\n", sep = "")
-  cat(sprintf("  sup statistic = %.4f, p-value = %.4f (%d bootstrap replicates, n = %d)\n",
-              x$statistic, x$p_value, x$n_sim, x$n))
+  cat(sprintf("  sup statistic = %.4f, %s (%d bootstrap replicates, n = %d)\n",
+              x$statistic, .format_boot_p(x$p_value, x$n_sim, "p-value", 4L),
+              x$n_sim, x$n))
   invisible(x)
 }
 
@@ -272,7 +273,17 @@ plot.rem_gof <- function(x, n_show = 20, main = NULL, legend = "topright", ...) 
                     main = main, ...)
   graphics::lines(xs, x$process, lwd = 2)
   if (!is.null(legend)) graphics::legend(legend, bty = "n",
-                   legend = c("observed", "bootstrap", sprintf("p = %.3f", x$p_value)),
+                   legend = c("observed", "bootstrap", .format_boot_p(x$p_value, x$n_sim, "p")),
                    col = c("black", "grey70", NA), lwd = c(2, 1, NA))
   invisible(x)
+}
+
+# A bootstrap p-value of 0 means that no replicate reached the observed
+# statistic, i.e. p < 1 / n_sim; print it as a bound rather than as zero.
+.format_boot_p <- function(p, n_sim, label = "p", digits = 3L) {
+  if (is.finite(p) && p == 0 && is.finite(n_sim) && n_sim > 0) {
+    sprintf("%s < %s", label, format(1 / n_sim, digits = 1, scientific = FALSE))
+  } else {
+    sprintf(paste0("%s = %.", digits, "f"), label, p)
+  }
 }
