@@ -67,7 +67,7 @@ for (z in c("BILLSTATUS-118-hr.zip", "BILLSTATUS-118-s.zip")) {
 dates <- as.Date(vapply(rows, function(r) as.character(r$date), ""))
 ord <- order(dates)
 congress_bills_118 <- hyperedge_log(I = lapply(rows[ord], `[[`, "I"),
-                                    J = lapply(rows[ord], function(r) if (length(r$J)) r$J else character(0)),
+                                    J = lapply(rows[ord], function(r) if (length(r$J)) unique(r$J) else character(0)),  # a withdrawn and re-added cosponsor is listed twice
                                     time = as.numeric(dates[ord] - as.Date("2023-01-03")))
 congress_bills_118$bill <- vapply(rows[ord], `[[`, "", "bill")
 congress_bills_118$date <- dates[ord]
