@@ -30,7 +30,7 @@ a flexible smooth basis of dimension \code{k_basis - 1}.}
 to \code{mgcv::s()}; the resulting design matrix has \code{k_basis - 1}
 columns under thin-plate identifiability constraints).}
 
-\item{n_sim}{Number of simulated Brownian bridges for the empirical
+\item{n_sim}{Number of multiplier-bootstrap replicates for the
 p-value (default 1000).}
 
 \item{scope, mode, half_life, seed}{See \code{\link[=compare_models]{compare_models()}}.}
@@ -52,14 +52,40 @@ With \code{n_samples = 1} the result is the single-sample result, without
 \code{p_values} or \code{n_samples}.
 }
 \description{
-Implements the multivariate test of Boschi & Wit (2025), Section 3.4.
-Builds a \code{q}-dimensional cumulative residual process from the spline
-basis of the requested covariate's smooth effect, normalises by the
-inverse-square-root of the empirical variance-covariance matrix
-\eqn{\hat J}{J} (eq. 17), and tests against a \code{q}-dimensional
-standard Brownian bridge via \eqn{T_\psi = \sup_u \lVert\hat W\rVert^2}{T_psi = sup ||W||^2}.
-The p-value is computed empirically by simulating \code{n_sim} Brownian
-bridge trajectories.
+Multivariate cumulative-residual test of Boschi & Wit (2025),
+Section 3.4, for the functional form of one covariate. The covariate's
+effect is expanded in \code{q = k_basis - 1} event-minus-control columns
+\eqn{h_i}{h_i} of a thin-plate spline basis (\code{mgcv::s()}), and the
+model with these columns and the other covariates linear is refitted
+without penalty. It contains the linear effect, so it is correct under
+the null. With its fitted probabilities \eqn{\pi_i}{pi_i}, design rows
+\eqn{x_i}{x_i}, inverse information
+\eqn{V = (X^\top W X)^{-1}}{V = (X'WX)^-1}, \eqn{W = \mathrm{diag}\{\pi_i(1-\pi_i)\}}{W = diag(pi_i (1 - pi_i))},
+and score \eqn{\hat U = \sum_i (1-\pi_i) x_i = 0}{U = sum (1 - pi_i) x_i = 0},
+the process is
+\deqn{W(u) = M^{-1/2} \hat J^{-1/2} \Bigl\{\sum_{i \le uM} (1-\pi_i) h_i
+  - A(u) V \hat U\Bigr\},\qquad
+  A(u) = \sum_{i \le uM} \pi_i (1-\pi_i) h_i x_i^\top,}{W(u) = M^(-1/2) J^(-1/2) { sum_{i <= uM} (1 - pi_i) h_i - A(u) V U },  A(u) = sum_{i <= uM} pi_i (1 - pi_i) h_i x_i',}
+with \eqn{\hat J = M^{-1}\sum_i (1-\pi_i)^2 h_i h_i^\top}{J = M^-1 sum (1 - pi_i)^2 h_i h_i'},
+and the statistic is \eqn{T_\psi = \sup_u \lVert W(u)\rVert^2}{T_psi = sup_u ||W(u)||^2}.
+The second term is zero at the estimate and is written for the
+replicates, in which it carries the effect of estimating the
+coefficients. The
+p-value is the share of \code{n_sim} multiplier replicates
+\deqn{W^*(u) = M^{-1/2} \hat J^{-1/2} \Bigl\{\sum_{i \le uM} g_i (1-\pi_i) h_i
+  - A(u) V \sum_i g_i (1-\pi_i) x_i\Bigr\},\qquad g_i \sim N(0, 1),}{W*(u) = M^(-1/2) J^(-1/2) { sum_{i <= uM} g_i (1 - pi_i) h_i - A(u) V sum_i g_i (1 - pi_i) x_i },  g_i ~ N(0, 1),}
+with \eqn{\sup_u \lVert W^*(u)\rVert^2 \ge T_\psi}{sup ||W*||^2 >= T_psi}
+(Lin, Wei & Ying 1993, as in \code{\link[=gof_rem]{gof_rem()}}).
+}
+\details{
+The limit of \eqn{W}{W} is a Gaussian process with covariance set by
+how the information \eqn{A(u)}{A(u)} accumulates over the event
+sequence. It is a standard \eqn{q}{q}-dimensional Brownian bridge only
+when \eqn{A(u)}{A(u)} grows in proportion to \eqn{u}{u} in every
+direction, which fails for the spline columns of a statistic that grows
+over the sequence (a count): the columns for large values receive their
+information late. The multiplier replicates have the covariance of the
+limit whatever the growth of \eqn{A(u)}{A(u)}.
 }
 \section{Several control samples}{
 
@@ -101,6 +127,10 @@ if (requireNamespace("mgcv", quietly = TRUE)) {
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).
+
+Lin DY, Wei LJ, Ying Z (1993). Checking the Cox model with cumulative
+sums of martingale-based residuals. \emph{Biometrika} 80(3), 557--572.
+\doi{10.1093/biomet/80.3.557}.
 
 Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
 analytic p-value calculation under arbitrary dependency structures.

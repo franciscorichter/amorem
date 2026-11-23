@@ -258,14 +258,39 @@ gof_univariate <- function(event_log, model, covariate,
 
 #' Multivariate GOF test for smooth or random-effect covariates
 #'
-#' Implements the multivariate test of Boschi & Wit (2025), Section 3.4.
-#' Builds a `q`-dimensional cumulative residual process from the spline
-#' basis of the requested covariate's smooth effect, normalises by the
-#' inverse-square-root of the empirical variance-covariance matrix
-#' \eqn{\hat J}{J} (eq. 17), and tests against a `q`-dimensional
-#' standard Brownian bridge via \eqn{T_\psi = \sup_u \lVert\hat W\rVert^2}{T_psi = sup ||W||^2}.
-#' The p-value is computed empirically by simulating `n_sim` Brownian
-#' bridge trajectories.
+#' Multivariate cumulative-residual test of Boschi & Wit (2025),
+#' Section 3.4, for the functional form of one covariate. The covariate's
+#' effect is expanded in `q = k_basis - 1` event-minus-control columns
+#' \eqn{h_i}{h_i} of a thin-plate spline basis (`mgcv::s()`), and the
+#' model with these columns and the other covariates linear is refitted
+#' without penalty. It contains the linear effect, so it is correct under
+#' the null. With its fitted probabilities \eqn{\pi_i}{pi_i}, design rows
+#' \eqn{x_i}{x_i}, inverse information
+#' \eqn{V = (X^\top W X)^{-1}}{V = (X'WX)^-1}, \eqn{W = \mathrm{diag}\{\pi_i(1-\pi_i)\}}{W = diag(pi_i (1 - pi_i))},
+#' and score \eqn{\hat U = \sum_i (1-\pi_i) x_i = 0}{U = sum (1 - pi_i) x_i = 0},
+#' the process is
+#' \deqn{W(u) = M^{-1/2} \hat J^{-1/2} \Bigl\{\sum_{i \le uM} (1-\pi_i) h_i
+#'   - A(u) V \hat U\Bigr\},\qquad
+#'   A(u) = \sum_{i \le uM} \pi_i (1-\pi_i) h_i x_i^\top,}{W(u) = M^(-1/2) J^(-1/2) { sum_{i <= uM} (1 - pi_i) h_i - A(u) V U },  A(u) = sum_{i <= uM} pi_i (1 - pi_i) h_i x_i',}
+#' with \eqn{\hat J = M^{-1}\sum_i (1-\pi_i)^2 h_i h_i^\top}{J = M^-1 sum (1 - pi_i)^2 h_i h_i'},
+#' and the statistic is \eqn{T_\psi = \sup_u \lVert W(u)\rVert^2}{T_psi = sup_u ||W(u)||^2}.
+#' The second term is zero at the estimate and is written for the
+#' replicates, in which it carries the effect of estimating the
+#' coefficients. The
+#' p-value is the share of `n_sim` multiplier replicates
+#' \deqn{W^*(u) = M^{-1/2} \hat J^{-1/2} \Bigl\{\sum_{i \le uM} g_i (1-\pi_i) h_i
+#'   - A(u) V \sum_i g_i (1-\pi_i) x_i\Bigr\},\qquad g_i \sim N(0, 1),}{W*(u) = M^(-1/2) J^(-1/2) { sum_{i <= uM} g_i (1 - pi_i) h_i - A(u) V sum_i g_i (1 - pi_i) x_i },  g_i ~ N(0, 1),}
+#' with \eqn{\sup_u \lVert W^*(u)\rVert^2 \ge T_\psi}{sup ||W*||^2 >= T_psi}
+#' (Lin, Wei & Ying 1993, as in [gof_rem()]).
+#'
+#' The limit of \eqn{W}{W} is a Gaussian process with covariance set by
+#' how the information \eqn{A(u)}{A(u)} accumulates over the event
+#' sequence. It is a standard \eqn{q}{q}-dimensional Brownian bridge only
+#' when \eqn{A(u)}{A(u)} grows in proportion to \eqn{u}{u} in every
+#' direction, which fails for the spline columns of a statistic that grows
+#' over the sequence (a count): the columns for large values receive their
+#' information late. The multiplier replicates have the covariance of the
+#' limit whatever the growth of \eqn{A(u)}{A(u)}.
 #'
 #' @param event_log Dyadic event log.
 #' @param model Named character vector of `<stat> = "linear"` mapping
@@ -275,7 +300,7 @@ gof_univariate <- function(event_log, model, covariate,
 #' @param k_basis Spline-basis dimension for `covariate` (passed as `k`
 #'   to `mgcv::s()`; the resulting design matrix has `k_basis - 1`
 #'   columns under thin-plate identifiability constraints).
-#' @param n_sim Number of simulated Brownian bridges for the empirical
+#' @param n_sim Number of multiplier-bootstrap replicates for the
 #'   p-value (default 1000).
 #' @param scope,mode,half_life,seed See [compare_models()].
 #' @inheritParams gof_univariate
@@ -289,6 +314,10 @@ gof_univariate <- function(event_log, model, covariate,
 #' @inheritSection gof_univariate Several control samples
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#'
+#'   Lin DY, Wei LJ, Ying Z (1993). Checking the Cox model with cumulative
+#'   sums of martingale-based residuals. *Biometrika* 80(3), 557--572.
+#'   \doi{10.1093/biomet/80.3.557}.
 #'
 #'   Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
 #'   analytic p-value calculation under arbitrary dependency structures.
@@ -362,40 +391,68 @@ gof_multivariate <- function(event_log, model, covariate,
     stop("Internal: smooth basis columns not found in lpmatrix.")
   }
   Hd <- lp[, smooth_cols, drop = FALSE]
-  # Use the GAM's own fitted probability rather than refitting linear.
-  fitted_p_gam <- as.numeric(stats::fitted(fit))
-  w <- .gof_W_process(Hd, fitted_p_gam)
-  inv_sq <- .gof_inv_sqrt(w$J)
+  X <- lp                                       # full design, n x p
   n <- nrow(Hd)
-  q <- ncol(Hd)
-  W <- (w$cum_centered / sqrt(n)) %*% inv_sq    # n x q
+  # The REML fit only supplies the basis. The test refits the q spline
+  # columns and the other covariates without penalty: under the null
+  # (a linear effect, inside the span of the basis) this model is
+  # correct, its score is 0 at the estimate, and the estimation term
+  # below is the exact first-order expansion. A penalised fit selects its
+  # smoothing parameter from the same data, which a bootstrap that holds
+  # the parameter fixed does not reproduce.
+  refit <- stats::glm.fit(X, rep(1, n), family = stats::binomial())
+  if (!refit$converged) {
+    warning("gof_multivariate(): the unpenalised refit did not converge.",
+            call. = FALSE)
+  }
+  mu <- as.numeric(refit$fitted.values)
+  resid <- 1 - mu                               # score weight, all y = 1
+  wt <- mu * (1 - mu)                           # information weight
+  info <- crossprod(X * sqrt(wt))               # X'WX
+  Vp <- tryCatch(solve(info), error = function(e) {
+    stop("gof_multivariate(): the information matrix of the spline refit ",
+         "is singular; lower `k_basis`.", call. = FALSE)
+  })
+  # Standardise the q smooth columns once by J^{-1/2},
+  # J = n^{-1} sum (1 - pi_i)^2 h_i h_i'; every quantity below is linear
+  # in h_i, so this is the same as standardising the process.
+  J <- crossprod(Hd * resid) / n
+  inv_sq <- .gof_inv_sqrt(J)
+  Ht <- Hd %*% inv_sq                           # n x q
+  q <- ncol(Ht)
+  G_k <- Ht * resid                             # score increments
+  U <- X * resid                                # full score increments
+  U_hat <- colSums(U)                           # 0 at the estimate
+  # Estimation term A(u) Vp U, A(u) = sum_{i <= uM} pi(1-pi) h_i x_i'.
+  # Under the null the observed process is
+  #   C(u; theta0) - A(u) Vp C(1; theta0) + o_p(n^{1/2}),
+  # which the multiplier bootstrap below reproduces for any growth of
+  # the information A(u) along the event sequence.
+  VpU <- as.numeric(Vp %*% U_hat)
+  W <- matrix(0, n, q)
+  A_list <- vector("list", q)
+  for (k in seq_len(q)) {
+    A_k <- apply(X * (wt * Ht[, k]), 2, cumsum)  # n x p, row u = A_k(u)
+    A_list[[k]] <- A_k
+    W[, k] <- (cumsum(G_k[, k]) - as.numeric(A_k %*% VpU)) / sqrt(n)
+  }
   T_psi <- max(rowSums(W^2))
-  # Empirical p-value via simulated q-dim standard Brownian bridges.
-  sim_stats <- .gof_simulate_BB_supnorm2(n = n, q = q, n_sim = n_sim,
-                                          seed = seed)
-  p <- mean(sim_stats >= T_psi)
-  list(statistic = T_psi, p_value = p, W = W, u = w$u,
-       covariate = covariate, n_sim = n_sim)
-}
-
-# --- internal: simulate the distribution of sup_u ||Z^0(u)||^2 where
-# Z^0 is a q-dim standard Brownian bridge, evaluated on an n-grid.
-.gof_simulate_BB_supnorm2 <- function(n, q, n_sim, seed = NULL) {
+  # Multiplier bootstrap (Lin, Wei & Ying 1993): g_i ~ N(0, 1).
   if (!is.null(seed)) {
     withr::local_preserve_seed()
     set.seed(seed)
   }
-  u <- seq_len(n) / n
-  out <- numeric(n_sim)
-  for (b in seq_len(n_sim)) {
-    # q-dim standard Brownian motion at n grid points.
-    inc <- matrix(stats::rnorm(n * q, sd = sqrt(1 / n)), nrow = n, ncol = q)
-    Bt  <- apply(inc, 2, cumsum)
-    B1  <- Bt[n, ]
-    Z0  <- Bt - outer(u, B1)
-    out[b] <- max(rowSums(Z0^2))
+  Gm <- matrix(stats::rnorm(n * n_sim), n, n_sim)
+  corr <- crossprod(U %*% Vp, Gm)               # p x n_sim: Vp sum g_i U_i
+  norm2 <- matrix(0, n, n_sim)
+  for (k in seq_len(q)) {
+    Wk <- (apply(G_k[, k] * Gm, 2, cumsum) - A_list[[k]] %*% corr) / sqrt(n)
+    norm2 <- norm2 + Wk^2
   }
-  out
+  T_sim <- apply(norm2, 2, max)
+  p <- mean(T_sim >= T_psi)
+  list(statistic = T_psi, p_value = p, W = W, u = seq_len(n) / n,
+       covariate = covariate, n_sim = n_sim)
 }
 
 #' Omnibus GOF test via Cauchy combination

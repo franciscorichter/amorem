@@ -99,3 +99,29 @@ test_that("Cauchy combination reduces to identity on (0, 1) edges", {
   # statistic is finite.
   expect_true(is.finite(out$statistic))
 })
+
+test_that("gof_multivariate holds its level for a correct linear model", {
+  # amorem 1.3.0 before this fix referred the statistic to simulated
+  # q-dimensional Brownian bridges and rejected a correct linear
+  # reciprocity_count model in about 35% of replicates at the 5% level;
+  # the multiplier bootstrap with the estimation term rejects in about 5%.
+  skip_on_cran()
+  skip_if_not_installed("mgcv")
+  actors <- paste0("a", 1:20)
+  p <- vapply(1:40, function(i) {
+    set.seed(80000 + i)
+    ev <- simulate_relational_events(n_events = 1000, senders = actors,
+      receivers = actors, endogenous_stats = "reciprocity_count",
+      endogenous_effects = c(reciprocity_count = 0.2),
+      method = "gillespie")[, c("sender", "receiver", "time")]
+    # an unpenalised spline refit can separate in a replicate
+    suppressWarnings(gof_multivariate(ev, c(reciprocity_count = "linear"),
+                     "reciprocity_count", n_sim = 200,
+                     seed = 90000 + i))$p_value
+  }, numeric(1))
+  # Binomial(40, 0.05): P(X >= 7) = 0.014; under the old null
+  # (rejection rate 0.35) P(X <= 6) < 1e-4.
+  expect_lte(sum(p < 0.05), 6)
+  # the p-values are spread over (0, 1), not piled near 0
+  expect_gt(mean(p), 0.3)
+})

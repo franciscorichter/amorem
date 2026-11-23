@@ -121,6 +121,27 @@
 
 ## Bug fixes
 
+* `gof_multivariate()` holds its level. It referred
+  `sup_u ||W(u)||^2` to simulated q-dimensional Brownian bridges, with a
+  ramp `u C(1)` for the effect of estimation, and its process came from a
+  REML-penalised spline fit. The bridge is the limit only when the
+  information of every spline column grows in proportion along the event
+  sequence, which fails for a growing count, and the penalised fit selects
+  its smoothing parameter from the same data. It rejected a correct linear
+  model at the 5% level in 35.3% (`reciprocity_count`) and 17.5%
+  (`reciprocity_exp_decay`) of replicates. The spline columns and the other
+  covariates are now refitted without penalty (the model contains the linear
+  null), and the p-value comes from a multiplier bootstrap that carries the
+  estimation term `A(u) V sum_i g_i (1 - pi_i) x_i` (Lin, Wei & Ying 1993, as
+  in `gof_rem()`). Over 1000 replicates of 1500 events (20 actors) the
+  rejection rate at 5% is 4.8% (MC SE 0.7) for `reciprocity_count`, 4.7%
+  (0.7) for `reciprocity_exp_decay` and 4.1% (0.6) for `reciprocity_count`
+  next to `transitivity_binary`; with a step effect of reciprocity fitted as
+  linear in the count it rejects in 6.5% (1.7) at 500 events and 66.5% (3.3)
+  at 1500, against 1.5% and 43.0% before. `n_sim` is the number of
+  bootstrap replicates; p-values differ from earlier versions for the same
+  seed.
+
 * With `n_samples > 1`, a Monte Carlo p-value of 0 from `gof_multivariate()`
   or `gof_auxiliary()` enters the Cauchy combination as `1/(n_sim + 1)`
   instead of `1e-15`, so the combined p-value is at least `1/(n_sim + 1)`
