@@ -133,8 +133,9 @@ events that occurred \emph{since} the most recent same-direction
 \eqn{s \to r} event. Firing \eqn{s \to r} resets the
 interrupted state for dyad \eqn{(s, r)}.
 \item \code{"recency"} — elapsed time on the same ordered dyad
-\eqn{t - t_{\text{last}}(s,r)}, defaulting to
-\eqn{t - \text{start\_time}} for dyads that have never fired.
+\eqn{t - t_{\text{last}}(s,r)}; reports \code{0} for dyads that
+have never fired (the post-hoc \code{\link[=endogenous_features]{endogenous_features()}} returns
+\code{NA} there), the convention of the \code{*_time_*} family.
 \item \code{"sender_outdegree"} — total number of events previously sent
 by \eqn{s} (constant across receivers).
 \item \code{"receiver_indegree"} — total number of events previously

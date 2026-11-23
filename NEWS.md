@@ -68,6 +68,16 @@
   `half_life = Inf` gives weight 1 (no decay); it was an error. The median
   rule is unchanged.
 
+* **`simulate_relational_events()` gives `recency` the value 0 for a dyad that
+  has never fired**, as for the `*_time_*` statistics and as
+  `endogenous_features()` (`NA`) with `NA` -> 0. It used the time since
+  `start_time`, so the rates of never-fired dyads grew with the clock under a
+  `recency` effect and a model fitted with the post-hoc statistic was not the
+  generating model: `gof_univariate()` rejected a correct linear `recency`
+  model in 8.0% of replicates at the 5% level, against 4.5% with the
+  simulator's coding. Logs simulated with `recency` differ from those of
+  earlier versions under the same seed.
+
 ## New features
 
 * `gof_univariate()`, `gof_multivariate()`, `gof_global()` and

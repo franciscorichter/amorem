@@ -11,22 +11,22 @@ test_that("recency column matches t - t_last on the same ordered dyad", {
     endogenous_effects = 0   # zero coefficient -> column is pure observable
   )
   expect_true("recency" %in% names(ev))
-  # Hand-compute: recency at row i = t_i - t_last(s_i, r_i), or t_i - 0
-  # (start_time default) if dyad has never fired.
+  # Hand-compute: recency at row i = t_i - t_last(s_i, r_i), or 0 if the
+  # dyad has never fired.
   for (i in seq_len(nrow(ev))) {
     prior <- ev[seq_len(i - 1L), , drop = FALSE]
     same_mask <- prior$sender == ev$sender[i] & prior$receiver == ev$receiver[i]
     if (any(same_mask)) {
       expected <- ev$time[i] - max(prior$time[same_mask])
     } else {
-      expected <- ev$time[i]   # start_time defaulted to 0
+      expected <- 0            # never fired
     }
     expect_equal(ev$recency[i], expected, tolerance = 1e-9,
                  info = paste("row", i))
   }
 })
 
-test_that("recency uses start_time as the never-seen default", {
+test_that("recency of a dyad that has never fired is 0, whatever start_time", {
   set.seed(7)
   ev <- simulate_relational_events(
     n_events = 5,
@@ -35,8 +35,25 @@ test_that("recency uses start_time as the never-seen default", {
     start_time = 10,
     endogenous_stats = "recency", endogenous_effects = 0
   )
-  # First event on its dyad: recency = t - 10.
-  expect_equal(ev$recency[1], ev$time[1] - 10, tolerance = 1e-9)
+  # First event on its dyad: recency = 0 (endogenous_features() gives NA).
+  expect_equal(ev$recency[1], 0)
+  ph <- endogenous_features(ev[, c("sender", "receiver", "time")],
+                            stats = "recency")
+  expect_true(is.na(ph$recency[1]))
+})
+
+test_that("a never-fired dyad keeps the baseline rate under a recency effect", {
+  # With a large positive effect, the time since start would make a
+  # never-fired dyad ever more likely under the old coding; with the
+  # post-hoc coding its log-rate stays at 0 while fired dyads grow.
+  set.seed(3)
+  cc <- simulate_relational_events(
+    n_events = 40, senders = LETTERS[1:4], receivers = LETTERS[1:4],
+    baseline_rate = 1, n_controls = 1, wide = TRUE,
+    endogenous_stats = "recency", endogenous_effects = 0.5)
+  never_ev <- cc$recency_ev == 0
+  expect_true(any(never_ev))
+  expect_true(all(cc$recency_nv >= 0))
 })
 
 test_that("recency composes with reciprocity_count in the same call", {

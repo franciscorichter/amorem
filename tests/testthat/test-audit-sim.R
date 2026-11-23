@@ -141,17 +141,23 @@ test_that("recency: rescaled waiting times are Exp(1)", {
                                    endogenous_effects = b)
   dy <- expand.grid(s = A, r = A, stringsAsFactors = FALSE)
   dy <- dy[dy$s != dy$r, ]
-  last <- stats::setNames(rep(0, nrow(dy)), paste(dy$s, dy$r))
+  # A dyad that has never fired has recency 0 (rate `base`).
+  last <- stats::setNames(rep(NA_real_, nrow(dy)), paste(dy$s, dy$r))
   tt <- c(0, ev$time)
   inc <- numeric(nrow(ev))
   for (k in seq_len(nrow(ev))) {
-    inc[k] <- sum(base * (exp(b * (tt[k + 1] - last)) -
-                          exp(b * (tt[k] - last))) / b)
+    seen <- !is.na(last)
+    inc[k] <- sum(base * (exp(b * (tt[k + 1] - last[seen])) -
+                          exp(b * (tt[k] - last[seen]))) / b) +
+      sum(!seen) * base * (tt[k + 1] - tt[k])
     last[paste(ev$sender[k], ev$receiver[k])] <- tt[k + 1]
   }
   expect_lt(abs(mean(inc) - 1), 0.12)
-  # recency at the event equals time since the dyad last fired
-  expect_true(all(ev$recency > 0))
+  # recency at the event equals time since the dyad last fired, 0 on
+  # its first firing
+  first <- !duplicated(paste(ev$sender, ev$receiver))
+  expect_true(all(ev$recency[!first] > 0))
+  expect_true(all(ev$recency[first] == 0))
 })
 
 test_that("rates that decay to zero stop the simulation with a message", {

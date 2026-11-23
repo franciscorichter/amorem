@@ -135,12 +135,12 @@ test_that("simulator and post-hoc agree on per-actor / single-direction stats", 
   )
   base <- ev[, c("sender", "receiver", "time")]
   feats <- endogenous_features(base, stats = stats)
-  # `recency`: simulator initialises to `start_time` so the elapsed
-  # time at row 1 is the event time - start_time = the event time
-  # (start_time defaults to 0). Post-hoc returns NA for never-seen
-  # dyads; coerce NA -> sim value (= the event time on the first
-  # firing of each dyad) only on the first occurrence of each dyad.
-  feats$recency[is.na(feats$recency)] <- ev$recency[is.na(feats$recency)]
+  # `recency` of a dyad that has never fired: NA post-hoc, 0 in the
+  # simulator (as for the `*_time_*` family). Only those rows are NA.
+  first_fire <- !duplicated(paste(base$sender, base$receiver))
+  expect_identical(is.na(feats$recency), first_fire)
+  expect_true(all(ev$recency[first_fire] == 0))
+  feats$recency[is.na(feats$recency)] <- 0
   for (st in stats) expect_equal(ev[[st]], feats[[st]], tolerance = 1e-9,
                                   info = st)
 })
@@ -234,4 +234,26 @@ test_that("overlapping sender/receiver: ordered transitivity stats agree", {
                         receivers = c("b", "c", "d", "e"),
                         half_life = 1)
   for (st in stats) expect_columns_match(out$sim, out$posthoc, st)
+})
+
+test_that("recency: simulator and post-hoc agree with a nonzero effect, start_time > 0", {
+  # The rates the simulator uses are those of the post-hoc statistic with
+  # NA -> 0, including dyads that have never fired, under both methods.
+  for (meth in c("gillespie", "tau_leap")) {
+    set.seed(31)
+    args <- list(n_events = 60, senders = LETTERS[1:4], receivers = LETTERS[1:4],
+                 baseline_rate = 1, start_time = 5, method = meth,
+                 endogenous_stats = "recency", endogenous_effects = 0.3)
+    if (meth == "tau_leap") args$tau <- 0.001
+    ev <- do.call(simulate_relational_events, args)
+    feats <- endogenous_features(ev[, c("sender", "receiver", "time")],
+                                 stats = "recency")
+    never <- is.na(feats$recency)
+    expect_true(any(never), info = meth)
+    expect_true(all(ev$recency[never] == 0), info = meth)
+    feats$recency[never] <- 0
+    if (meth == "gillespie") {
+      expect_equal(ev$recency, feats$recency, tolerance = 1e-9, info = meth)
+    }
+  }
 })

@@ -103,8 +103,9 @@
 #'       \eqn{s \to r} event. Firing \eqn{s \to r} resets the
 #'       interrupted state for dyad \eqn{(s, r)}.
 #'     \item \code{"recency"} — elapsed time on the same ordered dyad
-#'       \eqn{t - t_{\text{last}}(s,r)}, defaulting to
-#'       \eqn{t - \text{start\_time}} for dyads that have never fired.
+#'       \eqn{t - t_{\text{last}}(s,r)}; reports \code{0} for dyads that
+#'       have never fired (the post-hoc [endogenous_features()] returns
+#'       \code{NA} there), the convention of the \code{*_time_*} family.
 #'     \item \code{"sender_outdegree"} — total number of events previously sent
 #'       by \eqn{s} (constant across receivers).
 #'     \item \code{"receiver_indegree"} — total number of events previously
@@ -777,8 +778,10 @@ simulate_relational_events <- function(
       mat_ncol <- if (is_closure) U_size else R
       if (st == "recency") {
         # `recency` is per-dyad (sender, receiver), not closure-family,
-        # so it stays S x R.
-        endo_state[[st]] <- matrix(start_time, nrow = S, ncol = R)
+        # so it stays S x R. NA marks a dyad that has never fired; its
+        # value is 0, as for the `*_time_*` family and as
+        # endogenous_features() (NA) with NA -> 0.
+        endo_state[[st]] <- matrix(NA_real_, nrow = S, ncol = R)
       } else if (st %in% time_recent_first_stats) {
         # NA marks "the relevant past event (reverse dyad, or two-path)
         # has never happened". Replaced with 0 in the score / output
@@ -1113,7 +1116,7 @@ simulate_relational_events <- function(
     closure_to_rate_space <- function(M) M[S_pos, R_pos, drop = FALSE]
     for (st in endogenous_stats) {
       vals[[st]] <- switch(st,
-        "recency"                   = t_eval - endo_state[[st]],
+        "recency"                   = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_recent"   = time_elapsed_or_zero(endo_state[[st]]),
         "reciprocity_time_first"    = time_elapsed_or_zero(endo_state[[st]]),
         "transitivity_time_recent"      = time_elapsed_or_zero(endo_state[[st]]),
@@ -1365,7 +1368,7 @@ simulate_relational_events <- function(
           } else {
             v <- t - time_state_snapshots[[st]][s, r]
           }
-          if (st == "recency") v else if (is.na(v)) 0 else v
+          if (is.na(v)) 0 else v
         }
         # Per-event time-dependent stat value, vectorized (rectangular
         # selection) variant.
@@ -1375,7 +1378,6 @@ simulate_relational_events <- function(
           } else {
             v <- t - time_state_snapshots[[st]][cbind(ss, rs)]
           }
-          if (st == "recency") return(v)
           v[is.na(v)] <- 0
           v
         }
@@ -1588,7 +1590,7 @@ simulate_relational_events <- function(
 
   # 1 on the S x R cells where an elapsed-time stat grows with the clock.
   elapsed_grows <- function(st) {
-    if (st == "recency") return(matrix(1, nrow = S, ncol = R))
+    if (st == "recency") return((!is.na(endo_state[[st]])) * 1)
     (!is.na(endo_state[[st]][S_pos, R_pos, drop = FALSE])) * 1
   }
   window_length <- function(vals0) {
