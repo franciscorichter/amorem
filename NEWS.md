@@ -121,6 +121,13 @@
 
 ## Bug fixes
 
+* With `n_samples > 1`, a Monte Carlo p-value of 0 from `gof_multivariate()`
+  or `gof_auxiliary()` enters the Cauchy combination as `1/(n_sim + 1)`
+  instead of `1e-15`, so the combined p-value is at least `1/(n_sim + 1)`
+  (it was about 1e-15 whenever one sample had p = 0). `p_values` keeps the
+  per-sample values. The Kolmogorov p-values of `gof_univariate()` and
+  `gof_global()` are not floored.
+
 * The torch reproducibility test loads the amorem under test in its `callr`
   child process (the source tree under `devtools::test()`, the check library
   under `R CMD check`); it loaded the first amorem on the default library

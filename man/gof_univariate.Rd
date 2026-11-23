@@ -67,8 +67,16 @@ tail of \eqn{T}{T} is asymptotically standard Cauchy whatever their
 dependence (Liu & Xie 2020, Theorem 1), so \eqn{p}{p} controls the size
 at small levels; with identical samples it returns their common p-value.
 Each \eqn{p_s}{p_s} is clamped to
-\eqn{[10^{-15}, 1 - 10^{-15}]}{[1e-15, 1 - 1e-15]}, so a Monte Carlo
-p-value of 0 in one sample gives a combined p-value near 0.
+\eqn{[10^{-15}, 1 - 10^{-15}]}{[1e-15, 1 - 1e-15]} so that the tangent
+stays finite. The Monte Carlo p-values of \code{\link[=gof_multivariate]{gof_multivariate()}} and
+\code{\link[=gof_auxiliary]{gof_auxiliary()}} are first floored at \eqn{1/(n_{sim} + 1)}{1/(n_sim + 1)}
+(\code{p_values} keeps the unfloored values). Since \eqn{T}{T} is at most
+\eqn{\max_s \tan\{\pi(1/2 - p_s)\}}{max_s tan(pi (1/2 - p_s))}, the
+combined p-value is then at least \eqn{1/(n_{sim} + 1)}{1/(n_sim + 1)}:
+a combined p-value equal to that bound means
+\eqn{p < 1/n_{sim}}{p < 1/n_sim} in every sample, and a smaller
+p-value needs a larger \code{n_sim}. The Kolmogorov p-values of
+\code{\link[=gof_univariate]{gof_univariate()}} and \code{\link[=gof_global]{gof_global()}} are analytic and are not floored.
 }
 
 \examples{

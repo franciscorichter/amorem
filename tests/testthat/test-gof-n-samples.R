@@ -88,3 +88,37 @@ test_that("n_samples is validated", {
   expect_error(gof_global(classroom_events, m2, seed = 1, n_samples = 1.5),
                "n_samples")
 })
+
+test_that("Monte Carlo p-values of 0 enter the combination as 1/(n_sim + 1)", {
+  data(classroom_events, package = "amorem", envir = environment())
+  n_sim <- 100
+  a <- gof_auxiliary(classroom_events, c(reciprocity_count = "linear"),
+                     "transitivity_count", n_sim = n_sim, seed = 11,
+                     n_samples = 3)
+  # transitivity is strongly missed in classroom_events: every sample has
+  # p = 0 at this n_sim
+  expect_true(all(a$p_values == 0))
+  expect_equal(a$p_value, 1 / (n_sim + 1))
+  # mixed: the floored p-values are combined, the bound holds
+  pf <- pmax(a$p_values, 1 / (n_sim + 1))
+  expect_gte(a$p_value, 1 / (n_sim + 1) - 1e-12)
+  expect_equal(a$p_value, 0.5 - atan(mean(tan(pi * (0.5 - pf)))) / pi)
+  # internal combination with a nonzero p-value next to a zero one
+  run <- local({
+    pv <- c(0, 0.3); k <- 0
+    function(sd) { k <<- k + 1; list(p_value = pv[k], n_sim = 99) }
+  })
+  out <- amorem:::.gof_over_samples(run, seed = 1, n_samples = 2)
+  pf <- c(1 / 100, 0.3)
+  expect_equal(out$p_values, c(0, 0.3))
+  expect_equal(out$p_value, 0.5 - atan(mean(tan(pi * (0.5 - pf)))) / pi)
+  expect_gte(out$p_value, 1 / 100)
+  # analytic (Kolmogorov) p-values are not floored
+  run2 <- local({
+    pv <- c(1e-6, 0.3); k <- 0
+    function(sd) { k <<- k + 1; list(p_value = pv[k]) }
+  })
+  out2 <- amorem:::.gof_over_samples(run2, seed = 1, n_samples = 2)
+  expect_equal(out2$p_value,
+               0.5 - atan(mean(tan(pi * (0.5 - c(1e-6, 0.3))))) / pi)
+})
