@@ -68,6 +68,20 @@
   `half_life = Inf` gives weight 1 (no decay); it was an error. The median
   rule is unchanged.
 
+## New features
+
+* `gof_univariate()`, `gof_multivariate()`, `gof_global()` and
+  `gof_auxiliary()` take `n_samples` (default 1). Each test is computed on
+  one case-control sample, so its verdict depends on the seed: on
+  `classroom_events` the univariate transitivity test rejects at 5% in 9 of
+  20 seeds. With `n_samples = S > 1` the test runs on S control samples
+  (seeds `seed`, `seed + 1`, ..., or independent draws when `seed` is
+  `NULL`) and the S p-values are combined with the Cauchy combination
+  (Liu & Xie 2020), which is valid under arbitrary dependence among them.
+  The result carries the combined `p_value`, the per-sample `p_values` and
+  `n_samples`; the other fields come from the first sample. `n_samples = 1`
+  returns the same result as before for the same seed.
+
 ## Bug fixes
 
 * `print()` and `plot()` of `gof_rem()` results report a bootstrap p-value

@@ -1,8 +1,49 @@
 # Cumulative martingale residual GOF tests for relational event models,
 # following Boschi & Wit (2025, Statistics & Computing). All four entry
-# points share a single case-control sample (drawn at n_controls = 1,
-# matching the paper's NCC m = 2 setup) and a single fitted partial-
-# likelihood model.
+# points draw a case-control sample (n_controls = 1, matching the paper's
+# NCC m = 2 setup) and fit one linear partial-likelihood model on it; with
+# n_samples > 1 they repeat this on several control samples and combine
+# the p-values with the Cauchy combination.
+
+# --- internal: Cauchy combination (Liu & Xie 2020). Returns the
+# statistic T = mean(tan(pi (0.5 - p))) and its p-value 0.5 - atan(T)/pi.
+# p-values are clamped inside (0, 1) so tan() does not overflow.
+.gof_cauchy <- function(p) {
+  p_clamped <- pmin(pmax(p, 1e-15), 1 - 1e-15)
+  T_c <- mean(tan(pi * (0.5 - p_clamped)))
+  list(statistic = T_c, p_value = 0.5 - atan(T_c) / pi)
+}
+
+.gof_check_n_samples <- function(n_samples) {
+  if (!is.numeric(n_samples) || length(n_samples) != 1L ||
+      is.na(n_samples) || n_samples < 1 ||
+      n_samples != round(n_samples)) {
+    stop("`n_samples` must be a positive integer.")
+  }
+  as.integer(n_samples)
+}
+
+# Seeds of the control samples: seed, seed + 1, ..., or NULL for every
+# sample when `seed` is NULL (independent draws from the current stream).
+.gof_sample_seeds <- function(seed, n_samples) {
+  if (is.null(seed)) return(rep(list(NULL), n_samples))
+  as.list(seed + seq_len(n_samples) - 1L)
+}
+
+# --- internal: run the single-sample test `run(seed)` on n_samples
+# control samples and combine the p-values. With n_samples = 1 the
+# single-sample result is returned unchanged.
+.gof_over_samples <- function(run, seed, n_samples) {
+  n_samples <- .gof_check_n_samples(n_samples)
+  if (n_samples == 1L) return(run(seed))
+  outs <- lapply(.gof_sample_seeds(seed, n_samples), run)
+  p <- vapply(outs, function(x) x$p_value, numeric(1))
+  res <- outs[[1L]]
+  res$p_value <- .gof_cauchy(p)$p_value
+  res$p_values <- p
+  res$n_samples <- n_samples
+  res
+}
 
 # --- internal: fit the linear partial-likelihood model and return
 # everything downstream gof_* functions need.
@@ -118,11 +159,45 @@
 #' @param model Named character vector of `<stat> = "linear"` mapping.
 #' @param covariate Name of the covariate in `model` to test.
 #' @param scope,mode,half_life,seed See [compare_models()].
+#' @param n_samples Number of control samples (default 1). With
+#'   `n_samples > 1` the test is run on `n_samples` case-control samples,
+#'   drawn with seeds `seed`, `seed + 1`, ..., `seed + n_samples - 1` (or
+#'   independently from the current random stream when `seed` is `NULL`),
+#'   and the p-values are combined with the Cauchy combination; see
+#'   *Several control samples*.
 #' @return A list with `statistic` (\eqn{T_x}{T_x}), `p_value` (KS),
 #'   `W` (numeric vector of length `n`, the normalised process),
-#'   and `u` (the time grid in `[0, 1]`).
+#'   `u` (the time grid in `[0, 1]`) and `covariate`.
+#'   With `n_samples > 1`, `p_value` is the Cauchy-combined p-value,
+#'   `p_values` holds the per-sample p-values and `n_samples` their
+#'   number; the other fields are those of the first sample (seed `seed`).
+#'   With `n_samples = 1` the result is the single-sample result, without
+#'   `p_values` or `n_samples`.
+#' @section Several control samples:
+#' The test is computed on one case-control sample, so its p-value depends
+#' on which controls were drawn. With `n_samples` \eqn{= S > 1}{= S > 1}
+#' the p-values \eqn{p_1, \dots, p_S}{p_1, ..., p_S} of the same test on
+#' \eqn{S}{S} control samples are combined as
+#' \deqn{T = \frac{1}{S}\sum_{s=1}^S \tan\{\pi(1/2 - p_s)\}, \qquad
+#'   p = \frac{1}{2} - \frac{\arctan T}{\pi}}{T = (1/S) sum_s tan(pi (1/2 - p_s)),  p = 1/2 - atan(T)/pi}
+#' (Liu & Xie 2020), the rule [gof_global()] uses across covariates. The
+#' samples share the events, so the \eqn{p_s}{p_s} are dependent. The
+#' Cauchy combination is valid under arbitrary dependence among the
+#' \eqn{p_s}{p_s}: when each \eqn{p_s}{p_s} is uniform under the null, the
+#' tail of \eqn{T}{T} is asymptotically standard Cauchy whatever their
+#' dependence (Liu & Xie 2020, Theorem 1), so \eqn{p}{p} controls the size
+#' at small levels; with identical samples it returns their common p-value.
+#' Each \eqn{p_s}{p_s} is clamped to
+#' \eqn{[10^{-15}, 1 - 10^{-15}]}{[1e-15, 1 - 1e-15]}, so a Monte Carlo
+#' p-value of 0 in one sample gives a combined p-value near 0.
+#'
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#'
+#'   Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+#'   analytic p-value calculation under arbitrary dependency structures.
+#'   *Journal of the American Statistical Association* 115(529),
+#'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' \donttest{
 #' data(classroom_events)
@@ -130,11 +205,26 @@
 #'   model = c(reciprocity_count  = "linear",
 #'             transitivity_count = "linear"),
 #'   covariate = "reciprocity_count", seed = 1)
+#' # the same test on 5 control samples, p-values Cauchy-combined
+#' gof_univariate(classroom_events,
+#'   model = c(reciprocity_count  = "linear",
+#'             transitivity_count = "linear"),
+#'   covariate = "transitivity_count", seed = 1,
+#'   n_samples = 5)[c("p_value", "p_values")]
 #' }
 #' @export
 gof_univariate <- function(event_log, model, covariate,
                             scope = "all", mode = "one",
-                            half_life = NULL, seed = NULL) {
+                            half_life = NULL, seed = NULL,
+                            n_samples = 1) {
+  .gof_over_samples(function(sd) {
+    .gof_univariate_one(event_log, model, covariate, scope, mode,
+                        half_life, sd)
+  }, seed, n_samples)
+}
+
+.gof_univariate_one <- function(event_log, model, covariate,
+                                scope, mode, half_life, seed) {
   prep <- .gof_fit_linear(event_log, model, scope, mode, half_life, seed)
   if (!covariate %in% prep$stat_set) {
     stop("`covariate` must be one of: ",
@@ -176,10 +266,22 @@ gof_univariate <- function(event_log, model, covariate,
 #' @param n_sim Number of simulated Brownian bridges for the empirical
 #'   p-value (default 1000).
 #' @param scope,mode,half_life,seed See [compare_models()].
+#' @inheritParams gof_univariate
 #' @return List with `statistic` (\eqn{T_\psi}{T_psi}), `p_value`,
-#'   `W` (n x q matrix), `u`, and `covariate`.
+#'   `W` (n x q matrix), `u`, `covariate` and `n_sim`.
+#'   With `n_samples > 1`, `p_value` is the Cauchy-combined p-value,
+#'   `p_values` holds the per-sample p-values and `n_samples` their
+#'   number; the other fields are those of the first sample (seed `seed`).
+#'   With `n_samples = 1` the result is the single-sample result, without
+#'   `p_values` or `n_samples`.
+#' @inheritSection gof_univariate Several control samples
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#'
+#'   Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+#'   analytic p-value calculation under arbitrary dependency structures.
+#'   *Journal of the American Statistical Association* 115(529),
+#'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' if (requireNamespace("mgcv", quietly = TRUE)) {
 #'   data(classroom_events)
@@ -192,7 +294,8 @@ gof_univariate <- function(event_log, model, covariate,
 gof_multivariate <- function(event_log, model, covariate,
                               k_basis = 5, n_sim = 1000,
                               scope = "all", mode = "one",
-                              half_life = NULL, seed = NULL) {
+                              half_life = NULL, seed = NULL,
+                              n_samples = 1) {
   if (!requireNamespace("mgcv", quietly = TRUE)) {
     stop("Package 'mgcv' is required for gof_multivariate().")
   }
@@ -204,6 +307,14 @@ gof_multivariate <- function(event_log, model, covariate,
     stop("`n_sim` must be a single integer >= 50.")
   }
   n_sim <- as.integer(n_sim)
+  .gof_over_samples(function(sd) {
+    .gof_multivariate_one(event_log, model, covariate, k_basis, n_sim,
+                          scope, mode, half_life, sd)
+  }, seed, n_samples)
+}
+
+.gof_multivariate_one <- function(event_log, model, covariate, k_basis,
+                                  n_sim, scope, mode, half_life, seed) {
   prep <- .gof_fit_linear(event_log, model, scope, mode, half_life, seed)
   if (!covariate %in% prep$stat_set) {
     stop("`covariate` must be one of: ",
@@ -287,11 +398,27 @@ gof_multivariate <- function(event_log, model, covariate,
 #' @param event_log Dyadic event log.
 #' @param model Named character vector of `<stat> = "linear"` mapping.
 #' @param scope,mode,half_life,seed See [compare_models()].
+#' @inheritParams gof_univariate
 #' @return List with `statistic` (\eqn{T_o}{T_o}), `p_value`,
 #'   and `components` (per-covariate `data.frame` with `covariate`,
 #'   `statistic`, `p_value`).
+#'   With `n_samples > 1`, `components$p_value` is the Cauchy combination
+#'   of each covariate's p-values over the samples and
+#'   `components$statistic` its first-sample statistic; `p_values` holds
+#'   the omnibus p-value of each sample, `n_samples` their number, and
+#'   `statistic` is the first sample's \eqn{T_o}{T_o}. `p_value` is the
+#'   Cauchy combination of `p_values`, which equals the Cauchy combination
+#'   of all \eqn{L \times S}{L x S} covariate-by-sample p-values.
+#'   With `n_samples = 1` the result is the single-sample result, without
+#'   `p_values` or `n_samples`.
+#' @inheritSection gof_univariate Several control samples
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#'
+#'   Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+#'   analytic p-value calculation under arbitrary dependency structures.
+#'   *Journal of the American Statistical Association* 115(529),
+#'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' data(classroom_events)
 #' gof_global(classroom_events,
@@ -300,26 +427,36 @@ gof_multivariate <- function(event_log, model, covariate,
 #' @export
 gof_global <- function(event_log, model,
                         scope = "all", mode = "one",
-                        half_life = NULL, seed = NULL) {
+                        half_life = NULL, seed = NULL,
+                        n_samples = 1) {
   if (!is.character(model) || !length(model)) {
     stop("`model` must be a non-empty named character vector.")
   }
+  n_samples <- .gof_check_n_samples(n_samples)
   stat_set <- names(model)
   per <- lapply(stat_set, function(cov) {
-    gof_univariate(event_log, model, cov, scope, mode, half_life, seed)
+    gof_univariate(event_log, model, cov, scope, mode, half_life, seed,
+                   n_samples = n_samples)
   })
   p_vec <- vapply(per, function(x) x$p_value, numeric(1))
-  # Clamp p-values strictly inside (0, 1) so tan() doesn't overflow.
-  p_clamped <- pmin(pmax(p_vec, 1e-15), 1 - 1e-15)
-  L <- length(p_clamped)
-  T_o <- mean(tan(pi * (0.5 - p_clamped)))
-  p_global <- 0.5 - atan(T_o) / pi
   components <- data.frame(
     covariate = stat_set,
     statistic = vapply(per, function(x) x$statistic, numeric(1)),
     p_value   = p_vec,
     stringsAsFactors = FALSE)
-  list(statistic = T_o, p_value = p_global, components = components)
+  if (n_samples == 1L) {
+    cc <- .gof_cauchy(p_vec)
+    return(list(statistic = cc$statistic, p_value = cc$p_value,
+                components = components))
+  }
+  # Omnibus test of each sample: Cauchy combination across covariates.
+  p_mat <- vapply(per, function(x) x$p_values, numeric(n_samples))
+  p_mat <- matrix(p_mat, nrow = n_samples)          # samples x covariates
+  per_sample <- apply(p_mat, 1L, function(p) .gof_cauchy(p)$p_value)
+  T_first <- .gof_cauchy(p_mat[1L, ])$statistic
+  list(statistic = T_first, p_value = .gof_cauchy(per_sample)$p_value,
+       components = components, p_values = per_sample,
+       n_samples = n_samples)
 }
 
 #' GOF test for an auxiliary (unmodelled) statistic
@@ -343,10 +480,22 @@ gof_global <- function(event_log, model,
 #'   [endogenous_features()].
 #' @param n_sim Number of Monte Carlo replicates (default 1000).
 #' @param scope,mode,half_life,seed See [compare_models()].
+#' @inheritParams gof_univariate
 #' @return List with `statistic` (\eqn{T_\phi}{T_φ}), `p_value`,
-#'   `G`, `u`, and `auxiliary`.
+#'   `G`, `u`, `auxiliary` and `n_sim`.
+#'   With `n_samples > 1`, `p_value` is the Cauchy-combined p-value,
+#'   `p_values` holds the per-sample p-values and `n_samples` their
+#'   number; the other fields are those of the first sample (seed `seed`).
+#'   With `n_samples = 1` the result is the single-sample result, without
+#'   `p_values` or `n_samples`.
+#' @inheritSection gof_univariate Several control samples
 #' @references Boschi M, Wit EC (2025). *Goodness of fit in relational
 #'   event models*. Statistics and Computing 36(4).
+#'
+#'   Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+#'   analytic p-value calculation under arbitrary dependency structures.
+#'   *Journal of the American Statistical Association* 115(529),
+#'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' data(classroom_events)
 #' gof_auxiliary(classroom_events,
@@ -356,7 +505,8 @@ gof_global <- function(event_log, model,
 gof_auxiliary <- function(event_log, model, auxiliary,
                            n_sim = 1000,
                            scope = "all", mode = "one",
-                           half_life = NULL, seed = NULL) {
+                           half_life = NULL, seed = NULL,
+                           n_samples = 1) {
   if (!is.character(auxiliary) || length(auxiliary) != 1L ||
       !nzchar(auxiliary)) {
     stop("`auxiliary` must be a single non-empty statistic name.")
@@ -364,6 +514,14 @@ gof_auxiliary <- function(event_log, model, auxiliary,
   if (auxiliary %in% names(model)) {
     stop("`auxiliary` must NOT be part of `model`.")
   }
+  .gof_over_samples(function(sd) {
+    .gof_auxiliary_one(event_log, model, auxiliary, n_sim, scope, mode,
+                       half_life, sd)
+  }, seed, n_samples)
+}
+
+.gof_auxiliary_one <- function(event_log, model, auxiliary, n_sim,
+                               scope, mode, half_life, seed) {
   prep <- .gof_fit_linear(event_log, model, scope, mode, half_life, seed)
   # Compute the auxiliary statistic on the same case-control sample.
   cc_combined <- rbind(prep$cases, prep$ctrls)

@@ -10,7 +10,8 @@ gof_global(
   scope = "all",
   mode = "one",
   half_life = NULL,
-  seed = NULL
+  seed = NULL,
+  n_samples = 1
 )
 }
 \arguments{
@@ -19,11 +20,27 @@ gof_global(
 \item{model}{Named character vector of \verb{<stat> = "linear"} mapping.}
 
 \item{scope, mode, half_life, seed}{See \code{\link[=compare_models]{compare_models()}}.}
+
+\item{n_samples}{Number of control samples (default 1). With
+\code{n_samples > 1} the test is run on \code{n_samples} case-control samples,
+drawn with seeds \code{seed}, \code{seed + 1}, ..., \code{seed + n_samples - 1} (or
+independently from the current random stream when \code{seed} is \code{NULL}),
+and the p-values are combined with the Cauchy combination; see
+\emph{Several control samples}.}
 }
 \value{
 List with \code{statistic} (\eqn{T_o}{T_o}), \code{p_value},
 and \code{components} (per-covariate \code{data.frame} with \code{covariate},
 \code{statistic}, \code{p_value}).
+With \code{n_samples > 1}, \code{components$p_value} is the Cauchy combination
+of each covariate's p-values over the samples and
+\code{components$statistic} its first-sample statistic; \code{p_values} holds
+the omnibus p-value of each sample, \code{n_samples} their number, and
+\code{statistic} is the first sample's \eqn{T_o}{T_o}. \code{p_value} is the
+Cauchy combination of \code{p_values}, which equals the Cauchy combination
+of all \eqn{L \times S}{L x S} covariate-by-sample p-values.
+With \code{n_samples = 1} the result is the single-sample result, without
+\code{p_values} or \code{n_samples}.
 }
 \description{
 Implements the omnibus test of Boschi & Wit (2025), Section 3.6 /
@@ -33,6 +50,26 @@ combines the resulting p-values via the Cauchy combination
 (Liu & Xie 2020), with analytic p-value
 \eqn{\tfrac{1}{2} - \arctan(T_o)/\pi}{0.5 - atan(T_o)/pi}.
 }
+\section{Several control samples}{
+
+The test is computed on one case-control sample, so its p-value depends
+on which controls were drawn. With \code{n_samples} \eqn{= S > 1}{= S > 1}
+the p-values \eqn{p_1, \dots, p_S}{p_1, ..., p_S} of the same test on
+\eqn{S}{S} control samples are combined as
+\deqn{T = \frac{1}{S}\sum_{s=1}^S \tan\{\pi(1/2 - p_s)\}, \qquad
+  p = \frac{1}{2} - \frac{\arctan T}{\pi}}{T = (1/S) sum_s tan(pi (1/2 - p_s)),  p = 1/2 - atan(T)/pi}
+(Liu & Xie 2020), the rule \code{\link[=gof_global]{gof_global()}} uses across covariates. The
+samples share the events, so the \eqn{p_s}{p_s} are dependent. The
+Cauchy combination is valid under arbitrary dependence among the
+\eqn{p_s}{p_s}: when each \eqn{p_s}{p_s} is uniform under the null, the
+tail of \eqn{T}{T} is asymptotically standard Cauchy whatever their
+dependence (Liu & Xie 2020, Theorem 1), so \eqn{p}{p} controls the size
+at small levels; with identical samples it returns their common p-value.
+Each \eqn{p_s}{p_s} is clamped to
+\eqn{[10^{-15}, 1 - 10^{-15}]}{[1e-15, 1 - 1e-15]}, so a Monte Carlo
+p-value of 0 in one sample gives a combined p-value near 0.
+}
+
 \examples{
 data(classroom_events)
 gof_global(classroom_events,
@@ -42,4 +79,9 @@ gof_global(classroom_events,
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).
+
+Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+analytic p-value calculation under arbitrary dependency structures.
+\emph{Journal of the American Statistical Association} 115(529),
+393--402. \doi{10.1080/01621459.2018.1554485}.
 }

@@ -12,7 +12,8 @@ gof_auxiliary(
   scope = "all",
   mode = "one",
   half_life = NULL,
-  seed = NULL
+  seed = NULL,
+  n_samples = 1
 )
 }
 \arguments{
@@ -28,10 +29,22 @@ feature; must be a statistic computable by
 \item{n_sim}{Number of Monte Carlo replicates (default 1000).}
 
 \item{scope, mode, half_life, seed}{See \code{\link[=compare_models]{compare_models()}}.}
+
+\item{n_samples}{Number of control samples (default 1). With
+\code{n_samples > 1} the test is run on \code{n_samples} case-control samples,
+drawn with seeds \code{seed}, \code{seed + 1}, ..., \code{seed + n_samples - 1} (or
+independently from the current random stream when \code{seed} is \code{NULL}),
+and the p-values are combined with the Cauchy combination; see
+\emph{Several control samples}.}
 }
 \value{
 List with \code{statistic} (\eqn{T_\phi}{T_φ}), \code{p_value},
-\code{G}, \code{u}, and \code{auxiliary}.
+\code{G}, \code{u}, \code{auxiliary} and \code{n_sim}.
+With \code{n_samples > 1}, \code{p_value} is the Cauchy-combined p-value,
+\code{p_values} holds the per-sample p-values and \code{n_samples} their
+number; the other fields are those of the first sample (seed \code{seed}).
+With \code{n_samples = 1} the result is the single-sample result, without
+\code{p_values} or \code{n_samples}.
 }
 \description{
 Implements the auxiliary-statistic test of Boschi & Wit (2025),
@@ -45,6 +58,26 @@ normals, the test statistic
 computed, and the empirical p-value is the fraction of replicates
 with \eqn{T_{\phi,b}^* \ge T_\phi}{T*_{φ,b} >= T_φ}.
 }
+\section{Several control samples}{
+
+The test is computed on one case-control sample, so its p-value depends
+on which controls were drawn. With \code{n_samples} \eqn{= S > 1}{= S > 1}
+the p-values \eqn{p_1, \dots, p_S}{p_1, ..., p_S} of the same test on
+\eqn{S}{S} control samples are combined as
+\deqn{T = \frac{1}{S}\sum_{s=1}^S \tan\{\pi(1/2 - p_s)\}, \qquad
+  p = \frac{1}{2} - \frac{\arctan T}{\pi}}{T = (1/S) sum_s tan(pi (1/2 - p_s)),  p = 1/2 - atan(T)/pi}
+(Liu & Xie 2020), the rule \code{\link[=gof_global]{gof_global()}} uses across covariates. The
+samples share the events, so the \eqn{p_s}{p_s} are dependent. The
+Cauchy combination is valid under arbitrary dependence among the
+\eqn{p_s}{p_s}: when each \eqn{p_s}{p_s} is uniform under the null, the
+tail of \eqn{T}{T} is asymptotically standard Cauchy whatever their
+dependence (Liu & Xie 2020, Theorem 1), so \eqn{p}{p} controls the size
+at small levels; with identical samples it returns their common p-value.
+Each \eqn{p_s}{p_s} is clamped to
+\eqn{[10^{-15}, 1 - 10^{-15}]}{[1e-15, 1 - 1e-15]}, so a Monte Carlo
+p-value of 0 in one sample gives a combined p-value near 0.
+}
+
 \examples{
 data(classroom_events)
 gof_auxiliary(classroom_events,
@@ -54,4 +87,9 @@ gof_auxiliary(classroom_events,
 \references{
 Boschi M, Wit EC (2025). \emph{Goodness of fit in relational
 event models}. Statistics and Computing 36(4).
+
+Liu Y, Xie J (2020). Cauchy combination test: a powerful test with
+analytic p-value calculation under arbitrary dependency structures.
+\emph{Journal of the American Statistical Association} 115(529),
+393--402. \doi{10.1080/01621459.2018.1554485}.
 }
