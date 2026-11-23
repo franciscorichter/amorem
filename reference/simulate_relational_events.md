@@ -39,7 +39,7 @@ simulate_relational_events(
 
 - n_events:
 
-  Number of events to generate.
+  Number of events to generate: a non-negative whole number.
 
 - senders:
 
@@ -94,10 +94,10 @@ simulate_relational_events(
 
 - n_controls:
 
-  Integer; number of non-events (controls) to sample uniformly at random
-  for each realized event. If `n_controls > 0`, the function returns a
-  case-control data frame suitable for conditional logistic regression /
-  GAM modeling. Defaults to 0.
+  Non-negative whole number; number of non-events (controls) to sample
+  uniformly at random for each realized event. If `n_controls > 0`, the
+  function returns a case-control data frame suitable for conditional
+  logistic regression / GAM modeling. Defaults to 0.
 
 - endogenous_stats:
 
@@ -178,8 +178,10 @@ simulate_relational_events(
     resets the interrupted state for dyad \\(s, r)\\.
 
   - `"recency"` — elapsed time on the same ordered dyad \\t -
-    t\_{\text{last}}(s,r)\\, defaulting to \\t - \text{start\\time}\\
-    for dyads that have never fired.
+    t\_{\text{last}}(s,r)\\; reports `0` for dyads that have never fired
+    (the post-hoc
+    [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+    returns `NA` there), the convention of the `*_time_*` family.
 
   - `"sender_outdegree"` — total number of events previously sent by
     \\s\\ (constant across receivers).
@@ -334,10 +336,31 @@ distribution. When combined with `endogenous_stats`, the per-dyad rates
 are recomputed at every step from the current endogenous state and then
 rescaled by the global multiplier.
 
+Statistics that change between events – the `*_exp_decay` family,
+`recency` and the `*_time_*` family – make the rates time-varying, and
+the Gillespie method then draws waiting times by thinning: candidate
+times come from a Poisson process whose rate bounds the total rate on a
+time window, and a candidate at time \\t\\ is accepted with probability
+equal to the total rate at \\t\\ (state decayed to \\t\\) divided by the
+bound; the firing dyad is drawn in proportion to the rates at \\t\\, and
+the recorded statistics are their values at \\t\\. The bound uses that
+each such term is monotone in time between events. The result is exact
+for these statistics. With a negative effect on `recency` or a
+`*_time_*` statistic the rates can decay toward zero, so the process may
+stop firing; the simulation then stops with a message once every rate is
+below \\e^{-700}\\.
+
+Under `risk = "remove"` with `n_controls > 0`, the simulation stops with
+a message when fewer than `n_controls + 1` dyads remain in the risk set,
+and returns the events produced so far.
+
 The `"tau_leap"` algorithm advances the clock by a user-chosen step
 \\\tau\\ and draws, for every dyad, a
 \\\mathrm{Poisson}(\lambda\_{sr}(t)\\\tau)\\ number of events using the
-rates at the *start* of the step. Multiple events can fire in the same
+rates at the *start* of the step. Elapsed-time statistics (`recency` and
+every `*_time_*` statistic, ordered ones included) are recorded at each
+event's own time from the start-of-step state; the other statistics
+carry their start-of-step values. Multiple events can fire in the same
 step; they are placed at uniform times within \\\[t, t+\tau)\\ and
 reported in time order, but they share the start-of-step endogenous
 state and global multiplier. Endogenous state is updated once at the end

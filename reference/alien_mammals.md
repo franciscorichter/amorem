@@ -70,7 +70,8 @@ Two attributes describe the risk set. `attr(x, "never_at_risk")` is a
 data frame (`sender`, `receiver`) of the species–region pairs that never
 appear in the table (native range, or established before 1880), to pass
 to `sample_non_events(exclude_pairs = )`. `attr(x, "entry")` gives, for
-each species, the year from which it is at risk.
+each species, the year from which it is at risk, to pass to
+`sample_non_events(entry = )`.
 
 ## See also
 

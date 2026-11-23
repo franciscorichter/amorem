@@ -29,17 +29,17 @@ specs <- list(
 no_re <- compare_models(classroom_events, specs, n_controls = 3, seed = 11)
 no_re
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -653.3589 1310.718    0.0000
-#> 2 interrupted       2   691 -864.9598 1733.920  423.2017
-#> 3  continuous       2   691 -919.1762 1842.352  531.6345
+#> 1  continuous       4   691 -558.2583 1124.517   0.00000
+#> 2 interrupted       4   691 -576.6881 1161.376  36.85952
+#> 3       count       2   691 -658.5110 1321.022 196.50537
 
 with_re <- compare_models(classroom_events, specs, n_controls = 3, seed = 11,
                           random_effects = "sender")
 with_re
-#>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -525.3774 1092.430    0.0000
-#> 2 interrupted       2   691 -679.7356 1401.603  309.1735
-#> 3  continuous       2   691 -769.7646 1581.834  489.4043
+#>         model n_terms n_obs   log_lik       AIC delta_AIC
+#> 1 interrupted       4   691 -383.3469  812.3633   0.00000
+#> 2  continuous       4   691 -430.1091  905.0245  92.66122
+#> 3       count       2   691 -522.1840 1086.2590 273.89572
 ```
 
 ``` r
@@ -64,10 +64,10 @@ par(op)
 ```
 
 Without a random effect the count specification has the lowest AIC,
-ahead of interrupted by 423.2. With the sender frailty the count
-specification still has the lowest AIC, and its lead over interrupted is
-309.2. Among the timing variants, interrupted fits better than
-continuous by 180.2 AIC points once the frailty is in the model.
+ahead of interrupted by 36.9. With the sender frailty the count
+specification still has the lowest AIC, and its lead over continuous is
+92.7. Among the timing variants, continuous fits better than count by
+181.2 AIC points once the frailty is in the model.
 
 ------------------------------------------------------------------------
 
@@ -172,13 +172,13 @@ c(messages = nrow(cm30), users = length(unique(c(cm30$sender, cm30$receiver))))
 #>    22265     1086
 cm <- compare_models(cm30, specs, n_controls = 1, seed = 11)
 cm
-#>         model n_terms n_obs    log_lik      AIC delta_AIC
-#> 1       count       2 22265  -6782.367 13568.73      0.00
-#> 2  continuous       2 22265 -13853.169 27710.34  14141.60
-#> 3 interrupted       2 22265 -14716.110 29436.22  15867.48
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1  continuous       4 22265 -6295.931 12599.86    0.0000
+#> 2       count       2 22265 -6783.714 13571.43  971.5662
+#> 3 interrupted       4 22265 -8319.430 16646.86 4046.9990
 ```
 
-The count specification leads by 14,142 AIC points. The datasets article
+The count specification leads by 972 AIC points. The datasets article
 shows the activity heterogeneity of this network (see the actor-degree
 panel on the
 [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)

@@ -12,8 +12,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Case study: cosponsorship in the 118th Congress">
@@ -352,12 +352,12 @@ rows it matches <code><a href="../reference/hyperedge_subrep.html">hyperedge_sub
 <span><span class="va">se</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diag.html" class="external-link">diag</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span>estimate <span class="op">=</span> <span class="va">est</span>, se <span class="op">=</span> <span class="va">se</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                 estimate    se</span></span>
-<span><span class="co">#&gt; log_repetition     3.230 0.176</span></span>
-<span><span class="co">#&gt; log_reciprocity    1.195 0.148</span></span>
-<span><span class="co">#&gt; log_activity       0.292 0.250</span></span>
-<span><span class="co">#&gt; log_copair         1.730 0.123</span></span>
-<span><span class="co">#&gt; same_party         0.615 0.165</span></span>
-<span><span class="co">#&gt; same_state         3.449 0.375</span></span></code></pre></div>
+<span><span class="co">#&gt; log_repetition     3.214 0.178</span></span>
+<span><span class="co">#&gt; log_reciprocity    1.198 0.151</span></span>
+<span><span class="co">#&gt; log_activity       0.260 0.251</span></span>
+<span><span class="co">#&gt; log_copair         1.785 0.124</span></span>
+<span><span class="co">#&gt; same_party         0.497 0.166</span></span>
+<span><span class="co">#&gt; same_state         3.656 0.386</span></span></code></pre></div>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">labels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>log_repetition <span class="op">=</span> <span class="st">"repetition: cosponsored this sponsor before"</span>,</span>
 <span>            log_reciprocity <span class="op">=</span> <span class="st">"reciprocity: sponsor cosponsored them before"</span>,</span>
@@ -370,8 +370,8 @@ rows it matches <code><a href="../reference/hyperedge_subrep.html">hyperedge_sub
 <p><img src="case-congress_files/figure-html/forest-1.png" class="r-plt" alt="Estimated effects with 95 percent intervals" width="825.6"></p>
 <p>All six effects are estimated jointly. A cosponsor set entirely from
 the sponsor’s party, against one with none, multiplies the rate of the
-bill by 1.8; one unit more of <code>log(1 + repetition)</code>
-multiplies it by 25.27, and one unit more of co-cosponsorship by 5.64.
+bill by 1.6; one unit more of <code>log(1 + repetition)</code>
+multiplies it by 24.87, and one unit more of co-cosponsorship by 5.96.
 The co-cosponsorship effect is a hyperedge effect: it measures whether
 the cosponsors have signed together before, which no statistic of single
 sponsor–cosponsor pairs captures.</p>
@@ -391,8 +391,8 @@ control per bill:</p>
 <span>                <span class="va">same_state</span> <span class="op">+</span> <span class="fu">tv</span><span class="op">(</span><span class="va">same_party</span>, k <span class="op">=</span> <span class="fl">6</span><span class="op">)</span>,</span>
 <span>              data <span class="op">=</span> <span class="va">w</span>, method <span class="op">=</span> <span class="st">"gam"</span>, time <span class="op">=</span> <span class="st">"time"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit_tv</span><span class="op">)</span><span class="op">$</span><span class="va">s.table</span></span>
-<span><span class="co">#&gt;                          edf   Ref.df   Chi.sq      p-value</span></span>
-<span><span class="co">#&gt; s(.time):same_party 5.695964 5.955621 32.23308 2.042172e-05</span></span></code></pre></div>
+<span><span class="co">#&gt;                          edf   Ref.df   Chi.sq     p-value</span></span>
+<span><span class="co">#&gt; s(.time):same_party 2.962716 3.437937 16.34327 0.002016233</span></span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">smooth_data</span><span class="op">(</span><span class="va">fit_tv</span><span class="op">$</span><span class="va">fit</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">d</span><span class="op">$</span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2023-01-03"</span><span class="op">)</span> <span class="op">+</span> <span class="va">d</span><span class="op">$</span><span class="va">x</span></span>
@@ -420,7 +420,7 @@ with at least 100 Senate cosponsorships, the share that crosses caucus
 lines ranges from 16.3% (fortnight from 14 Feb 2023) to 37.1% (fortnight
 from 17 Dec 2024).</p>
 <p>The curve is the weight of the same-party share at each date, holding
-the other statistics fixed: 0.47 in June 2023 and 0.28 in September
+the other statistics fixed: 1.00 in June 2023 and -0.20 in September
 2024. <code>summary(fit_tv)$s.table</code> tests whether it departs from
 a constant.</p>
 </div>

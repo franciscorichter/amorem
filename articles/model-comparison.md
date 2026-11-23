@@ -68,9 +68,9 @@ timing).
 res <- compare_models(classroom_events, specs, seed = 11)
 res
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -280.8221 565.6442    0.0000
-#> 2 interrupted       2   691 -412.7271 829.4541  263.8099
-#> 3  continuous       2   691 -438.9000 881.8000  316.1557
+#> 1  continuous       4   691 -235.2626 478.5251   0.00000
+#> 2 interrupted       4   691 -256.3622 520.7245  42.19935
+#> 3       count       2   691 -285.2604 574.5207  95.99559
 ```
 
 The helper draws one case-control sample (default `n_controls = 1`)
@@ -81,11 +81,25 @@ builds case-minus-control differences, and fits one no-intercept
 binomial GLM per spec. Returned rows are sorted by AIC; the winning spec
 has `delta_AIC = 0`.
 
-On Classroom the count-based specification wins this stripped-down
-comparison — recall that this is a no-smooth, no-random-effect baseline;
-richer fits (thin-plate splines on the differences, sender/receiver
-random effects) typically reweight the ranking in favour of the temporal
-definitions, matching the empirical findings of the paper.
+A time-since statistic such as `reciprocity_time_recent` is `NA` when
+there is no earlier event of its kind. By default (`recency = "weight"`)
+[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
+enters it as the recency weight `w = transform_recency(delta)`, with
+`w = 0` when there is no earlier event, plus an indicator column
+`<stat>_none` of no earlier event. With this coding the continuous
+timing specification has the lowest AIC on Classroom. Setting the
+elapsed time of no earlier event to 0 (`recency = "zero"`) treats “no
+earlier event” as “an event a moment ago”, and the ranking then follows
+that coding:
+
+``` r
+
+compare_models(classroom_events, specs, seed = 11, recency = "zero")
+#>         model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1       count       2   691 -285.2604 574.5207    0.0000
+#> 2 interrupted       2   691 -413.1355 830.2710  255.7503
+#> 3  continuous       2   691 -439.9833 883.9665  309.4458
+```
 
 ### Multiple controls per case
 
@@ -100,9 +114,9 @@ right tool when you want more controls per case for tighter inference:
 compare_models(classroom_events, specs,
                n_controls = 3, seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -653.3589 1310.718    0.0000
-#> 2 interrupted       2   691 -864.9598 1733.920  423.2017
-#> 3  continuous       2   691 -919.1762 1842.352  531.6345
+#> 1  continuous       4   691 -558.2583 1124.517   0.00000
+#> 2 interrupted       4   691 -576.6881 1161.376  36.85952
+#> 3       count       2   691 -658.5110 1321.022 196.50537
 ```
 
 The `n_obs` column now reports the number of strata (one per case). AIC
@@ -135,9 +149,9 @@ df <- data.frame(
 
 fit <- glm(one ~ d_rec + d_trans - 1, family = "binomial", data = df)
 summary(fit)$coefficients
-#>            Estimate Std. Error    z value     Pr(>|z|)
-#> d_rec    0.01707064 0.01832493  0.9315532 3.515675e-01
-#> d_trans -0.16703689 0.01846586 -9.0457142 1.486900e-19
+#>             Estimate Std. Error    z value     Pr(>|z|)
+#> d_rec    0.009212733 0.01832444  0.5027565 6.151355e-01
+#> d_trans -0.166083741 0.01833631 -9.0576411 1.333021e-19
 ```
 
 The same recipe scales to any subset of the statistics in the catalogue.
@@ -177,11 +191,13 @@ sim <- simulate_relational_events(
 # process. compare_models() should rank it first.
 res2 <- compare_models(sim, specs, seed = 7)
 #> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
+#> Warning: glm.fit: algorithm did not converge
+#> Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred
 res2
-#>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   600  -57.1382 118.2764    0.0000
-#> 2 interrupted       2   600 -242.3602 488.7204  370.4440
-#> 3  continuous       2   600 -276.6789 557.3578  439.0814
+#>         model n_terms n_obs    log_lik      AIC delta_AIC
+#> 1       count       2   600  -56.34739 116.6948    0.0000
+#> 2  continuous       4   600  -72.78379 153.5676   36.8728
+#> 3 interrupted       4   600 -164.82369 337.6474  220.9526
 ```
 
 ## References

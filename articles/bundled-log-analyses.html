@@ -12,8 +12,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Analyses of bundled event logs">
@@ -111,17 +111,17 @@ between senders.</p>
 <span><span class="va">no_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">specs</span>, n_controls <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">no_re</span></span>
 <span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1       count       2   691 -653.3589 1310.718    0.0000</span></span>
-<span><span class="co">#&gt; 2 interrupted       2   691 -864.9598 1733.920  423.2017</span></span>
-<span><span class="co">#&gt; 3  continuous       2   691 -919.1762 1842.352  531.6345</span></span>
+<span><span class="co">#&gt; 1  continuous       4   691 -558.2583 1124.517   0.00000</span></span>
+<span><span class="co">#&gt; 2 interrupted       4   691 -576.6881 1161.376  36.85952</span></span>
+<span><span class="co">#&gt; 3       count       2   691 -658.5110 1321.022 196.50537</span></span>
 <span></span>
 <span><span class="va">with_re</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="va">specs</span>, n_controls <span class="op">=</span> <span class="fl">3</span>, seed <span class="op">=</span> <span class="fl">11</span>,</span>
 <span>                          random_effects <span class="op">=</span> <span class="st">"sender"</span><span class="op">)</span></span>
 <span><span class="va">with_re</span></span>
-<span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1       count       2   691 -525.3774 1092.430    0.0000</span></span>
-<span><span class="co">#&gt; 2 interrupted       2   691 -679.7356 1401.603  309.1735</span></span>
-<span><span class="co">#&gt; 3  continuous       2   691 -769.7646 1581.834  489.4043</span></span></code></pre></div>
+<span><span class="co">#&gt;         model n_terms n_obs   log_lik       AIC delta_AIC</span></span>
+<span><span class="co">#&gt; 1 interrupted       4   691 -383.3469  812.3633   0.00000</span></span>
+<span><span class="co">#&gt; 2  continuous       4   691 -430.1091  905.0245  92.66122</span></span>
+<span><span class="co">#&gt; 3       count       2   691 -522.1840 1086.2590 273.89572</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>count <span class="op">=</span> <span class="st">"#d62728"</span>, continuous <span class="op">=</span> <span class="st">"#2ca02c"</span>, interrupted <span class="op">=</span> <span class="st">"#1f77b4"</span><span class="op">)</span></span>
 <span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4.5</span>, <span class="fl">2.5</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -136,10 +136,10 @@ between senders.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p>Without a random effect the count specification has the lowest AIC,
-ahead of interrupted by 423.2. With the sender frailty the count
-specification still has the lowest AIC, and its lead over interrupted is
-309.2. Among the timing variants, interrupted fits better than
-continuous by 180.2 AIC points once the frailty is in the model.</p>
+ahead of interrupted by 36.9. With the sender frailty the count
+specification still has the lowest AIC, and its lead over continuous is
+92.7. Among the timing variants, continuous fits better than count by
+181.2 AIC points once the frailty is in the model.</p>
 <hr>
 </div>
 <div class="section level3">
@@ -230,16 +230,15 @@ is highest at weight 0 and below zero for most of the range.</p>
 <span><span class="co">#&gt;    22265     1086</span></span>
 <span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span><span class="va">cm30</span>, <span class="va">specs</span>, n_controls <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="va">cm</span></span>
-<span><span class="co">#&gt;         model n_terms n_obs    log_lik      AIC delta_AIC</span></span>
-<span><span class="co">#&gt; 1       count       2 22265  -6782.367 13568.73      0.00</span></span>
-<span><span class="co">#&gt; 2  continuous       2 22265 -13853.169 27710.34  14141.60</span></span>
-<span><span class="co">#&gt; 3 interrupted       2 22265 -14716.110 29436.22  15867.48</span></span></code></pre></div>
-<p>The count specification leads by 14,142 AIC points. The datasets
-article shows the activity heterogeneity of this network (see the
-actor-degree panel on the <a href="datasets.html">Datasets</a> page);
-without a sender frailty the count statistics carry that heterogeneity,
-so this table ranks the specifications on activity as much as on
-dynamics.</p>
+<span><span class="co">#&gt;         model n_terms n_obs   log_lik      AIC delta_AIC</span></span>
+<span><span class="co">#&gt; 1  continuous       4 22265 -6295.931 12599.86    0.0000</span></span>
+<span><span class="co">#&gt; 2       count       2 22265 -6783.714 13571.43  971.5662</span></span>
+<span><span class="co">#&gt; 3 interrupted       4 22265 -8319.430 16646.86 4046.9990</span></span></code></pre></div>
+<p>The count specification leads by 972 AIC points. The datasets article
+shows the activity heterogeneity of this network (see the actor-degree
+panel on the <a href="datasets.html">Datasets</a> page); without a
+sender frailty the count statistics carry that heterogeneity, so this
+table ranks the specifications on activity as much as on dynamics.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

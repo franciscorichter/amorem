@@ -41,7 +41,9 @@ rem(
   `method = "gam"`, long case-control input (a `event`/`IS_OBSERVED`
   indicator with control rows) is detected and widened automatically via
   [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md),
-  with a message.
+  with a message. The `gam` design pairs each case with one control, so
+  widening keeps the first control of each stratum; when a stratum has
+  several controls `rem()` warns, and `method = "clogit"` uses them all.
 
 - method:
 
@@ -105,12 +107,24 @@ rem(
 ## Value
 
 An object of class `"amorem_rem"`: a list with the fitted model
-(`$fit`), the `method`, the original `formula`, the parsed `terms`, and
-the number of observations `n`. Has
+(`$fit`), the `method`, the original `formula`, the parsed `terms`, the
+number of rows used by the fit `n` and, for `gam` and `clogit`, the
+logical vector `rows` marking which rows of `data` (after widening, for
+`gam`) the fit used. `clogit` and `nn` fits also store the resolved
+event-indicator column `case` and the `stratum` argument. Has
 [`summary()`](https://rdrr.io/r/base/summary.html),
 [`coef()`](https://rdrr.io/r/stats/coef.html),
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) and
-[`logLik()`](https://rdrr.io/r/stats/logLik.html) methods.
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+[`logLik()`](https://rdrr.io/r/stats/logLik.html) and
+[`predict()`](https://rdrr.io/r/stats/predict.html) methods. For `gam`
+fits, `predict(fit, newdata)` takes wide data in the form `rem()`
+accepts (the columns named in *Column resolution*) and returns the
+linear predictor of each row, event minus control; further arguments go
+to
+[`mgcv::predict.gam()`](https://rdrr.io/pkg/mgcv/man/predict.gam.html).
+For `clogit` and `nn` fits,
+[`predict()`](https://rdrr.io/r/stats/predict.html) passes its arguments
+to the fitted model's own method.
 
 ## Details
 
@@ -164,9 +178,12 @@ effect; wrap a name to request a smooth effect (`gam` method only):
   built from the matched `x_ev` / `x_nv` levels as
   `s(cbind(x_ev, x_nv), by = cbind(1, -1), bs = "re")`, contributing
   `f(event_level) - f(control_level)` (following the REM tutorial's
-  species-invasiveness term). Falls back to a single column `x` when
-  `x_ev` / `x_nv` are absent. Identified only when the event and control
-  differ on `x`.
+  species-invasiveness term). Needs both `x_ev` and `x_nv` (as written
+  by
+  [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md));
+  a single column `x` is an error, since it gives the event and its
+  control the same level and the term would be zero. Identified only
+  when the event and control differ on `x`.
 
 Smooth terms take the basis settings of
 [`mgcv::s()`](https://rdrr.io/pkg/mgcv/man/s.html) /
@@ -184,7 +201,18 @@ formula's environment. A term without its own `k` / `bs` uses the global
 For the `gam` method the left-hand side is ignored (the response is the
 constant case indicator); for `clogit` the left-hand side names the 0/1
 event indicator column (e.g. `event ~ x`), unless `case` is given
-explicitly.
+explicitly. The event indicator may be numeric or integer 0/1, logical,
+or a character or factor column with values `"0"`/`"1"` or
+`"FALSE"`/`"TRUE"`; it is read by value, and any other value is an
+error.
+
+[`offset()`](https://rdrr.io/r/stats/offset.html) terms enter the linear
+predictor with coefficient 1. For `clogit` the expression is evaluated
+on the rows of `data`, as in
+[`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html).
+For `gam` it must name a column, `offset(o)`, which is resolved like a
+linear term (an event-minus-control difference: column `o`, else `d_o`,
+else `o_ev - o_nv`). The `nn` method does not take offsets.
 
 ## Column resolution
 
@@ -217,13 +245,16 @@ to them. When more than one of these packages is attached, call
 ## Examples
 
 ``` r
-set.seed(1)
-w <- simulate_relational_events(
-  n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
-  n_controls = 1, endogenous_stats = "reciprocity_count",
-  endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
-fit <- rem(~ reciprocity_count, data = w, method = "gam")
-coef(fit)
-#> reciprocity_count 
-#>         0.9043626 
+if (requireNamespace("mgcv", quietly = TRUE)) {
+  set.seed(1)
+  w <- simulate_relational_events(
+    n_events = 300, senders = paste0("a", 1:12), receivers = paste0("a", 1:12),
+    n_controls = 1, endogenous_stats = "reciprocity_count",
+    endogenous_effects = c(reciprocity_count = 0.6), wide = TRUE)
+  fit <- rem(~ reciprocity_count, data = w, method = "gam")
+  coef(fit)
+  summary(predict(fit, w))
+}
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#> -2.7131  0.9044  5.4262 20.4808 40.0180 74.1577 
 ```

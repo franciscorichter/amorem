@@ -12,8 +12,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Simulation">
@@ -287,12 +287,12 @@ range of 2.</p>
 <span>                                            <span class="st">"transitivity_count"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">feats</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  reciprocity_count transitivity_count</span></span>
-<span><span class="co">#&gt;  Min.   :  0.0     Min.   :0.000     </span></span>
-<span><span class="co">#&gt;  1st Qu.: 41.0     1st Qu.:5.000     </span></span>
-<span><span class="co">#&gt;  Median :165.5     Median :5.000     </span></span>
-<span><span class="co">#&gt;  Mean   :172.9     Mean   :5.432     </span></span>
-<span><span class="co">#&gt;  3rd Qu.:289.8     3rd Qu.:7.000     </span></span>
-<span><span class="co">#&gt;  Max.   :414.0     Max.   :7.000</span></span></code></pre></div>
+<span><span class="co">#&gt;  Min.   : 0.00     Min.   :0.000     </span></span>
+<span><span class="co">#&gt;  1st Qu.:41.00     1st Qu.:5.000     </span></span>
+<span><span class="co">#&gt;  Median :87.00     Median :5.000     </span></span>
+<span><span class="co">#&gt;  Mean   :65.66     Mean   :5.432     </span></span>
+<span><span class="co">#&gt;  3rd Qu.:89.00     3rd Qu.:7.000     </span></span>
+<span><span class="co">#&gt;  Max.   :89.00     Max.   :7.000</span></span></code></pre></div>
 <p><code><a href="../reference/endogenous_features.html">endogenous_features()</a></code> recomputes the statistics from the
 timestamps alone; the simulator applies the same definitions while it
 generates the events (the <a href="validation-experiments.html">Validation experiments</a>, E5,
@@ -414,10 +414,10 @@ the simulator call and the conditional-logit estimate
 <span>                <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tab</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;               beta_mean beta_sd seconds</span></span>
-<span><span class="co">#&gt; Gillespie         0.563   0.086   0.304</span></span>
-<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.128</span></span>
-<span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.114</span></span>
-<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.118</span></span></code></pre></div>
+<span><span class="co">#&gt; Gillespie         0.563   0.086   0.546</span></span>
+<span><span class="co">#&gt; tau-leap 0.01     0.636   0.062   0.205</span></span>
+<span><span class="co">#&gt; tau-leap 0.05     0.585   0.049   0.180</span></span>
+<span><span class="co">#&gt; tau-leap 0.20     0.587   0.055   0.175</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4.5</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/boxplot.html" class="external-link">boxplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">runs</span>, <span class="kw">function</span><span class="op">(</span><span class="va">r</span><span class="op">)</span> <span class="va">r</span><span class="op">[</span>, <span class="st">"beta"</span><span class="op">]</span><span class="op">)</span>, ylab <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/influence.measures.html" class="external-link">hat</a></span><span class="op">(</span><span class="va">beta</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -433,7 +433,7 @@ is 0.563 for Gillespie and 0.636, 0.585 and 0.587 for τ = 0.01, 0.05 and
 time unit, so a step of τ = 0.20 contains roughly 490 events that all
 share the start-of-step state; within a step, a dyad whose reverse fires
 earlier in the same step does not yet see it. Mean simulator time per
-run is 0.30 s for Gillespie and 0.11–0.13 s for τ-leap.</p>
+run is 0.55 s for Gillespie and 0.17–0.20 s for τ-leap.</p>
 <div class="section level4">
 <h4 id="when-to-pick-which">When to pick which<a class="anchor" aria-label="anchor" href="#when-to-pick-which"></a>
 </h4>

@@ -134,10 +134,10 @@ fit <- rem(~ nl(tod, bs = "cc", k = 12) + nl(dow, bs = "cc", k = 8) +
            data = w, method = "gam", time = "time")
 summary(fit)$s.table
 #>                       edf    Ref.df    Chi.sq      p-value
-#> s(.X_tod):.I     9.820934 10.000000 938.51277 0.0000000000
-#> s(.X_dow):.I     5.931675  6.000000 433.23812 0.0000000000
-#> s(.X_time):.I    3.167483  3.640323  22.21318 0.0003238577
-#> s(.TP):.XI_recip 2.000223  2.000444 301.06346 0.0000000000
+#> s(.X_tod):.I     9.821936 10.000000 938.03765 0.0000000000
+#> s(.X_dow):.I     5.931925  6.000000 433.09472 0.0000000000
+#> s(.X_time):.I    3.173485  3.644906  22.84048 0.0002482583
+#> s(.TP):.XI_recip 2.000255  2.000509 305.27550 0.0000000000
 ```
 
 ![Estimated smooth effects of time of day, day of week, the trend and
@@ -145,11 +145,11 @@ time-varying reciprocity, with 95%
 bands](case-email-global_files/figure-html/fit-figure-1.png)
 
 In the `mgcv` summary the largest p-value of the four smooth terms is
-3.2e-04. The time-of-day curve is lowest at about 3.1 h and ranges from
--0.04 to 1.88 between 08:00 and 16:00. The day-of-week curve averages
+2.5e-04. The time-of-day curve is lowest at about 3.1 h and ranges from
+-0.02 to 1.88 between 08:00 and 16:00. The day-of-week curve averages
 0.44 from Monday to Friday and -1.97 on Saturday and Sunday (log-rate
 scale, each curve centred by `mgcv`). Over the 30 days the reciprocity
-coefficient $`\beta(t)`$ ranges from 5.71 to 7.59. Shaded bands in the
+coefficient $`\beta(t)`$ ranges from 5.70 to 7.58. Shaded bands in the
 figure are 95% intervals.
 
 ### Goodness of fit of the fitted model
@@ -167,11 +167,11 @@ g_dow  <- gof_rem(fit, "dow", test = "functional_form", n_sim = 1000, seed = 1)
 g_time <- gof_rem(fit, "recip", test = "time", data = w, n_sim = 1000, seed = 1)
 g_tod; g_dow; g_time
 #> Martingale-residual GoF test of 'tod': functional form
-#>   sup statistic = 0.2554, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)
+#>   sup statistic = 0.2564, p-value < 0.001 (1000 bootstrap replicates, n = 10776)
 #> Martingale-residual GoF test of 'dow': functional form
-#>   sup statistic = 0.5011, p-value = 0.0000 (1000 bootstrap replicates, n = 10776)
+#>   sup statistic = 0.5003, p-value < 0.001 (1000 bootstrap replicates, n = 10776)
 #> Martingale-residual GoF test of 'recip': time specification
-#>   sup statistic = 0.1370, p-value = 0.0020 (1000 bootstrap replicates, n = 10776)
+#>   sup statistic = 0.1388, p-value = 0.0020 (1000 bootstrap replicates, n = 10776)
 ```
 
 ``` r
@@ -218,12 +218,12 @@ ga <- gof_auxiliary(ev7, m, auxiliary = "sender_outdegree", n_sim = 1000,
 rbind(multivariate_reciprocity = c(statistic = gm$statistic, p_value = gm$p_value),
       auxiliary_sender_outdegree = c(statistic = ga$statistic, p_value = ga$p_value))
 #>                            statistic p_value
-#> multivariate_reciprocity    4.075663   0.029
+#> multivariate_reciprocity    4.365362   0.021
 #> auxiliary_sender_outdegree 10.159138   0.057
 ```
 
 On the 2794 emails of the first week, the multivariate test gives p =
-0.029 for a non-linear reciprocity-count effect, and the auxiliary test
+0.021 for a non-linear reciprocity-count effect, and the auxiliary test
 gives p = 0.057 for the sender’s out-degree.
 
 ### Reference

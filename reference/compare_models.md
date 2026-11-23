@@ -39,7 +39,8 @@ compare_models(
   random_effects = NULL,
   half_life = NULL,
   seed = NULL,
-  keep_fits = FALSE
+  keep_fits = FALSE,
+  recency = c("weight", "zero")
 )
 ```
 
@@ -105,11 +106,54 @@ compare_models(
   as `attr(result, "fits")`, e.g. for plotting estimated effects.
   Defaults to `FALSE`.
 
+- recency:
+
+  How a time-since statistic (`recency` and every `*_time_recent` /
+  `*_time_first` statistic, interrupted and ordered ones included)
+  enters the model; see *Time-since statistics*. `"weight"` (default)
+  uses the recency weight \\w = 2^{-\delta/T}\\ of
+  [`transform_recency()`](https://franciscorichter.github.io/amorem/reference/transform_recency.md)
+  (median rule) with \\w = 0\\ when there is no earlier event, plus an
+  indicator column `<stat>_none` of no earlier event; `"zero"` sets the
+  elapsed time \\\delta\\ of no earlier event to 0, the coding of amorem
+  1.2.0. Count, binary and exp-decay statistics are unaffected (their
+  missing values are set to 0 either way).
+
 ## Value
 
 A data frame with one row per specification and columns `model`,
 `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`. Sorted ascending by
-`AIC`. The model with the lowest AIC has `delta_AIC = 0`.
+`AIC`. The model with the lowest AIC has `delta_AIC = 0`. `n_terms`
+counts the model columns: the statistics of the specification and, with
+`recency = "weight"`, their indicator columns.
+
+## Time-since statistics
+
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+returns `NA` for the elapsed time \\\delta\\ of a time-since statistic
+when there is no earlier event of that kind. Setting it to 0
+(`recency = "zero"`) gives "no earlier event" the value of "an event a
+moment ago", and a linear effect of \\\delta\\ then ranks such a
+specification by a coding rather than by the data. With
+`recency = "weight"` each time-since statistic \\\delta\\ enters as two
+columns, \$\$w = \exp\\-\delta/(2m)\\ = 2^{-\delta/T},\\ T = 2m\log 2,
+\qquad w = 0 \text{ and } \texttt{\<stat\>\\none} = 1 \text{ when there
+is no earlier event,}\$\$ where \\m\\ is the median of the non-missing
+\\\delta\\ over the rows (events and controls) of the case-control
+sample
+([`transform_recency()`](https://franciscorichter.github.io/amorem/reference/transform_recency.md)
+with its default). The weight is bounded, 1 for an event a moment ago
+and tending to 0 for an event long ago, and the indicator lets no
+earlier event differ from an event long ago. The indicator is added only
+when some row has no earlier event. In
+[`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
+and
+[`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
+the requested effect type applies to \\w\\ and the indicator enters
+linearly. The simulator
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
+uses \\\delta\\ with 0 for no earlier event, so a fit of simulated data
+with the generating linear effect of \\\delta\\ uses `recency = "zero"`.
 
 ## References
 
@@ -138,8 +182,19 @@ compare_models(
                     "transitivity_time_recent_interrupted")),
   seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -280.8221 565.6442    0.0000
-#> 2 interrupted       2   691 -412.7271 829.4541  263.8099
-#> 3  continuous       2   691 -438.9000 881.8000  316.1557
+#> 1  continuous       4   691 -235.2626 478.5251   0.00000
+#> 2 interrupted       4   691 -256.3622 520.7245  42.19935
+#> 3       count       2   691 -285.2604 574.5207  95.99559
+# elapsed time with "no earlier event" set to 0 (amorem 1.2.0)
+compare_models(
+  classroom_events,
+  models = list(
+    count       = c("reciprocity_count", "transitivity_count"),
+    continuous  = c("reciprocity_time_recent",
+                    "transitivity_time_recent")),
+  seed = 11, recency = "zero")
+#>        model n_terms n_obs   log_lik      AIC delta_AIC
+#> 1      count       2   691 -285.2604 574.5207    0.0000
+#> 2 continuous       2   691 -439.9833 883.9665  309.4458
 # }
 ```

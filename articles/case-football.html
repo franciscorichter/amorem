@@ -12,8 +12,8 @@
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Case study: international football, 1872–2026">
@@ -257,7 +257,7 @@ to no group.</p>
 <span><span class="va">cc</span><span class="op">$</span><span class="va">log_pair</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log1p</a></span><span class="op">(</span><span class="va">cc</span><span class="op">$</span><span class="va">pair</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">act_i</span>, <span class="va">common</span>, <span class="va">pair</span>, <span class="va">never</span><span class="op">)</span> <span class="op">~</span> <span class="va">event</span>, <span class="va">cc</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   event    act_i    common      pair     never</span></span>
-<span><span class="co">#&gt; 1     0 58.30538  3.075527 0.2207975 0.8722319</span></span>
+<span><span class="co">#&gt; 1     0 58.35933  3.064607 0.2195799 0.8726505</span></span>
 <span><span class="co">#&gt; 2     1 88.36725 17.334411 2.7739518 0.1584735</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"log_activity"</span>, <span class="st">"log_common"</span>, <span class="st">"log_pair"</span>, <span class="st">"same_group"</span>, <span class="st">"never"</span>, <span class="st">"log_since"</span><span class="op">)</span></span>
@@ -267,11 +267,11 @@ to no group.</p>
 <span><span class="va">est</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">$</span><span class="va">p.table</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Estimate"</span>, <span class="st">"Std. Error"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">est</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              Estimate Std. Error</span></span>
-<span><span class="co">#&gt; log_activity   -0.357      0.018</span></span>
-<span><span class="co">#&gt; log_common      1.801      0.040</span></span>
-<span><span class="co">#&gt; log_pair        0.189      0.068</span></span>
-<span><span class="co">#&gt; same_group      0.446      0.051</span></span>
-<span><span class="co">#&gt; never          -0.281      0.287</span></span></code></pre></div>
+<span><span class="co">#&gt; log_activity   -0.355      0.018</span></span>
+<span><span class="co">#&gt; log_common      1.805      0.041</span></span>
+<span><span class="co">#&gt; log_pair        0.158      0.068</span></span>
+<span><span class="co">#&gt; same_group      0.505      0.052</span></span>
+<span><span class="co">#&gt; never          -0.054      0.308</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">smooth_data</span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">fit</span>, <span class="fl">1</span><span class="op">)</span>                      <span class="co"># x is log(years)</span></span>
 <span><span class="va">lo</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">fit</span> <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">se</span>; <span class="va">hi</span> <span class="op">&lt;-</span> <span class="va">d</span><span class="op">$</span><span class="va">fit</span> <span class="op">+</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">d</span><span class="op">$</span><span class="va">se</span></span>
@@ -297,10 +297,10 @@ to no group.</p>
 <p>Pairs that meet again within days, the two legs of a tie or two
 matches of one tournament, have the highest rate. Holding the other
 terms fixed, a pairing whose last meeting was one year ago has a
-log-rate 0.94 higher than one that last met ten years ago (a factor of
-2.6). Common opponents carry the largest linear effect, 1.80 per unit of
+log-rate 1.03 higher than one that last met ten years ago (a factor of
+2.8). Common opponents carry the largest linear effect, 1.81 per unit of
 <code>log(1 + common opponents)</code> (s.e. 0.04); a pair in the same
-1960–1989 group has a log-rate 0.45 higher (s.e. 0.05). Activity enters
+1960–1989 group has a log-rate 0.50 higher (s.e. 0.05). Activity enters
 with -0.36: given the common opponents, which grow with activity, more
 active teams do not meet each other more.</p>
 </div>
@@ -323,12 +323,12 @@ last meeting entering linearly.</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">fits</span>, <span class="kw">function</span><span class="op">(</span><span class="va">p</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">p</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;              friendly competitive</span></span>
-<span><span class="co">#&gt; log_activity   -0.151      -0.487</span></span>
-<span><span class="co">#&gt; log_common      1.610       1.924</span></span>
-<span><span class="co">#&gt; log_pair        0.257       0.060</span></span>
-<span><span class="co">#&gt; same_group      0.179       0.616</span></span>
-<span><span class="co">#&gt; never          -0.051       0.277</span></span>
-<span><span class="co">#&gt; log_since      -0.205      -0.416</span></span></code></pre></div>
+<span><span class="co">#&gt; log_activity   -0.130      -0.511</span></span>
+<span><span class="co">#&gt; log_common      1.529       1.981</span></span>
+<span><span class="co">#&gt; log_pair        0.127       0.092</span></span>
+<span><span class="co">#&gt; same_group      0.264       0.657</span></span>
+<span><span class="co">#&gt; never          -0.061       0.413</span></span>
+<span><span class="co">#&gt; log_since      -0.257      -0.435</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lab</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>log_activity <span class="op">=</span> <span class="st">"activity of the two teams"</span>, log_common <span class="op">=</span> <span class="st">"common opponents"</span>,</span>
 <span>         log_pair <span class="op">=</span> <span class="st">"earlier meetings (10 years)"</span>, same_group <span class="op">=</span> <span class="st">"same regional group"</span>,</span>
@@ -353,11 +353,11 @@ last meeting entering linearly.</p>
 <span>       lwd <span class="op">=</span> <span class="fl">2</span>, bty <span class="op">=</span> <span class="st">"n"</span>, cex <span class="op">=</span> <span class="fl">0.72</span>, text.col <span class="op">=</span> <span class="va">ink</span><span class="op">)</span></span>
 <span><span class="fu">title_left</span><span class="op">(</span><span class="st">"Region matters more for competitive matches"</span>, <span class="st">"1990-2019, one model per match type"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="case-football_files/figure-html/by-type-figure-1.png" class="r-plt" alt="Coefficients for friendlies and competitive matches side by side" width="864"></p>
-<p>The same-group coefficient is 0.62 for competitive matches and 0.18
+<p>The same-group coefficient is 0.66 for competitive matches and 0.26
 for friendlies: qualifying competitions are organised by confederation,
 while friendlies are arranged across regions. The rate of a competitive
-match also falls faster with the time since the last meeting (-0.42
-against -0.21 per unit of log years), as qualifying groups bring the
+match also falls faster with the time since the last meeting (-0.44
+against -0.26 per unit of log years), as qualifying groups bring the
 same teams together in successive cycles.</p>
 </div>
 <div class="section level3">

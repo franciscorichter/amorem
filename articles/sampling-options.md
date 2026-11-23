@@ -181,7 +181,7 @@ rbind(all      = c(controls = sum(cc_ca$event == 0L),
                    receiver_not_yet_published = cites_future(cc_cc)))
 #>          controls receiver_not_yet_published
 #> all           348                        152
-#> citation      344                          0
+#> citation      346                          0
 ```
 
 Under `"all"`, 152 of the controls “cite” a paper that is published at
@@ -235,7 +235,7 @@ rbind("standard"                         = c(fired_before = fired_before(cc_std)
 #>                                    fired_before concurrent
 #> standard                                    212         23
 #> remove                                        0          0
-#> remove, exclude_concurrent = FALSE            0         22
+#> remove, exclude_concurrent = FALSE            0         43
 ```
 
 The first column counts controls whose dyad had already fired before the
@@ -244,7 +244,7 @@ the same time. Under `risk = "standard"` 212 controls are dyads that had
 already fired. Under `risk = "remove"` none are, and by default
 (`exclude_concurrent = TRUE` under `"remove"`) no control is a dyad
 firing at the focal event’s own time either. With
-`exclude_concurrent = FALSE`, 22 controls are such concurrent events: at
+`exclude_concurrent = FALSE`, 43 controls are such concurrent events: at
 a tie they are still at risk at that instant, as in the Breslow
 convention. Under `risk = "standard"` the default is
 `exclude_concurrent = FALSE`.

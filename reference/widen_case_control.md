@@ -33,6 +33,8 @@ widen_case_control(
   it is auto-detected from the package's `event` column (as produced by
   [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md))
   or eventnet's `IS_OBSERVED`, preferring `event` when both are present.
+  The column may be numeric 0/1, logical, or character/factor
+  `"0"`/`"1"` or `"FALSE"`/`"TRUE"`; it is read by value.
 
 - stratum:
 

@@ -61,9 +61,10 @@ dispatch contexts. Sorted by `time` ascending.
 
 The constructor `hyperedge_log()` accepts list-columns directly and
 performs validation (character members, non-empty sets, finite times,
-sorted by time). `as_hyperedge_log()` promotes a dyadic
-`(sender, receiver, time)` data frame to the hyperedge form by wrapping
-each `sender` and `receiver` in a length-1 character vector.
+sorted by time, no NA or empty actor name, no actor listed twice within
+one event's sender set or receiver set). `as_hyperedge_log()` promotes a
+dyadic `(sender, receiver, time)` data frame to the hyperedge form by
+wrapping each `sender` and `receiver` in a length-1 character vector.
 `as_dyadic_log()` is the inverse: it succeeds only when every row of the
 hyperedge log has a length-1 sender set AND a length-1 receiver set.
 

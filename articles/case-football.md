@@ -197,7 +197,7 @@ cc$log_common <- log1p(cc$common)
 cc$log_pair <- log1p(cc$pair)
 aggregate(cbind(act_i, common, pair, never) ~ event, cc, mean)
 #>   event    act_i    common      pair     never
-#> 1     0 58.30538  3.075527 0.2207975 0.8722319
+#> 1     0 58.35933  3.064607 0.2195799 0.8726505
 #> 2     1 88.36725 17.334411 2.7739518 0.1584735
 ```
 
@@ -210,11 +210,11 @@ fit <- rem(~ log_activity + log_common + log_pair + same_group + never + nl(log_
 est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
 round(est, 3)
 #>              Estimate Std. Error
-#> log_activity   -0.357      0.018
-#> log_common      1.801      0.040
-#> log_pair        0.189      0.068
-#> same_group      0.446      0.051
-#> never          -0.281      0.287
+#> log_activity   -0.355      0.018
+#> log_common      1.805      0.041
+#> log_pair        0.158      0.068
+#> same_group      0.505      0.052
+#> never          -0.054      0.308
 ```
 
 ``` r
@@ -246,11 +246,11 @@ pairing, log axis](case-football_files/figure-html/since-1.png)
 
 Pairs that meet again within days, the two legs of a tie or two matches
 of one tournament, have the highest rate. Holding the other terms fixed,
-a pairing whose last meeting was one year ago has a log-rate 0.94 higher
-than one that last met ten years ago (a factor of 2.6). Common opponents
-carry the largest linear effect, 1.80 per unit of
+a pairing whose last meeting was one year ago has a log-rate 1.03 higher
+than one that last met ten years ago (a factor of 2.8). Common opponents
+carry the largest linear effect, 1.81 per unit of
 `log(1 + common opponents)` (s.e. 0.04); a pair in the same 1960–1989
-group has a log-rate 0.45 higher (s.e. 0.05). Activity enters with
+group has a log-rate 0.50 higher (s.e. 0.05). Activity enters with
 -0.36: given the common opponents, which grow with activity, more active
 teams do not meet each other more.
 
@@ -274,12 +274,12 @@ fits <- lapply(c(friendly = TRUE, competitive = FALSE), function(fr) {
 })
 sapply(fits, function(p) round(p[, 1], 3))
 #>              friendly competitive
-#> log_activity   -0.151      -0.487
-#> log_common      1.610       1.924
-#> log_pair        0.257       0.060
-#> same_group      0.179       0.616
-#> never          -0.051       0.277
-#> log_since      -0.205      -0.416
+#> log_activity   -0.130      -0.511
+#> log_common      1.529       1.981
+#> log_pair        0.127       0.092
+#> same_group      0.264       0.657
+#> never          -0.061       0.413
+#> log_since      -0.257      -0.435
 ```
 
 ``` r
@@ -311,11 +311,11 @@ title_left("Region matters more for competitive matches", "1990-2019, one model 
 ![Coefficients for friendlies and competitive matches side by
 side](case-football_files/figure-html/by-type-figure-1.png)
 
-The same-group coefficient is 0.62 for competitive matches and 0.18 for
+The same-group coefficient is 0.66 for competitive matches and 0.26 for
 friendlies: qualifying competitions are organised by confederation,
 while friendlies are arranged across regions. The rate of a competitive
-match also falls faster with the time since the last meeting (-0.42
-against -0.21 per unit of log years), as qualifying groups bring the
+match also falls faster with the time since the last meeting (-0.44
+against -0.26 per unit of log years), as qualifying groups bring the
 same teams together in successive cycles.
 
 ### What is not in the model

@@ -58,7 +58,8 @@ compare_models_smooth(
   half_life = NULL,
   k = NULL,
   seed = NULL,
-  keep_fits = FALSE
+  keep_fits = FALSE,
+  recency = c("weight", "zero")
 )
 ```
 
@@ -109,6 +110,14 @@ compare_models_smooth(
   as `attr(result, "fits")`, e.g. for plotting estimated effects.
   Defaults to `FALSE`.
 
+- recency:
+
+  Coding of time-since statistics, `"weight"` (default) or `"zero"`; see
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  section *Time-since statistics*. With `"weight"` the effect type
+  applies to the recency weight and the indicator `<stat>_none` enters
+  linearly.
+
 ## Value
 
 Data frame with one row per specification and columns `model`,
@@ -141,8 +150,8 @@ compare_models_smooth(
                transitivity_time_recent = "tvnl")),
   seed = 11)
 #>    model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1   tvnl       2   691 -397.8663 828.2393   0.00000
-#> 2     nl       2   691 -409.6023 841.8418  13.60260
-#> 3 linear       2   691 -438.9000 881.8000  53.56072
+#> 1   tvnl       4   691 -193.1665 421.0223   0.00000
+#> 2     nl       4   691 -217.9136 454.8668  33.84449
+#> 3 linear       4   691 -235.2626 478.5251  57.50280
 # }
 ```

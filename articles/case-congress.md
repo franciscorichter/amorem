@@ -304,12 +304,12 @@ est <- coef(fit)
 se <- sqrt(diag(stats::vcov(fit$fit)))
 round(cbind(estimate = est, se = se), 3)
 #>                 estimate    se
-#> log_repetition     3.230 0.176
-#> log_reciprocity    1.195 0.148
-#> log_activity       0.292 0.250
-#> log_copair         1.730 0.123
-#> same_party         0.615 0.165
-#> same_state         3.449 0.375
+#> log_repetition     3.214 0.178
+#> log_reciprocity    1.198 0.151
+#> log_activity       0.260 0.251
+#> log_copair         1.785 0.124
+#> same_party         0.497 0.166
+#> same_state         3.656 0.386
 ```
 
 ``` r
@@ -329,8 +329,8 @@ intervals](case-congress_files/figure-html/forest-1.png)
 
 All six effects are estimated jointly. A cosponsor set entirely from the
 sponsor’s party, against one with none, multiplies the rate of the bill
-by 1.8; one unit more of `log(1 + repetition)` multiplies it by 25.27,
-and one unit more of co-cosponsorship by 5.64. The co-cosponsorship
+by 1.6; one unit more of `log(1 + repetition)` multiplies it by 24.87,
+and one unit more of co-cosponsorship by 5.96. The co-cosponsorship
 effect is a hyperedge effect: it measures whether the cosponsors have
 signed together before, which no statistic of single sponsor–cosponsor
 pairs captures.
@@ -350,8 +350,8 @@ fit_tv <- rem(~ log_repetition + log_reciprocity + log_activity + log_copair +
                 same_state + tv(same_party, k = 6),
               data = w, method = "gam", time = "time")
 summary(fit_tv)$s.table
-#>                          edf   Ref.df   Chi.sq      p-value
-#> s(.time):same_party 5.695964 5.955621 32.23308 2.042172e-05
+#>                          edf   Ref.df   Chi.sq     p-value
+#> s(.time):same_party 2.962716 3.437937 16.34327 0.002016233
 ```
 
 ``` r
@@ -390,7 +390,7 @@ Senate cosponsorships, the share that crosses caucus lines ranges from
 2024).
 
 The curve is the weight of the same-party share at each date, holding
-the other statistics fixed: 0.47 in June 2023 and 0.28 in September
+the other statistics fixed: 1.00 in June 2023 and -0.20 in September
 2024. `summary(fit_tv)$s.table` tests whether it departs from a
 constant.
 

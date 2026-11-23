@@ -31,7 +31,10 @@ standardize_event_log(
 
 - sender_col, receiver_col, time_col:
 
-  Column names storing the sender, receiver, and time information.
+  Column names storing the sender, receiver, and time information. Times
+  may be numeric, `Date` or `POSIXct` (converted to days / seconds), a
+  factor (read by its labels) or text holding numbers; other text, such
+  as unconverted date strings, is an error.
 
 - sort:
 

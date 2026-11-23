@@ -1,7 +1,7 @@
 # Alien species first records, prepared for relational event models
 
 First records of established alien species (mammals, birds, plants,
-insects) in 272 regions, 1880–2005, as one-shot species-to-region
+insects) in 259 regions, 1880–2005, as one-shot species-to-region
 events: each pair fires at most once (`risk = "remove"`). The first
 record is dated `stop`; `start` is the start of the last interval over
 which the pair was at risk with unchanged covariates in the
@@ -16,8 +16,9 @@ alien_invasions
 ## Format
 
 A data frame with 11,730 rows, ordered by `stop`: `species`, `region`,
-`start`, `stop` (years; equal when the record falls in the first year,
-1880), `taxonomy`.
+`start`, `stop` (years), `taxonomy`. `start` equals `stop` in 421 rows:
+the 14 records of 1880 and 407 later records whose last at-risk interval
+in the release begins in the year of the record.
 
 ## Source
 

@@ -8,8 +8,8 @@ with rate \$\$ \lambda(t, I) \\=\\ \mathrm{baseline\\rate} \\\cdot\\
 \exp\\\left(\sum_k \beta_k \\ x_k(t, I)\right), \$\$ where each \\x_k(t,
 I)\\ is one of the hyperedge-native covariates supported by
 [`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md)
-(`activity`, `subrep_<rho>` for undirected events) or `size` (the
-event's cardinality \\\|I\|\\).
+(`activity`, `subrep_<rho>` with `rho >= 1` for undirected events) or
+`size` (the event's cardinality \\\|I\|\\).
 
 ## Usage
 
@@ -30,7 +30,7 @@ simulate_hyperedge_events(
 
 - n_events:
 
-  Number of events to simulate.
+  Number of events to simulate: a positive whole number.
 
 - actors:
 

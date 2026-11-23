@@ -16,15 +16,15 @@ Wit (2024)
 computed from that history; and one front-end fits the resulting
 case-control data by conditional-logistic partial likelihood, by
 penalised regression on its degenerate one-control binomial form (which
-admits smooth, time-varying and actor random effects), or by stochastic
-gradient descent, including the additive-spline construction of
+admits smooth, time-varying and actor random effects), or by gradient
+descent on a neural score, including the additive-spline construction of
 Filippi-Mazzola and Wit (2024)
 [doi:10.1093/jrsssc/qlae023](https://doi.org/10.1093/jrsssc/qlae023) .
 Martingale-residual goodness-of-fit diagnostics are provided for the
-linear fit, together with simulation and statistic computation for
-relational hyper-events, a collection of documented event logs from
-published interaction networks, and a reconstructed El Nino index as a
-global covariate.
+linear and the smooth fits, together with simulation and statistic
+computation for relational hyper-events, a collection of documented
+event logs from published interaction networks, and a reconstructed El
+Nino index as a global covariate.
 
 ## See also
 

@@ -33,4 +33,5 @@ Paranjape, A., Benson, A.R., Leskovec, J. (2017). Motifs in temporal
 networks. *WSDM '17*, 601–610.
 [doi:10.1145/3018661.3018731](https://doi.org/10.1145/3018661.3018731) .
 Distributed via SNAP:
-<https://snap.stanford.edu/data/email-Eu-core-temporal.html>.
+<https://snap.stanford.edu/data/email-Eu-core-temporal.html>. Licence:
+none stated; SNAP asks users to cite the source.

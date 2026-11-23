@@ -97,9 +97,9 @@ ev <- simulate_relational_events(
 )
 ev <- ev[, c("sender", "receiver", "time")]
 nrow(ev)
-#> [1] 580
+#> [1] 546
 range(ev$time)
-#> [1] 1500.129 2004.800
+#> [1] 1500.129 2004.646
 ```
 
 `risk = "remove"` guarantees the realized dyads are all distinct:
@@ -142,7 +142,7 @@ already fired before $`t^*`$ is not a valid control.
 cc <- sample_non_events(ev, mode = "one", risk = "remove", seed = 1,
                         shift = "exponential", window = c(1500, 2005))
 attr(cc, "shift")$mean            # mean shift, in years
-#> [1] 259.6609
+#> [1] 261.7212
 length(attr(cc, "shift")$uninformative)
 #> [1] 0
 ```
@@ -164,7 +164,7 @@ w <- widen_case_control(cc, covariates = c("dist", "reciprocity_exp_decay",
                                            "nino34", "time"))
 summary(w$d_nino34)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#> -3.3750 -0.3703  0.4470  0.5155  1.3320  4.8370
+#> -3.9210 -0.2737  0.5875  0.6044  1.5500  4.4890
 ```
 
 ## Recovering the drivers
@@ -181,15 +181,15 @@ fit <- rem(~ nl(dist) + reciprocity_exp_decay + nino34,
 est <- summary(fit)$p.table[, c("Estimate", "Std. Error")]
 round(est, 3)
 #>                       Estimate Std. Error
-#> reciprocity_exp_decay    0.904      0.514
-#> nino34                   0.595      0.075
+#> reciprocity_exp_decay    0.262      0.609
+#> nino34                   0.647      0.076
 ```
 
-The ENSO coefficient is 0.60 (standard error 0.08) against the true 0.6.
-The neighbour pressure, 0.90 against the true 0.4, has a standard error
-of 0.51, 7 times larger: few invasions are preceded by one in the
+The ENSO coefficient is 0.65 (standard error 0.08) against the true 0.6.
+The neighbour pressure, 0.26 against the true 0.4, has a standard error
+of 0.61, 8 times larger: few invasions are preceded by one in the
 opposite direction, so the data hold little information about it. The
-two estimates lie 0.1 and 1.0 standard errors from their true values.
+two estimates lie 0.6 and 0.2 standard errors from their true values.
 The smooth recovers the shape of the distance effect, up to the additive
 constant that cancels in event-minus-control differences:
 

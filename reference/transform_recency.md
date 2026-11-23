@@ -3,9 +3,9 @@
 Maps non-negative time gaps \\\delta\\ to bounded recency weights via
 \$\$ w(\delta) \\=\\ \exp\\\Bigl(-\frac{\delta}{2\\m}\Bigr), \$\$ where
 \\m\\ is the median of the supplied (or reference) gaps. Large gaps map
-toward 0; gaps near 0 map toward 1. The half-life of the kernel is \\2 m
-\log 2\\, so the median gap itself is mapped to approximately \\e^{-1/2}
-\approx 0.607\\.
+toward 0; gaps near 0 map toward 1. The half-life of this kernel is \\2
+m \log 2\\, so the median gap itself is mapped to approximately
+\\e^{-1/2} \approx 0.607\\.
 
 ## Usage
 
@@ -21,8 +21,8 @@ transform_recency(delta, half_life = NULL, reference = NULL)
 
 - half_life:
 
-  Optional positive scalar. If supplied, used directly as the kernel
-  scale \\2 m\\, bypassing the median rule.
+  Optional positive scalar, possibly `Inf`: the gap at which the weight
+  is 0.5. Bypasses the median rule.
 
 - reference:
 
@@ -36,6 +36,15 @@ Numeric vector the same length as `delta`, with values in `(0, 1]`. NAs
 in `delta` are preserved.
 
 ## Details
+
+When `half_life` \\T\\ is supplied, the weights are \\w(\delta) =
+\exp(-\delta \log 2 / T) = 2^{-\delta/T}\\: a gap of \\T\\ maps to 0.5,
+the same half-life convention as the `*_exp_decay` statistics of
+[`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+and
+[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md).
+`half_life = Inf` means no decay: every non-missing gap, including
+`Inf`, maps to 1.
 
 This is the data-driven recency parametrisation used as a preprocessing
 step for global and exogenous covariates in Lembo, Juozaitiene,
@@ -58,8 +67,8 @@ transform_recency(gaps)
 #> [13] 0.48669180 0.07621828 0.54139459 0.54750852 0.33567618 0.68319337
 #> [19] 0.82196996 0.71005091
 transform_recency(gaps, half_life = 1)
-#>  [1] 0.2208296551 0.0941105091 0.7472066790 0.7560932803 0.4180571006
-#>  [6] 0.0030581746 0.0855098156 0.3398110062 0.1476168834 0.7452079433
-#> [11] 0.0619473618 0.2178257798 0.0841455618 0.0001436877 0.1213487880
-#> [16] 0.1261242317 0.0234691064 0.2699568158 0.5097336458 0.3082144590
+#>  [1] 0.351022724 0.194348037 0.817101127 0.823824808 0.546336891 0.018074041
+#>  [7] 0.181856941 0.473236849 0.265514952 0.815585493 0.145443401 0.347706102
+#> [13] 0.179840879 0.002170332 0.231793765 0.238078972 0.074218860 0.403462565
+#> [19] 0.626824314 0.442282651
 ```

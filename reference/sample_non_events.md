@@ -14,6 +14,7 @@ sample_non_events(
   mode = c("one", "two"),
   risk = c("standard", "remove"),
   exclude_pairs = NULL,
+  entry = NULL,
   exclude_concurrent = NULL,
   allow_loops = FALSE,
   seed = NULL,
@@ -32,7 +33,10 @@ sample_non_events(
 
 - n_controls:
 
-  Number of non-events (controls) to sample per realized event.
+  Number of non-events (controls) to sample per realized event; a
+  positive whole number. Controls are drawn with replacement, so a
+  stratum whose risk set is small can hold the same control more than
+  once.
 
 - scope:
 
@@ -40,9 +44,12 @@ sample_non_events(
   data; `"appearance"` restricts to actors that have appeared in prior
   events (so the first event, with no prior events, gets no controls);
   `"citation"` matches citation networks where senders are restricted to
-  the papers that debut at the current time and receivers must have
-  appeared earlier; it always draws senders and receivers from these two
-  separate pools, whatever `mode` says.
+  the papers that debut at the current time and receivers are the papers
+  that appeared in the log, as citing or as cited papers, before that
+  time (papers that are only ever cited are eligible); it always draws
+  senders and receivers from these two separate pools, whatever `mode`
+  says. Under `"appearance"` and `"citation"` an actor first seen at
+  time \\t\\ is not in the pool of events at \\t\\.
 
 - mode:
 
@@ -61,8 +68,9 @@ sample_non_events(
   (recurrent events), whereas `"remove"` deletes a dyad from the
   candidate pool after its first event (useful for processes such as
   species invasions where a pair cannot reoccur; a dyad that fires more
-  than once gives a warning). Under `"remove"`, dyads firing at the
-  focal event's own timestamp are also kept out of its control pool
+  than once gives a warning). A dyad leaves the pool after the timestamp
+  of its first event. Under `"remove"`, dyads firing at the focal
+  event's own timestamp are also kept out of its control pool
   (concurrent events are not valid non-events at that instant).
 
 - exclude_pairs:
@@ -72,6 +80,25 @@ sample_non_events(
   (e.g. an alien species' native range, or any dyad forbidden in
   advance). Columns named `sender`/`receiver` are used if present,
   otherwise the first two columns.
+
+- entry:
+
+  Optional entry times: the time from which an actor can be the sender
+  of a control. A named numeric vector (names are actor IDs), or a
+  two-column data.frame of actor and entry time (columns `actor` and
+  `entry` if present; otherwise the column `entry` and the first other
+  column; otherwise the first two columns), restricts the sender role.
+  `list(sender = , receiver = )`, each element in either form or `NULL`,
+  restricts the sender and the receiver roles separately. A control of
+  the event at time \\t\\ is drawn only from senders (receivers) whose
+  entry time is \\\le t\\; actors without an entry time are always
+  eligible. The restriction is per role, also under `mode = "one"`: an
+  actor that has not yet entered as a sender can still be a control
+  receiver unless it has a receiver entry time too. It combines with
+  `scope`, `risk`, `exclude_pairs` and `n_controls`; events whose risk
+  set is empty after the restriction get no control (see *Value*).
+  `Date` and `POSIXct` entry times are compared on the numeric scale of
+  `time`. Not available with `shift = "exponential"`.
 
 - exclude_concurrent:
 
@@ -90,11 +117,10 @@ sample_non_events(
 
 - max_attempts:
 
-  Maximum resampling attempts per control before giving up (prevents
-  infinite loops when candidate sets are small). With
-  `shift = "exponential"` it is the number of rejection draws tried
-  before the valid candidates are enumerated, so sampling never fails
-  there.
+  Number of rejection draws tried per control before the valid
+  candidates of the stratum are enumerated and the control is drawn
+  uniformly among them, so a valid control is always found when one
+  exists.
 
 - shift:
 
@@ -118,16 +144,26 @@ sample_non_events(
 
   Observation window `c(start, end)` for `shift = "exponential"`.
   Defaults to `c(min(time), max(time))`; pass the true window (the
-  paper's \\\[0, T\]\\) when it is known.
+  paper's \\\[0, T\]\\) when it is known. `Date` and `POSIXct` times
+  (and windows) are handled in days / seconds, and the returned `time`
+  column keeps the input class. When every event lies at the start of
+  the window (for example a log with a single timestamp and the default
+  window), no event gets a control.
 
 ## Value
 
 A data.frame containing the original events (`event = 1`) and the
-sampled controls (`event = 0`), grouped by `stratum` identifiers.
-`attr(, "no_control")` lists the strata whose event got no control: they
-contribute nothing to the partial likelihood, and a warning gives their
-number (except for events before any actor has appeared under
-`scope = "appearance"`, which never have controls). With
+sampled controls (`event = 0`), grouped by `stratum` identifiers. The
+input is first ordered by time (ties keep their input order), and
+stratum \\k\\ is the \\k\\-th event in that order; rows are returned by
+stratum, each event before its controls. Times must not be `NA`.
+`attr(, "no_control")` lists the strata whose event got no control
+(including those whose risk set `entry` leaves empty): they contribute
+nothing to the partial likelihood, and a warning gives their number.
+Events at the start of the log that come before the first event with a
+control are listed but not counted in the warning, since there the risk
+set is still being built (no actor has appeared yet, or every dyad seen
+so far has fired); when no event has a control, all are counted. With
 `shift = "exponential"` it carries `attr(, "shift")`: a list with the
 shift `mean`, the `window`, the per-dyad `shifts` (named
 `"sender->receiver"`) and the `uninformative` strata that got no
@@ -180,4 +216,16 @@ head(cc)
 #> 4       2     0      1       10 0.250             <NA>     NA
 #> 5       3     1     18       12 0.375         sanction      1
 #> 6       3     0     19        3 0.375             <NA>     NA
+
+# Alien species are at risk of invading a region only from the year
+# they start to spread: controls use only species that have entered.
+data(alien_mammals)
+ev <- alien_mammals[alien_mammals$event == 1, ]
+cc <- sample_non_events(
+  data.frame(sender = ev$species, receiver = ev$region, time = ev$stop),
+  mode = "two", risk = "remove", seed = 2005,
+  exclude_pairs = attr(alien_mammals, "never_at_risk"),
+  entry = attr(alien_mammals, "entry"))
+length(attr(cc, "no_control"))
+#> [1] 0
 ```

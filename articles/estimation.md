@@ -90,9 +90,12 @@ a case-control draw.
 on a case-control table (a 0/1 `event` column with control rows, as
 [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
 returns) builds the network history from the observed events only: the
-sampled non-events are scored against it but never enter it.
-`history_log` overrides this with an explicit history (only rows present
-in `history_log` update the running network state).
+sampled non-events are scored against it but never enter it, and rows at
+the same time never see each other: every statistic at time t uses only
+events strictly before t. `history_log` supplies an explicit history for
+logs without an `event` column (only rows present in `history_log`
+update the running network state); when the `event` column is present,
+it decides which rows are events.
 
 For set-valued covariates, the `"sender_receivers_set"` statistic
 returns a **list-column**: for each row, the set of receivers the row’s
@@ -213,9 +216,9 @@ compare_models(
                     "transitivity_time_recent_interrupted")),
   n_controls = 1, seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1       count       2   691 -280.8221 565.6442    0.0000
-#> 2 interrupted       2   691 -412.7271 829.4541  263.8099
-#> 3  continuous       2   691 -438.9000 881.8000  316.1557
+#> 1  continuous       4   691 -235.2626 478.5251   0.00000
+#> 2 interrupted       4   691 -256.3622 520.7245  42.19935
+#> 3       count       2   691 -285.2604 574.5207  95.99559
 ```
 
 **Read this with caution.** Without an actor-heterogeneity correction,
@@ -291,13 +294,13 @@ cms <- compare_models_smooth(
   seed = 11, k = 5)
 cms
 #>    model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1     nl       2   691 -415.4388 845.3280   0.00000
-#> 2     tv       2   691 -419.6671 855.4971  10.16917
-#> 3 linear       2   691 -438.9000 881.8000  36.47202
+#> 1     tv       4   691 -218.9212 455.3659  0.000000
+#> 2     nl       4   691 -224.0632 461.4374  6.071505
+#> 3 linear       4   691 -235.2626 478.5251 23.159190
 ```
 
-On the recency-time terms of this log the nl specification has the
-lowest AIC, 10.2 ahead of tv and 36.5 ahead of linear. The
+On the recency-time terms of this log the tv specification has the
+lowest AIC, 6.1 ahead of nl and 23.2 ahead of linear. The
 case-vs-control matrix design behind these fits is described in the
 table below.
 
@@ -377,8 +380,8 @@ compare_models_global(
                     temperature       = "global_smooth")),
   global_covariates = g, seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       2   690 -335.1267 679.9509   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  31.03884
+#> 1 with_global       2   690 -334.9164 679.5366   0.00000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  31.45322
 ```
 
 | Effect type     | Smooth                   | Use                         |
@@ -518,7 +521,7 @@ g_lin <- gof_rem(fit_lin, "x", test = "functional_form", data = w, seed = 1)
 g_nl  <- gof_rem(fit_nl,  "x", test = "functional_form", seed = 1)
 g_lin
 #> Martingale-residual GoF test of 'x': functional form
-#>   sup statistic = 1.0411, p-value = 0.0000 (2000 bootstrap replicates, n = 800)
+#>   sup statistic = 1.0411, p-value < 0.0005 (2000 bootstrap replicates, n = 800)
 g_nl
 #> Martingale-residual GoF test of 'x': functional form
 #>   sup statistic = 0.2041, p-value = 0.6535 (2000 bootstrap replicates, n = 800)
@@ -565,7 +568,7 @@ res <- martingale_residuals(
 # Residuals sum to zero within each (case, control) stratum:
 summary(tapply(res$residual, res$stratum, sum))
 #>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
-#> -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16
+#> -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16
 ```
 
 ``` r
@@ -587,7 +590,7 @@ legend("bottomright", bty = "n", pch = 16, col = role_col, legend = names(role_c
 ![Martingale residuals over event time with a loess curve per
 role](estimation_files/figure-html/martingale-figure-1.png)
 
-The largest within-stratum sum is 2.2e-16 in absolute value, so the
+The largest within-stratum sum is 1.5e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 $`1 - \pi_i \ge 0`$ and its control’s is the mirror image, so the two
 curves are symmetric about zero by construction. The closer the case

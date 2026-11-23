@@ -30,7 +30,7 @@ simulate_directed_hyperedge_events(
 
 - n_events:
 
-  Number of events to simulate.
+  Number of events to simulate: a positive whole number.
 
 - senders:
 

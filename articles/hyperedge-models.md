@@ -273,7 +273,7 @@ round(sweep, 2)
 #> no effect               2.02        1.91      0.30
 #> size_I = -0.6           1.71        2.07      0.47
 #> subrep_1_1 = 0.8        1.19        1.14      0.85
-#> both                    1.07        1.10      0.95
+#> both                    1.07        1.09      0.94
 ```
 
 ![The 150 simulated events under each of the four specifications, one
@@ -285,13 +285,13 @@ teal marks are its senders (authors A1–A4), purple marks its receivers
 (papers P1–P4, shaded band), so the number of teal marks in a column is
 the sender-set size. With `subrep_1_1 = 0.8` every event from event 39
 on repeats the same sender and receiver sets; with both effects, every
-event from event 18 on.
+event from event 23 on.
 
 With no endogenous effect, 30% of the events have a single sender. A
 negative `size_I` effect raises that share to 47%; a positive
 `subrep_1_1` effect raises it to 85%, since it reinforces the
 sender-receiver pairs that have already occurred; both effects together
-give 95%.
+give 94%.
 
 The simulator enumerates every candidate `(I, J)` for every event, so
 the cost per event grows exponentially with the actor pools; it is
@@ -361,7 +361,7 @@ d  <- simulate_directed_hyperevents_tvnl(sa, ra, horizon = 4, n_controls = 1)
 table(d$event)
 #> 
 #>    0    1 
-#> 3505 3505
+#> 3504 3504
 wd <- widen_case_control(d, stratum = "event_id",
                          covariates = c("cov_sender", "cov_receiver", "event_time"))
 fit_tvnl <- rem(~ tv(cov_sender, k = 6) + nl(cov_receiver, k = 6),

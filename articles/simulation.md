@@ -140,12 +140,12 @@ feats <- endogenous_features(ev_e, stats = c("reciprocity_count",
                                             "transitivity_count"))
 summary(feats[, c("reciprocity_count", "transitivity_count")])
 #>  reciprocity_count transitivity_count
-#>  Min.   :  0.0     Min.   :0.000     
-#>  1st Qu.: 41.0     1st Qu.:5.000     
-#>  Median :165.5     Median :5.000     
-#>  Mean   :172.9     Mean   :5.432     
-#>  3rd Qu.:289.8     3rd Qu.:7.000     
-#>  Max.   :414.0     Max.   :7.000
+#>  Min.   : 0.00     Min.   :0.000     
+#>  1st Qu.:41.00     1st Qu.:5.000     
+#>  Median :87.00     Median :5.000     
+#>  Mean   :65.66     Mean   :5.432     
+#>  3rd Qu.:89.00     3rd Qu.:7.000     
+#>  Max.   :89.00     Max.   :7.000
 ```
 
 [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
@@ -281,10 +281,10 @@ tab <- t(vapply(runs, function(r) c(beta_mean = mean(r[, "beta"]),
                 numeric(3)))
 round(tab, 3)
 #>               beta_mean beta_sd seconds
-#> Gillespie         0.563   0.086   0.304
-#> tau-leap 0.01     0.636   0.062   0.128
-#> tau-leap 0.05     0.585   0.049   0.114
-#> tau-leap 0.20     0.587   0.055   0.118
+#> Gillespie         0.563   0.086   0.546
+#> tau-leap 0.01     0.636   0.062   0.205
+#> tau-leap 0.05     0.585   0.049   0.180
+#> tau-leap 0.20     0.587   0.055   0.175
 ```
 
 ``` r
@@ -310,7 +310,7 @@ is 0.563 for Gillespie and 0.636, 0.585 and 0.587 for τ = 0.01, 0.05 and
 time unit, so a step of τ = 0.20 contains roughly 490 events that all
 share the start-of-step state; within a step, a dyad whose reverse fires
 earlier in the same step does not yet see it. Mean simulator time per
-run is 0.30 s for Gillespie and 0.11–0.13 s for τ-leap.
+run is 0.55 s for Gillespie and 0.17–0.20 s for τ-leap.
 
 #### When to pick which
 

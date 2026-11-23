@@ -29,5 +29,6 @@ A data frame with 20 rows and 3 columns:
 
 ## Source
 
-McFarland (2001), via `networkDynamic`. See
+McFarland (2001), via `networkDynamic`. Licence: none stated for the
+data; `networkDynamic` is GPL-3. See
 [classroom_events](https://franciscorichter.github.io/amorem/reference/classroom_events.md).

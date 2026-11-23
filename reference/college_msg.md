@@ -33,4 +33,6 @@ Panzarasa, P., Opsahl, T., Carley, K. (2009). Patterns and dynamics of
 users' behavior and interaction: Network analysis of an online
 community. *Journal of the American Society for Information Science and
 Technology* 60(5), 911–932. Distributed via SNAP:
-<https://snap.stanford.edu/data/CollegeMsg.html>.
+<https://snap.stanford.edu/data/CollegeMsg.html>, derived from the data
+set hosted by Tore Opsahl (<https://toreopsahl.com/datasets/>). Licence:
+none stated; SNAP and Opsahl ask users to cite the source.

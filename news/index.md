@@ -17,7 +17,190 @@
   Code that tests `inherits(fit, "rem")` must test
   `inherits(fit, "amorem_rem")`.
 
+- **Tied times: statistics at time t use only events strictly before
+  t**, in every path of
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  (compiled and pure-R, with and without a history mask) and for event
+  and control rows alike. Without a mask the compiled engine read ties
+  in row order, so A-\>B and B-\>A at t = 1 gave reciprocity `0 1`; they
+  now give `0 0`, as they already did with a mask.
+
+- [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  identifies the events of case-control data by the 0/1 `event` column
+  whenever it is present, also when `history_log` or `prior_log` is
+  given; `history_log` marks event rows by (sender, receiver, time) only
+  for logs without an `event` column. Passing `history_log = event_log`
+  no longer turns the controls of case-control data into events. A
+  factor `event` column is read by its labels.
+
+- `sample_non_events(scope = "citation")` draws control receivers from
+  every paper that has appeared in the log before the citing event, as a
+  citing or a cited paper. Before, only papers that had already cited
+  something were eligible, so papers that are only ever cited were never
+  controls. The control sender is still the citing paper.
+
+- [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  orders the log by time before sampling (ties keep their input order);
+  stratum k is the k-th event in that order. Appearance, removal and
+  concurrency rules followed row order before, so an unsorted log gave
+  controls drawn from actors and dyads of later events.
+
+- The no-control warning of
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  does not count events at the start of the log that come before the
+  first event with a control, where the risk set is still being built;
+  their strata are still listed in `attr(, "no_control")`. When no event
+  has a control, all are counted. `classroom_events` with
+  `scope = "appearance", risk = "remove"` gives no such warning; it
+  counted events 2 and 3 before.
+
+- `rem(method = "gam")` warns when long input with more than one control
+  per stratum is widened, since the gam design keeps the first control
+  of each stratum, and points to `method = "clogit"`, which uses every
+  control. It only said that it widened the data.
+
+- [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  stops when `re(x)` has no `x_ev` / `x_nv` columns. With a single
+  column `x` the term gives the event and its control the same level and
+  is zero; the documented fallback to that column is removed.
+
+- `simulate_relational_events(method = "gillespie")` draws waiting times
+  by thinning when a statistic changes between events (`*_exp_decay`,
+  `recency`, `*_time_*`). It used to draw the waiting time from the
+  rates at the previous event and choose the dyad from the undecayed
+  state, so an `reciprocity_exp_decay` effect of 1.5 (half-life 0.5, 6
+  actors, 4000 events) was recovered as 2.22–2.69; it is now recovered
+  as 1.37–1.61 (SE 0.12) over 10 replicates. Logs simulated with these
+  statistics differ from those of earlier versions under the same seed.
+  Logs without them are unchanged.
+
+- With a negative effect on `recency` or a `*_time_*` statistic the
+  rates of
+  [`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
+  can decay toward zero; the simulation stops with a message once every
+  rate is below `exp(-700)`, and returns the events produced so far. It
+  used to keep generating events.
+
+- `transform_recency(half_life = T)` gives weight 0.5 at a gap of `T`,
+  `exp(-delta * log(2) / T)`, the half-life convention of the
+  `*_exp_decay` statistics. It used `T` as the e-folding scale (weight
+  0.368 at `T`). `half_life = Inf` gives weight 1 (no decay); it was an
+  error. The median rule is unchanged.
+
+- **[`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  [`compare_models_smooth()`](https://franciscorichter.github.io/amorem/reference/compare_models_smooth.md)
+  and
+  [`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
+  code time-since statistics as a recency weight plus an indicator**
+  (new argument `recency = c("weight", "zero")`). A time-since statistic
+  (`recency`, every `*_time_recent` / `*_time_first`) is `NA` when there
+  is no earlier event; the functions set it to 0, so “no earlier event”
+  had the value of “an event a moment ago”. With `recency = "weight"`
+  (the default) the statistic enters as `w = transform_recency(delta)`
+  (median rule, `w = 0` for no earlier event) plus the column
+  `<stat>_none` = 1{no earlier event}. `recency = "zero"` is the old
+  coding. On `classroom_events` with `n_controls = 3, seed = 11` the AIC
+  of the count / continuous / interrupted specifications is 1321.0 /
+  1842.3 / 1732.8 with `"zero"` and 1321.0 / 1124.5 / 1161.4 with
+  `"weight"` (with `random_effects = "sender"`: 1086.3 / 1581.4 / 1399.0
+  and 1086.3 / 905.0 / 812.4), so the ranking of count first came from
+  the coding. Count, binary and exp-decay statistics are unaffected.
+  `n_terms` counts the indicator columns.
+
+- **[`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
+  gives `recency` the value 0 for a dyad that has never fired**, as for
+  the `*_time_*` statistics and as
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  (`NA`) with `NA` -\> 0. It used the time since `start_time`, so the
+  rates of never-fired dyads grew with the clock under a `recency`
+  effect and a model fitted with the post-hoc statistic was not the
+  generating model:
+  [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md)
+  rejected a correct linear `recency` model in 8.0% of replicates at the
+  5% level, against 4.5% with the simulator’s coding. Logs simulated
+  with `recency` differ from those of earlier versions under the same
+  seed.
+
+### New features
+
+- [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md),
+  [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md)
+  and
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md)
+  take `n_samples` (default 1). Each test is computed on one
+  case-control sample, so its verdict depends on the seed: on
+  `classroom_events` the univariate transitivity test rejects at 5% in 9
+  of 20 seeds. With `n_samples = S > 1` the test runs on S control
+  samples (seeds `seed`, `seed + 1`, …, or independent draws when `seed`
+  is `NULL`) and the S p-values are combined with the Cauchy combination
+  (Liu & Xie 2020), which is valid under arbitrary dependence among
+  them. The result carries the combined `p_value`, the per-sample
+  `p_values` and `n_samples`; the other fields come from the first
+  sample. `n_samples = 1` returns the same result as before for the same
+  seed.
+
+- [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  takes `entry`: the time from which an actor can be a control sender,
+  as a named numeric vector or a data.frame of actor and entry time;
+  `list(sender = , receiver = )` restricts both roles. Controls of the
+  event at time t are drawn only from actors with entry time \<= t,
+  together with `scope`, `risk`, `exclude_pairs` and `n_controls`;
+  events whose restricted risk set is empty are listed in
+  `attr(, "no_control")`. `attr(alien_mammals, "entry")` can be passed
+  as it is: with `mode = "two"`, `risk = "remove"` and the
+  `never_at_risk` exclusions, all 676 first records get a control,
+  against 664 for drawing 10 unrestricted controls and keeping the first
+  whose species had entered.
+
 ### Bug fixes
+
+- [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md)
+  holds its level. It referred `sup_u ||W(u)||^2` to simulated
+  q-dimensional Brownian bridges, with a ramp `u C(1)` for the effect of
+  estimation, and its process came from a REML-penalised spline fit. The
+  bridge is the limit only when the information of every spline column
+  grows in proportion along the event sequence, which fails for a
+  growing count, and the penalised fit selects its smoothing parameter
+  from the same data. It rejected a correct linear model at the 5% level
+  in 35.3% (`reciprocity_count`) and 17.5% (`reciprocity_exp_decay`) of
+  replicates. The spline columns and the other covariates are now
+  refitted without penalty (the model contains the linear null), and the
+  p-value comes from a multiplier bootstrap that carries the estimation
+  term `A(u) V sum_i g_i (1 - pi_i) x_i` (Lin, Wei & Ying 1993, as in
+  [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)).
+  Over 1000 replicates of 1500 events (20 actors) the rejection rate at
+  5% is 4.8% (MC SE 0.7) for `reciprocity_count`, 4.7% (0.7) for
+  `reciprocity_exp_decay` and 4.1% (0.6) for `reciprocity_count` next to
+  `transitivity_binary`; with a step effect of reciprocity fitted as
+  linear in the count it rejects in 6.5% (1.7) at 500 events and 66.5%
+  (3.3) at 1500, against 1.5% and 43.0% before. `n_sim` is the number of
+  bootstrap replicates; p-values differ from earlier versions for the
+  same seed.
+
+- With `n_samples > 1`, a Monte Carlo p-value of 0 from
+  [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md)
+  or
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md)
+  enters the Cauchy combination as `1/(n_sim + 1)` instead of `1e-15`,
+  so the combined p-value is at least `1/(n_sim + 1)` (it was about
+  1e-15 whenever one sample had p = 0). `p_values` keeps the per-sample
+  values. The Kolmogorov p-values of
+  [`gof_univariate()`](https://franciscorichter.github.io/amorem/reference/gof_univariate.md)
+  and
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md)
+  are not floored.
+
+- The torch reproducibility test loads the amorem under test in its
+  `callr` child process (the source tree under `devtools::test()`, the
+  check library under `R CMD check`); it loaded the first amorem on the
+  default library path, which can be another version.
+
+- [`print()`](https://rdrr.io/r/base/print.html) and
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of
+  [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  results report a bootstrap p-value of 0 as a bound, `p < 1/n_sim` (for
+  example `p < 0.001`); they printed `p = 0.000`.
 
 - [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
   warns when events get no control because their risk set holds no valid
@@ -37,6 +220,204 @@
   already fired stay at risk; it described them as “unrealized”. The
   documentation of `rem(method = "nn")` names the optional **torch**
   engine.
+
+- The pure-R path of
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  (taken when any statistic outside
+  [`cpp_supported_stats()`](https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.md)
+  is requested, e.g. `reciprocity_time_recent`) reads a whole timestamp
+  before adding its events to the history. It added each event before
+  its same-time controls were computed, so a control saw its own event
+  and the two engines disagreed on tied logs.
+
+- `endogenous_features(history_log = )` no longer counts a control as an
+  event when it coincides with another stratum’s event at the same time;
+  such a control raised the outdegree and other statistics of later
+  rows.
+
+- `sample_non_events(scope = "appearance")` admits only actors that
+  appeared at an earlier timestamp; it admitted actors first seen in an
+  earlier row with the same time. Under `risk = "remove"` a dyad
+  likewise leaves the pool after the timestamp of its first event.
+
+- [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  and
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  stop with an error on `NA` times (also in `history_log` and
+  `prior_log`).
+  [`endogenous_features()`](https://franciscorichter.github.io/amorem/reference/endogenous_features.md)
+  hung on an `NA` time whenever a history mask was in use; the compiled
+  loop now returns on non-finite times regardless.
+
+- [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  draws a valid control uniformly from the enumerated valid pairs after
+  `max_attempts` rejection draws miss, as the shifted branch already
+  did. It stopped with “Unable to sample a valid non-event” on runs
+  where a valid control existed but was rare.
+
+- `sample_non_events(shift = "exponential")` accepts `Date` and
+  `POSIXct` times and windows and returns times of the same class; it
+  failed on them. A log with a single timestamp (default window) gives
+  events without controls and a warning instead of an error. The shifted
+  branch emits the same no-control warning as the ordinary branch.
+
+- [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
+  stops on a non-integer `n_controls`; `1.5` was truncated to 1. The
+  documentation states that controls are drawn with replacement, so a
+  stratum with a small risk set can hold the same control more than
+  once.
+
+- [`standardize_event_log()`](https://franciscorichter.github.io/amorem/reference/standardize_event_log.md)
+  reads a factor time column by its labels (it used the level codes, so
+  `"10"` sorted before `"2"`) and stops on text times that are not
+  numbers, such as unconverted date strings (they became `NA` and, with
+  `drop_nas = TRUE`, every row was dropped).
+
+- [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
+  [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
+  and
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  read the event indicator by value: numeric or integer 0/1, logical,
+  and character or factor `"0"`/`"1"` or `"FALSE"`/`"TRUE"`. Any other
+  value is an error. A factor column was read by its level codes (1 and
+  2), so `method = "nn"` trained on reversed labels, `method = "clogit"`
+  without a `stratum` column built wrong strata, and
+  [`widen_case_control()`](https://franciscorichter.github.io/amorem/reference/widen_case_control.md)
+  stopped with an error.
+
+- `rem(method = "clogit")` and `rem(method = "nn")` store the
+  event-indicator column (`fit$case`) and the `stratum` argument, and
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  uses them. It took the first variable of the formula as the event
+  indicator, so `rem(~ x + y, case = "event")` was bootstrapped with `x`
+  as the indicator.
+
+- [`compare_models_global()`](https://franciscorichter.github.io/amorem/reference/compare_models_global.md)
+  evaluates a global covariate at time `t` with the value of the last
+  grid time at or before `t`. A time at or after the last grid time took
+  the second-to-last value. A time before the first grid time takes the
+  first value, as before; the documentation says so.
+
+- [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  uses [`offset()`](https://rdrr.io/r/stats/offset.html) terms; they
+  were dropped without notice. For `method = "clogit"` the offset
+  expression is evaluated on the rows of `data` and the fit equals
+  [`survival::clogit()`](https://rdrr.io/pkg/survival/man/clogit.html)
+  with the same offset. For `method = "gam"`, `offset(o)` names a column
+  resolved like a linear term (an event-minus-control difference: `o`,
+  else `d_o`, else `o_ev - o_nv`). `method = "nn"` stops when the
+  formula has an offset.
+
+- `rem(method = "clogit")` reports in `fit$n` the rows the fit used and
+  records them in `fit$rows`, with a warning when rows with missing
+  values are left out, as `method = "gam"` does. `fit$n` counted every
+  row of `data`.
+
+- [`predict()`](https://rdrr.io/r/stats/predict.html) on a
+  `rem(method = "gam")` fit takes wide data in the form
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  accepts and builds the internal design columns from it. It needed the
+  internal column names in `newdata`.
+
+- A `rem(method = "nn")` fit with `nn_control(engine = "torch")` and a
+  `seed` gives the same result on the first fit of a session as on later
+  ones: torch is loaded before the seed is set, since loading it draws
+  from the random-number generator.
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  does the same before seeding its resampling.
+
+- [`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
+  and
+  [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md)
+  draw valid controls when one candidate is left. `sample(x, n)` on a
+  length-1 pool drew from `1:x`, so with two actors and `n_controls = 1`
+  controls were loops or equal to their case.
+
+- [`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md),
+  [`simulate_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_hyperedge_events.md),
+  [`simulate_directed_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperedge_events.md)
+  and
+  [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md)
+  compute selection weights as `exp(log_w - max(log_w))` and keep the
+  total rate on its scale for waiting times. A log-intensity above 709
+  overflowed and the dyad was set to rate 0; a very small one
+  underflowed to 0 and the dyad left the control pool. A log-intensity
+  of `NaN` or `+Inf` is an error. Under `method = "tau_leap"`, and in
+  [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md),
+  rates too large to simulate stop with a message.
+
+- `simulate_relational_events(method = "tau_leap")` records the
+  `cyclic_*`, `sending_balance_*` and `receiving_balance_*`
+  `*_time_*_ordered` statistics at each event’s time, as it does for
+  transitivity; they were recorded at the start of the step.
+
+- `simulate_relational_events(risk = "remove", n_controls > 0)` stops
+  with a message when fewer than `n_controls + 1` dyads remain in the
+  risk set and returns the events produced so far; it stopped with an
+  error.
+
+- `simulate_relational_events(n_events = 0, n_controls > 0)` returns the
+  columns in the order of a non-empty result (`stratum`, `event` first).
+
+- [`simulate_relational_events()`](https://franciscorichter.github.io/amorem/reference/simulate_relational_events.md)
+  stops when `n_events` or `n_controls` is not a whole number, and
+  [`simulate_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_hyperedge_events.md),
+  [`simulate_directed_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperedge_events.md)
+  and
+  [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md)
+  do the same for `n_events` and `n_controls`; non-integer values were
+  truncated.
+
+- [`simulate_directed_hyperevents_tvnl()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.md)
+  cuts its last grid cell at `horizon`; events could fall past it
+  (1.0048 with `horizon = 1`). Its documentation describes the
+  piecewise-constant midpoint scheme it uses; it called it thinning.
+
+- [`simulate_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_hyperedge_events.md)
+  and
+  [`simulate_directed_hyperedge_events()`](https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperedge_events.md)
+  reject `subrep_0` and `subrep_0_<l>`, which
+  [`hyperedge_features()`](https://franciscorichter.github.io/amorem/reference/hyperedge_features.md)
+  rejects.
+
+- [`hyperedge_log()`](https://franciscorichter.github.io/amorem/reference/hyperedge_log.md)
+  rejects an actor listed twice in one event’s `I` or `J`, and NA or
+  empty actor names.
+
+### Documentation
+
+- [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md),
+  [`gof_global()`](https://franciscorichter.github.io/amorem/reference/gof_global.md),
+  [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md),
+  [`nn_control()`](https://franciscorichter.github.io/amorem/reference/nn_control.md)
+  and
+  [`nn_uncertainty()`](https://franciscorichter.github.io/amorem/reference/nn_uncertainty.md)
+  have runnable examples. The
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  and
+  [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md)
+  examples run only when mgcv is installed.
+
+- The
+  [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
+  return value lists `rows`, `case`, `stratum` and the
+  [`predict()`](https://rdrr.io/r/stats/predict.html) method.
+
+- `alien_invasions` has 259 regions (the help page said 272); `start`
+  equals `stop` in 421 rows, 407 of them after 1880 (the page said only
+  in 1880).
+
+- `classroom_events$weight` is numeric, 1 for direct and 0.2 for
+  broadcast communication; `social_evolution_actors$gradeType` has
+  levels `"1"`–`"5"`; `social_evolution_calls` spans 6 September to 18
+  October 2008.
+
+- The help pages of `classroom_*`, `social_evolution_*`, `college_msg`
+  and `email_eu_core` state the licence situation of their sources: no
+  licence is stated for any of these data; `networkDynamic` and
+  `goldfish`, which distribute two of them, are GPL. The Social
+  Evolution page records the MIT Reality Commons request not to
+  redistribute the data.
 
 ## amorem 1.2.0
 

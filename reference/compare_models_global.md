@@ -72,7 +72,8 @@ compare_models_global(
   k = NULL,
   k_cyclic = 10,
   seed = NULL,
-  keep_fits = FALSE
+  keep_fits = FALSE,
+  recency = c("weight", "zero")
 )
 ```
 
@@ -91,7 +92,9 @@ compare_models_global(
   Optional data frame with a `time` column plus one column per global
   covariate referenced in `models`. The function evaluates each
   covariate at the focal event time and at the non-event's shifted time
-  by stepwise lookup (LOCF on the `time` axis).
+  by stepwise lookup (LOCF on the `time` axis): the value at the last
+  grid time at or before that time. A time before the first grid time
+  takes the value at the first grid time.
 
 - scope, mode:
 
@@ -132,6 +135,14 @@ compare_models_global(
   as `attr(result, "fits")`, e.g. for plotting estimated effects.
   Defaults to `FALSE`.
 
+- recency:
+
+  Coding of time-since statistics, `"weight"` (default) or `"zero"`; see
+  [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md),
+  section *Time-since statistics*. With `"weight"` the effect type
+  applies to the recency weight and the indicator `<stat>_none` enters
+  linearly.
+
 ## Value
 
 Data frame with one row per specification and columns `model`,
@@ -171,7 +182,7 @@ compare_models_global(
   global_covariates = g,
   seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       4   690 -304.2789 622.4462   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  88.54363
+#> 1 with_global       4   690 -304.4622 622.4175   0.00000
+#> 2 dyadic_only       2   690 -353.4949 710.9898  88.57228
 # }
 ```

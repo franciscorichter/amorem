@@ -53,8 +53,8 @@ simulate_directed_hyperevents_tvnl(
 
 - dt:
 
-  Positive numeric; the time-grid step used by the thinning scheme (must
-  be smaller than `horizon`).
+  Positive numeric; the width of the time grid on which the rates are
+  held constant (must be smaller than `horizon`).
 
 - n_controls:
 
@@ -87,13 +87,17 @@ the mean of its members' actor attributes. For an ordered group pair
 f(x\_{g_r})\bigr),\$\$ where \\\alpha(t)\\ is the time-varying sender
 effect (`time_varying_effect`), \\f(\cdot)\\ is the non-linear receiver
 effect (`nonlinear_effect`), and \\x\\ denotes a group covariate. Events
-are drawn on a fixed time grid of width `dt` by a thinning scheme:
-within each step the next inter-event time is sampled from an
-exponential with the total rate evaluated at the step midpoint, and the
-firing pair is chosen with probability proportional to its rate. For
-every realised event, `n_controls` non-event pairs are sampled uniformly
-from the remaining group pairs, yielding a case-`n_controls`-control
-design.
+are drawn under a piecewise-constant approximation of the rates on a
+time grid of width `dt` (the last cell ends at `horizon`): within a cell
+the rates are held at their value at the midpoint of the part of the
+cell not yet simulated, the next inter-event time is drawn from an
+exponential with the resulting total rate, and the firing pair is chosen
+with probability proportional to its rate; after each event the rates
+are re-evaluated at the midpoint of the rest of the cell. This is not
+exact for a time-varying \\\alpha(t)\\; the approximation error vanishes
+as `dt` decreases. No event time exceeds `horizon`. For every realised
+event, `n_controls` non-event pairs are sampled uniformly from the
+remaining group pairs, yielding a case-`n_controls`-control design.
 
 Setting `max_group_size_sender = 1` and `max_group_size_receiver = 1`
 reduces the groups to single actors, i.e. ordinary directed dyadic

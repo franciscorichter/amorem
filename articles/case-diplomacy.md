@@ -89,7 +89,7 @@ opposite direction, for both
 directions](case-diplomacy_files/figure-html/lag-1.png)
 
 When the president travels to a country, the last visit of that
-country’s leader to the US is a median of 0.8 years back (56.2% within a
+country’s leader to the US is a median of 0.8 years back (55.9% within a
 year). A leader’s visit to the US comes a median of 2.1 years after the
 last presidential visit to that country. These raw lags mix reciprocity
 with how often each partner visits at all; the model below separates the
@@ -160,14 +160,14 @@ ct <- summary(fit$fit)$coefficients
 est <- ct[, "coef"]; se <- ct[, "se(coef)"]
 round(cbind(estimate = est, se = se), 2)
 #>                   estimate   se
-#> inertia_to            0.39 0.04
-#> recip_to              0.32 0.03
-#> recip_recent_to       0.19 0.11
-#> same_recent_to        0.14 0.08
-#> inertia_from          0.54 0.05
+#> inertia_to            0.43 0.04
+#> recip_to              0.33 0.04
+#> recip_recent_to       0.29 0.10
+#> same_recent_to       -0.16 0.08
+#> inertia_from          0.65 0.06
 #> recip_from            0.04 0.06
-#> recip_recent_from     0.73 0.13
-#> same_recent_from      0.23 0.13
+#> recip_recent_from     0.77 0.13
+#> same_recent_from     -0.28 0.15
 ```
 
 ![Coefficients and 95% intervals of the four statistics, for visits to
@@ -176,12 +176,12 @@ visits](case-diplomacy_files/figure-html/forest-1.png)
 
 For a visit to the US, each unit of
 `log(1 + the partner's earlier visits to the US)` multiplies the rate by
-1.47, and each unit of
-`log(1 + earlier presidential visits to the partner)` by 1.37. A
+1.54, and each unit of
+`log(1 + earlier presidential visits to the partner)` by 1.39. A
 presidential visit in the past year raises the rate of a visit back by a
-factor of 1.21 at recency 1. For presidential trips, the recency of the
-partner’s last visit to Washington multiplies the rate by 2.08, and the
-president’s own recent visit to the same country by 1.26.
+factor of 1.34 at recency 1. For presidential trips, the recency of the
+partner’s last visit to Washington multiplies the rate by 2.16, and the
+president’s own recent visit to the same country by 0.76.
 
 ### How fast reciprocity fades, and how inertia changes over the decades
 
@@ -202,17 +202,17 @@ w <- widen_case_control(cc, covariates = c("inertia", "gap", "never", "year"))
 gfit <- rem(~ never + nl(gap, k = 6) + tv(inertia, k = 6), data = w, method = "gam", time = "year")
 summary(gfit)$s.table
 #>                       edf   Ref.df   Chi.sq p-value
-#> s(.X_gap):.I     3.791495 4.430045 103.7569       0
-#> s(.time):inertia 5.565339 5.907729 280.6989       0
+#> s(.X_gap):.I     3.427679 4.104646 101.7807       0
+#> s(.time):inertia 5.545048 5.898521 266.6117       0
 ```
 
 ![Smooth effect of the time since the last visit in the other direction,
 and the time-varying inertia
 effect](case-diplomacy_files/figure-html/smooth-1.png)
 
-The smooth reciprocity effect falls by 0.77 on the log scale between a
+The smooth reciprocity effect falls by 0.70 on the log scale between a
 visit back three months ago and one ten years ago. The inertia
-coefficient is -0.41 around 1960 and 0.72 around 2010.
+coefficient is -0.41 around 1960 and 0.61 around 2010.
 
 ### What the design leaves out
 

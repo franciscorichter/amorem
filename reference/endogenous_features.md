@@ -40,24 +40,22 @@ endogenous_features(
 - sort:
 
   Logical; when `TRUE`, events are ordered by time prior to computing
-  summaries (ties preserve input order).
+  summaries (ties preserve input order). Times must not be `NA`.
 
 - history_log:
 
-  Optional data.frame giving the authoritative event history (columns
-  `sender`, `receiver`, `time`). When supplied, only rows of `event_log`
-  whose `(sender, receiver, time)` triple appears in `history_log`
-  update the running network state; all other rows (e.g. sampled
-  non-events / controls) have their statistics computed against that
-  history but never enter it. This makes it possible to evaluate
-  endogenous statistics for non-events without those non-events
-  polluting the history. When `NULL` (default) and `event_log` is
-  case-control data – a 0/1 `event` column with control rows, as written
-  by
-  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)
-  – only the `event == 1` rows update the history; otherwise every row
-  is treated as an event. Pass `history_log = event_log` to treat every
-  row as an event regardless.
+  Optional data.frame of real events (columns `sender`, `receiver`,
+  `time`) used to mark which rows of an `event_log` **without** an
+  `event` column are events: only rows whose `(sender, receiver, time)`
+  triple appears in `history_log` update the running network state; all
+  other rows (e.g. sampled non-events) have their statistics computed
+  against that history but never enter it. When `event_log` has a 0/1
+  `event` column (case-control data, as written by
+  [`sample_non_events()`](https://franciscorichter.github.io/amorem/reference/sample_non_events.md)),
+  the `event == 1` rows are the events and the control rows never enter
+  the history, whether or not `history_log` is given; a control that
+  coincides with another stratum's event at the same time is still a
+  control. With neither, every row is an event.
 
 - prior_log:
 
@@ -76,8 +74,11 @@ The event log with added columns, one per requested statistic
 
 ## Details
 
-All statistics are evaluated immediately **before** the event is logged.
-They are grouped into five families.
+All statistics are evaluated immediately **before** the event is logged:
+the statistics of a row at time \\t\\ use only events with time strictly
+less than \\t\\. Events sharing a timestamp never enter each other's
+history, for event and control rows alike and in both the compiled and
+the pure-R engine. They are grouped into five families.
 
 **Degree / baseline:**
 

@@ -30,10 +30,10 @@ A data frame with 84 rows and 4 columns:
 
 - gradeType:
 
-  Factor — student grade type (freshman, sophomore, junior, senior,
-  graduate-tutor).
+  Factor with levels `"1"` to `"5"`: the grade-type codes as distributed
+  by `goldfish`, which does not label them.
 
 ## Source
 
-Madan et al. (2012), via `goldfish`. See
+Madan et al. (2012), via `goldfish`. Licence and terms as for
 [social_evolution_calls](https://franciscorichter.github.io/amorem/reference/social_evolution_calls.md).

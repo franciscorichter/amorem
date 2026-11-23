@@ -35,7 +35,9 @@ A data frame with 691 rows and 5 columns:
 
 - weight:
 
-  Integer weight of the interaction.
+  Numeric weight assigned by the observer: 1 for direct communication
+  focused on particular others (501 rows), 0.2 for indirect "broadcast"
+  communication such as lecturing (190 rows).
 
 ## Source
 
@@ -44,7 +46,10 @@ organization of classrooms facilitate everyday forms of student
 defiance. *American Journal of Sociology* 107(3), 612–678.
 [doi:10.1086/338779](https://doi.org/10.1086/338779) . Redistributed via
 the `networkDynamic` R package (CRAN), dataset
-`McFarland_cls33_10_16_96`.
+`McFarland_cls33_10_16_96`,
+<https://cran.r-project.org/package=networkDynamic>. Licence: no licence
+is stated for the data themselves; the `networkDynamic` package, which
+distributes them, is licensed GPL-3.
 
 ## See also
 

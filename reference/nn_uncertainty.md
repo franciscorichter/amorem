@@ -43,9 +43,10 @@ nn_uncertainty(
 
 - case, stratum:
 
-  Event-indicator and stratum columns, resolved exactly as in
+  Event-indicator and stratum columns. When `NULL` (default), the ones
+  the
   [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
-  (defaults: the formula's left-hand side, and `cumsum(case == 1)`).
+  fit used are taken from `object`.
 
 - n_grid:
 
@@ -79,3 +80,21 @@ unidentified per-stratum offset.
 
 [`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md),
 [`nn_control()`](https://franciscorichter.github.io/amorem/reference/nn_control.md)
+
+## Examples
+
+``` r
+cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
+fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
+           method = "nn", nn = nn_control(hidden = 4, epochs = 50, seed = 1))
+u <- nn_uncertainty(fit, cc, B = 5, seed = 1)
+u
+#> Bootstrap uncertainty for a neural rem() fit
+#>   resamples    : 5 (5 successful)
+#>   level        : 95%
+#>   features     : reciprocity_count, transitivity_count
+#>   concordance  : 0.669  [0.442, 0.700]
+#> Use plot() for per-feature partial-dependence bands.
+plot(u)
+```
