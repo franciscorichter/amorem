@@ -131,8 +131,12 @@ test_that("works on a bundled real-world dataset and orders by AIC", {
   re30 <- re[re$time < 30, ]
   out <- compare_models(re30, specs_small, seed = 11)
   expect_equal(nrow(out), 3L)
-  # On Radoslaw the count spec wins among these three (whitepaper §6.2).
-  expect_equal(out$model[1], "count")
+  expect_true(all(diff(out$AIC) >= 0))
+  # With "no earlier event" coded as an elapsed time of 0 the count spec
+  # wins among these three (whitepaper §6.2); that ranking is a property
+  # of the coding.
+  z <- compare_models(re30, specs_small, seed = 11, recency = "zero")
+  expect_equal(z$model[1], "count")
 })
 
 test_that("output is reproducible given a fixed seed", {

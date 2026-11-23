@@ -12,7 +12,8 @@ compare_models_smooth(
   half_life = NULL,
   k = NULL,
   seed = NULL,
-  keep_fits = FALSE
+  keep_fits = FALSE,
+  recency = c("weight", "zero")
 )
 }
 \arguments{
@@ -44,6 +45,11 @@ Default \code{NULL} lets \code{mgcv} choose (\code{-1}).}
 model objects (one per spec, named by model, \code{NULL} for specs that failed)
 as \code{attr(result, "fits")}, e.g. for plotting estimated effects. Defaults to
 \code{FALSE}.}
+
+\item{recency}{Coding of time-since statistics, \code{"weight"} (default) or
+\code{"zero"}; see \code{\link[=compare_models]{compare_models()}}, section \emph{Time-since statistics}. With
+\code{"weight"} the effect type applies to the recency weight and the
+indicator \verb{<stat>_none} enters linearly.}
 }
 \value{
 Data frame with one row per specification and columns

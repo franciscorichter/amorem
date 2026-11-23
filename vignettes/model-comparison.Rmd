@@ -78,12 +78,19 @@ case-minus-control differences, and fits one no-intercept binomial
 GLM per spec. Returned rows are sorted by AIC; the winning spec has
 `delta_AIC = 0`.
 
-On Classroom the count-based specification wins this stripped-down
-comparison — recall that this is a no-smooth, no-random-effect
-baseline; richer fits (thin-plate splines on the differences,
-sender/receiver random effects) typically reweight the ranking in
-favour of the temporal definitions, matching the empirical findings
-of the paper.
+A time-since statistic such as `reciprocity_time_recent` is `NA` when
+there is no earlier event of its kind. By default (`recency = "weight"`)
+`compare_models()` enters it as the recency weight
+`w = transform_recency(delta)`, with `w = 0` when there is no earlier
+event, plus an indicator column `<stat>_none` of no earlier event. With
+this coding the continuous timing specification has the lowest AIC on
+Classroom. Setting the elapsed time of no earlier event to 0
+(`recency = "zero"`) treats "no earlier event" as "an event a moment
+ago", and the ranking then follows that coding:
+
+```{r}
+compare_models(classroom_events, specs, seed = 11, recency = "zero")
+```
 
 ### Multiple controls per case
 

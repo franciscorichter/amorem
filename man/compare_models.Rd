@@ -13,7 +13,8 @@ compare_models(
   random_effects = NULL,
   half_life = NULL,
   seed = NULL,
-  keep_fits = FALSE
+  keep_fits = FALSE,
+  recency = c("weight", "zero")
 )
 }
 \arguments{
@@ -58,12 +59,25 @@ exp-decay stat. Shared across all specs that use one.}
 model objects (one per spec, named by model, \code{NULL} for specs that failed)
 as \code{attr(result, "fits")}, e.g. for plotting estimated effects. Defaults to
 \code{FALSE}.}
+
+\item{recency}{How a time-since statistic (\code{recency} and every
+\verb{*_time_recent} / \verb{*_time_first} statistic, interrupted and ordered
+ones included) enters the model; see \emph{Time-since statistics}.
+\code{"weight"} (default) uses the recency weight
+\eqn{w = 2^{-\delta/T}}{w = 2^(-delta/T)} of \code{\link[=transform_recency]{transform_recency()}}
+(median rule) with \eqn{w = 0}{w = 0} when there is no earlier event,
+plus an indicator column \verb{<stat>_none} of no earlier event; \code{"zero"}
+sets the elapsed time \eqn{\delta}{delta} of no earlier event to 0, the
+coding of amorem 1.2.0. Count, binary and exp-decay statistics are
+unaffected (their missing values are set to 0 either way).}
 }
 \value{
 A data frame with one row per specification and columns
 \code{model}, \code{n_terms}, \code{n_obs}, \code{log_lik}, \code{AIC}, \code{delta_AIC}. Sorted
 ascending by \code{AIC}. The model with the lowest AIC has
-\code{delta_AIC = 0}.
+\code{delta_AIC = 0}. \code{n_terms} counts the model columns: the statistics
+of the specification and, with \code{recency = "weight"}, their indicator
+columns.
 }
 \description{
 \strong{Superseded} by \code{\link[=rem]{rem()}}, the unified front-end for fitting relational
@@ -91,6 +105,32 @@ that correctly handles multiple controls per stratum. The
 \code{survival} package is in Suggests and is required only when
 \code{n_controls > 1}.
 }
+\section{Time-since statistics}{
+
+\code{\link[=endogenous_features]{endogenous_features()}} returns \code{NA} for the elapsed time
+\eqn{\delta}{delta} of a time-since statistic when there is no earlier
+event of that kind. Setting it to 0 (\code{recency = "zero"}) gives "no earlier
+event" the value of "an event a moment ago", and a linear effect of
+\eqn{\delta}{delta} then ranks such a specification by a coding rather
+than by the data. With \code{recency = "weight"} each time-since statistic
+\eqn{\delta}{delta} enters as two columns,
+\deqn{w = \exp\{-\delta/(2m)\} = 2^{-\delta/T},\ T = 2m\log 2,
+  \qquad w = 0 \text{ and } \texttt{<stat>\_none} = 1
+  \text{ when there is no earlier event,}}{w = exp(-delta/(2m)) = 2^(-delta/T), T = 2 m log 2;  w = 0 and <stat>_none = 1 when there is no earlier event,}
+where \eqn{m}{m} is the median of the non-missing \eqn{\delta}{delta}
+over the rows (events and controls) of the case-control sample
+(\code{\link[=transform_recency]{transform_recency()}} with its default). The weight is bounded, 1 for an
+event a moment ago and tending to 0 for an event long ago, and the
+indicator lets no earlier event differ from an event long ago. The
+indicator is added only when some row has no earlier event. In
+\code{\link[=compare_models_smooth]{compare_models_smooth()}} and \code{\link[=compare_models_global]{compare_models_global()}} the requested
+effect type applies to \eqn{w}{w} and the indicator enters linearly.
+The simulator \code{\link[=simulate_relational_events]{simulate_relational_events()}} uses
+\eqn{\delta}{delta} with 0 for no earlier event, so a fit of simulated
+data with the generating linear effect of \eqn{\delta}{delta} uses
+\code{recency = "zero"}.
+}
+
 \examples{
 \donttest{
 data(classroom_events)
@@ -103,6 +143,14 @@ compare_models(
     interrupted = c("reciprocity_time_recent_interrupted",
                     "transitivity_time_recent_interrupted")),
   seed = 11)
+# elapsed time with "no earlier event" set to 0 (amorem 1.2.0)
+compare_models(
+  classroom_events,
+  models = list(
+    count       = c("reciprocity_count", "transitivity_count"),
+    continuous  = c("reciprocity_time_recent",
+                    "transitivity_time_recent")),
+  seed = 11, recency = "zero")
 }
 }
 \references{

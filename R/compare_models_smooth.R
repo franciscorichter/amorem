@@ -56,6 +56,10 @@
 #' @param k Optional integer: knot count for `s()` and `te()` terms.
 #'   Default `NULL` lets `mgcv` choose (`-1`).
 #' @param seed Integer seed for the case-control sample.
+#' @param recency Coding of time-since statistics, `"weight"` (default) or
+#'   `"zero"`; see [compare_models()], section *Time-since statistics*. With
+#'   `"weight"` the effect type applies to the recency weight and the
+#'   indicator `<stat>_none` enters linearly.
 #' @param keep_fits Logical; when `TRUE`, the returned table carries the fitted
 #'   model objects (one per spec, named by model, `NULL` for specs that failed)
 #'   as `attr(result, "fits")`, e.g. for plotting estimated effects. Defaults to
@@ -89,7 +93,9 @@ compare_models_smooth <- function(event_log,
                                    half_life = NULL,
                                    k = NULL,
                                    seed = NULL,
-                                   keep_fits = FALSE) {
+                                   keep_fits = FALSE,
+                                   recency = c("weight", "zero")) {
+  recency <- match.arg(recency)
   if (!requireNamespace("mgcv", quietly = TRUE)) {
     stop("The `mgcv` package is required by compare_models_smooth(). ",
          "Install it with install.packages(\"mgcv\").")
@@ -135,13 +141,8 @@ compare_models_smooth <- function(event_log,
                           seed = seed)
   cc_feat <- endogenous_features(cc, stats = all_stats,
                                           half_life = half_life)
-  for (st in all_stats) {
-    v <- cc_feat[[st]]
-    if (anyNA(v)) {
-      v[is.na(v)] <- 0
-      cc_feat[[st]] <- v
-    }
-  }
+  rc <- .code_recency(cc_feat, all_stats, recency)
+  cc_feat <- rc$data
 
   cases <- cc_feat[cc_feat$event == 1L, , drop = FALSE]
   ctrls <- cc_feat[cc_feat$event == 0L, , drop = FALSE]
@@ -184,6 +185,11 @@ compare_models_smooth <- function(event_log,
         tv    = sprintf("s(.time, by = %s%s)", d_col, k_arg),
         nl    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
         tvnl  = sprintf("te(%s, %s, by = %s%s)", T_col, X_col, I_col, k_arg)))
+      if (st %in% names(rc$none)) {
+        nm <- rc$none[[st]]
+        df[[paste0("d_", nm)]] <- cases[[nm]] - ctrls[[nm]]
+        rhs_terms <- c(rhs_terms, paste0("d_", nm))
+      }
     }
 
     fm <- stats::as.formula(paste("one ~ -1 +",
@@ -200,7 +206,7 @@ compare_models_smooth <- function(event_log,
     rows[[i]] <- if (is.null(fit)) {
       data.frame(
         model   = names(models)[i],
-        n_terms = length(stat_set),
+        n_terms = length(stat_set) + sum(stat_set %in% names(rc$none)),
         n_obs   = n,
         log_lik = NA_real_,
         AIC     = NA_real_,
@@ -208,7 +214,7 @@ compare_models_smooth <- function(event_log,
     } else {
       data.frame(
         model   = names(models)[i],
-        n_terms = length(stat_set),
+        n_terms = length(stat_set) + sum(stat_set %in% names(rc$none)),
         n_obs   = n,
         log_lik = as.numeric(stats::logLik(fit)),
         AIC     = stats::AIC(fit),

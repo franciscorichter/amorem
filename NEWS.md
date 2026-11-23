@@ -68,6 +68,22 @@
   `half_life = Inf` gives weight 1 (no decay); it was an error. The median
   rule is unchanged.
 
+* **`compare_models()`, `compare_models_smooth()` and `compare_models_global()`
+  code time-since statistics as a recency weight plus an indicator** (new
+  argument `recency = c("weight", "zero")`). A time-since statistic
+  (`recency`, every `*_time_recent` / `*_time_first`) is `NA` when there is no
+  earlier event; the functions set it to 0, so "no earlier event" had the
+  value of "an event a moment ago". With `recency = "weight"` (the default) the
+  statistic enters as `w = transform_recency(delta)` (median rule, `w = 0` for
+  no earlier event) plus the column `<stat>_none` = 1{no earlier event}.
+  `recency = "zero"` is the old coding. On `classroom_events` with
+  `n_controls = 3, seed = 11` the AIC of the count / continuous / interrupted
+  specifications is 1321.0 / 1842.3 / 1732.8 with `"zero"` and
+  1321.0 / 1124.5 / 1161.4 with `"weight"` (with `random_effects = "sender"`:
+  1086.3 / 1581.4 / 1399.0 and 1086.3 / 905.0 / 812.4), so the ranking of
+  count first came from the coding. Count, binary and exp-decay statistics
+  are unaffected. `n_terms` counts the indicator columns.
+
 * **`simulate_relational_events()` gives `recency` the value 0 for a dyad that
   has never fired**, as for the `*_time_*` statistics and as
   `endogenous_features()` (`NA`) with `NA` -> 0. It used the time since

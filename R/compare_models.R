@@ -56,6 +56,16 @@
 #' @param half_life Required when any specification contains an
 #'   exp-decay stat. Shared across all specs that use one.
 #' @param seed Optional integer seed for the case-control sample.
+#' @param recency How a time-since statistic (`recency` and every
+#'   `*_time_recent` / `*_time_first` statistic, interrupted and ordered
+#'   ones included) enters the model; see *Time-since statistics*.
+#'   `"weight"` (default) uses the recency weight
+#'   \eqn{w = 2^{-\delta/T}}{w = 2^(-delta/T)} of [transform_recency()]
+#'   (median rule) with \eqn{w = 0}{w = 0} when there is no earlier event,
+#'   plus an indicator column `<stat>_none` of no earlier event; `"zero"`
+#'   sets the elapsed time \eqn{\delta}{delta} of no earlier event to 0, the
+#'   coding of amorem 1.2.0. Count, binary and exp-decay statistics are
+#'   unaffected (their missing values are set to 0 either way).
 #' @param keep_fits Logical; when `TRUE`, the returned table carries the fitted
 #'   model objects (one per spec, named by model, `NULL` for specs that failed)
 #'   as `attr(result, "fits")`, e.g. for plotting estimated effects. Defaults to
@@ -63,7 +73,32 @@
 #' @return A data frame with one row per specification and columns
 #'   `model`, `n_terms`, `n_obs`, `log_lik`, `AIC`, `delta_AIC`. Sorted
 #'   ascending by `AIC`. The model with the lowest AIC has
-#'   `delta_AIC = 0`.
+#'   `delta_AIC = 0`. `n_terms` counts the model columns: the statistics
+#'   of the specification and, with `recency = "weight"`, their indicator
+#'   columns.
+#' @section Time-since statistics:
+#' [endogenous_features()] returns `NA` for the elapsed time
+#' \eqn{\delta}{delta} of a time-since statistic when there is no earlier
+#' event of that kind. Setting it to 0 (`recency = "zero"`) gives "no earlier
+#' event" the value of "an event a moment ago", and a linear effect of
+#' \eqn{\delta}{delta} then ranks such a specification by a coding rather
+#' than by the data. With `recency = "weight"` each time-since statistic
+#' \eqn{\delta}{delta} enters as two columns,
+#' \deqn{w = \exp\{-\delta/(2m)\} = 2^{-\delta/T},\ T = 2m\log 2,
+#'   \qquad w = 0 \text{ and } \texttt{<stat>\_none} = 1
+#'   \text{ when there is no earlier event,}}{w = exp(-delta/(2m)) = 2^(-delta/T), T = 2 m log 2;  w = 0 and <stat>_none = 1 when there is no earlier event,}
+#' where \eqn{m}{m} is the median of the non-missing \eqn{\delta}{delta}
+#' over the rows (events and controls) of the case-control sample
+#' ([transform_recency()] with its default). The weight is bounded, 1 for an
+#' event a moment ago and tending to 0 for an event long ago, and the
+#' indicator lets no earlier event differ from an event long ago. The
+#' indicator is added only when some row has no earlier event. In
+#' [compare_models_smooth()] and [compare_models_global()] the requested
+#' effect type applies to \eqn{w}{w} and the indicator enters linearly.
+#' The simulator [simulate_relational_events()] uses
+#' \eqn{\delta}{delta} with 0 for no earlier event, so a fit of simulated
+#' data with the generating linear effect of \eqn{\delta}{delta} uses
+#' `recency = "zero"`.
 #' @seealso [endogenous_features()], [sample_non_events()].
 #' @references
 #' Juozaitienė R, Wit EC (2024). It's about time: revisiting reciprocity
@@ -83,6 +118,14 @@
 #'     interrupted = c("reciprocity_time_recent_interrupted",
 #'                     "transitivity_time_recent_interrupted")),
 #'   seed = 11)
+#' # elapsed time with "no earlier event" set to 0 (amorem 1.2.0)
+#' compare_models(
+#'   classroom_events,
+#'   models = list(
+#'     count       = c("reciprocity_count", "transitivity_count"),
+#'     continuous  = c("reciprocity_time_recent",
+#'                     "transitivity_time_recent")),
+#'   seed = 11, recency = "zero")
 #' }
 compare_models <- function(event_log,
                             models,
@@ -92,7 +135,9 @@ compare_models <- function(event_log,
                             random_effects = NULL,
                             half_life = NULL,
                             seed = NULL,
-                            keep_fits = FALSE) {
+                            keep_fits = FALSE,
+                            recency = c("weight", "zero")) {
+  recency <- match.arg(recency)
   if (!is.data.frame(event_log)) stop("`event_log` must be a data.frame.")
   if (!is.list(models) || !length(models)) {
     stop("`models` must be a non-empty named list of character vectors.")
@@ -147,15 +192,12 @@ compare_models <- function(event_log,
                           seed = seed)
   cc_feat <- endogenous_features(cc, stats = all_stats,
                                           half_life = half_life)
-  # NA -> 0 so that case-minus-control differences are well-defined
-  # everywhere; matches the simulator's never-seen convention.
-  for (st in all_stats) {
-    v <- cc_feat[[st]]
-    if (anyNA(v)) {
-      v[is.na(v)] <- 0
-      cc_feat[[st]] <- v
-    }
-  }
+  # Time-since statistics: recency weight + indicator, or NA -> 0; every
+  # other statistic NA -> 0.
+  rc <- .code_recency(cc_feat, all_stats, recency)
+  cc_feat <- rc$data
+  cols_of <- function(stat_set) .spec_columns(stat_set, rc$none)
+  all_cols <- cols_of(all_stats)
 
   if (n_controls == 1L) {
     # Differences-based binomial GLM is the right tool for 1 control
@@ -170,9 +212,9 @@ compare_models <- function(event_log,
       stop("Internal: case and control counts disagree after stratum sort.")
     }
     diff_df <- as.data.frame(
-      as.matrix(cases[, all_stats, drop = FALSE]) -
-      as.matrix(ctrls[, all_stats, drop = FALSE]))
-    names(diff_df) <- paste0("d_", all_stats)
+      as.matrix(cases[, all_cols, drop = FALSE]) -
+      as.matrix(ctrls[, all_cols, drop = FALSE]))
+    names(diff_df) <- paste0("d_", all_cols)
     diff_df$one <- 1
 
     rows <- vector("list", length(models))
@@ -181,11 +223,11 @@ compare_models <- function(event_log,
     for (i in seq_along(models)) {
       stat_set <- models[[i]]
       fm <- stats::as.formula(paste("one ~",
-        paste(paste0("d_", stat_set), collapse = " + "), "- 1"))
+        paste(paste0("d_", cols_of(stat_set)), collapse = " + "), "- 1"))
       fit <- stats::glm(fm, family = "binomial", data = diff_df)
       rows[[i]] <- data.frame(
         model   = names(models)[i],
-        n_terms = length(stat_set),
+        n_terms = length(cols_of(stat_set)),
         n_obs   = nrow(diff_df),
         log_lik = as.numeric(stats::logLik(fit)),
         AIC     = stats::AIC(fit),
@@ -241,7 +283,7 @@ compare_models <- function(event_log,
         # `(1 | factor)` terms. The strata() term stays in the same
         # formula. The deprecated `random = list(...)` argument is
         # avoided.
-        rhs_terms <- c(stat_set, "strata(stratum)",
+        rhs_terms <- c(cols_of(stat_set), "strata(stratum)",
                        "(1 | .sender_factor)", "(1 | .receiver_factor)")
         fm <- stats::as.formula(paste(".surv ~",
           paste(rhs_terms, collapse = " + ")))
@@ -254,7 +296,7 @@ compare_models <- function(event_log,
             NULL
           })
       } else {
-        rhs_terms <- c(stat_set, "strata(stratum)", frailty_terms)
+        rhs_terms <- c(cols_of(stat_set), "strata(stratum)", frailty_terms)
         fm <- stats::as.formula(paste(".surv ~",
           paste(rhs_terms, collapse = " + ")))
         # frailty() inside coxph can fail to converge on small data or
@@ -272,7 +314,7 @@ compare_models <- function(event_log,
       rows[[i]] <- if (is.null(fit)) {
         data.frame(
           model   = names(models)[i],
-          n_terms = length(stat_set),
+          n_terms = length(cols_of(stat_set)),
           n_obs   = length(unique(cc_feat_sorted$stratum)),
           log_lik = NA_real_,
           AIC     = NA_real_,
@@ -280,7 +322,7 @@ compare_models <- function(event_log,
       } else {
         data.frame(
           model   = names(models)[i],
-          n_terms = length(stat_set),
+          n_terms = length(cols_of(stat_set)),
           n_obs   = length(unique(cc_feat_sorted$stratum)),
           log_lik = as.numeric(stats::logLik(fit)),
           AIC     = stats::AIC(fit),
@@ -295,4 +337,57 @@ compare_models <- function(event_log,
   rownames(out) <- NULL
   if (keep_fits) attr(out, "fits") <- fits
   out
+}
+
+# --- internal: time-since statistics (`recency`, `*_time_recent`,
+# `*_time_first`, interrupted and ordered variants), whose NA means "no
+# earlier event".
+.is_time_since_stat <- function(st) {
+  st == "recency" | grepl("_time_(recent|first)", st)
+}
+
+# --- internal: code the statistics of a case-control feature table.
+# recency = "zero": every NA -> 0. recency = "weight": a time-since
+# statistic delta becomes w = transform_recency(delta) (median rule over
+# all rows) with w = 0 for NA, and the column `<stat>_none` = 1{NA} is
+# added when some row is NA; every other statistic NA -> 0. Returns the
+# table and `none`, the named vector stat -> indicator column.
+.code_recency <- function(feat, stats, recency = c("weight", "zero")) {
+  recency <- match.arg(recency)
+  none <- character(0)
+  for (st in stats) {
+    v <- feat[[st]]
+    na <- is.na(v)
+    if (recency == "weight" && .is_time_since_stat(st)) {
+      if (all(na)) {
+        v <- rep(0, length(v))
+      } else {
+        m <- stats::median(v[!na])
+        if (!is.finite(m) || m <= 0) {
+          stop("compare_models: the median elapsed time of `", st,
+               "` is not positive, so its recency weight is undefined; ",
+               "use recency = \"zero\".", call. = FALSE)
+        }
+        v <- transform_recency(v)
+        v[na] <- 0
+        if (any(na)) {
+          nm <- paste0(st, "_none")
+          feat[[nm]] <- as.numeric(na)
+          none[st] <- nm
+        }
+      }
+    } else if (any(na)) {
+      v[na] <- 0
+    }
+    feat[[st]] <- v
+  }
+  list(data = feat, none = none)
+}
+
+# --- internal: model columns of a specification: its statistics, each
+# time-since statistic followed by its indicator when it has one.
+.spec_columns <- function(stat_set, none) {
+  unlist(lapply(stat_set, function(st) {
+    if (st %in% names(none)) c(st, none[[st]]) else st
+  }), use.names = FALSE)
 }

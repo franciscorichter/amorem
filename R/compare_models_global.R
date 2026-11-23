@@ -80,6 +80,10 @@
 #'   (paper uses 10 for time-of-day).
 #' @param seed Integer seed for the case-control sample and the
 #'   shift draws.
+#' @param recency Coding of time-since statistics, `"weight"` (default) or
+#'   `"zero"`; see [compare_models()], section *Time-since statistics*. With
+#'   `"weight"` the effect type applies to the recency weight and the
+#'   indicator `<stat>_none` enters linearly.
 #' @param keep_fits Logical; when `TRUE`, the returned table carries the fitted
 #'   model objects (one per spec, named by model, `NULL` for specs that failed)
 #'   as `attr(result, "fits")`, e.g. for plotting estimated effects. Defaults to
@@ -121,7 +125,9 @@ compare_models_global <- function(event_log,
                                    shift_scale = 1, window = NULL,
                                    k = NULL, k_cyclic = 10,
                                    seed = NULL,
-                                   keep_fits = FALSE) {
+                                   keep_fits = FALSE,
+                                   recency = c("weight", "zero")) {
+  recency <- match.arg(recency)
   if (!requireNamespace("mgcv", quietly = TRUE)) {
     stop("The `mgcv` package is required by compare_models_global(). ",
          "Install it with install.packages(\"mgcv\").")
@@ -200,11 +206,8 @@ compare_models_global <- function(event_log,
     endogenous_features(cc, stats = all_dyad_stats, half_life = half_life,
                         history_log = history)
   } else cc
-  if (length(all_dyad_stats)) {
-    for (st in all_dyad_stats) {
-      v <- cc_feat[[st]]; if (anyNA(v)) v[is.na(v)] <- 0; cc_feat[[st]] <- v
-    }
-  }
+  rc <- .code_recency(cc_feat, all_dyad_stats, recency)
+  cc_feat <- rc$data
   ctrls <- cc_feat[cc_feat$event == 0L, , drop = FALSE]
   cases <- cc_feat[cc_feat$event == 1L & cc_feat$stratum %in% ctrls$stratum, ,
                    drop = FALSE]
@@ -277,6 +280,11 @@ compare_models_global <- function(event_log,
           nl    = sprintf("s(%s, by = %s%s)", X_col, I_col, k_arg),
           tvnl  = sprintf("te(%s, %s, by = %s%s)",
                             T_col, X_col, I_col, k_arg)))
+        if (cov %in% names(rc$none)) {
+          nm <- rc$none[[cov]]
+          df[[paste0("d_", nm)]] <- cases[[nm]] - ctrls[[nm]]
+          rhs_terms <- c(rhs_terms, paste0("d_", nm))
+        }
       }
     }
 
@@ -293,12 +301,12 @@ compare_models_global <- function(event_log,
       })
     rows[[i]] <- if (is.null(fit)) {
       data.frame(model = names(models)[i],
-                 n_terms = length(cov_names),
+                 n_terms = length(cov_names) + sum(cov_names %in% names(rc$none)),
                  n_obs = n, log_lik = NA_real_, AIC = NA_real_,
                  stringsAsFactors = FALSE)
     } else {
       data.frame(model = names(models)[i],
-                 n_terms = length(cov_names),
+                 n_terms = length(cov_names) + sum(cov_names %in% names(rc$none)),
                  n_obs = n,
                  log_lik = as.numeric(stats::logLik(fit)),
                  AIC = stats::AIC(fit),
