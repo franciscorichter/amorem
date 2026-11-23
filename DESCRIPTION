@@ -41,6 +41,7 @@ LinkingTo:
     Rcpp
 Suggests:
     callr,
+    pkgload,
     torch,
     testthat (>= 3.1.0),
     mgcv,
