@@ -121,6 +121,11 @@
 
 ## Bug fixes
 
+* The torch reproducibility test loads the amorem under test in its `callr`
+  child process (the source tree under `devtools::test()`, the check library
+  under `R CMD check`); it loaded the first amorem on the default library
+  path, which can be another version.
+
 * `print()` and `plot()` of `gof_rem()` results report a bootstrap p-value
   of 0 as a bound, `p < 1/n_sim` (for example `p < 0.001`); they printed
   `p = 0.000`.

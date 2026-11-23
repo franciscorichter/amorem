@@ -131,9 +131,26 @@ test_that("the first torch fit of a session is reproducible with a seed", {
   skip_if_not_installed("torch")
   skip_if_not_installed("callr")
   skip_if(!torch::torch_is_installed(), "libtorch not installed")
-  d <- callr::r(function(lib) {
+  # The child process must load the amorem under test, not whatever
+  # version sits first on the default library path: under
+  # devtools::test() that is the source tree (load_all), under
+  # R CMD check the installed check library.
+  pkg_path <- find.package("amorem")
+  dev <- dir.exists(file.path(pkg_path, "R")) &&
+    file.exists(file.path(pkg_path, "DESCRIPTION")) &&
+    !file.exists(file.path(pkg_path, "Meta", "package.rds"))
+  if (dev) skip_if_not_installed("pkgload")
+  ver <- as.character(utils::packageVersion("amorem"))
+  d <- callr::r(function(lib, pkg_path, dev, ver) {
     .libPaths(lib)
-    library(amorem)
+    if (dev) {
+      pkgload::load_all(pkg_path, quiet = TRUE, export_all = FALSE)
+    } else {
+      library(amorem, lib.loc = dirname(pkg_path))
+    }
+    if (as.character(utils::packageVersion("amorem")) != ver) {
+      return(NA_real_)
+    }
     set.seed(3)
     df <- do.call(rbind, lapply(1:60, function(k) {
       x <- rnorm(3); ev <- integer(3); ev[sample(3, 1, prob = exp(x))] <- 1L
@@ -146,7 +163,8 @@ test_that("the first torch fit of a session is reproducible with a seed", {
     p2 <- predict(rem(event ~ x1, data = df, method = "nn", stratum = "strat",
                       nn = ctl)$fit, df)
     max(abs(p1 - p2))
-  }, args = list(lib = .libPaths()))
+  }, args = list(lib = .libPaths(), pkg_path = pkg_path, dev = dev, ver = ver))
+  skip_if(is.na(d), "child process loaded a different amorem version")
   expect_equal(d, 0)
 })
 
