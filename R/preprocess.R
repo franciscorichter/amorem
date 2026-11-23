@@ -1128,6 +1128,22 @@ endogenous_features <- function(
 #'   must never be sampled (e.g. an alien species' native range, or any dyad
 #'   forbidden in advance). Columns named `sender`/`receiver` are used if
 #'   present, otherwise the first two columns.
+#' @param entry Optional entry times: the time from which an actor can be
+#'   the sender of a control. A named numeric vector (names are actor IDs),
+#'   or a two-column data.frame of actor and entry time (columns `actor` and
+#'   `entry` if present; otherwise the column `entry` and the first other
+#'   column; otherwise the first two columns), restricts the sender role.
+#'   `list(sender = , receiver = )`, each element in either form or `NULL`,
+#'   restricts the sender and the receiver roles separately. A control of
+#'   the event at time \eqn{t}{t} is drawn only from senders (receivers)
+#'   whose entry time is \eqn{\le t}{<= t}; actors without an entry time are
+#'   always eligible. The restriction is per role, also under
+#'   `mode = "one"`: an actor that has not yet entered as a sender can still
+#'   be a control receiver unless it has a receiver entry time too. It
+#'   combines with `scope`, `risk`, `exclude_pairs` and `n_controls`; events
+#'   whose risk set is empty after the restriction get no control (see
+#'   *Value*). `Date` and `POSIXct` entry times are compared on the numeric
+#'   scale of `time`. Not available with `shift = "exponential"`.
 #' @param exclude_concurrent Logical; keep dyads with an event at the focal
 #'   event's own timestamp out of its control pool? Defaults to `TRUE` under
 #'   `risk = "remove"` and `FALSE` under `risk = "standard"`, where a tied event
@@ -1196,7 +1212,7 @@ endogenous_features <- function(
 #'   stratum \eqn{k}{k} is the \eqn{k}{k}-th event in that order; rows are
 #'   returned by stratum, each event before its controls. Times must not be
 #'   `NA`. `attr(, "no_control")` lists the strata whose event got no
-#'   control: they contribute nothing to the partial likelihood, and a
+#'   control (including those whose risk set `entry` leaves empty): they contribute nothing to the partial likelihood, and a
 #'   warning gives their number. Events at the start of the log that come
 #'   before the first event with a control are listed but not counted in the
 #'   warning, since there the risk set is still being built (no actor has
@@ -1209,6 +1225,17 @@ endogenous_features <- function(
 #' data(classroom_events)
 #' cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
 #' head(cc)
+#'
+#' # Alien species are at risk of invading a region only from the year
+#' # they start to spread: controls use only species that have entered.
+#' data(alien_mammals)
+#' ev <- alien_mammals[alien_mammals$event == 1, ]
+#' cc <- sample_non_events(
+#'   data.frame(sender = ev$species, receiver = ev$region, time = ev$stop),
+#'   mode = "two", risk = "remove", seed = 2005,
+#'   exclude_pairs = attr(alien_mammals, "never_at_risk"),
+#'   entry = attr(alien_mammals, "entry"))
+#' length(attr(cc, "no_control"))
 #' @export
 sample_non_events <- function(
     event_log,
@@ -1217,6 +1244,7 @@ sample_non_events <- function(
     mode = c("one", "two"),
     risk = c("standard", "remove"),
     exclude_pairs = NULL,
+    entry = NULL,
     exclude_concurrent = NULL,
     allow_loops = FALSE,
     seed = NULL,
@@ -1328,6 +1356,37 @@ sample_non_events <- function(
     n_exclude_pairs <- length(es)
   }
 
+  # Entry times per role (named numeric vectors, or NULL for no restriction).
+  entry_times <- .parse_entry(entry)
+  if (!is.null(entry_times$sender) || !is.null(entry_times$receiver)) {
+    if (shift == "exponential") {
+      stop("`entry` is not available with shift = \"exponential\".")
+    }
+    t_num <- as.numeric(event_log$time)
+    late <- function(actors, et) {
+      if (is.null(et)) return(rep(FALSE, length(actors)))
+      e <- et[actors]
+      !is.na(e) & e > t_num
+    }
+    n_late <- sum(late(event_log$sender, entry_times$sender) |
+                    late(event_log$receiver, entry_times$receiver))
+    if (n_late) {
+      warning(n_late, " event(s) occur before the entry time of their sender ",
+              "or receiver; `entry` restricts only the controls.",
+              call. = FALSE)
+    }
+  }
+  entry_s <- entry_times$sender
+  entry_r <- entry_times$receiver
+  has_entry <- !is.null(entry_s) || !is.null(entry_r)
+  cur_time <- NA_real_            # numeric time of the focal event
+  # Actors of `actors` that have entered the role by `cur_time`.
+  entered <- function(actors, et) {
+    if (is.null(et) || !length(actors)) return(actors)
+    e <- et[actors]
+    actors[is.na(e) | e <= cur_time]
+  }
+
   if (!is.null(seed)) {
     # Preserve and restore the caller's RNG state without writing to the
     # global environment (CRAN policy: do not modify .GlobalEnv).
@@ -1432,6 +1491,10 @@ sample_non_events <- function(
     if (n_exclude_pairs && !is.null(exclude_pairs_env[[key]])) return(FALSE)
     if (risk == "remove" && !is.null(removed_dyads[[key]])) return(FALSE)
     if (length(concurrent) && key %in% concurrent) return(FALSE)
+    if (has_entry) {
+      if (!is.null(entry_s) && !is.na(es_ <- entry_s[s]) && es_ > cur_time) return(FALSE)
+      if (!is.null(entry_r) && !is.na(er_ <- entry_r[r]) && er_ > cur_time) return(FALSE)
+    }
     TRUE
   }
 
@@ -1570,6 +1633,15 @@ sample_non_events <- function(
 
   for (i in seq_len(n_events)) {
     cand_sets <- get_candidates(scope, events_df$time[i], events_df$sender[i], events_df$receiver[i])
+    if (has_entry) {
+      # Drop actors that have not entered (validity is still checked per
+      # pair, which decides the per-role rule under mode = "one").
+      cur_time <- as.numeric(events_df$time[i])
+      cand_sets$senders <- entered(cand_sets$senders, entry_s)
+      cand_sets$receivers <- entered(cand_sets$receivers, entry_r)
+      cand_sets$combined <- union(entered(cand_sets$combined, entry_s),
+                                  entered(cand_sets$combined, entry_r))
+    }
     concurrent_keys_i <- concurrent_keys[[i]]
     viable <- has_viable_pair(cand_sets, mode, events_df$sender[i], events_df$receiver[i],
                               concurrent_keys_i)
@@ -1655,6 +1727,58 @@ sample_non_events <- function(
             call. = FALSE)
   }
   invisible(NULL)
+}
+
+# Entry times of sample_non_events(): NULL, a named numeric vector or a
+# two-column data.frame (sender role), or list(sender = , receiver = ).
+# Returns list(sender = , receiver = ), each a named numeric vector or NULL.
+.parse_entry <- function(entry) {
+  one <- function(x, what) {
+    if (is.null(x)) return(NULL)
+    if (is.matrix(x)) x <- as.data.frame(x, stringsAsFactors = FALSE)
+    if (is.data.frame(x)) {
+      if (ncol(x) < 2L) {
+        stop("`", what, "` must have an actor column and an entry-time column.")
+      }
+      if (all(c("actor", "entry") %in% names(x))) {
+        ids <- x$actor; tm <- x$entry
+      } else if ("entry" %in% names(x)) {
+        tm <- x$entry; ids <- x[[setdiff(names(x), "entry")[1L]]]
+      } else {
+        ids <- x[[1L]]; tm <- x[[2L]]
+      }
+      if (inherits(tm, c("Date", "POSIXt"))) tm <- as.numeric(tm)
+      if (!is.numeric(tm)) tm <- suppressWarnings(as.numeric(as.character(tm)))
+      x <- stats::setNames(as.numeric(tm), as.character(ids))
+    } else {
+      if (inherits(x, c("Date", "POSIXt"))) {
+        x <- stats::setNames(as.numeric(x), names(x))
+      }
+      if (!is.numeric(x) || is.null(names(x))) {
+        stop("`", what, "` must be a named numeric vector or a two-column ",
+             "data.frame of actor and entry time.")
+      }
+      x <- stats::setNames(as.numeric(x), names(x))
+    }
+    if (anyNA(names(x)) || any(!nzchar(names(x)))) {
+      stop("`", what, "` has missing actor IDs.")
+    }
+    if (anyNA(x)) stop("`", what, "` has missing entry times.")
+    if (anyDuplicated(names(x))) {
+      stop("`", what, "` gives more than one entry time for an actor.")
+    }
+    x
+  }
+  if (is.null(entry)) return(list(sender = NULL, receiver = NULL))
+  if (is.list(entry) && !is.data.frame(entry)) {
+    bad <- setdiff(names(entry), c("sender", "receiver"))
+    if (is.null(names(entry)) || length(bad)) {
+      stop("A list `entry` must have elements named `sender` and/or `receiver`.")
+    }
+    return(list(sender = one(entry$sender, "entry$sender"),
+                receiver = one(entry$receiver, "entry$receiver")))
+  }
+  list(sender = one(entry, "entry"), receiver = NULL)
 }
 
 # Time-shifted nested case-control sampling (Lembo, Juozaitiene, Vinciotti &

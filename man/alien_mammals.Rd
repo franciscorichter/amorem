@@ -43,7 +43,8 @@ Two attributes describe the risk set. \code{attr(x, "never_at_risk")}
 is a data frame (\code{sender}, \code{receiver}) of the species--region pairs that
 never appear in the table (native range, or established before 1880), to
 pass to \code{sample_non_events(exclude_pairs = )}. \code{attr(x, "entry")} gives,
-for each species, the year from which it is at risk.
+for each species, the year from which it is at risk, to pass to
+\code{sample_non_events(entry = )}.
 }
 \seealso{
 \link{alien_invasions} for the first records of all taxa.

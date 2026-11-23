@@ -82,6 +82,17 @@
   `n_samples`; the other fields come from the first sample. `n_samples = 1`
   returns the same result as before for the same seed.
 
+* `sample_non_events()` takes `entry`: the time from which an actor can be a
+  control sender, as a named numeric vector or a data.frame of actor and
+  entry time; `list(sender = , receiver = )` restricts both roles. Controls
+  of the event at time t are drawn only from actors with entry time <= t,
+  together with `scope`, `risk`, `exclude_pairs` and `n_controls`; events
+  whose restricted risk set is empty are listed in `attr(, "no_control")`.
+  `attr(alien_mammals, "entry")` can be passed as it is: with
+  `mode = "two"`, `risk = "remove"` and the `never_at_risk` exclusions, all
+  676 first records get a control, against 664 for drawing 10 unrestricted
+  controls and keeping the first whose species had entered.
+
 ## Bug fixes
 
 * `print()` and `plot()` of `gof_rem()` results report a bootstrap p-value

@@ -11,6 +11,7 @@ sample_non_events(
   mode = c("one", "two"),
   risk = c("standard", "remove"),
   exclude_pairs = NULL,
+  entry = NULL,
   exclude_concurrent = NULL,
   allow_loops = FALSE,
   seed = NULL,
@@ -63,6 +64,23 @@ must never be sampled (e.g. an alien species' native range, or any dyad
 forbidden in advance). Columns named \code{sender}/\code{receiver} are used if
 present, otherwise the first two columns.}
 
+\item{entry}{Optional entry times: the time from which an actor can be
+the sender of a control. A named numeric vector (names are actor IDs),
+or a two-column data.frame of actor and entry time (columns \code{actor} and
+\code{entry} if present; otherwise the column \code{entry} and the first other
+column; otherwise the first two columns), restricts the sender role.
+\code{list(sender = , receiver = )}, each element in either form or \code{NULL},
+restricts the sender and the receiver roles separately. A control of
+the event at time \eqn{t}{t} is drawn only from senders (receivers)
+whose entry time is \eqn{\le t}{<= t}; actors without an entry time are
+always eligible. The restriction is per role, also under
+\code{mode = "one"}: an actor that has not yet entered as a sender can still
+be a control receiver unless it has a receiver entry time too. It
+combines with \code{scope}, \code{risk}, \code{exclude_pairs} and \code{n_controls}; events
+whose risk set is empty after the restriction get no control (see
+\emph{Value}). \code{Date} and \code{POSIXct} entry times are compared on the numeric
+scale of \code{time}. Not available with \code{shift = "exponential"}.}
+
 \item{exclude_concurrent}{Logical; keep dyads with an event at the focal
 event's own timestamp out of its control pool? Defaults to \code{TRUE} under
 \code{risk = "remove"} and \code{FALSE} under \code{risk = "standard"}, where a tied event
@@ -107,7 +125,7 @@ input is first ordered by time (ties keep their input order), and
 stratum \eqn{k}{k} is the \eqn{k}{k}-th event in that order; rows are
 returned by stratum, each event before its controls. Times must not be
 \code{NA}. \code{attr(, "no_control")} lists the strata whose event got no
-control: they contribute nothing to the partial likelihood, and a
+control (including those whose risk set \code{entry} leaves empty): they contribute nothing to the partial likelihood, and a
 warning gives their number. Events at the start of the log that come
 before the first event with a control are listed but not counted in the
 warning, since there the risk set is still being built (no actor has
@@ -152,6 +170,17 @@ fitted with \verb{rem(~ nl(<cov>))}, the baseline with \code{rem(~ nl(time))}.
 data(classroom_events)
 cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
 head(cc)
+
+# Alien species are at risk of invading a region only from the year
+# they start to spread: controls use only species that have entered.
+data(alien_mammals)
+ev <- alien_mammals[alien_mammals$event == 1, ]
+cc <- sample_non_events(
+  data.frame(sender = ev$species, receiver = ev$region, time = ev$stop),
+  mode = "two", risk = "remove", seed = 2005,
+  exclude_pairs = attr(alien_mammals, "never_at_risk"),
+  entry = attr(alien_mammals, "entry"))
+length(attr(cc, "no_control"))
 }
 \references{
 Lembo M, Juozaitienė R, Vinciotti V, Wit EC (2025). Relational event models
