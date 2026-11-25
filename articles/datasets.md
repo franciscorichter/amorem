@@ -1,10 +1,14 @@
-# Bundled datasets
+# Datasets
 
-## Bundled datasets
+## Datasets
 
-amorem ships the event logs and covariates below, each loadable with
-`data(...)`. The tables and figures on this page are computed from them
-when the page is built. The [data
+amorem provides the event logs and covariates below. Most ship with the
+package and load with `data(...)`; the classroom, Social Evolution,
+CollegeMsg and Email-EU-core logs, whose sources state no licence, are
+downloaded from their source by
+[`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md)
+(marked “download” below). The tables and figures on this page are
+computed from them when the page is built. The [data
 catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md)
 documents a wider collection, including datasets whose licences do not
 allow amorem to redistribute them.
@@ -13,12 +17,12 @@ allow amorem to redistribute them.
 
 | object | data | kind | events | actors | span |
 |:---|:---|:---|:---|:---|:---|
-| `classroom_events` | Classroom (McFarland 2001) | face-to-face, minutes | 691 | 20 | 43.9 minutes |
-| `social_evolution_calls` | Social Evolution calls (Madan et al. 2012) | phone calls | 439 | 54 | 42.1 days |
-| `social_evolution_friendship` | Social Evolution friendship survey | tie changes | 766 | 76 | 40.0 days |
+| `classroom_events` (download) | Classroom (McFarland 2001) | face-to-face, minutes | 691 | 20 | 43.9 minutes |
+| `social_evolution_calls` (download) | Social Evolution calls (Madan et al. 2012) | phone calls | 439 | 54 | 42.1 days |
+| `social_evolution_friendship` (download) | Social Evolution friendship survey | tie changes | 766 | 76 | 40.0 days |
 | `radoslaw_email` | Manufacturing company email (Nurek & Michalski 2020) | email | 82,927 | 167 | 271 days |
-| `college_msg` | CollegeMsg (Panzarasa et al. 2009) | instant messages | 59,835 | 1,899 | 194 days |
-| `email_eu_core` | Email-EU-core, one department (Paranjape et al. 2017) | email | 12,216 | 89 | 802 days |
+| `college_msg` (download) | CollegeMsg (Panzarasa et al. 2009) | instant messages | 59,835 | 1,899 | 194 days |
+| `email_eu_core` (download) | Email-EU-core, one department (Paranjape et al. 2017) | email | 12,216 | 89 | 802 days |
 | `copenhagen_calls` | Copenhagen Networks Study calls | phone calls | 3,600 | 536 | 28.0 days |
 | `copenhagen_sms` | Copenhagen Networks Study text messages | text messages | 24,333 | 568 | 28.0 days |
 | `us_leader_visits` | US leader-to-leader visits 1945-2019 | state visits | 3,945 | 197 | 27,183 days |
@@ -259,7 +263,7 @@ equally active):
 
 Logs with highly concentrated activity are where count statistics carry
 sender and receiver activity rather than dyadic history; see [Analyses
-of bundled event
+of three event
 logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md)
 for a comparison with and without a sender frailty.
 

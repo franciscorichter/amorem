@@ -35,10 +35,9 @@ install.packages("amorem")                              # CRAN release
 
 library(amorem)
 
-# 1. Bundled datasets, ready to load
-data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
-data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2012)
+# 1. Datasets: bundled ones load with data(), the rest download from their source
 data(radoslaw_email)          # 82,927 emails, 167 actors (Nurek & Michalski 2020)
+classroom_events <- fetch_dataset("classroom_events")  # 691 events, 20 actors (McFarland 2001)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
 feat <- endogenous_features(
@@ -117,7 +116,7 @@ summary(fit)
 | [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the event logs and covariates that ship with amorem: what each one looks like, its source and licence |
 | [Data catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md) | 78 relational event datasets and covariates, bundled or not: what each one is, its licence, code to download it, and pictures of its network and timeline; no models are fitted |
-| [Analyses of bundled event logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md) | models fitted to three bundled logs (classroom, company email, CollegeMsg): timing vs count statistics with and without a sender frailty, smooth effect curves |
+| [Analyses of three event logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md) | models fitted to three logs (classroom, company email, CollegeMsg): timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md) | type-I error of the martingale-residual GoF tests under correct specification |
 | [Case study: email and the clock](https://franciscorichter.github.io/amorem/articles/case-email-global.md) | time of day and day of week as global covariates in the Manufacturing e-mail log, time-shifted sampling, cyclic smooths, `tv()` on shifted data, [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md), [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md), [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md) |
@@ -233,25 +232,15 @@ Full per-function documentation is under
 
 ## Data: event logs
 
-- [`classroom_events`](https://franciscorichter.github.io/amorem/reference/classroom_events.md)
-  : Classroom interaction events (McFarland 2001)
-- [`classroom_actors`](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)
-  : Classroom actor attributes (McFarland 2001)
-- [`social_evolution_calls`](https://franciscorichter.github.io/amorem/reference/social_evolution_calls.md)
-  : Phone calls in the Social Evolution study (Madan et al. 2012)
-- [`social_evolution_actors`](https://franciscorichter.github.io/amorem/reference/social_evolution_actors.md)
-  : Actor attributes for the Social Evolution study
-- [`social_evolution_friendship`](https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.md)
-  : Friendship-survey events for the Social Evolution study
+- [`simulated_events`](https://franciscorichter.github.io/amorem/reference/simulated_events.md)
+  : Simulated event log used in the examples
+- [`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md)
+  : Download an event log that amorem does not redistribute
 - [`radoslaw_email`](https://franciscorichter.github.io/amorem/reference/radoslaw_email.md)
   : Manufacturing-company email events (Nurek & Michalski 2020)
 - [`radoslaw_hierarchy`](https://franciscorichter.github.io/amorem/reference/radoslaw_hierarchy.md)
   : Reporting hierarchy of the manufacturing company (Nurek & Michalski
   2020)
-- [`college_msg`](https://franciscorichter.github.io/amorem/reference/college_msg.md)
-  : CollegeMsg: private messages on a university online community
-- [`email_eu_core`](https://franciscorichter.github.io/amorem/reference/email_eu_core.md)
-  : Email-Eu-Core temporal (single-department subset)
 - [`copenhagen_calls`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
   [`copenhagen_sms`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
   [`copenhagen_actors`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
@@ -309,9 +298,8 @@ End-to-end walkthroughs of the package.
 - [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md):
 - [Hyperedge
   models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md):
-- [Bundled
-  datasets](https://franciscorichter.github.io/amorem/articles/datasets.md):
-- [Analyses of bundled event
+- [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md):
+- [Analyses of three event
   logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md):
 - [Validation
   experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md):

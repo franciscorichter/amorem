@@ -171,9 +171,9 @@ Statistical Society Series A* 188(4), 1246-1262.
 
 ``` r
 # \donttest{
-data(classroom_events)
+data(simulated_events)
 compare_models(
-  classroom_events,
+  simulated_events,
   models = list(
     count       = c("reciprocity_count", "transitivity_count"),
     continuous  = c("reciprocity_time_recent",
@@ -182,19 +182,19 @@ compare_models(
                     "transitivity_time_recent_interrupted")),
   seed = 11)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1  continuous       4   691 -235.2626 478.5251   0.00000
-#> 2 interrupted       4   691 -256.3622 520.7245  42.19935
-#> 3       count       2   691 -285.2604 574.5207  95.99559
+#> 1  continuous       4   600 -341.5659 691.1318   0.00000
+#> 2       count       2   600 -378.9818 761.9636  70.83178
+#> 3 interrupted       4   600 -393.1899 794.3798 103.24796
 # elapsed time with "no earlier event" set to 0 (amorem 1.2.0)
 compare_models(
-  classroom_events,
+  simulated_events,
   models = list(
     count       = c("reciprocity_count", "transitivity_count"),
     continuous  = c("reciprocity_time_recent",
                     "transitivity_time_recent")),
   seed = 11, recency = "zero")
 #>        model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1      count       2   691 -285.2604 574.5207    0.0000
-#> 2 continuous       2   691 -439.9833 883.9665  309.4458
+#> 1      count       2   600 -378.9818 761.9636   0.00000
+#> 2 continuous       2   600 -393.7893 791.5787  29.61506
 # }
 ```

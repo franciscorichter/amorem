@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Bundled datasets • amorem</title>
+<title>Datasets • amorem</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Bundled datasets">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Datasets">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -74,7 +74,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Bundled datasets</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Datasets</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/articles/datasets.Rmd" class="external-link"><code>vignettes/articles/datasets.Rmd</code></a></small>
@@ -84,23 +84,27 @@
     
     
 <div class="section level2">
-<h2 id="bundled-datasets">Bundled datasets<a class="anchor" aria-label="anchor" href="#bundled-datasets"></a>
+<h2 id="datasets">Datasets<a class="anchor" aria-label="anchor" href="#datasets"></a>
 </h2>
-<p>amorem ships the event logs and covariates below, each loadable with
-<code>data(...)</code>. The tables and figures on this page are computed
-from them when the page is built. The <a href="data-catalogue.html">data
-catalogue</a> documents a wider collection, including datasets whose
-licences do not allow amorem to redistribute them.</p>
+<p>amorem provides the event logs and covariates below. Most ship with
+the package and load with <code>data(...)</code>; the classroom, Social
+Evolution, CollegeMsg and Email-EU-core logs, whose sources state no
+licence, are downloaded from their source by
+<code><a href="../reference/fetch_dataset.html">fetch_dataset()</a></code> (marked “download” below). The tables and
+figures on this page are computed from them when the page is built. The
+<a href="data-catalogue.html">data catalogue</a> documents a wider
+collection, including datasets whose licences do not allow amorem to
+redistribute them.</p>
 <div class="section level3">
 <h3 id="event-logs">Event logs<a class="anchor" aria-label="anchor" href="#event-logs"></a>
 </h3>
 <table class="table">
 <colgroup>
-<col width="22%">
-<col width="40%">
-<col width="16%">
-<col width="5%">
-<col width="5%">
+<col width="28%">
+<col width="37%">
+<col width="15%">
+<col width="4%">
+<col width="4%">
 <col width="9%">
 </colgroup>
 <thead><tr class="header">
@@ -113,7 +117,8 @@ licences do not allow amorem to redistribute them.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left"><code>classroom_events</code></td>
+<td align="left">
+<code>classroom_events</code> (download)</td>
 <td align="left">Classroom (McFarland 2001)</td>
 <td align="left">face-to-face, minutes</td>
 <td align="left">691</td>
@@ -121,7 +126,8 @@ licences do not allow amorem to redistribute them.</p>
 <td align="left">43.9 minutes</td>
 </tr>
 <tr class="even">
-<td align="left"><code>social_evolution_calls</code></td>
+<td align="left">
+<code>social_evolution_calls</code> (download)</td>
 <td align="left">Social Evolution calls (Madan et al. 2012)</td>
 <td align="left">phone calls</td>
 <td align="left">439</td>
@@ -129,7 +135,9 @@ licences do not allow amorem to redistribute them.</p>
 <td align="left">42.1 days</td>
 </tr>
 <tr class="odd">
-<td align="left"><code>social_evolution_friendship</code></td>
+<td align="left">
+<code>social_evolution_friendship</code>
+(download)</td>
 <td align="left">Social Evolution friendship survey</td>
 <td align="left">tie changes</td>
 <td align="left">766</td>
@@ -146,7 +154,8 @@ licences do not allow amorem to redistribute them.</p>
 <td align="left">271 days</td>
 </tr>
 <tr class="odd">
-<td align="left"><code>college_msg</code></td>
+<td align="left">
+<code>college_msg</code> (download)</td>
 <td align="left">CollegeMsg (Panzarasa et al. 2009)</td>
 <td align="left">instant messages</td>
 <td align="left">59,835</td>
@@ -154,7 +163,8 @@ licences do not allow amorem to redistribute them.</p>
 <td align="left">194 days</td>
 </tr>
 <tr class="even">
-<td align="left"><code>email_eu_core</code></td>
+<td align="left">
+<code>email_eu_core</code> (download)</td>
 <td align="left">Email-EU-core, one department (Paranjape et
 al. 2017)</td>
 <td align="left">email</td>
@@ -493,8 +503,8 @@ equally active):</p>
 </tbody>
 </table>
 <p>Logs with highly concentrated activity are where count statistics
-carry sender and receiver activity rather than dyadic history; see <a href="bundled-log-analyses.html">Analyses of bundled event logs</a> for
-a comparison with and without a sender frailty.</p>
+carry sender and receiver activity rather than dyadic history; see <a href="bundled-log-analyses.html">Analyses of three event logs</a> for a
+comparison with and without a sender frailty.</p>
 </div>
 <div class="section level3">
 <h3 id="global-covariates">Global covariates<a class="anchor" aria-label="anchor" href="#global-covariates"></a>

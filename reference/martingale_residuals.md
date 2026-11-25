@@ -76,9 +76,9 @@ for survival models*. Biometrika 77(1), 147–160.
 
 ``` r
 # \donttest{
-data(classroom_events)
+data(simulated_events)
 res <- martingale_residuals(
-  classroom_events,
+  simulated_events,
   model = c(reciprocity_count = "linear",
             transitivity_count = "linear"),
   seed = 1)

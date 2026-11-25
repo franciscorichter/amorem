@@ -20,9 +20,8 @@ End-to-end walkthroughs of the package.
 - [Estimation](https://franciscorichter.github.io/amorem/articles/estimation.md):
 - [Hyperedge
   models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md):
-- [Bundled
-  datasets](https://franciscorichter.github.io/amorem/articles/datasets.md):
-- [Analyses of bundled event
+- [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md):
+- [Analyses of three event
   logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md):
 - [Validation
   experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md):

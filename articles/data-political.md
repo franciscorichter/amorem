@@ -24,7 +24,7 @@ the source and the code that reads it.
 | [Italy’s diplomatic visits 2000-2023](#italy-s-diplomatic-visits-2000-2023) | 2,631 | 158 | CC BY 4.0 | can bundle |
 | [Diplomatic visits of the foreign ministers of Russia and Ukraine 2021-2024](#diplomatic-visits-of-the-foreign-ministers-of-russia-and-ukraine-2021-2024) | 101 | 54 | CC0 1.0 | can bundle |
 | [US leader-to-leader diplomatic visits 1946-2019](#us-leader-to-leader-diplomatic-visits-1946-2019) | 3,945 | 197 | CC0 1.0 | bundled as `us_leader_visits` |
-| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution) | 69 | 33 | GPL-3.0 (source repository/package) | bundled as `social_evolution_calls`, `social_evolution_friendship`, `social_evolution_actors` since an earlier release; licence under review |
+| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](#goldfish-package-data-fisheries-treaties-rfid-validity-social-evolution) | 69 | 33 | GPL-3.0 (source repository/package) | bundled as `fetch_dataset` since an earlier release; licence under review |
 | [UNHCR refugee population statistics (refugees R package)](#unhcr-refugee-population-statistics-refugees-r-package-) | 114,516 | 211 | CC BY 4.0 | can bundle |
 
 ### GDELT event database (1979 file and one daily file)
@@ -755,9 +755,7 @@ is `readers[["us-leader-visits"]]` in
 
 *Source:* <https://github.com/snlab-ch/goldfish> · *Licence:* GPL-3.0
 (source repository/package) · *Status in amorem:* bundled as
-`social_evolution_calls`, `social_evolution_friendship`,
-`social_evolution_actors` since an earlier release; licence under
-review.
+`fetch_dataset` since an earlier release; licence under review.
 
 ![goldfish package data: fisheries treaties, RFID validity, Social
 Evolution: network of the most active

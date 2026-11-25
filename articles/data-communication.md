@@ -16,14 +16,14 @@ the source and the code that reads it.
 | dataset | events | actors | licence | amorem |
 |:---|:---|:---|:---|:---|
 | [Manufacturing company email metadata and corporate hierarchy](#manufacturing-company-email-metadata-and-corporate-hierarchy) | 82,876 | 167 | CC0 1.0 | bundled as `radoslaw_email`, `radoslaw_hierarchy` |
-| [SNAP: CollegeMsg (UC Irvine messages)](#snap-collegemsg-uc-irvine-messages-) | 59,835 | 1,899 | none stated | bundled as `college_msg` since an earlier release; licence under review |
-| [SNAP: email-Eu-core temporal (four departments)](#snap-email-eu-core-temporal-four-departments-) | 332,334 | 986 | none stated | bundled as `email_eu_core` since an earlier release; licence under review |
+| [SNAP: CollegeMsg (UC Irvine messages)](#snap-collegemsg-uc-irvine-messages-) | 59,835 | 1,899 | none stated | bundled as `fetch_dataset` since an earlier release; licence under review |
+| [SNAP: email-Eu-core temporal (four departments)](#snap-email-eu-core-temporal-four-departments-) | 332,334 | 986 | none stated | bundled as `fetch_dataset` since an earlier release; licence under review |
 | [Network Repository: Enron employees email](#network-repository-enron-employees-email) | 47,088 | 150 | CC BY-SA | share-alike |
 | [eventnet example data (Enron, Apache, Wikipedia hyperevents)](#eventnet-example-data-enron-apache-wikipedia-hyperevents-) | 39,752 | 6,062 | GPL-3.0 (source repository/package) | GPL only |
 | [Copenhagen Networks Study interaction data](#copenhagen-networks-study-interaction-data) | 3,600 | 536 | MIT | bundled as `copenhagen_calls`, `copenhagen_sms`, `copenhagen_actors` |
 | [statnet relevent workshop data (WTC radio, classroom)](#statnet-relevent-workshop-data-wtc-radio-classroom-) | 481 | 35 | GPL-3.0 (source repository/package) | GPL only |
 | [4PCAN alter nominations](#id_4pcan-alter-nominations) | 56,570 | 2,491 | CC BY 4.0 | can bundle |
-| [networkDynamicData package data](#networkdynamicdata-package-data) | 259 | 37 | GPL-3.0 (source repository/package) | GPL only |
+| [networkDynamicData package data](#networkdynamicdata-package-data) | 259 | 37 | GPL-3.0 (source repository/package) | bundled as `fetch_dataset` since an earlier release; licence under review |
 | [KONECT: Dutch college friendship waves (van de Bunt)](#konect-dutch-college-friendship-waves-van-de-bunt-) | 3,062 | 32 | unknown (site unreachable 2026-10-17) | obtain from source |
 
 ### Manufacturing company email metadata and corporate hierarchy
@@ -117,7 +117,7 @@ is `readers[["radoslaw-email-dataverse"]]` in
 ### SNAP: CollegeMsg (UC Irvine messages)
 
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
-*Status in amorem:* bundled as `college_msg` since an earlier release;
+*Status in amorem:* bundled as `fetch_dataset` since an earlier release;
 licence under review.
 
 ![SNAP: CollegeMsg (UC Irvine messages): network of the most active
@@ -201,7 +201,7 @@ is `readers[["snap-collegemsg"]]` in
 ### SNAP: email-Eu-core temporal (four departments)
 
 *Source:* <https://snap.stanford.edu/data/> · *Licence:* none stated ·
-*Status in amorem:* bundled as `email_eu_core` since an earlier release;
+*Status in amorem:* bundled as `fetch_dataset` since an earlier release;
 licence under review.
 
 ![SNAP: email-Eu-core temporal (four departments): network of the most
@@ -707,7 +707,8 @@ is `readers[["fourpcan-alter-nominations"]]` in
 
 *Source:* <https://cran.r-project.org/package=networkDynamicData> ·
 *Licence:* GPL-3.0 (source repository/package) · *Status in amorem:*
-GPL-3: redistributable only inside a GPL-compatible package.
+bundled as `fetch_dataset` since an earlier release; licence under
+review.
 
 ![networkDynamicData package data: network of the most active
 actors](data-communication_files/figure-html/net-networkdynamicdata-cran-1.png)

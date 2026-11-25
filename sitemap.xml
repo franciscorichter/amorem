@@ -45,9 +45,6 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/alien_mammals.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/amorem-package.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/attach_static_covariates.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/classroom_actors.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/classroom_events.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/college_msg.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models_global.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/compare_models_smooth.html</loc></url>
@@ -57,9 +54,9 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/cpp_supported_stats.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/daily_weather.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/dist_matrix.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/email_eu_core.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/endogenous_features.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/enso_nino34.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/fetch_dataset.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/football_results.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/gof_auxiliary.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/gof_global.html</loc></url>
@@ -87,9 +84,7 @@
 <url><loc>https://franciscorichter.github.io/amorem/reference/simulate_directed_hyperevents_tvnl.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/simulate_hyperedge_events.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/simulate_relational_events.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/social_evolution_actors.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/social_evolution_calls.html</loc></url>
-<url><loc>https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.html</loc></url>
+<url><loc>https://franciscorichter.github.io/amorem/reference/simulated_events.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/standardize_event_log.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/transform_recency.html</loc></url>
 <url><loc>https://franciscorichter.github.io/amorem/reference/ucdp_dyads.html</loc></url>

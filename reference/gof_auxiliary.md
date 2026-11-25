@@ -111,14 +111,14 @@ analytic p-value calculation under arbitrary dependency structures.
 ## Examples
 
 ``` r
-data(classroom_events)
-gof_auxiliary(classroom_events,
+data(simulated_events)
+gof_auxiliary(simulated_events,
   model = c(reciprocity_count = "linear"),
   auxiliary = "transitivity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
 #> $statistic
-#> [1] 1.770403
+#> [1] 1.775988
 #> 
 #> $p_value
-#> [1] 0.005
+#> [1] 0.08
 #> 
 ```

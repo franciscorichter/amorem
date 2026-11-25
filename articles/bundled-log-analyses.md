@@ -1,6 +1,6 @@
-# Analyses of bundled event logs
+# Analyses of three event logs
 
-## Analyses of bundled event logs
+## Analyses of three event logs
 
 Three analyses on the bundled datasets. The code below runs when this
 page is built, so every table, figure and number in the text comes from
@@ -19,7 +19,7 @@ activity differences between senders.
 
 ``` r
 
-data(classroom_events)
+classroom_events <- fetch_dataset("classroom_events")
 specs <- list(
   count       = c("reciprocity_count", "transitivity_count"),
   continuous  = c("reciprocity_time_recent", "transitivity_time_recent"),
@@ -165,7 +165,7 @@ with one control per case:
 
 ``` r
 
-data(college_msg)
+college_msg <- fetch_dataset("college_msg")
 cm30 <- college_msg[college_msg$time < 30, ]
 c(messages = nrow(cm30), users = length(unique(c(cm30$sender, cm30$receiver))))
 #> messages    users 

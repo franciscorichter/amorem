@@ -1,9 +1,8 @@
 # Model comparison on a real REM dataset
 
-This vignette walks through the canonical “candidate-specifications →
-AIC ranking” workflow used in REM literature (Juozaitienė & Wit 2024,
-*JRSS-A* 188(4)) — with `amorem`’s bundled real-world dataset and the
-one-call
+This article walks through the canonical “candidate-specifications → AIC
+ranking” workflow used in REM literature (Juozaitienė & Wit 2024,
+*JRSS-A* 188(4)) — on a real event log with the one-call
 [`compare_models()`](https://franciscorichter.github.io/amorem/reference/compare_models.md)
 helper.
 
@@ -12,17 +11,19 @@ helper.
 library(amorem)
 ```
 
-## 1. Load a bundled REM dataset
+## 1. Load an event log
 
-The package ships four real-world REM datasets directly. We use the
-McFarland (2001) high-school classroom session: 691 directed
+We use the McFarland (2001) high-school classroom session: 691 directed
 interactions among 20 students and one instructor, recorded on 16
-October 1996.
+October 1996. Its source states no licence for the data, so amorem does
+not ship it;
+[`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md)
+downloads it once and caches it.
 
 ``` r
 
-data(classroom_events)
-data(classroom_actors)
+classroom_events <- fetch_dataset("classroom_events")
+classroom_actors <- fetch_dataset("classroom_actors")
 nrow(classroom_events)
 #> [1] 691
 head(classroom_events, 3)

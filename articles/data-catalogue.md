@@ -23,14 +23,17 @@ carry.
 | share-alike (CC BY-SA): compatible only with a package under the same terms | 3 |
 | licence differs between datasets of the collection | 1 |
 
-10 of the datasets that may be bundled ship with amorem (see [Bundled
-datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)).
-Three datasets bundled in earlier releases (CollegeMsg, Email-EU-core
-and the Social Evolution study) come from sources without a licence or
-under GPL-3; their status is under review. Datasets that cannot be
-redistributed are documented here with code that downloads them from
-their source; the figures and numbers on the topic pages are aggregates,
-not the data.
+10 of the datasets that may be bundled ship with amorem (see
+[Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md)).
+Four datasets bundled in earlier releases (the McFarland classroom, the
+Social Evolution study, CollegeMsg and Email-EU-core) come from sources
+that state no licence for the data. Since amorem 1.3.0 the package does
+not ship them;
+[`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md)
+downloads each from its source and builds the same table. Datasets that
+cannot be redistributed are documented here with code that downloads
+them from their source; the figures and numbers on the topic pages are
+aggregates, not the data.
 
 ## Topic pages
 
@@ -97,8 +100,8 @@ not the data.
 | [US leader-to-leader diplomatic visits 1946-2019](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | CC0 1.0 | bundled as `us_leader_visits` | yes |
 | [World Bank commodity prices (Pink Sheet)](https://franciscorichter.github.io/amorem/articles/data-covariates.md) | covariate | CC BY 4.0 | can bundle | yes |
 | [eventnet example data (Enron, Apache, Wikipedia hyperevents)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | hyperevents | GPL-3.0 (source repository/package) | GPL only | yes |
-| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | GPL-3.0 (source repository/package) | bundled as `social_evolution_calls`, `social_evolution_friendship`, `social_evolution_actors` since an earlier release; licence under review | yes |
-| [networkDynamicData package data](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | GPL-3.0 (source repository/package) | GPL only | yes |
+| [goldfish package data: fisheries treaties, RFID validity, Social Evolution](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | GPL-3.0 (source repository/package) | bundled as `fetch_dataset` since an earlier release; licence under review | yes |
+| [networkDynamicData package data](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | GPL-3.0 (source repository/package) | bundled as `fetch_dataset` since an earlier release; licence under review | yes |
 | [statnet relevent workshop data (WTC radio, classroom)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | GPL-3.0 (source repository/package) | GPL only | yes |
 | [ATOP alliance treaty obligations 5.1](https://franciscorichter.github.io/amorem/articles/data-political.md) | events | none stated | obtain from source | yes |
 | [Benson higher-order data: email-Enron, email-Eu, congress-bills](https://franciscorichter.github.io/amorem/articles/data-hyperevents.md) | hyperevents | none stated | obtain from source | yes |
@@ -117,8 +120,8 @@ not the data.
 | [SNAP: Ask Ubuntu interactions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: Bitcoin Alpha trust ratings](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: Bitcoin OTC trust ratings](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
-| [SNAP: CollegeMsg (UC Irvine messages)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `college_msg` since an earlier release; licence under review | yes |
-| [SNAP: email-Eu-core temporal (four departments)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `email_eu_core` since an earlier release; licence under review | yes |
+| [SNAP: CollegeMsg (UC Irvine messages)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `fetch_dataset` since an earlier release; licence under review | yes |
+| [SNAP: email-Eu-core temporal (four departments)](https://franciscorichter.github.io/amorem/articles/data-communication.md) | events | none stated | bundled as `fetch_dataset` since an earlier release; licence under review | yes |
 | SNAP: face-to-face interactions in Resistance games | events | none stated | obtain from source | no: many small game networks rather than one log |
 | [SNAP: MathOverflow interactions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |
 | [SNAP: MOOC user actions](https://franciscorichter.github.io/amorem/articles/data-online.md) | events | none stated | obtain from source | yes |

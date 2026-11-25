@@ -133,7 +133,7 @@ A list of class `"nn_control"`.
 
 ``` r
 ctrl <- nn_control(hidden = 4, epochs = 50, seed = 1)
-cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+cc <- sample_non_events(simulated_events, n_controls = 2, seed = 1)
 cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
 fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
            method = "nn", nn = ctrl)
@@ -141,7 +141,7 @@ fit$fit
 #> Neural conditional-logistic REM fit
 #>   architecture : 2 - 4 - 1  (relu)
 #>   parameters   : 17
-#>   strata       : 691
+#>   strata       : 600
 #>   best epoch   : 50
-#>   val concord. : 0.680
+#>   val concord. : 0.443
 ```

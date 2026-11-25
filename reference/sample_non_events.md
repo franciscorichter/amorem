@@ -206,16 +206,16 @@ of the Royal Statistical Society, Series C*, 75, 583–600.
 ## Examples
 
 ``` r
-data(classroom_events)
-cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+data(simulated_events)
+cc <- sample_non_events(simulated_events, n_controls = 1, seed = 1)
 head(cc)
-#>   stratum event sender receiver  time interaction_type weight
-#> 1       1     1     14       12 0.125           social      1
-#> 2       1     0     12       15 0.125             <NA>     NA
-#> 3       2     1     12       14 0.250           social      1
-#> 4       2     0      1       10 0.250             <NA>     NA
-#> 5       3     1     18       12 0.375         sanction      1
-#> 6       3     0     19        3 0.375             <NA>     NA
+#>   stratum event sender receiver         time
+#> 1       1     1    a03      a13 0.0006590023
+#> 2       1     0    a04      a07 0.0006590023
+#> 3       2     1    a03      a19 0.0023339971
+#> 4       2     0    a01      a02 0.0023339971
+#> 5       3     1    a02      a16 0.0036273555
+#> 6       3     0    a11      a14 0.0036273555
 
 # Alien species are at risk of invading a region only from the year
 # they start to spread: controls use only species that have entered.

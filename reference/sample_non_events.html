@@ -260,16 +260,16 @@ Royal Statistical Society, Series C</em>, 75, 583–600.
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu">sample_non_events</span><span class="op">(</span><span class="va">classroom_events</span>, n_controls <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">simulated_events</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu">sample_non_events</span><span class="op">(</span><span class="va">simulated_events</span>, n_controls <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cc</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   stratum event sender receiver  time interaction_type weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1     1     14       12 0.125           social      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1     0     12       15 0.125             &lt;NA&gt;     NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       2     1     12       14 0.250           social      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       2     0      1       10 0.250             &lt;NA&gt;     NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       3     1     18       12 0.375         sanction      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       3     0     19        3 0.375             &lt;NA&gt;     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   stratum event sender receiver         time</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1     1    a03      a13 0.0006590023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1     0    a04      a07 0.0006590023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       2     1    a03      a19 0.0023339971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       2     0    a01      a02 0.0023339971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       3     1    a02      a16 0.0036273555</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       3     0    a11      a14 0.0036273555</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Alien species are at risk of invading a region only from the year</span></span></span>
 <span class="r-in"><span><span class="co"># they start to spread: controls use only species that have entered.</span></span></span>

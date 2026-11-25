@@ -79,29 +79,29 @@
 Richter</h4>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/model-comparison.Rmd" class="external-link"><code>vignettes/model-comparison.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/articles/model-comparison.Rmd" class="external-link"><code>vignettes/articles/model-comparison.Rmd</code></a></small>
       <div class="d-none name"><code>model-comparison.Rmd</code></div>
     </div>
 
     
     
-<p>This vignette walks through the canonical “candidate-specifications →
+<p>This article walks through the canonical “candidate-specifications →
 AIC ranking” workflow used in REM literature (Juozaitienė &amp; Wit
-2024, <em>JRSS-A</em> 188(4)) — with <code>amorem</code>’s bundled
-real-world dataset and the one-call <code><a href="../reference/compare_models.html">compare_models()</a></code>
-helper.</p>
+2024, <em>JRSS-A</em> 188(4)) — on a real event log with the one-call
+<code><a href="../reference/compare_models.html">compare_models()</a></code> helper.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amorem/">amorem</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="load-a-bundled-rem-dataset">1. Load a bundled REM dataset<a class="anchor" aria-label="anchor" href="#load-a-bundled-rem-dataset"></a>
+<h2 id="load-an-event-log">1. Load an event log<a class="anchor" aria-label="anchor" href="#load-an-event-log"></a>
 </h2>
-<p>The package ships four real-world REM datasets directly. We use the
-McFarland (2001) high-school classroom session: 691 directed
-interactions among 20 students and one instructor, recorded on 16
-October 1996.</p>
+<p>We use the McFarland (2001) high-school classroom session: 691
+directed interactions among 20 students and one instructor, recorded on
+16 October 1996. Its source states no licence for the data, so amorem
+does not ship it; <code><a href="../reference/fetch_dataset.html">fetch_dataset()</a></code> downloads it once and
+caches it.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_actors</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">classroom_events</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"classroom_events"</span><span class="op">)</span></span>
+<span><span class="va">classroom_actors</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"classroom_actors"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 691</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">classroom_events</span>, <span class="fl">3</span><span class="op">)</span></span>

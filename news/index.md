@@ -4,6 +4,25 @@
 
 ### Changes in behaviour
 
+- **Four event logs are no longer shipped**: `classroom_events`,
+  `classroom_actors`, `social_evolution_calls`,
+  `social_evolution_actors`, `social_evolution_friendship`,
+  `college_msg` and `email_eu_core`. Their sources state no licence for
+  the data (and the Social Evolution release asks users not to
+  redistribute it), so a CRAN package cannot redistribute them. The new
+  `fetch_dataset("<name>")` downloads each from its source (the
+  networkDynamic and goldfish repositories, pinned to a commit, and
+  SNAP), checks the file’s MD5 sum, builds the table that earlier
+  versions shipped (identical objects) and caches it in
+  `tools::R_user_dir("amorem", "cache")`. Replace
+  `data(classroom_events)` with
+  `classroom_events <- fetch_dataset("classroom_events")`.
+
+- The examples use the new bundled `simulated_events` (600 events among
+  20 actors, simulated with reciprocity and transitivity effects), so
+  they run without a download. Tests that use a downloaded log skip on
+  CRAN.
+
 - **[`rem()`](https://franciscorichter.github.io/amorem/reference/rem.md)
   fits have class `"amorem_rem"`** instead of `"rem"`. The packages
   **relevent** and **redeem** register S3 methods on class `"rem"`, so

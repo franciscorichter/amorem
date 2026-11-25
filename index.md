@@ -35,10 +35,9 @@ install.packages("amorem")                              # CRAN release
 
 library(amorem)
 
-# 1. Bundled datasets, ready to load
-data(classroom_events)        # 691 events,    20 actors  (McFarland 2001)
-data(social_evolution_calls)  # 439 events,    54 actors  (Madan et al. 2012)
+# 1. Datasets: bundled ones load with data(), the rest download from their source
 data(radoslaw_email)          # 82,927 emails, 167 actors (Nurek & Michalski 2020)
+classroom_events <- fetch_dataset("classroom_events")  # 691 events, 20 actors (McFarland 2001)
 
 # 2. Compute endogenous features post-hoc from any (sender, receiver, time) log
 feat <- endogenous_features(
@@ -117,7 +116,7 @@ summary(fit)
 | [Hyperedge models](https://franciscorichter.github.io/amorem/articles/hyperedge-models.md) | the `(I, J, time)` data model, subset repetition, multi-recipient e-mails as hyperevents, and the RHEM simulators |
 | [Datasets](https://franciscorichter.github.io/amorem/articles/datasets.md) | the event logs and covariates that ship with amorem: what each one looks like, its source and licence |
 | [Data catalogue](https://franciscorichter.github.io/amorem/articles/data-catalogue.md) | 78 relational event datasets and covariates, bundled or not: what each one is, its licence, code to download it, and pictures of its network and timeline; no models are fitted |
-| [Analyses of bundled event logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md) | models fitted to three bundled logs (classroom, company email, CollegeMsg): timing vs count statistics with and without a sender frailty, smooth effect curves |
+| [Analyses of three event logs](https://franciscorichter.github.io/amorem/articles/bundled-log-analyses.md) | models fitted to three logs (classroom, company email, CollegeMsg): timing vs count statistics with and without a sender frailty, smooth effect curves |
 | [Validation experiments](https://franciscorichter.github.io/amorem/articles/validation-experiments.md) | recovery, smooth, scaling, parity, and the neural backend (gradient check + interaction recovery) |
 | [GoF calibration](https://franciscorichter.github.io/amorem/articles/gof-calibration.md) | type-I error of the martingale-residual GoF tests under correct specification |
 | [Case study: email and the clock](https://franciscorichter.github.io/amorem/articles/case-email-global.md) | time of day and day of week as global covariates in the Manufacturing e-mail log, time-shifted sampling, cyclic smooths, `tv()` on shifted data, [`gof_rem()`](https://franciscorichter.github.io/amorem/reference/gof_rem.md), [`gof_multivariate()`](https://franciscorichter.github.io/amorem/reference/gof_multivariate.md), [`gof_auxiliary()`](https://franciscorichter.github.io/amorem/reference/gof_auxiliary.md) |

@@ -29,7 +29,7 @@ articles:
   exogenous-covariates: exogenous-covariates.html
   articles/gof-calibration: gof-calibration.html
   articles/hyperedge-models: hyperedge-models.html
-  model-comparison: model-comparison.html
+  articles/model-comparison: model-comparison.html
   articles/quick-start: quick-start.html
   articles/sampling-options: sampling-options.html
   simulation-demo: simulation-demo.html
@@ -37,7 +37,7 @@ articles:
   species-invasion: species-invasion.html
   articles/validation-experiments: validation-experiments.html
   articles/videos: videos.html
-last_built: 2026-11-23T23:27Z
+last_built: 2026-11-25T02:22Z
 urls:
   reference: https://franciscorichter.github.io/amorem/reference
   article: https://franciscorichter.github.io/amorem/articles

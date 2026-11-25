@@ -73,14 +73,14 @@ dispatch.
 ## Examples
 
 ``` r
-data(classroom_events)
-std <- standardize_event_log(classroom_events)
+data(simulated_events)
+std <- standardize_event_log(simulated_events)
 head(std)
-#>    time sender receiver interaction_type weight
-#> 1 0.125     14       12           social      1
-#> 2 0.250     12       14           social      1
-#> 3 0.375     18       12         sanction      1
-#> 4 0.500     12       18         sanction      1
-#> 5 0.625      1       12         sanction      1
-#> 6 0.750     12        1         sanction      1
+#>           time sender receiver
+#> 1 0.0006590023    a03      a13
+#> 2 0.0023339971    a03      a19
+#> 3 0.0036273555    a02      a16
+#> 4 0.0036461556    a16      a17
+#> 5 0.0038196956    a16      a13
+#> 6 0.0046923133    a12      a15
 ```

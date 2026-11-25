@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Analyses of bundled event logs • amorem</title>
+<title>Analyses of three event logs • amorem</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/JetBrains_Mono-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Analyses of bundled event logs">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Analyses of three event logs">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -74,7 +74,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.svg" class="logo" alt=""><h1>Analyses of bundled event logs</h1>
+      <img src="../logo.svg" class="logo" alt=""><h1>Analyses of three event logs</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/franciscorichter/amorem/blob/main/vignettes/articles/bundled-log-analyses.Rmd" class="external-link"><code>vignettes/articles/bundled-log-analyses.Rmd</code></a></small>
@@ -84,7 +84,7 @@
     
     
 <div class="section level2">
-<h2 id="analyses-of-bundled-event-logs">Analyses of bundled event logs<a class="anchor" aria-label="anchor" href="#analyses-of-bundled-event-logs"></a>
+<h2 id="analyses-of-three-event-logs">Analyses of three event logs<a class="anchor" aria-label="anchor" href="#analyses-of-three-event-logs"></a>
 </h2>
 <p>Three analyses on the bundled datasets. The code below runs when this
 page is built, so every table, figure and number in the text comes from
@@ -101,7 +101,7 @@ accumulates large counts. A Gamma sender frailty
 (<code>random_effects = "sender"</code>) absorbs activity differences
 between senders.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">classroom_events</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"classroom_events"</span><span class="op">)</span></span>
 <span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  count       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span>
 <span>  continuous  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_time_recent"</span>, <span class="st">"transitivity_time_recent"</span><span class="op">)</span>,</span>
@@ -223,7 +223,7 @@ is highest at weight 0 and below zero for most of the range.</p>
 <p>The same three specifications on the first 30 days of
 <code>college_msg</code>, with one control per case:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">college_msg</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">college_msg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"college_msg"</span><span class="op">)</span></span>
 <span><span class="va">cm30</span> <span class="op">&lt;-</span> <span class="va">college_msg</span><span class="op">[</span><span class="va">college_msg</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fl">30</span>, <span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>messages <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cm30</span><span class="op">)</span>, users <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">cm30</span><span class="op">$</span><span class="va">sender</span>, <span class="va">cm30</span><span class="op">$</span><span class="va">receiver</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; messages    users </span></span>

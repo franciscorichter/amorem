@@ -17,10 +17,9 @@ The code runs when this page is built.
 
 ``` r
 
-data(social_evolution_calls)
-data(social_evolution_actors)
-data(social_evolution_friendship)
-
+social_evolution_calls <- fetch_dataset("social_evolution_calls")
+social_evolution_actors <- fetch_dataset("social_evolution_actors")
+social_evolution_friendship <- fetch_dataset("social_evolution_friendship")
 calls <- standardize_event_log(social_evolution_calls, drop_loops = TRUE)
 c(calls = nrow(calls), callers = length(unique(c(calls$sender, calls$receiver))),
   days = max(calls$time))

@@ -100,19 +100,19 @@ analytic p-value calculation under arbitrary dependency structures.
 ## Examples
 
 ``` r
-data(classroom_events)
-gof_global(classroom_events,
+data(simulated_events)
+gof_global(simulated_events,
   model = c(reciprocity_count  = "linear",
             transitivity_count = "linear"), seed = 1)
 #> $statistic
-#> [1] 1.896547
+#> [1] 22.74989
 #> 
 #> $p_value
-#> [1] 0.1544529
+#> [1] 0.01398271
 #> 
 #> $components
-#>            covariate statistic    p_value
-#> 1  reciprocity_count 0.8426279 0.47658667
-#> 2 transitivity_count 1.2599088 0.08360382
+#>            covariate statistic     p_value
+#> 1  reciprocity_count 1.6796743 0.007087203
+#> 2 transitivity_count 0.9484299 0.329416991
 #> 
 ```

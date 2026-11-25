@@ -149,16 +149,16 @@ analytic p-value calculation under arbitrary dependency structures.
 
 ``` r
 if (requireNamespace("mgcv", quietly = TRUE)) {
-  data(classroom_events)
-  gof_multivariate(classroom_events,
+  data(simulated_events)
+  gof_multivariate(simulated_events,
     model = c(reciprocity_count  = "linear",
               transitivity_count = "linear"),
     covariate = "reciprocity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
 }
 #> $statistic
-#> [1] 1.65685
+#> [1] 1.514275
 #> 
 #> $p_value
-#> [1] 0.295
+#> [1] 0.435
 #> 
 ```

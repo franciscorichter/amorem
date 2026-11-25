@@ -230,15 +230,15 @@ history.
 ## Examples
 
 ``` r
-data(classroom_events)
-feats <- endogenous_features(classroom_events,
+data(simulated_events)
+feats <- endogenous_features(simulated_events,
                                      stats = c("reciprocity", "recency"))
 head(feats)
-#>    time sender receiver interaction_type weight reciprocity recency
-#> 1 0.125     14       12           social      1           0      NA
-#> 2 0.250     12       14           social      1           1      NA
-#> 3 0.375     18       12         sanction      1           0      NA
-#> 4 0.500     12       18         sanction      1           1      NA
-#> 5 0.625      1       12         sanction      1           0      NA
-#> 6 0.750     12        1         sanction      1           1      NA
+#>           time sender receiver reciprocity recency
+#> 1 0.0006590023    a03      a13           0      NA
+#> 2 0.0023339971    a03      a19           0      NA
+#> 3 0.0036273555    a02      a16           0      NA
+#> 4 0.0036461556    a16      a17           0      NA
+#> 5 0.0038196956    a16      a13           0      NA
+#> 6 0.0046923133    a12      a15           0      NA
 ```

@@ -83,25 +83,15 @@
 
 ## Data: event logs
 
-- [`classroom_events`](https://franciscorichter.github.io/amorem/reference/classroom_events.md)
-  : Classroom interaction events (McFarland 2001)
-- [`classroom_actors`](https://franciscorichter.github.io/amorem/reference/classroom_actors.md)
-  : Classroom actor attributes (McFarland 2001)
-- [`social_evolution_calls`](https://franciscorichter.github.io/amorem/reference/social_evolution_calls.md)
-  : Phone calls in the Social Evolution study (Madan et al. 2012)
-- [`social_evolution_actors`](https://franciscorichter.github.io/amorem/reference/social_evolution_actors.md)
-  : Actor attributes for the Social Evolution study
-- [`social_evolution_friendship`](https://franciscorichter.github.io/amorem/reference/social_evolution_friendship.md)
-  : Friendship-survey events for the Social Evolution study
+- [`simulated_events`](https://franciscorichter.github.io/amorem/reference/simulated_events.md)
+  : Simulated event log used in the examples
+- [`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md)
+  : Download an event log that amorem does not redistribute
 - [`radoslaw_email`](https://franciscorichter.github.io/amorem/reference/radoslaw_email.md)
   : Manufacturing-company email events (Nurek & Michalski 2020)
 - [`radoslaw_hierarchy`](https://franciscorichter.github.io/amorem/reference/radoslaw_hierarchy.md)
   : Reporting hierarchy of the manufacturing company (Nurek & Michalski
   2020)
-- [`college_msg`](https://franciscorichter.github.io/amorem/reference/college_msg.md)
-  : CollegeMsg: private messages on a university online community
-- [`email_eu_core`](https://franciscorichter.github.io/amorem/reference/email_eu_core.md)
-  : Email-Eu-Core temporal (single-department subset)
 - [`copenhagen_calls`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
   [`copenhagen_sms`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)
   [`copenhagen_actors`](https://franciscorichter.github.io/amorem/reference/copenhagen.md)

@@ -31,8 +31,7 @@ and 511 turns of talk. A turn back to someone who spoke to you in the
 last minute comes at 9.69 times the rate of an otherwise similar pair
 where that did not happen (95% interval 7.95 to 11.83).
 
-Try it in R:
-[`amorem::classroom_events`](https://franciscorichter.github.io/amorem/reference/classroom_events.md)
+Try it in R: `amorem::fetch_dataset("classroom_events")`
 
 No. 3
 

@@ -84,7 +84,7 @@ unidentified per-stratum offset.
 ## Examples
 
 ``` r
-cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+cc <- sample_non_events(simulated_events, n_controls = 2, seed = 1)
 cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
 fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
            method = "nn", nn = nn_control(hidden = 4, epochs = 50, seed = 1))
@@ -94,7 +94,7 @@ u
 #>   resamples    : 5 (5 successful)
 #>   level        : 95%
 #>   features     : reciprocity_count, transitivity_count
-#>   concordance  : 0.669  [0.442, 0.700]
+#>   concordance  : 0.477  [0.471, 0.495]
 #> Use plot() for per-feature partial-dependence bands.
 plot(u)
 ```

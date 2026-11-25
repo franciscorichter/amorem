@@ -136,10 +136,12 @@ under the same terms</td>
 </tr>
 </tbody>
 </table>
-<p>10 of the datasets that may be bundled ship with amorem (see <a href="datasets.html">Bundled datasets</a>). Three datasets bundled in
-earlier releases (CollegeMsg, Email-EU-core and the Social Evolution
-study) come from sources without a licence or under GPL-3; their status
-is under review. Datasets that cannot be redistributed are documented
+<p>10 of the datasets that may be bundled ship with amorem (see <a href="datasets.html">Datasets</a>). Four datasets bundled in earlier
+releases (the McFarland classroom, the Social Evolution study,
+CollegeMsg and Email-EU-core) come from sources that state no licence
+for the data. Since amorem 1.3.0 the package does not ship them;
+<code><a href="../reference/fetch_dataset.html">fetch_dataset()</a></code> downloads each from its source and builds
+the same table. Datasets that cannot be redistributed are documented
 here with code that downloads them from their source; the figures and
 numbers on the topic pages are aggregates, not the data.</p>
 </div>
@@ -177,11 +179,11 @@ datasets</li>
 </h2>
 <table class="table">
 <colgroup>
-<col width="20%">
-<col width="3%">
-<col width="23%">
-<col width="38%">
-<col width="13%">
+<col width="25%">
+<col width="4%">
+<col width="28%">
+<col width="25%">
+<col width="16%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">dataset</th>
@@ -472,10 +474,8 @@ prices (Pink Sheet)</a></td>
 fisheries treaties, RFID validity, Social Evolution</a></td>
 <td align="left">events</td>
 <td align="left">GPL-3.0 (source repository/package)</td>
-<td align="left">bundled as <code>social_evolution_calls</code>,
-<code>social_evolution_friendship</code>,
-<code>social_evolution_actors</code> since an earlier release; licence
-under review</td>
+<td align="left">bundled as <code>fetch_dataset</code> since an earlier
+release; licence under review</td>
 <td align="left">yes</td>
 </tr>
 <tr class="odd">
@@ -483,7 +483,8 @@ under review</td>
 package data</a></td>
 <td align="left">events</td>
 <td align="left">GPL-3.0 (source repository/package)</td>
-<td align="left">GPL only</td>
+<td align="left">bundled as <code>fetch_dataset</code> since an earlier
+release; licence under review</td>
 <td align="left">yes</td>
 </tr>
 <tr class="even">
@@ -635,7 +636,7 @@ ratings</a></td>
 Irvine messages)</a></td>
 <td align="left">events</td>
 <td align="left">none stated</td>
-<td align="left">bundled as <code>college_msg</code> since an earlier
+<td align="left">bundled as <code>fetch_dataset</code> since an earlier
 release; licence under review</td>
 <td align="left">yes</td>
 </tr>
@@ -644,7 +645,7 @@ release; licence under review</td>
 temporal (four departments)</a></td>
 <td align="left">events</td>
 <td align="left">none stated</td>
-<td align="left">bundled as <code>email_eu_core</code> since an earlier
+<td align="left">bundled as <code>fetch_dataset</code> since an earlier
 release; licence under review</td>
 <td align="left">yes</td>
 </tr>

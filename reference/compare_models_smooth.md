@@ -138,9 +138,9 @@ for the linear-only variant.
 
 ``` r
 # \donttest{
-data(classroom_events)
+data(simulated_events)
 compare_models_smooth(
-  classroom_events,
+  simulated_events,
   models = list(
     linear = c(reciprocity_time_recent  = "linear",
                transitivity_time_recent = "linear"),
@@ -150,8 +150,8 @@ compare_models_smooth(
                transitivity_time_recent = "tvnl")),
   seed = 11)
 #>    model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1   tvnl       4   691 -193.1665 421.0223   0.00000
-#> 2     nl       4   691 -217.9136 454.8668  33.84449
-#> 3 linear       4   691 -235.2626 478.5251  57.50280
+#> 1     nl       4   600 -339.5844 690.7759 0.0000000
+#> 2 linear       4   600 -341.5659 691.1318 0.3559397
+#> 3   tvnl       4   600 -337.0964 693.9501 3.1742231
 # }
 ```

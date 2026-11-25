@@ -166,12 +166,12 @@ of the Royal Statistical Society, Series C.
 
 ``` r
 # \donttest{
-data(classroom_events)
+data(simulated_events)
 # Hourly temperature track on the same time axis:
-g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),
+g <- data.frame(time = seq(0, max(simulated_events$time), length = 50),
                 temperature = rnorm(50, 20, 5))
 compare_models_global(
-  classroom_events,
+  simulated_events,
   models = list(
     dyadic_only = c(reciprocity_count        = "linear",
                     transitivity_count       = "linear"),
@@ -182,7 +182,7 @@ compare_models_global(
   global_covariates = g,
   seed = 11, k = 5)
 #>         model n_terms n_obs   log_lik      AIC delta_AIC
-#> 1 with_global       4   690 -304.4622 622.4175   0.00000
-#> 2 dyadic_only       2   690 -353.4949 710.9898  88.57228
+#> 1 with_global       4   598 -345.8778 705.4249   0.00000
+#> 2 dyadic_only       2   598 -363.7244 731.4489  26.02396
 # }
 ```

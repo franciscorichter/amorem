@@ -256,9 +256,9 @@ Statistical Society Series A</em> 188(4), 1246-1262.
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">simulated_events</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">classroom_events</span>,</span></span>
+<span class="r-in"><span>  <span class="va">simulated_events</span>,</span></span>
 <span class="r-in"><span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    count       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    continuous  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_time_recent"</span>,</span></span>
@@ -267,20 +267,20 @@ Statistical Society Series A</em> 188(4), 1246-1262.
 <span class="r-in"><span>                    <span class="st">"transitivity_time_recent_interrupted"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         model n_terms n_obs   log_lik      AIC delta_AIC</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  continuous       4   691 -235.2626 478.5251   0.00000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 interrupted       4   691 -256.3622 520.7245  42.19935</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       count       2   691 -285.2604 574.5207  95.99559</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  continuous       4   600 -341.5659 691.1318   0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       count       2   600 -378.9818 761.9636  70.83178</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 interrupted       4   600 -393.1899 794.3798 103.24796</span>
 <span class="r-in"><span><span class="co"># elapsed time with "no earlier event" set to 0 (amorem 1.2.0)</span></span></span>
 <span class="r-in"><span><span class="fu">compare_models</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">classroom_events</span>,</span></span>
+<span class="r-in"><span>  <span class="va">simulated_events</span>,</span></span>
 <span class="r-in"><span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    count       <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_count"</span>, <span class="st">"transitivity_count"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    continuous  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"reciprocity_time_recent"</span>,</span></span>
 <span class="r-in"><span>                    <span class="st">"transitivity_time_recent"</span><span class="op">)</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  seed <span class="op">=</span> <span class="fl">11</span>, recency <span class="op">=</span> <span class="st">"zero"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        model n_terms n_obs   log_lik      AIC delta_AIC</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      count       2   691 -285.2604 574.5207    0.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 continuous       2   691 -439.9833 883.9665  309.4458</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      count       2   600 -378.9818 761.9636   0.00000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 continuous       2   600 -393.7893 791.5787  29.61506</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

@@ -13,7 +13,7 @@ what changes in the control set. The code runs when the page is built.
 
 ``` r
 
-data(classroom_events)
+classroom_events <- fetch_dataset("classroom_events")
 ev <- classroom_events
 c(events = nrow(ev),
   senders = length(unique(ev$sender)),
@@ -262,7 +262,7 @@ student to an instructor:
 
 ``` r
 
-data(classroom_actors)
+classroom_actors <- fetch_dataset("classroom_actors")
 instructors <- as.character(classroom_actors$id[classroom_actors$role == "instructor"])
 students    <- as.character(classroom_actors$id[classroom_actors$role != "instructor"])
 forbidden   <- expand.grid(sender = students, receiver = instructors,

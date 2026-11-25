@@ -108,11 +108,12 @@ AIC table (superseded by <code><a href="../reference/rem.html">rem()</a></code>,
 <strong>Goodness-of-fit tests</strong> check whether the selected
 fit is actually adequate.</li>
 </ol>
-<p>The examples on the bundled <code>classroom_events</code> log run
-when this page is built, so their output comes from the current version
-of the package. Snippets that use data the package does not ship
-(<code>lesmis</code>, <code>event_log</code>, <code>native</code>) are
-shown without being run.</p>
+<p>The examples on the <code>classroom_events</code> log (downloaded by
+<code><a href="../reference/fetch_dataset.html">fetch_dataset()</a></code>) run when this page is built, so their
+output comes from the current version of the package. Snippets that use
+data the package does not ship (<code>lesmis</code>,
+<code>event_log</code>, <code>native</code>) are shown without being
+run.</p>
 <hr>
 <div class="section level3">
 <h3 id="case-control-sampling">Case-control sampling<a class="anchor" aria-label="anchor" href="#case-control-sampling"></a>
@@ -123,13 +124,13 @@ sum of rates over the risk set at that moment. The <em>case-control</em>
 approximation replaces the full risk set sum with an unbiased
 Horvitz-Thompson estimate that uses <code>n_controls</code> sampled
 non-firing dyads per case.</p>
-<p>Throughout this page we use the bundled <code>classroom_events</code>
-log — any event log with <code>time</code>, <code>sender</code>,
-<code>receiver</code> columns will do.</p>
+<p>Throughout this page we use the <code>classroom_events</code> log
+(downloaded by <code><a href="../reference/fetch_dataset.html">fetch_dataset()</a></code>) — any event log with
+<code>time</code>, <code>sender</code>, <code>receiver</code> columns
+will do.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://franciscorichter.github.io/amorem/">amorem</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">classroom_events</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"classroom_events"</span><span class="op">)</span></span>
 <span><span class="va">cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sample_non_events.html">sample_non_events</a></span><span class="op">(</span><span class="va">classroom_events</span>,</span>
 <span>                        n_controls <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>                        scope      <span class="op">=</span> <span class="st">"all"</span>,</span>
@@ -269,7 +270,7 @@ documented below.</p>
 <p>A single call evaluates a list of candidate specifications on a
 shared case-control sample:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">classroom_events</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">classroom_events</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch_dataset.html">fetch_dataset</a></span><span class="op">(</span><span class="st">"classroom_events"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/compare_models.html">compare_models</a></span><span class="op">(</span></span>
 <span>  <span class="va">classroom_events</span>,</span>
 <span>  models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -714,7 +715,7 @@ two-element risk set:</p>
 <span><span class="co"># Residuals sum to zero within each (case, control) stratum:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tapply.html" class="external-link">tapply</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">residual</span>, <span class="va">res</span><span class="op">$</span><span class="va">stratum</span>, <span class="va">sum</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. </span></span>
-<span><span class="co">#&gt; -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16</span></span></code></pre></div>
+<span><span class="co">#&gt; -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">role_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>case <span class="op">=</span> <span class="st">"#d62728"</span>, control <span class="op">=</span> <span class="st">"#5b9bd5"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">time</span>, <span class="va">res</span><span class="op">$</span><span class="va">residual</span>, pch <span class="op">=</span> <span class="fl">16</span>, cex <span class="op">=</span> <span class="fl">0.5</span>,</span>
@@ -729,7 +730,7 @@ two-element risk set:</p>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottomright"</span>, bty <span class="op">=</span> <span class="st">"n"</span>, pch <span class="op">=</span> <span class="fl">16</span>, col <span class="op">=</span> <span class="va">role_col</span>, legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">role_col</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="estimation_files/figure-html/martingale-figure-1.png" class="r-plt" alt="Martingale residuals over event time with a loess curve per role" width="720"></p>
-<p>The largest within-stratum sum is 1.5e-16 in absolute value, so the
+<p>The largest within-stratum sum is 2.2e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><msub><mi>π</mi><mi>i</mi></msub><mo>≥</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">1 - \pi_i \ge 0</annotation></semantics></math>
 and its control’s is the mirror image, so the two curves are symmetric

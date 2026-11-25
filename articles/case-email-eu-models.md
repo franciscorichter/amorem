@@ -24,7 +24,7 @@ with weight 0 for a dyad that has not fired yet.
 
 ``` r
 
-data(email_eu_core)
+email_eu_core <- fetch_dataset("email_eu_core")
 eu <- email_eu_core[seq_len(3000), ]
 c(emails = nrow(eu), days = round(max(eu$time)),
   actors = length(unique(c(eu$sender, eu$receiver))))

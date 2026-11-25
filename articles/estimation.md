@@ -24,10 +24,11 @@
 4.  **Goodness-of-fit tests** check whether the selected fit is actually
     adequate.
 
-The examples on the bundled `classroom_events` log run when this page is
-built, so their output comes from the current version of the package.
-Snippets that use data the package does not ship (`lesmis`, `event_log`,
-`native`) are shown without being run.
+The examples on the `classroom_events` log (downloaded by
+[`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md))
+run when this page is built, so their output comes from the current
+version of the package. Snippets that use data the package does not ship
+(`lesmis`, `event_log`, `native`) are shown without being run.
 
 ------------------------------------------------------------------------
 
@@ -39,14 +40,14 @@ rates over the risk set at that moment. The *case-control* approximation
 replaces the full risk set sum with an unbiased Horvitz-Thompson
 estimate that uses `n_controls` sampled non-firing dyads per case.
 
-Throughout this page we use the bundled `classroom_events` log — any
-event log with `time`, `sender`, `receiver` columns will do.
+Throughout this page we use the `classroom_events` log (downloaded by
+[`fetch_dataset()`](https://franciscorichter.github.io/amorem/reference/fetch_dataset.md))
+— any event log with `time`, `sender`, `receiver` columns will do.
 
 ``` r
 
 library(amorem)
-data(classroom_events)
-
+classroom_events <- fetch_dataset("classroom_events")
 cc <- sample_non_events(classroom_events,
                         n_controls = 1,
                         scope      = "all",
@@ -205,7 +206,7 @@ case-control sample:
 
 ``` r
 
-data(classroom_events)
+classroom_events <- fetch_dataset("classroom_events")
 compare_models(
   classroom_events,
   models = list(
@@ -568,7 +569,7 @@ res <- martingale_residuals(
 # Residuals sum to zero within each (case, control) stratum:
 summary(tapply(res$residual, res$stratum, sum))
 #>       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
-#> -1.110e-16 -5.551e-17  0.000e+00 -3.838e-18  2.776e-17  1.457e-16
+#> -2.220e-16 -2.082e-17  0.000e+00 -9.108e-19  2.776e-17  1.665e-16
 ```
 
 ``` r
@@ -590,7 +591,7 @@ legend("bottomright", bty = "n", pch = 16, col = role_col, legend = names(role_c
 ![Martingale residuals over event time with a loess curve per
 role](estimation_files/figure-html/martingale-figure-1.png)
 
-The largest within-stratum sum is 1.5e-16 in absolute value, so the
+The largest within-stratum sum is 2.2e-16 in absolute value, so the
 zero-sum invariant holds to floating-point precision. A case residual is
 $`1 - \pi_i \ge 0`$ and its control’s is the mirror image, so the two
 curves are symmetric about zero by construction. The closer the case
