@@ -98,15 +98,10 @@ reference:
       - hyperedge_features
   - title: "Data: event logs"
     contents:
-      - classroom_events
-      - classroom_actors
-      - social_evolution_calls
-      - social_evolution_actors
-      - social_evolution_friendship
+      - simulated_events
+      - fetch_dataset
       - radoslaw_email
       - radoslaw_hierarchy
-      - college_msg
-      - email_eu_core
       - copenhagen
       - us_leader_visits
       - football_results
@@ -175,7 +170,7 @@ articles:
       - exogenous-covariates
       - endogenous-and-global
       - species-invasion
-      - model-comparison
+      - articles/model-comparison
 
 redirects:
   - ["articles/real-data-analysis.html", "articles/bundled-log-analyses.html"]

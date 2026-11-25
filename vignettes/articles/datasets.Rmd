@@ -1,5 +1,5 @@
 ---
-title: "Bundled datasets"
+title: "Datasets"
 ---
 
 ```{r, include = FALSE}
@@ -8,10 +8,12 @@ library(amorem)
 fmt <- function(x, d = 0) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
-# Bundled datasets
+# Datasets
 
-amorem ships the event logs and covariates below, each loadable with
-`data(...)`. The tables and figures on this page are computed from them when
+amorem provides the event logs and covariates below. Most ship with the package
+and load with `data(...)`; the classroom, Social Evolution, CollegeMsg and
+Email-EU-core logs, whose sources state no licence, are downloaded from their
+source by `fetch_dataset()` (marked "download" below). The tables and figures on this page are computed from them when
 the page is built. The [data catalogue](data-catalogue.html) documents a wider
 collection, including datasets whose licences do not allow amorem to
 redistribute them.
@@ -32,13 +34,16 @@ ev <- list(
   football_results = list("Men's international football since 1872", "matches", "days"),
   ucdp_dyads = list("UCDP armed conflict dyads 1946-2025", "conflict dyad-years", "year"),
   alien_invasions = list("Alien species first records 1880-2005", "species -> region", "year"))
+fetched <- c("classroom_events", "social_evolution_calls", "social_evolution_friendship",
+             "college_msg", "email_eu_core")
 inv <- do.call(rbind, lapply(names(ev), function(nm) {
-  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
+  if (nm %in% fetched) x <- fetch_dataset(nm) else {
+    e <- new.env(); data(list = nm, envir = e); x <- get(nm, e) }
   s <- if (nm == "alien_invasions") x$species else x$sender
   r <- if (nm == "alien_invasions") x$region else x$receiver
   t <- if (nm == "ucdp_dyads") x$year else if (nm == "alien_invasions") x$stop else x$time
   span <- diff(range(t))
-  data.frame(object = sprintf("`%s`", nm), data = ev[[nm]][[1]], kind = ev[[nm]][[2]],
+  data.frame(object = sprintf("`%s`%s", nm, if (nm %in% fetched) " (download)" else ""), data = ev[[nm]][[1]], kind = ev[[nm]][[2]],
              events = fmt(nrow(x)), actors = fmt(length(unique(c(s, r)))),
              span = sprintf("%s %s", fmt(span, if (span < 100) 1 else 0), sub("^year$", "years", ev[[nm]][[3]])))
 }))

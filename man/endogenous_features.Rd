@@ -151,8 +151,8 @@ covariates, e.g. an alien species' previously invaded regions). It honours
 non-events polluting the history.
 }
 \examples{
-data(classroom_events)
-feats <- endogenous_features(classroom_events,
+data(simulated_events)
+feats <- endogenous_features(simulated_events,
                                      stats = c("reciprocity", "recency"))
 head(feats)
 }

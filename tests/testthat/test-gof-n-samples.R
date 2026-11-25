@@ -4,7 +4,6 @@
 m2 <- c(reciprocity_count = "linear", transitivity_count = "linear")
 
 test_that("n_samples = 1 reproduces the single-sample results", {
-  data(classroom_events, package = "amorem", envir = environment())
   u0 <- gof_univariate(classroom_events, m2, "transitivity_count", seed = 11)
   u1 <- gof_univariate(classroom_events, m2, "transitivity_count", seed = 11,
                        n_samples = 1)
@@ -27,7 +26,6 @@ test_that("n_samples = 1 reproduces the single-sample results", {
 })
 
 test_that("gof_univariate combines the p-values of seeds seed, seed + 1, ...", {
-  data(classroom_events, package = "amorem", envir = environment())
   S <- 4
   out <- gof_univariate(classroom_events, m2, "transitivity_count",
                         seed = 11, n_samples = S)
@@ -45,7 +43,6 @@ test_that("gof_univariate combines the p-values of seeds seed, seed + 1, ...", {
 })
 
 test_that("n_samples without a seed draws independent samples", {
-  data(classroom_events, package = "amorem", envir = environment())
   set.seed(3)
   out <- gof_univariate(classroom_events, m2, "reciprocity_count",
                         n_samples = 3)
@@ -55,7 +52,6 @@ test_that("n_samples without a seed draws independent samples", {
 })
 
 test_that("gof_global with n_samples combines across samples and covariates", {
-  data(classroom_events, package = "amorem", envir = environment())
   S <- 3
   out <- gof_global(classroom_events, m2, seed = 5, n_samples = S)
   per <- vapply(5 + 0:(S - 1), function(sd) {
@@ -69,7 +65,6 @@ test_that("gof_global with n_samples combines across samples and covariates", {
 })
 
 test_that("gof_auxiliary and gof_multivariate accept n_samples", {
-  data(classroom_events, package = "amorem", envir = environment())
   a <- gof_auxiliary(classroom_events, c(reciprocity_count = "linear"),
                      "transitivity_count", n_sim = 100, seed = 2,
                      n_samples = 2)
@@ -82,7 +77,6 @@ test_that("gof_auxiliary and gof_multivariate accept n_samples", {
 })
 
 test_that("n_samples is validated", {
-  data(classroom_events, package = "amorem", envir = environment())
   expect_error(gof_univariate(classroom_events, m2, "reciprocity_count",
                               seed = 1, n_samples = 0), "n_samples")
   expect_error(gof_global(classroom_events, m2, seed = 1, n_samples = 1.5),
@@ -90,7 +84,6 @@ test_that("n_samples is validated", {
 })
 
 test_that("Monte Carlo p-values of 0 enter the combination as 1/(n_sim + 1)", {
-  data(classroom_events, package = "amorem", envir = environment())
   n_sim <- 100
   a <- gof_auxiliary(classroom_events, c(reciprocity_count = "linear"),
                      "transitivity_count", n_sim = n_sim, seed = 11,

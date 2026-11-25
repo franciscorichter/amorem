@@ -81,13 +81,13 @@ p-value needs a larger \code{n_sim}. The Kolmogorov p-values of
 
 \examples{
 \donttest{
-data(classroom_events)
-gof_univariate(classroom_events,
+data(simulated_events)
+gof_univariate(simulated_events,
   model = c(reciprocity_count  = "linear",
             transitivity_count = "linear"),
   covariate = "reciprocity_count", seed = 1)
 # the same test on 5 control samples, p-values Cauchy-combined
-gof_univariate(classroom_events,
+gof_univariate(simulated_events,
   model = c(reciprocity_count  = "linear",
             transitivity_count = "linear"),
   covariate = "transitivity_count", seed = 1,

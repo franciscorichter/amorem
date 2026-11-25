@@ -29,8 +29,8 @@
 #' @return A data.frame with columns `sender`, `receiver`, and `time`. The return
 #'   object is tagged with class `"amorem_event_log"` for downstream dispatch.
 #' @examples
-#' data(classroom_events)
-#' std <- standardize_event_log(classroom_events)
+#' data(simulated_events)
+#' std <- standardize_event_log(simulated_events)
 #' head(std)
 #' @export
 standardize_event_log <- function(
@@ -374,8 +374,8 @@ attach_static_covariates <- function(
 #' @return The event log with added columns, one per requested statistic
 #'   (`sender_receivers_set` is added as a list-column).
 #' @examples
-#' data(classroom_events)
-#' feats <- endogenous_features(classroom_events,
+#' data(simulated_events)
+#' feats <- endogenous_features(simulated_events,
 #'                                      stats = c("reciprocity", "recency"))
 #' head(feats)
 #' @export
@@ -1222,8 +1222,8 @@ endogenous_features <- function(
 #'   shift `mean`, the `window`, the per-dyad `shifts` (named
 #'   `"sender->receiver"`) and the `uninformative` strata that got no control.
 #' @examples
-#' data(classroom_events)
-#' cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+#' data(simulated_events)
+#' cc <- sample_non_events(simulated_events, n_controls = 1, seed = 1)
 #' head(cc)
 #'
 #' # Alien species are at risk of invading a region only from the year

@@ -12,6 +12,7 @@ Row and column names are state/territory names.
 Computed from US Census TIGER/Line shapefiles using the
 \pkg{tigris}, \pkg{sf}, and \pkg{geosphere} packages.
 See Walker (2024), Pebesma (2018), Hijmans (2022).
+TIGER/Line files are a US government work in the public domain.
 }
 \usage{
 dist_matrix

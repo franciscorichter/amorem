@@ -57,7 +57,7 @@ expected elsewhere in the package. It also handles common cleaning tasks such
 as sorting, dropping missing rows, and removing loops.
 }
 \examples{
-data(classroom_events)
-std <- standardize_event_log(classroom_events)
+data(simulated_events)
+std <- standardize_event_log(simulated_events)
 head(std)
 }

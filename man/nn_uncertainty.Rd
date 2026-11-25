@@ -53,7 +53,7 @@ in the \emph{shape} of each effect, not the conditional-logit's unidentified
 per-stratum offset.
 }
 \examples{
-cc <- sample_non_events(classroom_events, n_controls = 2, seed = 1)
+cc <- sample_non_events(simulated_events, n_controls = 2, seed = 1)
 cc <- endogenous_features(cc, c("reciprocity_count", "transitivity_count"))
 fit <- rem(event ~ reciprocity_count + transitivity_count, data = cc,
            method = "nn", nn = nn_control(hidden = 4, epochs = 50, seed = 1))

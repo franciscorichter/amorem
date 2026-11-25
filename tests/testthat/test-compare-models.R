@@ -8,7 +8,6 @@ specs_small <- list(
                   "transitivity_time_recent_interrupted"))
 
 test_that("returns a tidy AIC table with the expected columns and types", {
-  data(classroom_events)
   out <- compare_models(classroom_events, specs_small, seed = 11)
   expect_s3_class(out, "data.frame")
   expect_named(out, c("model", "n_terms", "n_obs", "log_lik", "AIC", "delta_AIC"))
@@ -29,7 +28,6 @@ test_that("all specifications use the same case-control rows", {
   # case-control sample. We verify by re-running with the same seed:
   # the result should be deterministic AND the n_obs column should be
   # identical across rows (since the sample is shared).
-  data(classroom_events)
   a <- compare_models(classroom_events, specs_small, seed = 11)
   b <- compare_models(classroom_events, specs_small, seed = 11)
   expect_equal(a, b)
@@ -37,7 +35,6 @@ test_that("all specifications use the same case-control rows", {
 })
 
 test_that("union of stats is deduplicated -- specs may share stats", {
-  data(classroom_events)
   out <- compare_models(
     classroom_events,
     models = list(
@@ -48,7 +45,6 @@ test_that("union of stats is deduplicated -- specs may share stats", {
 })
 
 test_that("AIC matches a manual glm fit on the same case-control sample", {
-  data(classroom_events)
   set.seed(13)
   cc <- sample_non_events(classroom_events, n_controls = 1, scope = "all",
                           mode = "one", seed = 13)
@@ -71,7 +67,6 @@ test_that("AIC matches a manual glm fit on the same case-control sample", {
 })
 
 test_that("half_life is propagated to exp-decay specs", {
-  data(classroom_events)
   out <- compare_models(
     classroom_events,
     models = list(
@@ -83,7 +78,6 @@ test_that("half_life is propagated to exp-decay specs", {
 })
 
 test_that("rejects invalid arguments with informative messages", {
-  data(classroom_events)
   expect_error(compare_models(classroom_events, list()), "non-empty")
   empty_named <- setNames(list(c("reciprocity_count")), "")
   expect_error(compare_models(classroom_events, empty_named),
@@ -100,7 +94,6 @@ test_that("rejects invalid arguments with informative messages", {
 
 test_that("n_controls > 1 uses survival::clogit and produces sensible output", {
   skip_if_not_installed("survival")
-  data(classroom_events)
   out <- compare_models(classroom_events, specs_small,
                         n_controls = 3, seed = 21)
   expect_s3_class(out, "data.frame")
@@ -118,7 +111,6 @@ test_that("n_controls > 1 needs survival; informative error if not installed", {
   # survival when the namespace check fails. (Smoke test only -- the
   # path is exercised every time CI runs with survival absent.)
   skip_if_not_installed("survival")
-  data(classroom_events)
   # Sanity: when survival IS available, the call goes through.
   out <- compare_models(classroom_events, list(c = specs_small$count),
                         n_controls = 2, seed = 22)
@@ -140,7 +132,6 @@ test_that("works on a bundled real-world dataset and orders by AIC", {
 })
 
 test_that("output is reproducible given a fixed seed", {
-  data(classroom_events)
   a <- compare_models(classroom_events, specs_small, seed = 99)
   b <- compare_models(classroom_events, specs_small, seed = 99)
   expect_identical(a, b)
@@ -149,7 +140,6 @@ test_that("output is reproducible given a fixed seed", {
 # ---- Random-effects (frailty) tests ----------------------------------
 
 test_that("random_effects validation", {
-  data(classroom_events)
   expect_error(
     compare_models(classroom_events, specs_small,
                    n_controls = 3, random_effects = "neither"),
@@ -167,7 +157,6 @@ test_that("random_effects validation", {
 
 test_that("random_effects = 'sender' produces an AIC table on a one-mode log", {
   skip_if_not_installed("survival")
-  data(classroom_events)
   out <- compare_models(classroom_events, specs_small,
                         n_controls = 3, seed = 11,
                         random_effects = "sender")
@@ -184,7 +173,6 @@ test_that("random_effects = 'sender' produces an AIC table on a one-mode log", {
 
 test_that("random_effects = 'receiver' is accepted and produces output", {
   skip_if_not_installed("survival")
-  data(classroom_events)
   out <- compare_models(classroom_events, specs_small,
                         n_controls = 3, seed = 12,
                         random_effects = "receiver")
@@ -194,7 +182,6 @@ test_that("random_effects = 'receiver' is accepted and produces output", {
 test_that("two-axis random_effects = c('sender','receiver') fits via coxme", {
   skip_on_cran()
   skip_if_not_installed("coxme")
-  data(classroom_events)
   specs <- list(
     count       = c("reciprocity_count", "transitivity_count"),
     continuous  = c("reciprocity_time_recent", "transitivity_time_recent"))

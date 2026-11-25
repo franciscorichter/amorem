@@ -47,10 +47,11 @@ knitr::kable(data.frame(verdict = lab[names(vt)], datasets = as.integer(vt), row
 ```
 
 `r sum(nzchar(licences$in_amorem) & licences$verdict == "bundle")` of the
-datasets that may be bundled ship with amorem (see [Bundled datasets](datasets.html)).
-Three datasets bundled in earlier releases (CollegeMsg, Email-EU-core and the
-Social Evolution study) come from sources without a licence or under GPL-3; their
-status is under review. Datasets that cannot be redistributed are documented here with code that
+datasets that may be bundled ship with amorem (see [Datasets](datasets.html)).
+Four datasets bundled in earlier releases (the McFarland classroom, the Social
+Evolution study, CollegeMsg and Email-EU-core) come from sources that state no
+licence for the data. Since amorem 1.3.0 the package does not ship them;
+`fetch_dataset()` downloads each from its source and builds the same table. Datasets that cannot be redistributed are documented here with code that
 downloads them from their source; the figures and numbers on the topic pages
 are aggregates, not the data.
 

@@ -3,7 +3,6 @@
 # gof_univariate(), gof_multivariate(), gof_global(), gof_auxiliary().
 
 test_that("gof_univariate returns a KS-distributed statistic and process", {
-  data(classroom_events)
   out <- gof_univariate(classroom_events,
     model = c(reciprocity_count  = "linear",
               transitivity_count = "linear"),
@@ -19,7 +18,6 @@ test_that("gof_univariate returns a KS-distributed statistic and process", {
 })
 
 test_that("gof_univariate rejects unknown covariate", {
-  data(classroom_events)
   expect_error(
     gof_univariate(classroom_events,
       model = c(reciprocity_count = "linear"),
@@ -28,7 +26,6 @@ test_that("gof_univariate rejects unknown covariate", {
 })
 
 test_that("gof_global produces a numeric Cauchy-combined p-value", {
-  data(classroom_events)
   out <- gof_global(classroom_events,
     model = c(reciprocity_count  = "linear",
               transitivity_count = "linear"),
@@ -40,7 +37,6 @@ test_that("gof_global produces a numeric Cauchy-combined p-value", {
 })
 
 test_that("gof_global reduces to a single-covariate test for L = 1", {
-  data(classroom_events)
   out <- gof_global(classroom_events,
     model = c(reciprocity_count = "linear"), seed = 12)
   uni <- gof_univariate(classroom_events,
@@ -54,7 +50,6 @@ test_that("gof_global reduces to a single-covariate test for L = 1", {
 test_that("gof_multivariate returns a finite sup||W||^2 statistic", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   out <- gof_multivariate(classroom_events,
     model = c(reciprocity_count        = "linear",
               transitivity_count       = "linear",
@@ -69,7 +64,6 @@ test_that("gof_multivariate returns a finite sup||W||^2 statistic", {
 })
 
 test_that("gof_auxiliary rejects auxiliary that is part of the model", {
-  data(classroom_events)
   expect_error(
     gof_auxiliary(classroom_events,
       model = c(reciprocity_count = "linear"),
@@ -78,7 +72,6 @@ test_that("gof_auxiliary rejects auxiliary that is part of the model", {
 })
 
 test_that("gof_auxiliary returns a Monte Carlo p-value in [0, 1]", {
-  data(classroom_events)
   out <- gof_auxiliary(classroom_events,
     model = c(reciprocity_count = "linear"),
     auxiliary = "transitivity_count",
@@ -92,7 +85,6 @@ test_that("gof_auxiliary returns a Monte Carlo p-value in [0, 1]", {
 test_that("Cauchy combination reduces to identity on (0, 1) edges", {
   # Sanity check on the Liu-Xie 2020 transform: a single p-value of
   # 0.5 should map to T_o = tan(0) = 0 and back to p_global = 0.5.
-  data(classroom_events)
   out <- gof_global(classroom_events,
     model = c(reciprocity_count = "linear"), seed = 42)
   # Round-trip identity for L = 1 already tested; here just check the

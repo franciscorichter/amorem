@@ -74,9 +74,9 @@
 #' @export
 #' @examples
 #' \donttest{
-#' data(classroom_events)
+#' data(simulated_events)
 #' compare_models_smooth(
-#'   classroom_events,
+#'   simulated_events,
 #'   models = list(
 #'     linear = c(reciprocity_time_recent  = "linear",
 #'                transitivity_time_recent = "linear"),

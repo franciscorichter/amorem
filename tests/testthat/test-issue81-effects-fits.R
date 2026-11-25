@@ -56,7 +56,6 @@ test_that("G4: re() on a missing column errors clearly; clogit rejects it", {
 })
 
 test_that("G5: compare_models keeps fitted models under keep_fits = TRUE", {
-  data(classroom_events)
   m <- list(recip = "reciprocity_count", trans = "transitivity_count")
   res <- compare_models(classroom_events, models = m, n_controls = 1,
                         seed = 1, keep_fits = TRUE)
@@ -71,7 +70,6 @@ test_that("G5: compare_models keeps fitted models under keep_fits = TRUE", {
 
 test_that("G5: compare_models_smooth attaches gam fits under keep_fits", {
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   res <- compare_models_smooth(
     classroom_events,
     models = list(lin = c(reciprocity_time_recent = "linear")),

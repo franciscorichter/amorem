@@ -1,22 +1,23 @@
 ## Submission
 
-This is version 1.2.0 of **amorem** (CRAN has 1.1.0, published 2026-10-17).
-We submit it soon after 1.1.0 because it fixes bugs that give wrong results or
-break CRAN policy in 1.1.0:
+This is version 1.3.0 of **amorem** (CRAN has 1.2.0). Main changes (NEWS.md
+lists every change):
 
-* `sample_non_events(scope = "citation")` pooled the citing paper and the cited
-  papers under the `mode = "one"` default introduced in 1.1.0, so most sampled
-  controls had a sender other than the citing paper.
-* `rem(method = "nn")` and `nn_uncertainty()` changed the caller's
-  random-number state when given a seed; they no longer do (CRAN policy).
-* `gof_rem()` stopped with an error on fits whose data had missing covariate
-  values; `rem(method = "gam")` now records the rows it used and warns.
-* Two references in the documentation had a wrong DOI or year.
-
-The release also adds `gof_rem()` (goodness of fit for smooth fits) and new
-datasets, each from a source whose licence allows redistribution (CC0, CC BY
-4.0, MIT, or US public domain); the source, licence and citation are in each
-help page. NEWS.md lists every change.
+* Fits from `rem()` have class `"amorem_rem"` instead of `"rem"`: the packages
+  relevent and redeem register S3 methods on class `"rem"`, and loading either
+  of them redirected the print, summary and predict methods of amorem fits.
+* Statistics at tied times now use only events strictly before that time in
+  every code path.
+* Seven data objects (the McFarland classroom, Social Evolution, CollegeMsg and
+  Email-EU-core logs) are no longer shipped, because their sources state no
+  licence for the data. `fetch_dataset()` downloads them from their sources
+  when a user asks for them. Its own example (in `\donttest`) calls it inside
+  `tryCatch()` with `cache_dir = tempdir()` and prints nothing when the source
+  cannot be reached; no other example and no vignette calls it, and tests that
+  need it are skipped on CRAN.
+* The remaining datasets come from sources whose licence allows
+  redistribution (CC0, CC BY 4.0, MIT, or US public domain), or are public
+  holiday dates; the source, licence and citation are in each help page.
 
 ## Test environments
 
@@ -25,11 +26,10 @@ help page. NEWS.md lists every change.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 3 notes:
+0 errors | 0 warnings | 2 notes:
 
-* "Days since last update: 1" — see above.
-* "installed package size ... 5.4Mb" (`data` 2.5Mb, `extdata` 1.7Mb): the new
-  datasets, all compressed with xz.
+* "installed package size ... 5.0Mb" (`data` 2.0Mb, `extdata` 1.7Mb): the
+  bundled datasets, all compressed with xz.
 * "checking for future file timestamps ... unable to verify current time": the
   local machine cannot reach the time server.
 

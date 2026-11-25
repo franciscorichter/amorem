@@ -167,7 +167,6 @@ test_that("C++ timing variants agree with R reference across the four families",
 test_that("C++ dispatches on a mixed timing+count stat set", {
   # The fast-path predicate requires every requested stat to be in
   # cpp_supported_stats(). Includes one timing variant per family.
-  data(classroom_events)
   stats <- c("reciprocity_count",
              "transitivity_count", "transitivity_time_recent",
              "cyclic_count", "cyclic_time_recent",
@@ -198,7 +197,6 @@ test_that("C++ exp_decay variants agree with R reference across families", {
 })
 
 test_that("C++ dispatch covers a mixed timing+count+exp_decay stat set", {
-  data(classroom_events)
   stats <- c("reciprocity_count",
              "transitivity_time_recent", "transitivity_exp_decay",
              "cyclic_exp_decay",
@@ -216,7 +214,6 @@ test_that("C++ dispatch covers a mixed timing+count+exp_decay stat set", {
 })
 
 test_that("C++ exp_decay errors out when half_life is missing", {
-  data(classroom_events)
   expect_error(
     compute_features_cpp(as.character(classroom_events$sender),
                          as.character(classroom_events$receiver),
@@ -227,7 +224,6 @@ test_that("C++ exp_decay errors out when half_life is missing", {
 })
 
 test_that("endogenous_features dispatches to C++ when the stat set allows", {
-  data(classroom_events)
   stats <- c("reciprocity_count", "transitivity_count",
              "sender_outdegree", "receiver_indegree")
   # The dispatch should pick C++ for this stats list. We verify only

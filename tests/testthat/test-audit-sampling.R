@@ -84,7 +84,6 @@ test_that("scope = 'appearance' admits only actors seen strictly before t (item 
   ctrl <- cc[cc$event == 0L, ]
   expect_true(all(c(ctrl$sender, ctrl$receiver) %in% c("A", "B", "C", "D")))
 
-  data(classroom_events, package = "amorem", envir = environment())
   cc <- muffle_repeat(sample_non_events(classroom_events, 5, scope = "appearance", seed = 1))
   ev <- cc[cc$event == 1L, ]
   first_seen <- tapply(c(ev$time, ev$time), c(ev$sender, ev$receiver), min)
@@ -226,7 +225,6 @@ test_that("scope = 'citation' draws cited-only papers as control receivers (D1)"
 # ---- D3: no-control warning at the start of the log ---------------------
 
 test_that("the no-control warning skips the start of the log only (D3)", {
-  data(classroom_events, package = "amorem", envir = environment())
   msgs <- character(0)
   cc <- withCallingHandlers(
     sample_non_events(classroom_events, 5, scope = "appearance", risk = "remove", seed = 1),

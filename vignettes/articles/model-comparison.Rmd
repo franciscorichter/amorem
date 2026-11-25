@@ -1,11 +1,6 @@
 ---
 title: "Model comparison on a real REM dataset"
 author: "Francisco Richter"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Model comparison on a real REM dataset}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -17,25 +12,25 @@ knitr::opts_chunk$set(
 )
 ```
 
-This vignette walks through the canonical "candidate-specifications →
+This article walks through the canonical "candidate-specifications →
 AIC ranking" workflow used in REM literature (Juozaitienė & Wit
-2024, *JRSS-A* 188(4)) — with `amorem`'s bundled real-world dataset
-and the one-call `compare_models()` helper.
+2024, *JRSS-A* 188(4)) — on a real event log
+with the one-call `compare_models()` helper.
 
 ```{r}
 library(amorem)
 ```
 
-## 1. Load a bundled REM dataset
+## 1. Load an event log
 
-The package ships four real-world REM datasets directly. We use the
-McFarland (2001) high-school classroom session: 691 directed
+We use the McFarland (2001) high-school classroom session: 691 directed
 interactions among 20 students and one instructor, recorded on
-16 October 1996.
+16 October 1996. Its source states no licence for the data, so amorem does
+not ship it; `fetch_dataset()` downloads it once and caches it.
 
 ```{r}
-data(classroom_events)
-data(classroom_actors)
+classroom_events <- fetch_dataset("classroom_events")
+classroom_actors <- fetch_dataset("classroom_actors")
 nrow(classroom_events)
 head(classroom_events, 3)
 table(classroom_actors$role)

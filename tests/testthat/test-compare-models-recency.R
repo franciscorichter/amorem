@@ -10,7 +10,6 @@ aic_of <- function(x) setNames(x$AIC, x$model)[names(specs)]
 
 test_that("recency = 'zero' reproduces the amorem 1.2.0 coding", {
   skip_if_not_installed("survival")
-  data(classroom_events, package = "amorem", envir = environment())
   z <- compare_models(classroom_events, specs, n_controls = 3, seed = 11,
                       recency = "zero")
   expect_equal(unname(aic_of(z)), c(1321.022, 1842.273, 1732.780),
@@ -19,7 +18,6 @@ test_that("recency = 'zero' reproduces the amorem 1.2.0 coding", {
 
 test_that("recency = 'weight' (default) uses w = 2^(-delta/T) plus an indicator", {
   skip_if_not_installed("survival")
-  data(classroom_events, package = "amorem", envir = environment())
   w <- compare_models(classroom_events, specs, n_controls = 3, seed = 11)
   expect_equal(unname(aic_of(w)), c(1321.022, 1124.517, 1161.376),
                tolerance = 1e-6)
@@ -47,7 +45,6 @@ test_that("recency = 'weight' (default) uses w = 2^(-delta/T) plus an indicator"
 test_that("recency = 'weight' with a sender frailty", {
   skip_on_cran()
   skip_if_not_installed("survival")
-  data(classroom_events, package = "amorem", envir = environment())
   w <- suppressWarnings(compare_models(classroom_events, specs, n_controls = 3,
                                        seed = 11, random_effects = "sender"))
   expect_equal(unname(aic_of(w)), c(1086.259, 905.024, 812.363),
@@ -55,7 +52,6 @@ test_that("recency = 'weight' with a sender frailty", {
 })
 
 test_that("recency coding on the n_controls = 1 path and in the helpers", {
-  data(classroom_events, package = "amorem", envir = environment())
   w <- compare_models(classroom_events, specs[1:2], seed = 11)
   z <- compare_models(classroom_events, specs[1:2], seed = 11, recency = "zero")
   expect_equal(aic_of(w)[["count"]], aic_of(z)[["count"]])
@@ -80,7 +76,6 @@ test_that("recency coding on the n_controls = 1 path and in the helpers", {
 test_that("compare_models_smooth takes recency and adds the indicator", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events, package = "amorem", envir = environment())
   m <- list(nl = c(reciprocity_time_recent = "nl"))
   w <- compare_models_smooth(classroom_events, m, seed = 11, keep_fits = TRUE)
   z <- compare_models_smooth(classroom_events, m, seed = 11, recency = "zero",

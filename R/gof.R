@@ -212,13 +212,13 @@
 #'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' \donttest{
-#' data(classroom_events)
-#' gof_univariate(classroom_events,
+#' data(simulated_events)
+#' gof_univariate(simulated_events,
 #'   model = c(reciprocity_count  = "linear",
 #'             transitivity_count = "linear"),
 #'   covariate = "reciprocity_count", seed = 1)
 #' # the same test on 5 control samples, p-values Cauchy-combined
-#' gof_univariate(classroom_events,
+#' gof_univariate(simulated_events,
 #'   model = c(reciprocity_count  = "linear",
 #'             transitivity_count = "linear"),
 #'   covariate = "transitivity_count", seed = 1,
@@ -325,8 +325,8 @@ gof_univariate <- function(event_log, model, covariate,
 #'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
 #' if (requireNamespace("mgcv", quietly = TRUE)) {
-#'   data(classroom_events)
-#'   gof_multivariate(classroom_events,
+#'   data(simulated_events)
+#'   gof_multivariate(simulated_events,
 #'     model = c(reciprocity_count  = "linear",
 #'               transitivity_count = "linear"),
 #'     covariate = "reciprocity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
@@ -489,8 +489,8 @@ gof_multivariate <- function(event_log, model, covariate,
 #'   *Journal of the American Statistical Association* 115(529),
 #'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
-#' data(classroom_events)
-#' gof_global(classroom_events,
+#' data(simulated_events)
+#' gof_global(simulated_events,
 #'   model = c(reciprocity_count  = "linear",
 #'             transitivity_count = "linear"), seed = 1)
 #' @export
@@ -566,8 +566,8 @@ gof_global <- function(event_log, model,
 #'   *Journal of the American Statistical Association* 115(529),
 #'   393--402. \doi{10.1080/01621459.2018.1554485}.
 #' @examples
-#' data(classroom_events)
-#' gof_auxiliary(classroom_events,
+#' data(simulated_events)
+#' gof_auxiliary(simulated_events,
 #'   model = c(reciprocity_count = "linear"),
 #'   auxiliary = "transitivity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
 #' @export

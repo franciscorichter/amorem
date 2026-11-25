@@ -126,12 +126,12 @@ the residual time effect \eqn{g_0(t)}{g_0(t)} of paper eq. 3.
 }
 \examples{
 \donttest{
-data(classroom_events)
+data(simulated_events)
 # Hourly temperature track on the same time axis:
-g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),
+g <- data.frame(time = seq(0, max(simulated_events$time), length = 50),
                 temperature = rnorm(50, 20, 5))
 compare_models_global(
-  classroom_events,
+  simulated_events,
   models = list(
     dyadic_only = c(reciprocity_count        = "linear",
                     transitivity_count       = "linear"),

@@ -1,7 +1,6 @@
 # test-martingale-residuals.R
 
 test_that("residuals sum to zero within stratum and have expected shape", {
-  data(classroom_events)
   res <- martingale_residuals(
     classroom_events,
     model = c(reciprocity_count  = "linear",
@@ -21,7 +20,6 @@ test_that("residuals sum to zero within stratum and have expected shape", {
 })
 
 test_that("a well-calibrated model has approximately mean-zero residuals", {
-  data(classroom_events)
   res <- martingale_residuals(
     classroom_events,
     model = c(reciprocity_count  = "linear",
@@ -37,7 +35,6 @@ test_that("a well-calibrated model has approximately mean-zero residuals", {
 })
 
 test_that("reproducible under fixed seed", {
-  data(classroom_events)
   spec <- c(reciprocity_count = "linear")
   a <- martingale_residuals(classroom_events, spec, seed = 42)
   b <- martingale_residuals(classroom_events, spec, seed = 42)
@@ -45,7 +42,6 @@ test_that("reproducible under fixed seed", {
 })
 
 test_that("rejects malformed inputs", {
-  data(classroom_events)
   expect_error(martingale_residuals(list(), c(reciprocity_count = "linear")),
                "must be a data.frame")
   expect_error(martingale_residuals(classroom_events, character(0)),

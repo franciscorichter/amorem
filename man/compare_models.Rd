@@ -133,9 +133,9 @@ data with the generating linear effect of \eqn{\delta}{delta} uses
 
 \examples{
 \donttest{
-data(classroom_events)
+data(simulated_events)
 compare_models(
-  classroom_events,
+  simulated_events,
   models = list(
     count       = c("reciprocity_count", "transitivity_count"),
     continuous  = c("reciprocity_time_recent",
@@ -145,7 +145,7 @@ compare_models(
   seed = 11)
 # elapsed time with "no earlier event" set to 0 (amorem 1.2.0)
 compare_models(
-  classroom_events,
+  simulated_events,
   models = list(
     count       = c("reciprocity_count", "transitivity_count"),
     continuous  = c("reciprocity_time_recent",

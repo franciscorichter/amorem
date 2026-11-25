@@ -1,12 +1,11 @@
 # test-paper-datasets.R
-# Smoke tests for the four datasets shipped with amorem that come from
-# the five real-world studies analysed in Juozaitienė & Wit (2024).
-# (Enron is intentionally not shipped: the public source is aggregated
-# daily counts, not the event-level slice used in the paper.)
+# Smoke tests for the real-world logs of Juozaitienė & Wit (2024) that amorem
+# provides: radoslaw_email ships with the package; the classroom and Social
+# Evolution logs are downloaded by fetch_dataset() (helper-fetched-data.R).
+# Enron is not provided: the public source is aggregated daily counts, not the
+# event-level slice used in the paper.
 
 test_that("classroom_events / classroom_actors load and have the expected shape", {
-  data(classroom_events, envir = environment())
-  data(classroom_actors, envir = environment())
   expect_s3_class(classroom_events, "data.frame")
   expect_named(classroom_events,
                c("time", "sender", "receiver", "interaction_type", "weight"))
@@ -20,9 +19,6 @@ test_that("classroom_events / classroom_actors load and have the expected shape"
 })
 
 test_that("social_evolution_* tables load and reference a common actor universe", {
-  data(social_evolution_calls,      envir = environment())
-  data(social_evolution_actors,     envir = environment())
-  data(social_evolution_friendship, envir = environment())
   expect_named(social_evolution_calls,
                c("time", "sender", "receiver", "increment"))
   expect_named(social_evolution_friendship,
@@ -50,9 +46,18 @@ test_that("a shipped dataset feeds simulate_relational_events-shaped pipelines",
   # Sanity check: the events tables conform to the (sender, receiver, time)
   # contract used elsewhere in the package, so they can be passed into
   # downstream summary helpers without renaming.
-  data(classroom_events, envir = environment())
   expect_true(all(c("sender", "receiver", "time") %in% names(classroom_events)))
   expect_type(classroom_events$sender, "character")
   expect_type(classroom_events$receiver, "character")
   expect_type(classroom_events$time, "double")
+})
+
+test_that("simulated_events ships and has the event-log columns", {
+  expect_named(simulated_events, c("time", "sender", "receiver"))
+  expect_equal(nrow(simulated_events), 600L)
+  expect_false(is.unsorted(simulated_events$time))
+})
+
+test_that("fetch_dataset() rejects unknown names without downloading", {
+  expect_error(fetch_dataset("no_such_log", cache_dir = tempdir()))
 })

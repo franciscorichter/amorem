@@ -6,7 +6,6 @@
 test_that("output has the expected AIC-table columns", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   g <- data.frame(time = seq(0, max(classroom_events$time), length = 30),
                   temperature = sin(seq(0, 2 * pi, length = 30)))
   out <- compare_models_global(
@@ -53,7 +52,6 @@ test_that("global_time fits a residual baseline-hazard smooth on a synthetic log
 test_that("global_cyclic with bs = 'cc' fits on a periodic covariate", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   g <- data.frame(time = seq(0, max(classroom_events$time), length = 50),
                   tod  = ((seq(0, max(classroom_events$time),
                                 length = 50)) %% 24))
@@ -66,7 +64,6 @@ test_that("global_cyclic with bs = 'cc' fits on a periodic covariate", {
 })
 
 test_that("rejects malformed inputs", {
-  data(classroom_events)
   expect_error(compare_models_global(classroom_events, list()),
                "non-empty")
   expect_error(
@@ -88,7 +85,6 @@ test_that("rejects malformed inputs", {
 test_that("AIC is reproducible given a fixed seed", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   g <- data.frame(time = seq(0, max(classroom_events$time), length = 30),
                   x = sin(seq(0, 2 * pi, length = 30)))
   a <- compare_models_global(classroom_events,
@@ -105,7 +101,6 @@ test_that("AIC is reproducible given a fixed seed", {
 test_that("a dyadic-only spec returns the same shape as compare_models_smooth", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   out <- compare_models_global(
     classroom_events,
     models = list(linear = c(reciprocity_count       = "linear",

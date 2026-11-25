@@ -28,7 +28,7 @@ fmt <- function(x, d = 1) formatC(x, format = "f", digits = d, big.mark = ",")
 4. **Goodness-of-fit tests** check whether the selected fit is
    actually adequate.
 
-The examples on the bundled `classroom_events` log run when this page is
+The examples on the `classroom_events` log (downloaded by `fetch_dataset()`) run when this page is
 built, so their output comes from the current version of the package. Snippets
 that use data the package does not ship (`lesmis`, `event_log`, `native`) are
 shown without being run.
@@ -44,13 +44,12 @@ and the sum of rates over the risk set at that moment. The
 an unbiased Horvitz-Thompson estimate that uses `n_controls`
 sampled non-firing dyads per case.
 
-Throughout this page we use the bundled `classroom_events` log —
+Throughout this page we use the `classroom_events` log (downloaded by `fetch_dataset()`) —
 any event log with `time`, `sender`, `receiver` columns will do.
 
 ```{r sampling}
 library(amorem)
-data(classroom_events)
-
+classroom_events <- fetch_dataset("classroom_events")
 cc <- sample_non_events(classroom_events,
                         n_controls = 1,
                         scope      = "all",
@@ -187,7 +186,7 @@ A single call evaluates a list of candidate specifications on a
 shared case-control sample:
 
 ```{r compare-models}
-data(classroom_events)
+classroom_events <- fetch_dataset("classroom_events")
 compare_models(
   classroom_events,
   models = list(

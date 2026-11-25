@@ -1,5 +1,5 @@
 ---
-title: "Analyses of bundled event logs"
+title: "Analyses of three event logs"
 ---
 
 ```{r, include = FALSE}
@@ -9,7 +9,7 @@ library(amorem)
 fmt <- function(x, d = 1) formatC(x, format = "f", digits = d, big.mark = ",")
 ```
 
-# Analyses of bundled event logs
+# Analyses of three event logs
 
 Three analyses on the bundled datasets. The code below runs when this page is
 built, so every table, figure and number in the text comes from the current
@@ -26,7 +26,7 @@ an actor who sends a lot accumulates large counts. A Gamma sender frailty
 (`random_effects = "sender"`) absorbs activity differences between senders.
 
 ```{r classroom}
-data(classroom_events)
+classroom_events <- fetch_dataset("classroom_events")
 specs <- list(
   count       = c("reciprocity_count", "transitivity_count"),
   continuous  = c("reciprocity_time_recent", "transitivity_time_recent"),
@@ -149,7 +149,7 @@ The same three specifications on the first 30 days of `college_msg`, with one
 control per case:
 
 ```{r college}
-data(college_msg)
+college_msg <- fetch_dataset("college_msg")
 cm30 <- college_msg[college_msg$time < 30, ]
 c(messages = nrow(cm30), users = length(unique(c(cm30$sender, cm30$receiver))))
 cm <- compare_models(cm30, specs, n_controls = 1, seed = 11)

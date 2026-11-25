@@ -167,8 +167,8 @@ fitted with \verb{rem(~ nl(<cov>))}, the baseline with \code{rem(~ nl(time))}.
 }
 
 \examples{
-data(classroom_events)
-cc <- sample_non_events(classroom_events, n_controls = 1, seed = 1)
+data(simulated_events)
+cc <- sample_non_events(simulated_events, n_controls = 1, seed = 1)
 head(cc)
 
 # Alien species are at risk of invading a region only from the year

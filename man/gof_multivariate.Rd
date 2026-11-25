@@ -117,8 +117,8 @@ p-value needs a larger \code{n_sim}. The Kolmogorov p-values of
 
 \examples{
 if (requireNamespace("mgcv", quietly = TRUE)) {
-  data(classroom_events)
-  gof_multivariate(classroom_events,
+  data(simulated_events)
+  gof_multivariate(simulated_events,
     model = c(reciprocity_count  = "linear",
               transitivity_count = "linear"),
     covariate = "reciprocity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]

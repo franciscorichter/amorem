@@ -13,7 +13,6 @@ test_that("events with no valid control are reported in a warning and an attribu
 })
 
 test_that("a sample where every event has a control gives no warning and an empty attribute", {
-  data(classroom_events, package = "amorem", envir = environment())
   expect_no_warning(cc <- sample_non_events(head(classroom_events, 50), seed = 1))
   expect_length(attr(cc, "no_control"), 0L)
 })
@@ -29,7 +28,6 @@ test_that("scope = 'appearance' does not warn about the first event", {
 })
 
 test_that("time-shifted sampling exposes its uninformative strata as no_control", {
-  data(classroom_events, package = "amorem", envir = environment())
   cc <- sample_non_events(head(classroom_events, 80), shift = "exponential",
                           shift_scale = 3, seed = 1)
   expect_identical(attr(cc, "no_control"), attr(cc, "shift")$uninformative)

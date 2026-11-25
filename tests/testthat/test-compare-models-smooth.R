@@ -12,7 +12,6 @@ specs_basic <- list(
 test_that("returns the expected AIC table on classroom_events", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   out <- compare_models_smooth(classroom_events, specs_basic, seed = 11, k = 5)
   expect_s3_class(out, "data.frame")
   expect_named(out, c("model", "n_terms", "n_obs", "log_lik", "AIC", "delta_AIC"))
@@ -25,7 +24,6 @@ test_that("returns the expected AIC table on classroom_events", {
 test_that("all four effect types fit on classroom_events", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   specs <- list(
     L  = c(reciprocity_time_recent  = "linear"),
     TV = c(reciprocity_time_recent  = "tv"),
@@ -39,7 +37,6 @@ test_that("all four effect types fit on classroom_events", {
 test_that("AIC is reproducible given a fixed seed", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   a <- compare_models_smooth(classroom_events, specs_basic, seed = 99, k = 5)
   b <- compare_models_smooth(classroom_events, specs_basic, seed = 99, k = 5)
   expect_equal(a, b)
@@ -48,7 +45,6 @@ test_that("AIC is reproducible given a fixed seed", {
 test_that("half_life propagates to exp-decay stats inside smooth specs", {
   skip_on_cran()
   skip_if_not_installed("mgcv")
-  data(classroom_events)
   out <- compare_models_smooth(
     classroom_events,
     models = list(decay = c(reciprocity_exp_decay  = "nl",
@@ -59,7 +55,6 @@ test_that("half_life propagates to exp-decay stats inside smooth specs", {
 })
 
 test_that("rejects invalid effect types", {
-  data(classroom_events)
   expect_error(
     compare_models_smooth(classroom_events,
       models = list(bad = c(reciprocity_count = "polynomial"))),
@@ -67,7 +62,6 @@ test_that("rejects invalid effect types", {
 })
 
 test_that("rejects malformed specifications", {
-  data(classroom_events)
   expect_error(
     compare_models_smooth(classroom_events,
       models = list(unnamed = c("linear", "linear"))),
@@ -83,7 +77,6 @@ test_that("a TVNLE spec on a synthetic time-varying covariate is recoverable", {
   # Sanity: with TVNLE active, the AIC of a tvnl spec should be no worse
   # than the linear spec by more than a small penalty (rough numerical
   # check; the empirical recovery story is in the whitepaper).
-  data(classroom_events)
   out <- compare_models_smooth(
     classroom_events,
     models = list(

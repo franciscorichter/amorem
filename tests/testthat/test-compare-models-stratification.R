@@ -9,7 +9,6 @@
 # code and fail on the old output (df = 692, length(coef) = 692).
 
 test_that("compare_models AIC is consistent with its own log_lik and df", {
-  data(classroom_events)
   specs <- list(
     count      = c("reciprocity_count", "transitivity_count"),
     continuous = c("reciprocity_time_recent", "transitivity_time_recent"))
@@ -19,7 +18,6 @@ test_that("compare_models AIC is consistent with its own log_lik and df", {
 })
 
 test_that("compare_models actually stratifies on the matched sets", {
-  data(classroom_events)
   specs <- list(count = c("reciprocity_count", "transitivity_count"))
   tab <- compare_models(classroom_events, models = specs,
                         n_controls = 3, seed = 11, keep_fits = TRUE)
@@ -30,7 +28,6 @@ test_that("compare_models actually stratifies on the matched sets", {
 })
 
 test_that("the sender-frailty path stratifies too", {
-  data(classroom_events)
   specs <- list(count = c("reciprocity_count", "transitivity_count"))
   tab <- compare_models(classroom_events, models = specs,
                         n_controls = 3, seed = 11,
@@ -48,7 +45,6 @@ test_that("the sender-frailty path stratifies too", {
 
 test_that("the coxme two-axis path stratifies on the matched sets", {
   skip_if_not_installed("coxme")
-  data(classroom_events)
   specs <- list(count = c("reciprocity_count", "transitivity_count"))
   tab <- compare_models(classroom_events, models = specs,
                         n_controls = 3, seed = 11,

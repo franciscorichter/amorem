@@ -87,8 +87,8 @@ p-value needs a larger \code{n_sim}. The Kolmogorov p-values of
 }
 
 \examples{
-data(classroom_events)
-gof_auxiliary(classroom_events,
+data(simulated_events)
+gof_auxiliary(simulated_events,
   model = c(reciprocity_count = "linear"),
   auxiliary = "transitivity_count", n_sim = 200, seed = 1)[c("statistic", "p_value")]
 }
