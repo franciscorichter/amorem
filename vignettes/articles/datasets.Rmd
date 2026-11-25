@@ -6,6 +6,14 @@ title: "Datasets"
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width = 10)
 library(amorem)
 fmt <- function(x, d = 0) formatC(x, format = "f", digits = d, big.mark = ",")
+fetched <- c("classroom_events", "classroom_actors", "social_evolution_calls",
+             "social_evolution_actors", "social_evolution_friendship",
+             "college_msg", "email_eu_core")
+get_log <- function(nm) {
+  if (nm %in% fetched) return(fetch_dataset(nm))
+  e <- new.env(); data(list = nm, envir = e); get(nm, e)
+}
+college_msg <- fetch_dataset("college_msg")
 ```
 
 # Datasets
@@ -34,11 +42,8 @@ ev <- list(
   football_results = list("Men's international football since 1872", "matches", "days"),
   ucdp_dyads = list("UCDP armed conflict dyads 1946-2025", "conflict dyad-years", "year"),
   alien_invasions = list("Alien species first records 1880-2005", "species -> region", "year"))
-fetched <- c("classroom_events", "social_evolution_calls", "social_evolution_friendship",
-             "college_msg", "email_eu_core")
 inv <- do.call(rbind, lapply(names(ev), function(nm) {
-  if (nm %in% fetched) x <- fetch_dataset(nm) else {
-    e <- new.env(); data(list = nm, envir = e); x <- get(nm, e) }
+  x <- get_log(nm)
   s <- if (nm == "alien_invasions") x$species else x$sender
   r <- if (nm == "alien_invasions") x$region else x$receiver
   t <- if (nm == "ucdp_dyads") x$year else if (nm == "alien_invasions") x$stop else x$time
@@ -94,7 +99,7 @@ Gini coefficient of actor activity (0 when all actors are equally active):
 
 ```{r concentration}
 conc <- do.call(rbind, lapply(names(ev), function(nm) {
-  e <- new.env(); data(list = nm, envir = e); x <- get(nm, e)
+  x <- get_log(nm)
   a <- if (nm == "alien_invasions") c(x$species, x$region) else c(x$sender, x$receiver)
   n <- sort(as.numeric(table(a)), decreasing = TRUE)
   g <- { y <- sort(n); k <- length(y); sum((2 * seq_len(k) - k - 1) * y) / (k * sum(y)) }
@@ -107,7 +112,7 @@ knitr::kable(conc, row.names = FALSE, col.names = c("object", "events with the t
 
 Logs with highly concentrated activity are where count statistics carry sender
 and receiver activity rather than dyadic history; see
-[Analyses of bundled event logs](bundled-log-analyses.html) for a comparison with and without a
+[Analyses of three event logs](bundled-log-analyses.html) for a comparison with and without a
 sender frailty.
 
 ## Global covariates
